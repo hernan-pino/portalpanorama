@@ -1,0 +1,5 @@
+export enum TagStatus {
+  ACTIVE = 'ACTIVE',
+  PENDING_APPROVAL = 'PENDING_APPROVAL',
+  REJECTED = 'REJECTED',
+}
