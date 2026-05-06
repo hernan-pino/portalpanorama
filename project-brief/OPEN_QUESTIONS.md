@@ -78,9 +78,37 @@ La búsqueda con filtros facetados puede implementarse con Postgres full-text en
 
 ---
 
+---
+
+## Decisiones técnicas — Fase 1
+
+**D1. Bootstrapping manual en lugar de create-next-app**
+`create-next-app` rechaza directorios con mayúsculas en el nombre (restricción npm). Se optó por scaffoldear manualmente `package.json`, `tsconfig.json`, `next.config.ts`, `postcss.config.mjs` y `eslint.config.mjs`. Resultado equivalente con más control sobre las dependencias iniciales.
+
+**D2. `Money.format()` removida del dominio**
+El architecture-guardian detectó que `Intl.NumberFormat('es-CL', ...)` en el VO es un concern de presentación. Se extrajo a `src/lib/formatMoney.ts` que recibe `MoneyProps` (plain object). El dominio no sabe cómo luce el dinero en pantalla.
+
+**D3. `TagStatus` como enum separado**
+El tipo de `ListingTag.status` se definió inicialmente como string union inline `'ACTIVE' | 'PENDING_APPROVAL' | 'REJECTED'`. Se extrajo a `src/domain/listing/TagStatus.ts` para consistencia con el resto de enums y para evitar divergencia silenciosa si los valores cambian.
+
+**D4. `ClaimStatus` vive en `ListingClaim.ts`, no en archivo propio**
+A diferencia de `ListingPlan` y `ListingStatus`, `ClaimStatus` está declarado en el mismo archivo que la entidad que lo usa. Es el único enum del dominio sin archivo propio. Justificación: `ClaimStatus` solo tiene sentido junto a `ListingClaim`; extraerlo sería sobreingeniería sin beneficio real.
+
+**D5. `DuplicateReviewError` existe en dominio pero se lanza desde infrastructure**
+La clase del error vive en `src/domain/review/errors/`. Sin embargo, quien lo lanza será `PrismaReviewRepository` (Fase 3) al capturar el error de constraint único de Postgres. El dominio define el tipo; infrastructure lo materializa.
+
+**D6. Sin test runner en Fase 1**
+No se configuró Jest ni Vitest. El tipo de verificación en esta fase fue `tsc --noEmit` (cero errores de tipos, modo strict). Tests unitarios del dominio se agregarán en Fase 2 cuando los use cases pongan las entidades en movimiento.
+
+**D7. `rating` en Review como `number`, no VO**
+Decisión confirmada de ARCHITECTURE.md: la validación de rango (1-10) pertenece a Zod en presentation. El dominio acepta el `number` ya validado. No se creó un VO `Rating` por no tener lógica de negocio encima del número.
+
+---
+
 ## Historial de actualizaciones
 
 | Fecha | Cambio |
 |-------|--------|
 | 2026-05-05 | Creación inicial con preguntas detectadas en Fase 0 |
 | 2026-05-05 | Ronda de preguntas pre-Fase 1: Q4-Q8, Q11-Q16, Q17-Q19 respondidas |
+| 2026-05-06 | Fase 1 completada: decisiones técnicas D1-D7 documentadas |
