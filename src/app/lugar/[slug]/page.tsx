@@ -3,7 +3,6 @@ import { notFound } from 'next/navigation'
 import Image from 'next/image'
 import Link from 'next/link'
 import { container } from '@lib/container'
-import { ListingPlan } from '@domain/listing/ListingPlan'
 
 interface PageProps {
   params: Promise<{ slug: string }>
@@ -28,68 +27,89 @@ export default async function LugarPage({ params }: PageProps) {
 
   const { listing, reviews, stats } = result
 
-  const coverImage = listing.images[0]
+  const [mainImage, ...thumbImages] = listing.images
 
   return (
     <div className="page-enter">
-      {/* Hero imagen */}
-      {coverImage ? (
-        <div style={{ width: '100%', aspectRatio: '21/9', maxHeight: '480px', position: 'relative', overflow: 'hidden', background: 'var(--bg-sunken)' }}>
-          <Image
-            src={coverImage.url}
-            alt={coverImage.alt ?? listing.name}
-            fill
-            priority
-            sizes="100vw"
-            style={{ objectFit: 'cover' }}
-          />
-        </div>
-      ) : (
-        <div className="placeholder-stripe" style={{ width: '100%', height: '300px' }} data-label={listing.name} />
-      )}
+      <div className="container">
 
-      <div className="container" style={{ paddingTop: 'var(--s-10)', paddingBottom: 'var(--s-16)' }}>
-        <div
-          style={{
-            display: 'grid',
-            gridTemplateColumns: '1fr minmax(0, 340px)',
-            gap: 'var(--s-12)',
-            alignItems: 'start',
-          }}
-        >
-          {/* Columna principal */}
-          <div>
-            {/* Eyebrow */}
-            <p className="eyebrow" style={{ marginBottom: 'var(--s-3)' }}>
-              {listing.neighborhood}
-              {listing.isPremium() && (
-                <>
-                  {' '}·{' '}
-                  <span className="premium-badge">Premium</span>
-                </>
-              )}
-            </p>
-
-            {/* Nombre */}
-            <h1
-              className="display"
-              style={{ fontSize: 'var(--t-display-sm)', marginBottom: 'var(--s-5)' }}
-            >
-              {listing.name}
-            </h1>
-
-            {/* Rating */}
-            {stats.count > 0 && (
-              <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--s-3)', marginBottom: 'var(--s-6)' }}>
-                <span style={{ fontWeight: 600, fontSize: 'var(--t-h3)' }}>
-                  {stats.averageRating.toFixed(1)}
-                </span>
-                <RatingStars rating={stats.averageRating} />
-                <span style={{ color: 'var(--fg-muted)', fontSize: 'var(--t-body-sm)' }}>
-                  ({stats.count} {stats.count === 1 ? 'reseña' : 'reseñas'})
-                </span>
-              </div>
+        {/* ── Hero gallery ── */}
+        <div className="place-hero">
+          {/* Main image — spans 2 rows */}
+          <div style={{ position: 'relative', borderRadius: 'var(--r-md)', overflow: 'hidden', background: 'var(--bg-sunken)' }}>
+            {mainImage ? (
+              <Image
+                src={mainImage.url}
+                alt={mainImage.alt ?? listing.name}
+                fill
+                priority
+                sizes="(max-width: 960px) 100vw, 50vw"
+                style={{ objectFit: 'cover' }}
+              />
+            ) : (
+              <div className="placeholder-stripe" style={{ width: '100%', height: '100%' }} />
             )}
+          </div>
+
+          {/* Thumb 1 */}
+          <div style={{ position: 'relative', borderRadius: 'var(--r-md)', overflow: 'hidden', background: 'var(--bg-sunken)' }}>
+            {thumbImages[0] ? (
+              <Image
+                src={thumbImages[0].url}
+                alt={thumbImages[0].alt ?? listing.name}
+                fill
+                sizes="(max-width: 960px) 100vw, 25vw"
+                style={{ objectFit: 'cover' }}
+              />
+            ) : (
+              <div className="placeholder-stripe" style={{ width: '100%', height: '100%' }} />
+            )}
+          </div>
+
+          {/* Thumb 2 */}
+          <div style={{ position: 'relative', borderRadius: 'var(--r-md)', overflow: 'hidden', background: 'var(--bg-sunken)' }}>
+            {thumbImages[1] ? (
+              <Image
+                src={thumbImages[1].url}
+                alt={thumbImages[1].alt ?? listing.name}
+                fill
+                sizes="(max-width: 960px) 100vw, 25vw"
+                style={{ objectFit: 'cover' }}
+              />
+            ) : (
+              <div className="placeholder-stripe" style={{ width: '100%', height: '100%' }} />
+            )}
+          </div>
+        </div>
+
+        {/* ── Info layout ── */}
+        <div className="place-info">
+
+          {/* ── Main column ── */}
+          <div>
+            {/* Headline block */}
+            <div className="place-headline">
+              <p className="eyebrow">
+                {listing.neighborhood}
+                {listing.isPremium() && (
+                  <>
+                    {' '}·{' '}
+                    <span className="premium-badge">Premium</span>
+                  </>
+                )}
+              </p>
+              <h1>{listing.name}</h1>
+
+              {/* Rating */}
+              {stats.count > 0 && (
+                <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--s-3)' }}>
+                  <RatingStars rating={stats.averageRating} />
+                  <span style={{ fontFamily: 'var(--font-mono)', fontSize: 'var(--t-mono)', letterSpacing: 'var(--tr-wide)', color: 'var(--fg-muted)' }}>
+                    {stats.averageRating.toFixed(1)} · {stats.count} {stats.count === 1 ? 'reseña' : 'reseñas'}
+                  </span>
+                </div>
+              )}
+            </div>
 
             {/* Tags */}
             {listing.tags.length > 0 && (
@@ -109,7 +129,7 @@ export default async function LugarPage({ params }: PageProps) {
             {/* Descripción */}
             {listing.description && (
               <div style={{ marginBottom: 'var(--s-10)' }}>
-                <h2 style={{ fontSize: 'var(--t-h3)', fontWeight: 500, marginBottom: 'var(--s-4)' }}>
+                <h2 style={{ fontFamily: 'var(--font-display)', fontSize: 'var(--t-h3)', fontWeight: 400, marginBottom: 'var(--s-4)', letterSpacing: 'var(--tr-tight)' }}>
                   Sobre este lugar
                 </h2>
                 <p style={{ color: 'var(--fg-muted)', lineHeight: 'var(--lh-loose)' }}>
@@ -118,22 +138,13 @@ export default async function LugarPage({ params }: PageProps) {
               </div>
             )}
 
-            {/* Galería */}
-            {listing.images.length > 1 && (
+            {/* Galería adicional */}
+            {thumbImages.length > 2 && (
               <div style={{ marginBottom: 'var(--s-10)' }}>
-                <h2 style={{ fontSize: 'var(--t-h3)', fontWeight: 500, marginBottom: 'var(--s-4)' }}>Fotos</h2>
-                <div
-                  style={{
-                    display: 'grid',
-                    gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))',
-                    gap: 'var(--s-3)',
-                  }}
-                >
-                  {listing.images.slice(1).map((img) => (
-                    <div
-                      key={img.id}
-                      style={{ aspectRatio: '4/3', position: 'relative', borderRadius: 'var(--r-md)', overflow: 'hidden', background: 'var(--bg-sunken)' }}
-                    >
+                <h2 style={{ fontFamily: 'var(--font-display)', fontSize: 'var(--t-h3)', fontWeight: 400, marginBottom: 'var(--s-4)', letterSpacing: 'var(--tr-tight)' }}>Fotos</h2>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: 'var(--s-3)' }}>
+                  {thumbImages.slice(2).map((img) => (
+                    <div key={img.id} style={{ aspectRatio: '4/3', position: 'relative', borderRadius: 'var(--r-md)', overflow: 'hidden', background: 'var(--bg-sunken)' }}>
                       <Image
                         src={img.url}
                         alt={img.alt ?? listing.name}
@@ -147,111 +158,131 @@ export default async function LugarPage({ params }: PageProps) {
               </div>
             )}
 
-            {/* Reseñas */}
+            {/* ── Reseñas ── */}
             <div>
-              <h2 style={{ fontSize: 'var(--t-h3)', fontWeight: 500, marginBottom: 'var(--s-6)' }}>
+              <h2 style={{ fontFamily: 'var(--font-display)', fontSize: 'var(--t-h3)', fontWeight: 400, marginBottom: 'var(--s-2)', letterSpacing: 'var(--tr-tight)' }}>
                 Reseñas {stats.count > 0 && `(${stats.count})`}
               </h2>
+
               {reviews.length > 0 ? (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--s-6)' }}>
-                  {reviews.map((review) => (
-                    <div
-                      key={review.id}
-                      style={{
-                        borderTop: '1px solid var(--surface-line)',
-                        paddingTop: 'var(--s-5)',
-                      }}
-                    >
-                      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 'var(--s-3)', alignItems: 'center' }}>
-                        <span style={{ fontWeight: 500, fontSize: 'var(--t-body-sm)' }}>
-                          Usuario verificado
-                        </span>
-                        <span style={{ fontFamily: 'var(--font-mono)', fontSize: 'var(--t-mono)', color: 'var(--fg-muted)' }}>
-                          {review.rating}/10
-                        </span>
+                reviews.map((review) => {
+                  const initial = 'U'
+                  return (
+                    <div key={review.id} className="review">
+                      <div className="review__avatar">
+                        <span>{initial}</span>
                       </div>
-                      <p style={{ color: 'var(--fg-muted)', lineHeight: 'var(--lh-loose)', fontSize: 'var(--t-body-sm)' }}>
-                        {review.body}
-                      </p>
-                      {review.response && (
-                        <div style={{ marginTop: 'var(--s-4)', padding: 'var(--s-4)', background: 'var(--bg-sunken)', borderRadius: 'var(--r-md)' }}>
-                          <p className="eyebrow" style={{ marginBottom: 'var(--s-2)' }}>Respuesta del dueño</p>
-                          <p style={{ fontSize: 'var(--t-body-sm)', lineHeight: 'var(--lh-loose)' }}>{review.response}</p>
+                      <div>
+                        <div className="review__head">
+                          <span className="review__name">Usuario verificado</span>
+                          <span className="review__when">{review.rating}/10</span>
                         </div>
-                      )}
+                        <p style={{ color: 'var(--fg-muted)', lineHeight: 'var(--lh-loose)', fontSize: 'var(--t-body-sm)' }}>
+                          {review.body}
+                        </p>
+                        {review.response && (
+                          <div style={{ marginTop: 'var(--s-4)', padding: 'var(--s-4)', background: 'var(--bg-sunken)', borderRadius: 'var(--r-md)' }}>
+                            <p className="eyebrow" style={{ marginBottom: 'var(--s-2)' }}>Respuesta del dueño</p>
+                            <p style={{ fontSize: 'var(--t-body-sm)', lineHeight: 'var(--lh-loose)' }}>{review.response}</p>
+                          </div>
+                        )}
+                      </div>
                     </div>
-                  ))}
-                </div>
+                  )
+                })
               ) : (
-                <p style={{ color: 'var(--fg-muted)', fontSize: 'var(--t-body-sm)' }}>
-                  Todavía no hay reseñas. ¡Sé el primero!
-                </p>
+                <div className="review" style={{ borderTop: '1px solid var(--surface-line)', paddingTop: 'var(--s-6)' }}>
+                  <p style={{ color: 'var(--fg-muted)', fontSize: 'var(--t-body-sm)', gridColumn: '1 / -1' }}>
+                    Todavía no hay reseñas. ¡Sé el primero!
+                  </p>
+                </div>
               )}
             </div>
           </div>
 
-          {/* Sidebar */}
-          <aside
-            style={{
-              background: 'var(--bg-raised)',
-              border: '1px solid var(--surface-line)',
-              borderRadius: 'var(--r-xl)',
-              padding: 'var(--s-6)',
-              position: 'sticky',
-              top: '88px',
-              display: 'flex',
-              flexDirection: 'column',
-              gap: 'var(--s-5)',
-            }}
-          >
-            <h2 style={{ fontSize: 'var(--t-h4)', fontWeight: 500, margin: 0 }}>Información</h2>
+          {/* ── Sidebar ── */}
+          <aside className="place-info__sidebar">
+            <h2 style={{ fontFamily: 'var(--font-display)', fontSize: 'var(--t-h4)', fontWeight: 400, margin: 0, letterSpacing: 'var(--tr-tight)' }}>Información</h2>
 
             {listing.address && (
-              <InfoRow label="Dirección" value={listing.address} />
+              <div className="place-info__row">
+                <LocationIcon />
+                <span>{listing.address}</span>
+              </div>
             )}
+
             {listing.phone && (
-              <InfoRow label="Teléfono" value={listing.phone} />
+              <div className="place-info__row">
+                <PhoneIcon />
+                <span>{listing.phone}</span>
+              </div>
             )}
+
             {listing.website && (
-              <InfoRow
-                label="Sitio web"
-                value={
-                  <a
-                    href={listing.website}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    style={{ color: 'var(--accent-60)', textDecoration: 'underline' }}
-                  >
-                    Visitar sitio
-                  </a>
-                }
-              />
+              <div className="place-info__row">
+                <GlobeIcon />
+                <a
+                  href={listing.website}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  style={{ color: 'var(--accent-60)', textDecoration: 'underline' }}
+                >
+                  Visitar sitio
+                </a>
+              </div>
             )}
+
             {listing.priceRange && (
-              <InfoRow
-                label="Precio"
-                value={'$'.repeat(listing.priceRange)}
-              />
+              <div className="place-info__row">
+                <PriceIcon />
+                <span>{'$'.repeat(listing.priceRange)}</span>
+              </div>
             )}
 
-            <hr className="divider-line" />
+            <hr className="divider-line" style={{ margin: 0 }} />
 
-            <Link href={`/explorar?barrio=${encodeURIComponent(listing.neighborhood)}`} className="btn btn--ghost btn--sm" style={{ justifyContent: 'center' }}>
+            <Link
+              href={`/explorar?barrio=${encodeURIComponent(listing.neighborhood)}`}
+              className="btn btn--ghost btn--sm"
+              style={{ justifyContent: 'center' }}
+            >
               Más en {listing.neighborhood}
             </Link>
           </aside>
         </div>
+
       </div>
     </div>
   )
 }
 
-function InfoRow({ label, value }: { label: string; value: React.ReactNode }) {
+/* ── Icons ── */
+function LocationIcon() {
   return (
-    <div>
-      <p className="eyebrow" style={{ marginBottom: 'var(--s-1)' }}>{label}</p>
-      <p style={{ fontSize: 'var(--t-body-sm)', lineHeight: 'var(--lh-normal)' }}>{value}</p>
-    </div>
+    <svg className="ico ico-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/>
+    </svg>
+  )
+}
+function PhoneIcon() {
+  return (
+    <svg className="ico ico-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12 19.79 19.79 0 0 1 1.61 3.44 2 2 0 0 1 3.6 1.26h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L7.91 8.8a16 16 0 0 0 6 6l.9-.9a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92Z"/>
+    </svg>
+  )
+}
+function GlobeIcon() {
+  return (
+    <svg className="ico ico-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <circle cx="12" cy="12" r="10"/><path d="M2 12h20"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
+    </svg>
+  )
+}
+function PriceIcon() {
+  return (
+    <svg className="ico ico-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
+    </svg>
   )
 }
 

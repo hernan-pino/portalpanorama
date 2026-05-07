@@ -8,35 +8,20 @@ export interface ListingCardData {
   categoryName?: string
   coverUrl?: string
   averageRating?: number
+  reviewCount?: number
   isPremium: boolean
   tags: string[]
+  priceRange?: number
 }
 
 export function ListingCard({ listing }: { listing: ListingCardData }) {
   return (
     <Link
       href={`/lugar/${listing.slug}`}
-      style={{
-        display: 'flex',
-        flexDirection: 'column',
-        background: 'var(--bg-raised)',
-        border: '1px solid var(--surface-line)',
-        borderRadius: 'var(--r-lg)',
-        overflow: 'hidden',
-        transition: 'box-shadow var(--d-fast) var(--ease-out), transform var(--d-fast) var(--ease-out)',
-        textDecoration: 'none',
-      }}
-      className={listing.isPremium ? 'is-premium listing-card' : 'listing-card'}
+      className={`place-card${listing.isPremium ? ' is-premium' : ''}`}
     >
-      {/* Cover image */}
-      <div
-        style={{
-          aspectRatio: '16/9',
-          background: 'var(--bg-sunken)',
-          position: 'relative',
-          overflow: 'hidden',
-        }}
-      >
+      {/* Media 4:3 */}
+      <div className="place-card__media">
         {listing.coverUrl ? (
           <Image
             src={listing.coverUrl}
@@ -50,34 +35,30 @@ export function ListingCard({ listing }: { listing: ListingCardData }) {
         )}
       </div>
 
-      {/* Content */}
-      <div style={{ padding: 'var(--s-4)', display: 'flex', flexDirection: 'column', gap: 'var(--s-2)', flex: 1 }}>
-        <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 'var(--s-2)' }}>
-          <h3
-            style={{
-              fontSize: 'var(--t-h4)',
-              fontWeight: 500,
-              letterSpacing: 'var(--tr-normal)',
-              lineHeight: 'var(--lh-snug)',
-              margin: 0,
-            }}
-          >
-            {listing.name}
-          </h3>
+      {/* Body */}
+      <div className="place-card__body">
+        <div className="place-card__meta">
+          {listing.categoryName && <span>{listing.categoryName}</span>}
+          {listing.categoryName && <span className="dot" aria-hidden="true" />}
+          <span>{listing.neighborhood}</span>
+          {listing.priceRange && (
+            <>
+              <span className="dot" aria-hidden="true" />
+              <span>{'$'.repeat(listing.priceRange)}</span>
+            </>
+          )}
           {listing.isPremium && (
-            <span className="premium-badge" style={{ flexShrink: 0 }}>
-              Premium
-            </span>
+            <>
+              <span className="dot" aria-hidden="true" />
+              <span className="premium-badge" style={{ fontSize: '10px', padding: '2px 6px' }}>Premium</span>
+            </>
           )}
         </div>
 
-        <p style={{ fontSize: 'var(--t-body-sm)', color: 'var(--fg-muted)', margin: 0 }}>
-          {listing.neighborhood}
-          {listing.categoryName ? ` · ${listing.categoryName}` : ''}
-        </p>
+        <h3 className="place-card__title">{listing.name}</h3>
 
         {listing.tags.length > 0 && (
-          <div style={{ display: 'flex', gap: 'var(--s-1)', flexWrap: 'wrap', marginTop: 'var(--s-1)' }}>
+          <div style={{ display: 'flex', gap: 'var(--s-1)', flexWrap: 'wrap' }}>
             {listing.tags.slice(0, 3).map((tag) => (
               <span
                 key={tag}
@@ -99,9 +80,17 @@ export function ListingCard({ listing }: { listing: ListingCardData }) {
         )}
 
         {listing.averageRating !== undefined && (
-          <p style={{ fontSize: 'var(--t-body-sm)', color: 'var(--fg-muted)', margin: 0, marginTop: 'auto', paddingTop: 'var(--s-2)' }}>
-            ★ {listing.averageRating.toFixed(1)}
-          </p>
+          <div className="place-card__row">
+            <span className="rating">
+              <svg className="ico ico-sm" viewBox="0 0 24 24" fill="var(--accent-60)" stroke="var(--accent-60)" strokeWidth="1.5" aria-hidden="true">
+                <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+              </svg>
+              <span className="rating__num">{listing.averageRating.toFixed(1)}</span>
+              {listing.reviewCount !== undefined && (
+                <span className="rating__count">· {listing.reviewCount}</span>
+              )}
+            </span>
+          </div>
         )}
       </div>
     </Link>
