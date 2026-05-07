@@ -197,6 +197,30 @@ El security-reviewer detectó vulnerabilidades que se resuelven antes de producc
 
 ---
 
+---
+
+## Decisiones técnicas — Fase 4D
+
+**D28. `User.withProfile()` — método inmutable de actualización de perfil**
+Se agregó `withProfile(name: string, rut?: RUT): User` a la entidad `User`, siguiendo el patrón ya existente de `withRole()`. El use case `UpdateUserProfileUseCase` usa este método para producir un nuevo aggregate con nombre y RUT actualizados antes de persistir. Alternativa descartada: que el use case reconstruya el User con `User.create()` directamente — posible, pero más verboso y acopla el use case a la estructura interna del User.
+
+**D29. `GetUserFeedUseCase` — dos use cases en la feed page**
+La feed page llama a `getGetUserFeedUseCase()` y `getGetUserDashboardUseCase()` en paralelo, luego construye un `Map<listingId, Listing>` en la página para enricher los ítems con nombre y slug del listing. Esta lógica de join vive en la presentation layer (violación MEDIUM detectada por architecture-guardian). Se documenta como deuda técnica. Solución correcta: crear un `GetUserFeedWithListingsUseCase` que devuelva un `FeedItemView[]` ya enriquecido con `listingName` y `listingSlug`. Se difiere porque el MVP funciona correctamente — los feed items siempre corresponden a listings favoriteados por el usuario.
+
+**D30. `InvalidRUTError` — RUT no se incluye en el mensaje público**
+La clase `InvalidRUTError` originalmente incluía el valor del RUT en el mensaje (`RUT inválido: "12.345.678-9"`). El security-reviewer identificó que el RUT es un dato personal que no debe serializarse en respuestas HTTP ni en logs de monitoreo. Se eliminó el valor del mensaje; el constructor recibe `_raw` pero no lo expone. El mensaje público es genérico: "El RUT ingresado no es válido. Formato esperado: 12.345.678-9".
+
+**D31. Validación de RUT en presentation antes del VO**
+Se agregó un prefiltro Zod en `perfil/actions.ts` para el campo RUT: regex `/^[\d.\-kK]+$/`, `min(8)`, `max(12)`, y transformación de string vacío a `undefined`. Esto rechaza caracteres inválidos en presentation antes de que lleguen al VO del dominio, siguiendo la regla de CLAUDE.md de validar en presentation.
+
+**D32. Deuda técnica — `callbackUrl` fijo en layout de /mi-cuenta**
+El layout de `/mi-cuenta` redirige a `/login?callbackUrl=/mi-cuenta/favoritos` independientemente de la sub-ruta visitada. Un usuario que accede a `/mi-cuenta/perfil` sin sesión es redirigido tras login a `/mi-cuenta/favoritos` en vez de `/mi-cuenta/perfil`. No es una vulnerabilidad de seguridad, pero sí una fricción de UX. Solución correcta: leer la URL actual con `headers()` y `x-invoke-path` o pasar el callbackUrl dinámicamente. Se difiere por ser UX menor.
+
+**D33. Deuda técnica — `RemoveFavoriteUseCase` sin verificación de existencia previa**
+El use case llama a `removeFavorite()` sin verificar primero `isFavorite()`. El riesgo de IDOR es nulo (el `userId` viene de la sesión), pero el `DELETE` silencioso puede enmascarar comportamiento inesperado. Solución: agregar `isFavorite` check y lanzar `FavoriteNotFoundError` si no existe. Se difiere como LOW severity.
+
+---
+
 ## Historial de actualizaciones
 
 | Fecha | Cambio |
@@ -208,3 +232,4 @@ El security-reviewer detectó vulnerabilidades que se resuelven antes de producc
 | 2026-05-06 | Fase 3 completada: decisiones técnicas D15-D22 documentadas |
 | 2026-05-07 | Q3 y Q10 respondidas antes de Fase 4 |
 | 2026-05-07 | Sub-fases 4A+4B+4C completadas: decisiones D23-D27 documentadas |
+| 2026-05-07 | Sub-fase 4D completada: decisiones D28-D33 documentadas |
