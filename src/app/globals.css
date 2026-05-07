@@ -284,6 +284,60 @@ a { color: inherit; text-decoration: none; }
   display: inline-block;
 }
 
+/* ---------- Hero search ---------- */
+.hero-search {
+  display: flex; align-items: center; gap: 0;
+  background: var(--bg-raised);
+  border: 1px solid var(--surface-line);
+  border-radius: var(--r-pill);
+  padding: 6px;
+  width: 100%;
+}
+.hero-search__field {
+  flex: 1;
+  display: flex; align-items: center; gap: var(--s-3);
+  padding: 0 var(--s-5);
+  position: relative;
+}
+.hero-search__field + .hero-search__field {
+  border-left: 1px solid var(--surface-line-soft);
+}
+.hero-search__field input,
+.hero-search__field select {
+  height: 44px;
+  padding-top: 14px;
+  background: transparent;
+  border: 0; outline: 0;
+  width: 100%;
+  font-size: var(--t-body);
+}
+.hero-search__field label {
+  position: absolute;
+  top: 6px; left: 20px;
+  font-family: var(--font-mono);
+  font-size: var(--t-mono-sm);
+  letter-spacing: var(--tr-wider);
+  text-transform: uppercase;
+  color: var(--fg-subtle);
+  pointer-events: none;
+}
+.hero-search__btn {
+  height: 56px; width: 56px;
+  border-radius: var(--r-pill);
+  background: var(--ink-100);
+  color: var(--paper-00);
+  display: inline-flex; align-items: center; justify-content: center;
+  transition: background var(--d-fast);
+  flex: 0 0 auto;
+}
+.hero-search__btn:hover { background: var(--accent-70); }
+
+/* ---------- Listing card hover ---------- */
+.listing-card:hover {
+  box-shadow: var(--shadow-3);
+  transform: translateY(-2px);
+}
+
 /* ---------- Display type helpers ---------- */
 .display {
   font-family: var(--font-display);
