@@ -28,6 +28,9 @@ import { ResolveListingClaimUseCase } from '@application/listing/ResolveListingC
 import { GetPendingClaimsUseCase } from '@application/listing/GetPendingClaimsUseCase'
 import { GetPendingTagsUseCase } from '@application/listing/GetPendingTagsUseCase'
 import { ResolveListingTagUseCase } from '@application/listing/ResolveListingTagUseCase'
+import { GetListingWithReviewsUseCase } from '@application/listing/GetListingWithReviewsUseCase'
+import { GetOwnedListingUseCase } from '@application/listing/GetOwnedListingUseCase'
+import { GetListingSubscriptionsUseCase } from '@application/subscription/GetListingSubscriptionsUseCase'
 
 export const container = {
   // ── Auth ──────────────────────────────────────────────────────────────
@@ -81,8 +84,16 @@ export const container = {
     )
   },
 
-  getReviewRepository() {
-    return new PrismaReviewRepository(prisma)
+  getGetListingWithReviewsUseCase() {
+    return new GetListingWithReviewsUseCase(
+      new PrismaListingRepository(prisma),
+      new PrismaReviewRepository(prisma),
+      new PostgresAnalyticsService(prisma),
+    )
+  },
+
+  getGetOwnedListingUseCase() {
+    return new GetOwnedListingUseCase(new PrismaListingRepository(prisma))
   },
 
   // ── Business dashboard ────────────────────────────────────────────────
@@ -160,6 +171,13 @@ export const container = {
     )
   },
 
+  getGetListingSubscriptionsUseCase() {
+    return new GetListingSubscriptionsUseCase(
+      new PrismaListingRepository(prisma),
+      new PrismaSubscriptionRepository(prisma),
+    )
+  },
+
   getHandlePaymentWebhookUseCase() {
     return new HandlePaymentWebhookUseCase(
       new FlowPaymentGateway(),
@@ -168,14 +186,6 @@ export const container = {
       new PrismaUserRepository(prisma),
       new ResendEmailService(),
     )
-  },
-
-  getListingRepository() {
-    return new PrismaListingRepository(prisma)
-  },
-
-  getSubscriptionRepository() {
-    return new PrismaSubscriptionRepository(prisma)
   },
 
   async getCategories() {

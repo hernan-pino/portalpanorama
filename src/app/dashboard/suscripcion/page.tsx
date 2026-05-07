@@ -11,11 +11,11 @@ export default async function SuscripcionPage() {
   const session = await auth()
   if (!session?.user?.id) redirect('/login')
 
-  const { listings } = await container
-    .getGetBusinessDashboardUseCase()
+  const subscriptionsData = await container
+    .getGetListingSubscriptionsUseCase()
     .execute(session.user.id)
 
-  if (listings.length === 0) {
+  if (subscriptionsData.length === 0) {
     return (
       <div style={{ padding: 'var(--s-10) var(--s-8)' }}>
         <h1 className="display" style={{ fontSize: 'var(--t-h1)', marginBottom: 'var(--s-4)' }}>
@@ -27,14 +27,6 @@ export default async function SuscripcionPage() {
       </div>
     )
   }
-
-  const subRepo = container.getSubscriptionRepository()
-  const subscriptionsData = await Promise.all(
-    listings.map(async ({ listing }) => {
-      const subscription = await subRepo.findByListingId(listing.id)
-      return { listing, subscription }
-    }),
-  )
 
   return (
     <div style={{ padding: 'var(--s-10) var(--s-8)', maxWidth: '640px' }}>

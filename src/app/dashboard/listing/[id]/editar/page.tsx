@@ -17,8 +17,8 @@ export default async function EditarListingPage({ params }: PageProps) {
   const session = await auth()
   if (!session?.user?.id) redirect('/login')
 
-  const listing = await container.getListingRepository().findById(id)
-  if (!listing || listing.ownerId !== session.user.id) notFound()
+  const listing = await container.getGetOwnedListingUseCase().execute({ listingId: id, userId: session.user.id })
+  if (!listing) notFound()
 
   const categories = await container.getCategories()
 

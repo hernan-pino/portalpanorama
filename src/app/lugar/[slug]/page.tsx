@@ -22,18 +22,11 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 export default async function LugarPage({ params }: PageProps) {
   const { slug } = await params
 
-  const [listingResult, reviewRepo] = await Promise.all([
-    container.getGetListingBySlugUseCase().execute({ slug, trackView: true }),
-    Promise.resolve(container.getReviewRepository()),
-  ])
+  const result = await container.getGetListingWithReviewsUseCase().execute({ slug, trackView: true })
 
-  if (!listingResult) notFound()
+  if (!result) notFound()
 
-  const { listing } = listingResult
-  const [reviews, stats] = await Promise.all([
-    reviewRepo.findByListingId(listing.id),
-    reviewRepo.getStats(listing.id),
-  ])
+  const { listing, reviews, stats } = result
 
   const coverImage = listing.images[0]
 
