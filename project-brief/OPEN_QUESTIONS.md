@@ -105,6 +105,41 @@ Decisión confirmada de ARCHITECTURE.md: la validación de rango (1-10) pertenec
 
 ---
 
+## Decisiones técnicas — Fase 2
+
+**D8. PasswordHasher como port (no hash en presentation)**
+El use case `RegisterUserUseCase` recibe la contraseña en texto plano y usa un `PasswordHasher` port para hashearla. La implementación bcrypt vive en `infrastructure/`. Alternativa descartada: que la server action hashee antes de llamar al use case — eso acopla la lógica de hashing a la capa de presentación e impide testear el use case unitariamente.
+
+**D9. AnalyticsService como port propio (contadores en BD, no GA)**
+Se eligió un `AnalyticsService` port simple con contadores en Postgres sobre Google Analytics. Razón: la API de GA es compleja de consultar programáticamente desde el dashboard. La implementación `PostgresAnalyticsService` (Fase 3) usará una tabla `listing_analytics` con columnas `view_count` y `click_count`. Migrable a Plausible/GA después sin tocar use cases.
+
+**D10. Flujo de suscripción: sin registro hasta webhook**
+`CreateSubscriptionUseCase` solo llama a Flow y devuelve la `paymentUrl` — no escribe en BD. El registro de `Subscription` ocurre en `HandlePaymentWebhookUseCase` al recibir `subscription.activated`. Esto evita el need de un estado PENDING y garantiza que en BD solo existen suscripciones confirmadas. Trade-off: si el webhook falla, el usuario pagó pero el sistema no lo refleja (Flow tiene reintentos automáticos; el `UNIQUE constraint` en `flowSubId` garantiza idempotencia).
+
+**D11. UpgradeListingToPremiumUseCase es admin-only**
+El security-reviewer detectó que un dueño podría llamar directamente a este use case y obtener PREMIUM sin pagar. Se rediseñó como override manual para admins (`adminId` requerido, se verifica `user.isAdmin()`). El flujo normal de upgrade va por el webhook de pago. Uso previsto: períodos promocionales, compensaciones, testing en producción.
+
+**D12. Idempotencia en HandlePaymentWebhookUseCase**
+Flow puede re-entregar el mismo webhook por timeouts de red. `handleActivated` verifica primero si ya existe una `Subscription` con ese `flowSubId` antes de crear una nueva. Si existe, retorna sin efecto. Esto previene duplicación de suscripciones y doble-upgrade del listing.
+
+**D13. timestampHeader explícito en PaymentGateway port**
+El port `PaymentGateway.parseWebhookEvent(payload, signature, timestampHeader)` exige que la implementación reciba el timestamp del header de Flow por separado. Esto hace explícito el contrato: cualquier implementación que ignore `timestampHeader` genera advertencia de parámetro no utilizado y es visible en code review. La implementación `FlowPaymentGateway` (Fase 3) debe validar que el timestamp no sea anterior a 5 minutos para prevenir replay attacks.
+
+**D14. TOCTOU en registro, reviews y suscripciones — diferido a Fase 3**
+El security-reviewer identificó condiciones de carrera en:
+- `RegisterUserUseCase`: dos requests simultáneos con el mismo email pueden crear dos cuentas.
+- `CreateReviewUseCase`: doble-submit puede crear dos reviews del mismo usuario.
+- `CreateSubscriptionUseCase`: doble-click puede disparar dos pagos en Flow.
+
+Estos se resuelven en Fase 3 con `UNIQUE constraint` en Postgres y captura del error de violación en los repositorios Prisma:
+- `users.email` → `UNIQUE`
+- `reviews.(listingId, userId)` → `UNIQUE` (ya está en ARCHITECTURE.md schema)
+- `subscriptions.listingId` → `UNIQUE` (solo puede haber una suscripción activa por listing)
+
+El check en el use case permanece como early-return para UX, pero no como única barrera.
+
+---
+
 ## Historial de actualizaciones
 
 | Fecha | Cambio |
@@ -112,3 +147,4 @@ Decisión confirmada de ARCHITECTURE.md: la validación de rango (1-10) pertenec
 | 2026-05-05 | Creación inicial con preguntas detectadas en Fase 0 |
 | 2026-05-05 | Ronda de preguntas pre-Fase 1: Q4-Q8, Q11-Q16, Q17-Q19 respondidas |
 | 2026-05-06 | Fase 1 completada: decisiones técnicas D1-D7 documentadas |
+| 2026-05-06 | Fase 2 completada: decisiones técnicas D8-D14 documentadas |

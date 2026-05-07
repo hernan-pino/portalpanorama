@@ -1,5 +1,4 @@
 import { createId } from '@paralleldrive/cuid2'
-import { Listing, ListingProps } from '@domain/listing/Listing'
 import { ListingNotFoundError } from '@domain/listing/errors/ListingNotFoundError'
 import { Money } from '@domain/shared/Money'
 import { Subscription } from '@domain/subscription/Subscription'
@@ -19,12 +18,18 @@ export class HandlePaymentWebhookUseCase {
     private readonly emailService: EmailService,
   ) {}
 
-  async execute(payload: unknown, signature: string): Promise<void> {
-    const event = await this.paymentGateway.parseWebhookEvent(payload, signature)
+  async execute(payload: unknown, signature: string, timestampHeader: string): Promise<void> {
+    const event = await this.paymentGateway.parseWebhookEvent(payload, signature, timestampHeader)
 
     switch (event.type) {
       case 'subscription.activated':
-        await this.handleActivated(event.listingId, event.flowSubId, event.flowPlanId, event.pricePerMonth, event.currentPeriodEnd)
+        await this.handleActivated(
+          event.listingId,
+          event.flowSubId,
+          event.flowPlanId,
+          event.pricePerMonth,
+          event.currentPeriodEnd,
+        )
         break
       case 'payment.failed':
         await this.handlePaymentFailed(event.flowSubId)
@@ -42,6 +47,10 @@ export class HandlePaymentWebhookUseCase {
     pricePerMonth: Money,
     currentPeriodEnd?: Date,
   ): Promise<void> {
+    // Idempotencia: Flow puede re-entregar el webhook por timeout. Si ya existe, ignorar.
+    const existing = await this.subscriptionRepo.findByFlowSubId(flowSubId)
+    if (existing) return
+
     const listing = await this.listingRepo.findById(listingId)
     if (!listing) throw new ListingNotFoundError(listingId)
 

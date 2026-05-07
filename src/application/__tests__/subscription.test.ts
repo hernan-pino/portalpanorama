@@ -102,7 +102,7 @@ describe('HandlePaymentWebhookUseCase', () => {
       mockEmailService(),
     )
 
-    await useCase.execute({ rawBody: '{}' }, 'signature')
+    await useCase.execute({ rawBody: '{}' }, 'signature', '1716000000')
 
     expect(subRepo.save).toHaveBeenCalled()
     const savedSub = (subRepo.save as ReturnType<typeof vi.fn>).mock.calls[0][0]
@@ -137,7 +137,7 @@ describe('HandlePaymentWebhookUseCase', () => {
       email,
     )
 
-    await useCase.execute({ rawBody: '{}' }, 'signature')
+    await useCase.execute({ rawBody: '{}' }, 'signature', '1716000000')
 
     const savedSub = (subRepo.save as ReturnType<typeof vi.fn>).mock.calls[0][0]
     expect(savedSub.status).toBe(SubscriptionStatus.PAST_DUE)
