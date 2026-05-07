@@ -202,7 +202,7 @@ Reconstruir cada componente con React + Tailwind respetando los tokens.
 Fase 0 — Documentos fundacionales          ✅ COMPLETADA
 Fase 1 — Domain layer (entidades + VOs)    ✅ COMPLETADA
 Fase 2 — Application layer (use cases)     ✅ COMPLETADA
-Fase 3 — Infrastructure (Prisma, adapters) ⬜ PENDIENTE
+Fase 3 — Infrastructure (Prisma, adapters) ✅ COMPLETADA
 Fase 4 — Presentation (UI + routes)        ⬜ PENDIENTE
 Fase 5 — Composition root (wire-up DI)     ⬜ PENDIENTE
 ```
