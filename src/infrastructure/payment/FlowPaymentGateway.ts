@@ -1,4 +1,4 @@
-import { createHash, createHmac } from 'crypto'
+import { createHash, createHmac, timingSafeEqual } from 'crypto'
 import { Money } from '@domain/shared/Money'
 import {
   PaymentGateway,
@@ -73,18 +73,24 @@ export class FlowPaymentGateway implements PaymentGateway {
     timestampHeader: string,
   ): Promise<WebhookEvent> {
     // D13: validar que el webhook no es un replay (timestamp < 5 min)
+    // Math.abs previene que timestamps futuros burlen la ventana
     const eventTimestamp = parseInt(timestampHeader, 10)
     const nowSeconds = Math.floor(Date.now() / 1000)
 
-    if (isNaN(eventTimestamp) || nowSeconds - eventTimestamp > MAX_WEBHOOK_AGE_SECONDS) {
+    if (isNaN(eventTimestamp) || Math.abs(nowSeconds - eventTimestamp) > MAX_WEBHOOK_AGE_SECONDS) {
       throw new Error('Webhook rechazado: timestamp expirado o inválido')
     }
 
-    // Verificar firma HMAC-SHA256
+    // Verificar firma HMAC-SHA256 con comparación en tiempo constante (anti timing attack)
     const data = typeof payload === 'string' ? payload : JSON.stringify(payload)
     const expectedSig = createHmac('sha256', this.secretKey).update(data).digest('hex')
+    const expectedBuf = Buffer.from(expectedSig, 'hex')
+    const actualBuf = Buffer.from(signature.padEnd(expectedSig.length, '\0'), 'hex')
 
-    if (expectedSig !== signature) {
+    if (
+      expectedBuf.length !== actualBuf.length ||
+      !timingSafeEqual(expectedBuf, actualBuf)
+    ) {
       throw new Error('Webhook rechazado: firma inválida')
     }
 

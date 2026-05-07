@@ -1,6 +1,15 @@
 import { Resend } from 'resend'
 import { ClaimReceivedParams, EmailService } from '@application/ports/EmailService'
 
+function escapeHtml(s: string): string {
+  return s
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#x27;')
+}
+
 export class ResendEmailService implements EmailService {
   private readonly resend: Resend
   private readonly from: string
@@ -17,7 +26,7 @@ export class ResendEmailService implements EmailService {
       from: this.from,
       to,
       subject: '¡Bienvenido a Portal Panorama!',
-      html: `<p>Hola ${name}, gracias por registrarte en Portal Panorama.</p>`,
+      html: `<p>Hola ${escapeHtml(name)}, gracias por registrarte en Portal Panorama.</p>`,
     })
   }
 
@@ -25,11 +34,11 @@ export class ResendEmailService implements EmailService {
     await this.resend.emails.send({
       from: this.from,
       to: adminEmail,
-      subject: `Claim pendiente: ${params.listingName}`,
+      subject: `Claim pendiente: ${escapeHtml(params.listingName)}`,
       html: `
-        <p><strong>${params.claimantName}</strong> solicita reclamar el listing <strong>${params.listingName}</strong>.</p>
-        ${params.message ? `<p>Mensaje: ${params.message}</p>` : ''}
-        <p>Listing ID: ${params.listingId}</p>
+        <p><strong>${escapeHtml(params.claimantName)}</strong> solicita reclamar el listing <strong>${escapeHtml(params.listingName)}</strong>.</p>
+        ${params.message ? `<p>Mensaje: ${escapeHtml(params.message)}</p>` : ''}
+        <p>Listing ID: ${escapeHtml(params.listingId)}</p>
       `,
     })
   }
@@ -38,8 +47,8 @@ export class ResendEmailService implements EmailService {
     await this.resend.emails.send({
       from: this.from,
       to,
-      subject: `Tu solicitud para "${listingName}" fue aprobada`,
-      html: `<p>¡Felicitaciones! Tu solicitud de reclamar <strong>${listingName}</strong> fue aprobada. Ya puedes administrar tu listing.</p>`,
+      subject: `Tu solicitud para "${escapeHtml(listingName)}" fue aprobada`,
+      html: `<p>¡Felicitaciones! Tu solicitud de reclamar <strong>${escapeHtml(listingName)}</strong> fue aprobada. Ya puedes administrar tu listing.</p>`,
     })
   }
 
@@ -47,10 +56,10 @@ export class ResendEmailService implements EmailService {
     await this.resend.emails.send({
       from: this.from,
       to,
-      subject: `Tu solicitud para "${listingName}" fue rechazada`,
+      subject: `Tu solicitud para "${escapeHtml(listingName)}" fue rechazada`,
       html: `
-        <p>Tu solicitud para reclamar <strong>${listingName}</strong> fue rechazada.</p>
-        ${reviewNote ? `<p>Motivo: ${reviewNote}</p>` : ''}
+        <p>Tu solicitud para reclamar <strong>${escapeHtml(listingName)}</strong> fue rechazada.</p>
+        ${reviewNote ? `<p>Motivo: ${escapeHtml(reviewNote)}</p>` : ''}
       `,
     })
   }
@@ -59,8 +68,8 @@ export class ResendEmailService implements EmailService {
     await this.resend.emails.send({
       from: this.from,
       to,
-      subject: `Pago fallido para "${listingName}"`,
-      html: `<p>El pago de tu suscripción Premium para <strong>${listingName}</strong> no pudo procesarse. Por favor actualiza tu método de pago.</p>`,
+      subject: `Pago fallido para "${escapeHtml(listingName)}"`,
+      html: `<p>El pago de tu suscripción Premium para <strong>${escapeHtml(listingName)}</strong> no pudo procesarse. Por favor actualiza tu método de pago.</p>`,
     })
   }
 
@@ -68,8 +77,8 @@ export class ResendEmailService implements EmailService {
     await this.resend.emails.send({
       from: this.from,
       to,
-      subject: `Suscripción cancelada para "${listingName}"`,
-      html: `<p>Tu suscripción Premium para <strong>${listingName}</strong> ha sido cancelada. Tu listing vuelve al plan Free.</p>`,
+      subject: `Suscripción cancelada para "${escapeHtml(listingName)}"`,
+      html: `<p>Tu suscripción Premium para <strong>${escapeHtml(listingName)}</strong> ha sido cancelada. Tu listing vuelve al plan Free.</p>`,
     })
   }
 }

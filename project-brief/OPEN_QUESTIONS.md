@@ -140,6 +140,36 @@ El check en el use case permanece como early-return para UX, pero no como única
 
 ---
 
+---
+
+## Decisiones técnicas — Fase 3
+
+**D15. Prisma 7: datasource URL en `prisma.config.ts`, no en schema.prisma**
+Prisma 7 eliminó la propiedad `url` del bloque `datasource` en el schema. La URL de conexión se configura ahora en `prisma.config.ts` (raíz del proyecto) usando `defineConfig({ datasource: { url } })`. El cliente Prisma se inicializa con `@prisma/adapter-pg` en `src/lib/db.ts`. Esto desacopla el schema del entorno y alinea con la arquitectura de Prisma 7.
+
+**D16. Mapper `toListingDomain` exportado como función libre**
+El mapper `toListingDomain` se exporta como función libre desde `PrismaListingRepository.ts` en lugar de vivir en un módulo separado. `PrismaUserRepository` lo importa para reusar el mismo mapeado al cargar listings favoritos. Decisión pragmática: sin duplicación, sin sobre-abstracción. Si hubiera un tercer consumidor, se crearía un archivo `mappers/listing.mapper.ts`.
+
+**D17. Imágenes y tags de Listing: reemplazo total en transacción**
+El método `save(listing)` elimina y recrea todas las imágenes y tags del listing en cada persistencia, dentro de una transacción. Alternativa descartada: diff incremental (complejo, propenso a errores). Dado que el dominio maneja la colección como parte del agregado (no como entidades con ciclo de vida independiente), el reemplazo total es correcto y simple. No hay riesgo de pérdida de datos porque el estado canónico vive en el objeto de dominio en memoria.
+
+**D18. `flowSubId` y `currentPeriodEnd` como opcionales en el schema**
+Según D10, las suscripciones solo se persisten después de recibir el webhook `subscription.activated`. Pero el dominio define `flowSubId?: string` y `currentPeriodEnd?: Date` como opcionales para reflejar el estado del agregado antes de la activación. Se hacen opcionales en el schema para evitar sentinels (`''`, `new Date(0)`). En BD, nunca deberían ser `NULL` (el use case del webhook siempre los provee al hacer `activate()`), pero el constraint es en el dominio, no en la BD.
+
+**D19. Idempotencia de webhooks `payment.failed` y `subscription.cancelled` — diferida a Fase 3b o Fase 5**
+El security-reviewer detectó que solo `subscription.activated` tiene guard de idempotencia (via `findByFlowSubId`). Los eventos `payment.failed` y `subscription.cancelled` pueden procesarse múltiples veces si Flow re-entrega el webhook dentro de la ventana de 5 minutos. Solución correcta: tabla `WebhookLog` con UNIQUE en `flowEventId` + verificación antes de procesar. Se difiere porque requiere: (a) un nuevo modelo en el schema, (b) un nuevo port `WebhookLogRepository`, (c) adaptar `HandlePaymentWebhookUseCase`. Se documenta como deuda técnica para implementar antes de producción.
+
+**D20. Comparación de firma HMAC con `timingSafeEqual`**
+El security-reviewer detectó que la comparación `===` en la firma del webhook es vulnerable a timing attacks. Se reemplazó por `timingSafeEqual(Buffer, Buffer)` de Node.js `crypto`. También se validó que los timestamps futuros son rechazados usando `Math.abs()` en lugar de una resta directa.
+
+**D21. Escaping HTML en emails de Resend**
+Todos los valores interpolados en los templates HTML de `ResendEmailService` se escapan con una función `escapeHtml()` local (sin dependencia externa). Previene XSS en clientes de email con soporte HTML (Gmail web, Outlook web). El escape cubre: `&`, `<`, `>`, `"`, `'`.
+
+**D22. MIME allowlist y tamaño máximo en UploadThing**
+`UploadThingStorageService.upload()` valida que el MIME type sea `image/jpeg | png | webp | gif` y que el archivo no supere 5 MB antes de llamar al SDK. El nombre del archivo se sanitiza (`/[^a-zA-Z0-9._-]/g → '_'`). La key extraída para `delete()` se valida contra `/^[\w-]+$/` para prevenir manipulación de rutas.
+
+---
+
 ## Historial de actualizaciones
 
 | Fecha | Cambio |
@@ -148,3 +178,4 @@ El check en el use case permanece como early-return para UX, pero no como única
 | 2026-05-05 | Ronda de preguntas pre-Fase 1: Q4-Q8, Q11-Q16, Q17-Q19 respondidas |
 | 2026-05-06 | Fase 1 completada: decisiones técnicas D1-D7 documentadas |
 | 2026-05-06 | Fase 2 completada: decisiones técnicas D8-D14 documentadas |
+| 2026-05-06 | Fase 3 completada: decisiones técnicas D15-D22 documentadas |
