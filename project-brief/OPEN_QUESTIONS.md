@@ -252,6 +252,27 @@ El guard de idempotencia de `handleActivated` resuelve reintentos secuenciales p
 
 ---
 
+## Decisiones técnicas — Fase 5
+
+**D43. Use cases dedicados en lugar de repositorios expuestos en container**
+Al iniciar Fase 5 se detectaron tres "escape hatches" en `container.ts`: `getReviewRepository()`, `getListingRepository()` y `getSubscriptionRepository()`, usados directamente en pages. Se crearon tres use cases para eliminarlos:
+- `GetListingWithReviewsUseCase` — unifica la carga de listing + reviews + stats en una sola operación
+- `GetOwnedListingUseCase` — carga un listing verificando ownership; retorna `null` para "no encontrado" y "no autorizado" con el mismo código (previene enumeración de IDs)
+- `GetListingSubscriptionsUseCase` — carga listings de un usuario con su suscripción asociada en paralelo
+
+Con estos cambios, ningún repositorio queda expuesto fuera del composition root. El container es el único punto del sistema donde se instancian adaptadores de infraestructura.
+
+**D44. `src/lib/config.ts` — variables de entorno centralizadas con fallo explícito en producción**
+Se creó `src/lib/config.ts` para centralizar la lectura de `FLOW_PLAN_ID` y `NEXT_PUBLIC_BASE_URL`, eliminando `process.env` directo en `app/`. El helper `requireEnv()` permite fallbacks solo en entornos no-producción (`NODE_ENV !== 'production'`); en producción lanza excepción en startup si la variable no está definida. Esto garantiza que un deploy incompleto falle rápido en lugar de operar silenciosamente con valores placeholder.
+
+**D45. Validación Zod en `startSubscriptionAction` + captura explícita de errores de autorización**
+El security-reviewer detectó que `listingId` llegaba del cliente sin validación previa. Se agregó `z.string().min(1)` antes de pasarlo al use case. Adicionalmente, `ListingNotFoundError` y `UnauthorizedListingAccessError` se capturan explícitamente y se devuelven con el mismo mensaje genérico "No autorizado." para prevenir enumeración de listings.
+
+**D46. Deuda técnica — replay de webhooks dentro de ventana de 5 minutos**
+El security-reviewer confirmó que la protección anti-replay basada en timestamp (±300s) no es suficiente si Flow reintenta un webhook fallido dentro de esa ventana. La solución correcta es una tabla `WebhookLog` con `(flowEventId, eventType)` únicos para rechazar duplicados a nivel de BD antes de ejecutar lógica de negocio. Se difiere por ser la misma solución de D19, que ya estaba documentada y priorizada para antes de producción.
+
+---
+
 ## Historial de actualizaciones
 
 | Fecha | Cambio |
@@ -265,3 +286,4 @@ El guard de idempotencia de `handleActivated` resuelve reintentos secuenciales p
 | 2026-05-07 | Sub-fases 4A+4B+4C completadas: decisiones D23-D27 documentadas |
 | 2026-05-07 | Sub-fase 4D completada: decisiones D28-D33 documentadas |
 | 2026-05-07 | Sub-fase 4E completada: decisiones D34-D42 documentadas |
+| 2026-05-07 | Fase 5 completada: decisiones D43-D46 documentadas |
