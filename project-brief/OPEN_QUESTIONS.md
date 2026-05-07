@@ -170,6 +170,33 @@ Todos los valores interpolados en los templates HTML de `ResendEmailService` se 
 
 ---
 
+## Decisiones técnicas — Fase 4 (4A + 4B + 4C)
+
+**D23. Serialización de entidades de dominio en Edit Listing**
+Las entidades de dominio (clase `Listing` con métodos) no son serializables a través del boundary server→client. La página de editar extrae un plain object `listingData` del aggregate antes de pasarlo al form client component. Esto es intencional: el form solo necesita los datos para pre-popular inputs, no los invariantes del dominio.
+
+**D24. SearchBar envuelto en `<Suspense>` por `useSearchParams`**
+`SearchBar` usa `useSearchParams()` (hook de React), lo que fuerza a que el componente sea un Client Component. En Next.js 15, cualquier componente que use `useSearchParams` sin `<Suspense>` hace que toda la página haga SSR con bailout. Se separó en `SearchBarInner` + wrapper con `<Suspense fallback>` para confinarlo.
+
+**D25. `signOut` de Auth.js v5 desde Server Component**
+Los Server Components no soportan event handlers. La solución correcta para logout es un `<form action={serverAction}>` donde `serverAction` llama a `signOut({ redirectTo: '/' })`. Se evitó el patrón incorrecto de POST directo a `/api/auth/signout`.
+
+**D26. Deuda técnica — violaciones de arquitectura documentadas**
+El architecture-guardian detectó violaciones en la sub-fase 4C que se resuelven antes de pasar a producción:
+- **HIGH**: `src/app/lugar/[slug]/page.tsx` accede a `reviewRepository` directamente — mover a un use case dedicado (`GetListingWithReviewsUseCase` o extender `GetListingBySlugUseCase`).
+- **HIGH**: `src/app/dashboard/suscripcion/page.tsx` accede a `subscriptionRepository` directamente — mover a un `GetSubscriptionStatusUseCase` o extender `GetBusinessDashboardUseCase`.
+- **MEDIUM**: `src/app/dashboard/suscripcion/actions.ts` lee `process.env.FLOW_PLAN_ID` — mover a `src/lib/config.ts` o a `infrastructure/`.
+
+**D27. Deuda técnica — vulnerabilidades de seguridad documentadas**
+El security-reviewer detectó vulnerabilidades que se resuelven antes de producción:
+- **auth.ts**: falta `redirect` callback para prevenir open redirect via `callbackUrl` — validar contra lista de dominios permitidos.
+- **FlowPaymentGateway.ts**: `padEnd` en HMAC y falta validación de formato hex — reemplazar con regex `/^[a-f0-9]{64}$/i`.
+- **HandlePaymentWebhookUseCase.ts**: `payment.failed` y `subscription.cancelled` sin guards de idempotencia — implementar tabla `WebhookLog` (ver D19).
+- **actions.ts (login, registro, suscripcion)**: sin rate limiting — agregar Upstash Ratelimit o similar.
+- **PostgresFTSSearchService.ts**: sin cap en `limit` — agregar `Math.min(params.limit ?? 20, 100)`.
+
+---
+
 ## Historial de actualizaciones
 
 | Fecha | Cambio |
@@ -180,3 +207,4 @@ Todos los valores interpolados en los templates HTML de `ResendEmailService` se 
 | 2026-05-06 | Fase 2 completada: decisiones técnicas D8-D14 documentadas |
 | 2026-05-06 | Fase 3 completada: decisiones técnicas D15-D22 documentadas |
 | 2026-05-07 | Q3 y Q10 respondidas antes de Fase 4 |
+| 2026-05-07 | Sub-fases 4A+4B+4C completadas: decisiones D23-D27 documentadas |
