@@ -50,4 +50,15 @@ export class User {
       createdAt: this.createdAt,
     })
   }
+
+  withProfile(name: string, rut?: RUT): User {
+    return new User({
+      id: this.id,
+      email: this.email,
+      name,
+      role: this.role,
+      rut,
+      createdAt: this.createdAt,
+    })
+  }
 }

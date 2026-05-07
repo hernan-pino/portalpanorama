@@ -10,6 +10,11 @@ import { PostgresFTSSearchService } from '@infrastructure/search/PostgresFTSSear
 import { PostgresAnalyticsService } from '@infrastructure/db/PostgresAnalyticsService'
 import { FlowPaymentGateway } from '@infrastructure/payment/FlowPaymentGateway'
 import { RegisterUserUseCase } from '@application/user/RegisterUserUseCase'
+import { GetUserDashboardUseCase } from '@application/user/GetUserDashboardUseCase'
+import { GetUserFeedUseCase } from '@application/user/GetUserFeedUseCase'
+import { SaveFavoriteUseCase } from '@application/user/SaveFavoriteUseCase'
+import { RemoveFavoriteUseCase } from '@application/user/RemoveFavoriteUseCase'
+import { UpdateUserProfileUseCase } from '@application/user/UpdateUserProfileUseCase'
 import { SearchListingsUseCase } from '@application/listing/SearchListingsUseCase'
 import { GetListingBySlugUseCase } from '@application/listing/GetListingBySlugUseCase'
 import { GetBusinessDashboardUseCase } from '@application/listing/GetBusinessDashboardUseCase'
@@ -26,6 +31,36 @@ export const container = {
       new BcryptPasswordHasher(),
       new ResendEmailService(),
     )
+  },
+
+  // ── User dashboard ────────────────────────────────────────────────────
+  getGetUserDashboardUseCase() {
+    return new GetUserDashboardUseCase(
+      new PrismaUserRepository(prisma),
+      new PrismaListingRepository(prisma),
+    )
+  },
+
+  getGetUserFeedUseCase() {
+    return new GetUserFeedUseCase(
+      new PrismaUserRepository(prisma),
+      new PrismaFeedRepository(prisma),
+    )
+  },
+
+  getSaveFavoriteUseCase() {
+    return new SaveFavoriteUseCase(
+      new PrismaUserRepository(prisma),
+      new PrismaListingRepository(prisma),
+    )
+  },
+
+  getRemoveFavoriteUseCase() {
+    return new RemoveFavoriteUseCase(new PrismaUserRepository(prisma))
+  },
+
+  getUpdateUserProfileUseCase() {
+    return new UpdateUserProfileUseCase(new PrismaUserRepository(prisma))
   },
 
   // ── Public ────────────────────────────────────────────────────────────
