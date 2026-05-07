@@ -22,6 +22,12 @@ import { CreateListingUseCase } from '@application/listing/CreateListingUseCase'
 import { UpdateListingUseCase } from '@application/listing/UpdateListingUseCase'
 import { PublishListingUseCase } from '@application/listing/PublishListingUseCase'
 import { CreateSubscriptionUseCase } from '@application/subscription/CreateSubscriptionUseCase'
+import { HandlePaymentWebhookUseCase } from '@application/subscription/HandlePaymentWebhookUseCase'
+import { ClaimListingUseCase } from '@application/listing/ClaimListingUseCase'
+import { ResolveListingClaimUseCase } from '@application/listing/ResolveListingClaimUseCase'
+import { GetPendingClaimsUseCase } from '@application/listing/GetPendingClaimsUseCase'
+import { GetPendingTagsUseCase } from '@application/listing/GetPendingTagsUseCase'
+import { ResolveListingTagUseCase } from '@application/listing/ResolveListingTagUseCase'
 
 export const container = {
   // ── Auth ──────────────────────────────────────────────────────────────
@@ -113,6 +119,54 @@ export const container = {
       new PrismaListingRepository(prisma),
       new PrismaSubscriptionRepository(prisma),
       new FlowPaymentGateway(),
+    )
+  },
+
+  // ── Admin ─────────────────────────────────────────────────────────────
+  getClaimListingUseCase() {
+    return new ClaimListingUseCase(
+      new PrismaListingRepository(prisma),
+      new PrismaUserRepository(prisma),
+      new ResendEmailService(),
+    )
+  },
+
+  getResolveListingClaimUseCase() {
+    return new ResolveListingClaimUseCase(
+      new PrismaListingRepository(prisma),
+      new PrismaUserRepository(prisma),
+      new ResendEmailService(),
+    )
+  },
+
+  getGetPendingClaimsUseCase() {
+    return new GetPendingClaimsUseCase(
+      new PrismaListingRepository(prisma),
+      new PrismaUserRepository(prisma),
+    )
+  },
+
+  getGetPendingTagsUseCase() {
+    return new GetPendingTagsUseCase(
+      new PrismaListingRepository(prisma),
+      new PrismaUserRepository(prisma),
+    )
+  },
+
+  getResolveListingTagUseCase() {
+    return new ResolveListingTagUseCase(
+      new PrismaListingRepository(prisma),
+      new PrismaUserRepository(prisma),
+    )
+  },
+
+  getHandlePaymentWebhookUseCase() {
+    return new HandlePaymentWebhookUseCase(
+      new FlowPaymentGateway(),
+      new PrismaSubscriptionRepository(prisma),
+      new PrismaListingRepository(prisma),
+      new PrismaUserRepository(prisma),
+      new ResendEmailService(),
     )
   },
 

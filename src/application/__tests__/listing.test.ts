@@ -21,6 +21,8 @@ function mockListingRepo(partial: Partial<ListingRepository> = {}): ListingRepos
     findClaimById: vi.fn().mockResolvedValue(null),
     findPendingClaimByListingId: vi.fn().mockResolvedValue(null),
     saveClaim: vi.fn().mockResolvedValue(undefined),
+    findPendingClaims: vi.fn().mockResolvedValue([]),
+    findPendingTags: vi.fn().mockResolvedValue([]),
     ...partial,
   }
 }

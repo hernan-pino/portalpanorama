@@ -6,6 +6,7 @@ import {
   CreateSubscriptionResult,
   WebhookEvent,
 } from '@application/ports/PaymentGateway'
+import { WebhookValidationError } from '@application/errors'
 
 // Máxima antigüedad permitida para un webhook (D13: anti-replay)
 const MAX_WEBHOOK_AGE_SECONDS = 300
@@ -68,7 +69,7 @@ export class FlowPaymentGateway implements PaymentGateway {
   }
 
   async parseWebhookEvent(
-    payload: unknown,
+    rawBody: string,
     signature: string,
     timestampHeader: string,
   ): Promise<WebhookEvent> {
@@ -78,12 +79,11 @@ export class FlowPaymentGateway implements PaymentGateway {
     const nowSeconds = Math.floor(Date.now() / 1000)
 
     if (isNaN(eventTimestamp) || Math.abs(nowSeconds - eventTimestamp) > MAX_WEBHOOK_AGE_SECONDS) {
-      throw new Error('Webhook rechazado: timestamp expirado o inválido')
+      throw new WebhookValidationError('Webhook rechazado: timestamp expirado o inválido')
     }
 
-    // Verificar firma HMAC-SHA256 con comparación en tiempo constante (anti timing attack)
-    const data = typeof payload === 'string' ? payload : JSON.stringify(payload)
-    const expectedSig = createHmac('sha256', this.secretKey).update(data).digest('hex')
+    // Verificar firma HMAC-SHA256 sobre el raw body (D20: anti timing attack)
+    const expectedSig = createHmac('sha256', this.secretKey).update(rawBody).digest('hex')
     const expectedBuf = Buffer.from(expectedSig, 'hex')
     const actualBuf = Buffer.from(signature.padEnd(expectedSig.length, '\0'), 'hex')
 
@@ -91,10 +91,16 @@ export class FlowPaymentGateway implements PaymentGateway {
       expectedBuf.length !== actualBuf.length ||
       !timingSafeEqual(expectedBuf, actualBuf)
     ) {
-      throw new Error('Webhook rechazado: firma inválida')
+      throw new WebhookValidationError('Webhook rechazado: firma inválida')
     }
 
-    const event = payload as Record<string, unknown>
+    // Parsear JSON solo después de verificar la firma
+    let event: Record<string, unknown>
+    try {
+      event = JSON.parse(rawBody) as Record<string, unknown>
+    } catch {
+      throw new WebhookValidationError('Webhook rechazado: body JSON inválido')
+    }
     const eventType = event.event as string
     const subscriptionData = event.subscription as Record<string, unknown>
 

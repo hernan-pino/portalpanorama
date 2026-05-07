@@ -22,6 +22,8 @@ function mockListingRepo(partial: Partial<ListingRepository> = {}): ListingRepos
     findClaimById: vi.fn().mockResolvedValue(null),
     findPendingClaimByListingId: vi.fn().mockResolvedValue(null),
     saveClaim: vi.fn().mockResolvedValue(undefined),
+    findPendingClaims: vi.fn().mockResolvedValue([]),
+    findPendingTags: vi.fn().mockResolvedValue([]),
     ...partial,
   }
 }
@@ -102,7 +104,7 @@ describe('HandlePaymentWebhookUseCase', () => {
       mockEmailService(),
     )
 
-    await useCase.execute({ rawBody: '{}' }, 'signature', '1716000000')
+    await useCase.execute('{}', 'signature', '1716000000')
 
     expect(subRepo.save).toHaveBeenCalled()
     const savedSub = (subRepo.save as ReturnType<typeof vi.fn>).mock.calls[0][0]
@@ -137,7 +139,7 @@ describe('HandlePaymentWebhookUseCase', () => {
       email,
     )
 
-    await useCase.execute({ rawBody: '{}' }, 'signature', '1716000000')
+    await useCase.execute('{}', 'signature', '1716000000')
 
     const savedSub = (subRepo.save as ReturnType<typeof vi.fn>).mock.calls[0][0]
     expect(savedSub.status).toBe(SubscriptionStatus.PAST_DUE)

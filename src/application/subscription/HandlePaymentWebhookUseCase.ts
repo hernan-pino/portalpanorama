@@ -18,8 +18,8 @@ export class HandlePaymentWebhookUseCase {
     private readonly emailService: EmailService,
   ) {}
 
-  async execute(payload: unknown, signature: string, timestampHeader: string): Promise<void> {
-    const event = await this.paymentGateway.parseWebhookEvent(payload, signature, timestampHeader)
+  async execute(rawBody: string, signature: string, timestampHeader: string): Promise<void> {
+    const event = await this.paymentGateway.parseWebhookEvent(rawBody, signature, timestampHeader)
 
     switch (event.type) {
       case 'subscription.activated':
@@ -75,6 +75,7 @@ export class HandlePaymentWebhookUseCase {
   private async handlePaymentFailed(flowSubId: string): Promise<void> {
     const subscription = await this.subscriptionRepo.findByFlowSubId(flowSubId)
     if (!subscription) return
+    if (subscription.status === SubscriptionStatus.PAST_DUE) return
 
     const pastDue = subscription.markAsPastDue()
     await this.subscriptionRepo.save(pastDue)
@@ -89,6 +90,7 @@ export class HandlePaymentWebhookUseCase {
   private async handleCancelled(flowSubId: string): Promise<void> {
     const subscription = await this.subscriptionRepo.findByFlowSubId(flowSubId)
     if (!subscription) return
+    if (subscription.status === SubscriptionStatus.CANCELLED) return
 
     const cancelled = subscription.cancel()
     await this.subscriptionRepo.save(cancelled)

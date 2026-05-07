@@ -7,7 +7,7 @@ import { TagStatus } from '@domain/listing/TagStatus'
 import { Money } from '@domain/shared/Money'
 import { Slug } from '@domain/shared/Slug'
 import { isValidNeighborhood } from '@domain/shared/Neighborhoods'
-import { ListingRepository } from '@application/ports/ListingRepository'
+import { ListingRepository, PendingClaimView, PendingTagView } from '@application/ports/ListingRepository'
 
 type ListingRow = Prisma.ListingGetPayload<{
   include: { images: true; tags: true }
@@ -182,5 +182,42 @@ export class PrismaListingRepository implements ListingRepository {
       create: { id: claim.id, createdAt: claim.createdAt, ...data },
       update: data,
     })
+  }
+
+  async findPendingClaims(): Promise<PendingClaimView[]> {
+    const rows = await this.prisma.listingClaim.findMany({
+      where: { status: 'PENDING' },
+      include: { listing: true, claimant: true },
+      orderBy: { createdAt: 'asc' },
+    })
+
+    return rows.map((row) => ({
+      claimId: row.id,
+      listingId: row.listingId,
+      listingName: row.listing.name,
+      listingSlug: row.listing.slug,
+      claimantId: row.claimantId,
+      claimantName: row.claimant.name,
+      claimantEmail: row.claimant.email,
+      message: row.message ?? undefined,
+      createdAt: row.createdAt,
+    }))
+  }
+
+  async findPendingTags(): Promise<PendingTagView[]> {
+    const rows = await this.prisma.listingTag.findMany({
+      where: { status: 'PENDING_APPROVAL' },
+      include: { listing: true },
+      orderBy: { listingId: 'asc' },
+    })
+
+    return rows.map((row) => ({
+      tagId: row.id,
+      tagName: row.name,
+      tagSlug: row.slug,
+      listingId: row.listingId,
+      listingName: row.listing.name,
+      listingSlug: row.listing.slug,
+    }))
   }
 }

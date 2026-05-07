@@ -28,5 +28,5 @@ export interface WebhookEvent {
 export interface PaymentGateway {
   createSubscription(params: CreateSubscriptionParams): Promise<CreateSubscriptionResult>
   cancelSubscription(flowSubId: string): Promise<void>
-  parseWebhookEvent(payload: unknown, signature: string, timestampHeader: string): Promise<WebhookEvent>
+  parseWebhookEvent(rawBody: string, signature: string, timestampHeader: string): Promise<WebhookEvent>
 }

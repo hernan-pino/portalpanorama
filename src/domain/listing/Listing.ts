@@ -186,6 +186,20 @@ export class Listing {
     return new Listing({ ...this.toProps(), plan: ListingPlan.FREE, images, updatedAt: new Date() })
   }
 
+  approveTag(tagId: string): Listing {
+    const tags = this.tags.map((t) =>
+      t.id === tagId ? { ...t, status: TagStatus.ACTIVE } : t,
+    )
+    return new Listing({ ...this.toProps(), tags, updatedAt: new Date() })
+  }
+
+  rejectTag(tagId: string): Listing {
+    const tags = this.tags.map((t) =>
+      t.id === tagId ? { ...t, status: TagStatus.REJECTED } : t,
+    )
+    return new Listing({ ...this.toProps(), tags, updatedAt: new Date() })
+  }
+
   assertOwnership(userId: string): void {
     if (this.ownerId !== userId) throw new UnauthorizedListingAccessError(userId, this.id)
   }

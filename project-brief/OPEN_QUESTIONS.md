@@ -221,6 +221,25 @@ El use case llama a `removeFavorite()` sin verificar primero `isFavorite()`. El 
 
 ---
 
+## Decisiones técnicas — Fase 4E
+
+**D34. HMAC de webhooks sobre raw body, no sobre JSON re-serializado**
+`FlowPaymentGateway.parseWebhookEvent` recibe `rawBody: string` (en lugar de `payload: unknown`) y calcula el HMAC-SHA256 sobre ese string exacto antes de parsear JSON. Flow calcula su HMAC sobre el raw body; si se pasara el objeto parseado y se re-serializara con `JSON.stringify`, cualquier diferencia de formato entre el body original y la re-serialización causaría fallos de firma. El parsing JSON ocurre solo después de verificar la firma. El port `PaymentGateway` y `HandlePaymentWebhookUseCase` fueron actualizados en consecuencia.
+
+**D35. `WebhookValidationError` como tipo de error distinguible**
+Se creó `WebhookValidationError extends DomainError` en `application/errors.ts`. `FlowPaymentGateway` lo lanza para errores de timestamp expirado, firma inválida, o JSON malformado. El route handler `/api/webhooks/flow` usa `instanceof WebhookValidationError` para devolver 400 (no reintentar) vs 500 (reintentar). Las respuestas 400 usan un mensaje genérico "Webhook rechazado" sin revelar la causa específica (previene oracle de timing).
+
+**D36. Idempotencia en `handlePaymentFailed` y `handleCancelled`**
+Se agregaron guards de status antes de actuar: si la suscripción ya está en `PAST_DUE` o `CANCELLED`, el handler retorna sin efecto. Previene emails duplicados y escrituras innecesarias a BD cuando Flow re-entrega el mismo evento. Complementa la idempotencia existente en `handleActivated` (D12).
+
+**D37. Server actions de admin con validación Zod**
+`claims/actions.ts` y `tags/actions.ts` validan los parámetros de entrada con Zod antes de llamar al use case: `decision` debe ser `'APPROVE' | 'REJECT'`, IDs deben ser strings no-vacíos, `reviewNote` tiene máximo 1000 caracteres. Los errores de dominio se mapean a mensajes genéricos sin IDs internos.
+
+**D38. Tipos locales en componentes client de admin**
+`ClaimRow.tsx` y `TagRow.tsx` definen su propio `interface` local en lugar de importar desde `@application/ports/`. Siguiendo la regla de capas, los componentes `'use client'` no deben conocer la capa de application — reciben los datos ya mapeados como props desde el Server Component padre.
+
+---
+
 ## Historial de actualizaciones
 
 | Fecha | Cambio |
@@ -233,3 +252,4 @@ El use case llama a `removeFavorite()` sin verificar primero `isFavorite()`. El 
 | 2026-05-07 | Q3 y Q10 respondidas antes de Fase 4 |
 | 2026-05-07 | Sub-fases 4A+4B+4C completadas: decisiones D23-D27 documentadas |
 | 2026-05-07 | Sub-fase 4D completada: decisiones D28-D33 documentadas |
+| 2026-05-07 | Sub-fase 4E completada: decisiones D34-D38 documentadas |

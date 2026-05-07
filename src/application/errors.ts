@@ -20,3 +20,10 @@ export class SubscriptionNotFoundError extends DomainError {
     super(`No se encontró suscripción activa para el listing "${listingId}"`)
   }
 }
+
+export class WebhookValidationError extends DomainError {
+  readonly code = 'WEBHOOK_VALIDATION_ERROR'
+  constructor(message: string) {
+    super(message)
+  }
+}
