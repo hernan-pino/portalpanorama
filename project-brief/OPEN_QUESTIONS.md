@@ -238,6 +238,18 @@ Se agregaron guards de status antes de actuar: si la suscripción ya está en `P
 **D38. Tipos locales en componentes client de admin**
 `ClaimRow.tsx` y `TagRow.tsx` definen su propio `interface` local en lugar de importar desde `@application/ports/`. Siguiendo la regla de capas, los componentes `'use client'` no deben conocer la capa de application — reciben los datos ya mapeados como props desde el Server Component padre.
 
+**D39. Padding HMAC con `\0` reemplazado por validación de formato hex**
+El código original usaba `signature.padEnd(expectedSig.length, '\0')` antes de construir el Buffer. El carácter `\0` no es un dígito hex válido y `Buffer.from(..., 'hex')` lo ignoraría, creando comportamiento inesperado. Se reemplazó por una validación explícita con regex `/^[0-9a-f]{64}$/i` que rechaza la firma si no tiene exactamente 64 caracteres hexadecimales antes de la comparación timingSafeEqual.
+
+**D40. Deuda técnica — Rol ADMIN leído del JWT sin revalidación en BD**
+El rol `ADMIN` se escribe en el JWT en el momento del login. Si un admin es degradado en BD mientras tiene sesión activa, su token sigue siendo válido hasta expirar. Solución: revalidar el rol en el callback `session` de `auth.ts` consultando la BD (solo para rutas admin), o reducir el `maxAge` del JWT. Se difiere por impacto de rendimiento (query adicional en cada request) y por ser bajo riesgo en MVP con un equipo de 2 personas.
+
+**D41. Deuda técnica — `UnauthorizedError` extiende `DomainError`**
+`UnauthorizedError` representa un error de autorización de la capa de application, no un invariante de dominio. Semánticamente debería extender una `ApplicationError` base separada. Se difiere por refactoring de bajo impacto funcional.
+
+**D42. Deuda técnica — Race condition en `handleActivated` (doble entrega concurrente)**
+El guard de idempotencia de `handleActivated` resuelve reintentos secuenciales pero no previene una condición de carrera si Flow entrega el mismo evento dos veces en paralelo antes de que cualquiera complete la escritura. La solución correcta es un `UNIQUE constraint` en `subscriptions.flowSubId` en el schema de Prisma para que el segundo INSERT falle a nivel de BD. Se documenta como complemento de D12/D14, a implementar antes de producción.
+
 ---
 
 ## Historial de actualizaciones
@@ -252,4 +264,4 @@ Se agregaron guards de status antes de actuar: si la suscripción ya está en `P
 | 2026-05-07 | Q3 y Q10 respondidas antes de Fase 4 |
 | 2026-05-07 | Sub-fases 4A+4B+4C completadas: decisiones D23-D27 documentadas |
 | 2026-05-07 | Sub-fase 4D completada: decisiones D28-D33 documentadas |
-| 2026-05-07 | Sub-fase 4E completada: decisiones D34-D38 documentadas |
+| 2026-05-07 | Sub-fase 4E completada: decisiones D34-D42 documentadas |

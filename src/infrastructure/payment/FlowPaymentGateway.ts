@@ -83,14 +83,15 @@ export class FlowPaymentGateway implements PaymentGateway {
     }
 
     // Verificar firma HMAC-SHA256 sobre el raw body (D20: anti timing attack)
+    // Rechazar firmas que no sean exactamente 64 hex chars antes de construir el Buffer
+    if (!/^[0-9a-f]{64}$/i.test(signature)) {
+      throw new WebhookValidationError('Webhook rechazado: firma inválida')
+    }
     const expectedSig = createHmac('sha256', this.secretKey).update(rawBody).digest('hex')
     const expectedBuf = Buffer.from(expectedSig, 'hex')
-    const actualBuf = Buffer.from(signature.padEnd(expectedSig.length, '\0'), 'hex')
+    const actualBuf = Buffer.from(signature, 'hex')
 
-    if (
-      expectedBuf.length !== actualBuf.length ||
-      !timingSafeEqual(expectedBuf, actualBuf)
-    ) {
+    if (!timingSafeEqual(expectedBuf, actualBuf)) {
       throw new WebhookValidationError('Webhook rechazado: firma inválida')
     }
 
@@ -109,7 +110,7 @@ export class FlowPaymentGateway implements PaymentGateway {
     const flowPlanId = String(subscriptionData.planId)
     const listingId = String(subscriptionData.customField ?? event.commerceOrder)
     const rawAmount = Number(subscriptionData.amount)
-    if (isNaN(rawAmount)) throw new Error('Monto inválido en webhook de Flow')
+    if (isNaN(rawAmount)) throw new WebhookValidationError('Monto inválido en webhook de Flow')
     const amount = Math.round(rawAmount)
     const periodEnd = subscriptionData.periodEnd
       ? new Date(String(subscriptionData.periodEnd))
@@ -137,7 +138,7 @@ export class FlowPaymentGateway implements PaymentGateway {
       case 'subscription_cancelled':
         return 'subscription.cancelled'
       default:
-        throw new Error(`Evento de Flow desconocido: ${flowEvent}`)
+        throw new WebhookValidationError(`Evento de Flow desconocido: ${flowEvent}`)
     }
   }
 
