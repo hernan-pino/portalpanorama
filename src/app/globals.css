@@ -1,1 +1,362 @@
 @import "tailwindcss";
+
+/* =========================================================
+   PORTAL PANORAMA — Design Tokens
+   Editorial moderno minimal con calidez chilena
+   ========================================================= */
+
+:root {
+  /* ---------- Color: Neutrals (papel crema cálido) ---------- */
+  --paper-00: #FBF8F2;
+  --paper-05: #F6F2EA;
+  --paper-10: #EFEAE0;
+  --paper-20: #E4DDCF;
+  --paper-30: #C9C0AE;
+  --paper-40: #9A9282;
+  --paper-50: #6B6557;
+
+  --ink-90: #2A2622;
+  --ink-95: #1C1916;
+  --ink-100: #14110F;
+
+  /* ---------- Color: Accent (Atardecer) ---------- */
+  --accent-soft: oklch(0.92 0.04 45);
+  --accent-50:   oklch(0.78 0.10 45);
+  --accent-60:   oklch(0.62 0.16 45);
+  --accent-70:   oklch(0.52 0.17 38);
+  --accent-80:   oklch(0.42 0.14 32);
+
+  /* ---------- Color: Semantic ---------- */
+  --success: oklch(0.58 0.12 155);
+  --warning: oklch(0.72 0.14 75);
+  --error:   oklch(0.55 0.20 25);
+  --info:    oklch(0.55 0.10 230);
+
+  /* ---------- Color: Premium signal ---------- */
+  --premium-ink: var(--ink-100);
+  --premium-bg:  var(--paper-00);
+  --premium-line: var(--ink-100);
+
+  /* ---------- Surfaces (aliases semánticos) ---------- */
+  --bg: var(--paper-05);
+  --bg-raised: var(--paper-00);
+  --bg-sunken: var(--paper-10);
+  --surface-line: var(--paper-30);
+  --surface-line-soft: var(--paper-20);
+
+  --fg: var(--ink-100);
+  --fg-muted: var(--paper-50);
+  --fg-subtle: var(--paper-40);
+
+  --accent: var(--accent-60);
+  --accent-hover: var(--accent-70);
+  --on-accent: var(--paper-00);
+
+  /* ---------- Spacing (base 4px) ---------- */
+  --s-1: 4px;
+  --s-2: 8px;
+  --s-3: 12px;
+  --s-4: 16px;
+  --s-5: 20px;
+  --s-6: 24px;
+  --s-8: 32px;
+  --s-10: 40px;
+  --s-12: 48px;
+  --s-16: 64px;
+  --s-20: 80px;
+  --s-24: 96px;
+  --s-32: 128px;
+
+  /* ---------- Radii ---------- */
+  --r-xs: 2px;
+  --r-sm: 4px;
+  --r-md: 8px;
+  --r-lg: 12px;
+  --r-xl: 20px;
+  --r-pill: 999px;
+
+  /* ---------- Shadows ---------- */
+  --shadow-0: none;
+  --shadow-1: 0 1px 0 rgba(20, 17, 15, 0.04);
+  --shadow-2: 0 1px 2px rgba(20, 17, 15, 0.05), 0 0 0 1px rgba(20, 17, 15, 0.04);
+  --shadow-3: 0 8px 24px -8px rgba(20, 17, 15, 0.18), 0 0 0 1px rgba(20, 17, 15, 0.06);
+  --shadow-pop: 0 24px 48px -16px rgba(20, 17, 15, 0.25);
+
+  /* ---------- Typography ---------- */
+  --font-display: var(--font-fraunces), "Times New Roman", serif;
+  --font-sans:    var(--font-inter-tight), "Helvetica Neue", Arial, sans-serif;
+  --font-mono:    "Geist Mono", "JetBrains Mono", ui-monospace, monospace;
+
+  /* Type scale (display) — usa Fraunces */
+  --t-display-xl: clamp(56px, 9vw, 132px);
+  --t-display-lg: clamp(44px, 6vw, 88px);
+  --t-display-md: clamp(36px, 4.5vw, 64px);
+  --t-display-sm: clamp(28px, 3vw, 44px);
+
+  /* Type scale (UI) */
+  --t-h1: 32px;
+  --t-h2: 24px;
+  --t-h3: 19px;
+  --t-h4: 16px;
+  --t-body: 15px;
+  --t-body-sm: 13px;
+  --t-mono: 12px;
+  --t-mono-sm: 11px;
+  --t-tiny: 10px;
+
+  /* Line heights */
+  --lh-tight: 1.02;
+  --lh-snug: 1.18;
+  --lh-normal: 1.45;
+  --lh-loose: 1.6;
+
+  /* Letter spacing */
+  --tr-tight: -0.025em;
+  --tr-normal: -0.005em;
+  --tr-wide: 0.06em;
+  --tr-wider: 0.14em;
+
+  /* ---------- Motion ---------- */
+  --ease-out: cubic-bezier(0.2, 0.7, 0.2, 1);
+  --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+  --d-fast: 140ms;
+  --d-normal: 220ms;
+  --d-slow: 360ms;
+
+  /* ---------- Layout ---------- */
+  --content-max: 1280px;
+  --content-pad: clamp(20px, 4vw, 56px);
+  --grid-gutter: clamp(16px, 2vw, 24px);
+}
+
+/* ---------- Base reset ---------- */
+*, *::before, *::after { box-sizing: border-box; }
+html, body { margin: 0; padding: 0; }
+body {
+  background: var(--bg);
+  color: var(--fg);
+  font-family: var(--font-sans);
+  font-size: var(--t-body);
+  line-height: var(--lh-normal);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+  font-feature-settings: "ss01", "cv11";
+}
+img, svg { display: block; max-width: 100%; }
+button { font: inherit; color: inherit; background: none; border: 0; cursor: pointer; padding: 0; }
+input, textarea, select { font: inherit; color: inherit; }
+a { color: inherit; text-decoration: none; }
+
+/* ---------- Selection ---------- */
+::selection { background: var(--accent-60); color: var(--paper-00); }
+
+/* ---------- Scrollbar ---------- */
+* { scrollbar-width: thin; scrollbar-color: var(--paper-30) transparent; }
+
+/* ---------- Focus visible ---------- */
+:focus-visible {
+  outline: 2px solid var(--accent-60);
+  outline-offset: 2px;
+  border-radius: var(--r-xs);
+}
+
+/* ---------- Utility ---------- */
+.container {
+  max-width: var(--content-max);
+  margin: 0 auto;
+  padding-inline: var(--content-pad);
+}
+.eyebrow {
+  font-family: var(--font-mono);
+  font-size: var(--t-mono);
+  font-weight: 500;
+  letter-spacing: var(--tr-wider);
+  text-transform: uppercase;
+  color: var(--fg-muted);
+}
+.divider-line {
+  height: 1px;
+  background: var(--surface-line);
+  border: 0;
+  margin: 0;
+}
+
+/* ---------- Buttons ---------- */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--s-2);
+  height: 44px;
+  padding: 0 var(--s-5);
+  border-radius: var(--r-pill);
+  font-family: var(--font-sans);
+  font-size: var(--t-body);
+  font-weight: 500;
+  letter-spacing: var(--tr-normal);
+  border: 1px solid transparent;
+  transition:
+    background var(--d-fast) var(--ease-out),
+    color var(--d-fast) var(--ease-out),
+    border-color var(--d-fast) var(--ease-out),
+    transform var(--d-fast) var(--ease-out);
+  white-space: nowrap;
+  user-select: none;
+}
+.btn:active { transform: translateY(1px); }
+.btn--primary { background: var(--ink-100); color: var(--paper-00); }
+.btn--primary:hover { background: var(--accent-70); }
+.btn--accent { background: var(--accent-60); color: var(--paper-00); }
+.btn--accent:hover { background: var(--accent-70); }
+.btn--ghost {
+  background: transparent;
+  color: var(--fg);
+  border-color: var(--surface-line);
+}
+.btn--ghost:hover { border-color: var(--ink-100); background: var(--bg-raised); }
+.btn--sm { height: 36px; padding: 0 var(--s-4); font-size: var(--t-body-sm); }
+.btn--lg { height: 52px; padding: 0 var(--s-6); font-size: var(--t-h4); }
+
+/* ---------- Inputs ---------- */
+.input {
+  height: 44px;
+  width: 100%;
+  padding: 0 var(--s-4);
+  background: var(--bg-raised);
+  border: 1px solid var(--surface-line);
+  border-radius: var(--r-md);
+  font-size: var(--t-body);
+  transition: border-color var(--d-fast), box-shadow var(--d-fast);
+}
+.input:focus {
+  outline: none;
+  border-color: var(--ink-100);
+  box-shadow: 0 0 0 3px rgba(20, 17, 15, 0.08);
+}
+.input::placeholder { color: var(--fg-subtle); }
+
+/* ---------- Chips / Tags ---------- */
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--s-2);
+  height: 32px;
+  padding: 0 var(--s-3);
+  border-radius: var(--r-pill);
+  border: 1px solid var(--surface-line);
+  background: var(--bg-raised);
+  font-size: var(--t-body-sm);
+  color: var(--fg);
+  cursor: pointer;
+  transition: all var(--d-fast) var(--ease-out);
+  white-space: nowrap;
+}
+.chip:hover { border-color: var(--ink-100); }
+.chip[aria-pressed="true"] {
+  background: var(--ink-100);
+  color: var(--paper-00);
+  border-color: var(--ink-100);
+}
+
+/* ---------- Premium badge ---------- */
+.premium-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 8px 3px 6px;
+  border: 1px solid var(--premium-line);
+  border-radius: var(--r-xs);
+  font-family: var(--font-mono);
+  font-size: var(--t-mono-sm);
+  font-weight: 500;
+  letter-spacing: var(--tr-wider);
+  text-transform: uppercase;
+  background: var(--premium-bg);
+  color: var(--premium-ink);
+  line-height: 1;
+}
+.premium-badge::before {
+  content: "";
+  width: 6px;
+  height: 6px;
+  background: var(--accent-60);
+  border-radius: 50%;
+  display: inline-block;
+}
+
+/* ---------- Display type helpers ---------- */
+.display {
+  font-family: var(--font-display);
+  font-weight: 400;
+  letter-spacing: var(--tr-tight);
+  line-height: var(--lh-tight);
+  font-variation-settings: "opsz" 144, "SOFT" 50;
+}
+.display em {
+  font-style: italic;
+  font-variation-settings: "opsz" 144, "SOFT" 100;
+  color: var(--accent-60);
+}
+.mono { font-family: var(--font-mono); }
+
+/* ---------- Icon system ---------- */
+.ico { width: 18px; height: 18px; stroke: currentColor; fill: none; stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; }
+.ico-sm { width: 14px; height: 14px; }
+.ico-lg { width: 22px; height: 22px; }
+
+/* ---------- Topbar / Header ---------- */
+.topbar {
+  position: sticky; top: 0; z-index: 50;
+  background: color-mix(in oklab, var(--bg) 92%, transparent);
+  backdrop-filter: saturate(140%) blur(8px);
+  -webkit-backdrop-filter: saturate(140%) blur(8px);
+  border-bottom: 1px solid var(--surface-line-soft);
+}
+.topbar__inner {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: var(--s-6);
+  height: 72px;
+}
+.topbar__nav {
+  display: flex; gap: var(--s-6); justify-content: center;
+  font-size: var(--t-body-sm);
+  color: var(--fg-muted);
+}
+.topbar__nav a {
+  position: relative;
+  padding: 6px 0;
+  transition: color var(--d-fast);
+}
+.topbar__nav a:hover { color: var(--fg); }
+.topbar__nav a[aria-current="page"] { color: var(--fg); }
+.topbar__nav a[aria-current="page"]::after {
+  content: "";
+  position: absolute; left: 0; right: 0; bottom: 0;
+  height: 1px; background: var(--ink-100);
+}
+.topbar__actions { display: flex; align-items: center; gap: var(--s-2); }
+
+/* ---------- Brand ---------- */
+.brand {
+  display: inline-flex; align-items: baseline; gap: 6px;
+  font-family: var(--font-display);
+  font-weight: 500;
+  font-size: 22px;
+  letter-spacing: var(--tr-tight);
+  font-variation-settings: "opsz" 144, "SOFT" 50;
+}
+.brand .brand__mark {
+  width: 10px; height: 10px; background: var(--accent-60); border-radius: 50%;
+  display: inline-block; transform: translateY(-2px);
+  margin-right: 4px;
+}
+.brand em { font-style: italic; color: var(--accent-60); font-weight: 400; }
+
+/* ---------- Page transition ---------- */
+.page-enter { animation: fadeUp 360ms var(--ease-out); }
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}

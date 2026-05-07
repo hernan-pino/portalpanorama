@@ -17,7 +17,7 @@ El handoff muestra un tab "Mi feed" con timeline de updates de lugares guardados
 
 **Q3. ¿El catálogo de barrios es fijo o configurable?**
 El handoff hardcodea 10 barrios: Lastarria, Bellavista, Providencia, Italia, Ñuñoa, Vitacura, Las Condes, Yungay, Brasil, Centro.
-⏳ **Pendiente** — ¿Es ese el catálogo definitivo? ¿Se agregan más comunas? ¿Es configurable desde un panel admin?
+✅ **Respondida:** Catálogo inicial fijo en código (los 10 barrios del handoff como seed), pero gestionable desde el admin: el equipo puede agregar, activar o desactivar barrios. La entidad `Neighborhood` vive en BD; el seed inicial carga los 10 barrios del handoff. Los usuarios pueden sugerir nuevos barrios (flujo similar a tags: PENDING_APPROVAL → ACTIVE).
 
 **Q4. ¿Un listing puede pertenecer a más de una categoría?**
 ✅ **Respondida:** Una categoría principal + tags de subcategorías (ej: categoría "Cafés" + tag "Heladería"). Ambos deben ser filtrables en búsqueda. Un café con tag "heladería" debe aparecer al buscar cualquiera de las dos keywords.
@@ -43,7 +43,7 @@ El handoff hardcodea 10 barrios: Lastarria, Bellavista, Providencia, Italia, Ñu
 
 **Q10. ¿Búsqueda facetada (Meilisearch) necesaria en MVP?**
 La búsqueda con filtros facetados puede implementarse con Postgres full-text en MVP y enchufar Meilisearch después sin cambiar use cases (está detrás de un port).
-⏳ **Pendiente** — Recomendación: empezar con Postgres FTS, migrar a Meilisearch en Fase 3 si el volumen lo justifica.
+✅ **Respondida:** Postgres FTS para MVP. El port `SearchService` ya existe — Meilisearch se puede enchufar en Fase 2+ sin tocar use cases. No vale la pena el overhead de infraestructura en MVP.
 
 **Q11. ¿Social auth (Google, Apple) en scope para MVP?**
 ✅ **Respondida:** Solo email + contraseña para MVP. Google y Apple se agregan después.
@@ -179,3 +179,4 @@ Todos los valores interpolados en los templates HTML de `ResendEmailService` se 
 | 2026-05-06 | Fase 1 completada: decisiones técnicas D1-D7 documentadas |
 | 2026-05-06 | Fase 2 completada: decisiones técnicas D8-D14 documentadas |
 | 2026-05-06 | Fase 3 completada: decisiones técnicas D15-D22 documentadas |
+| 2026-05-07 | Q3 y Q10 respondidas antes de Fase 4 |
