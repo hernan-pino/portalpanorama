@@ -203,8 +203,31 @@ Fase 0 — Documentos fundacionales          ✅ COMPLETADA
 Fase 1 — Domain layer (entidades + VOs)    ✅ COMPLETADA
 Fase 2 — Application layer (use cases)     ✅ COMPLETADA
 Fase 3 — Infrastructure (Prisma, adapters) ✅ COMPLETADA
-Fase 4 — Presentation (UI + routes)        ⬜ PENDIENTE
+Fase 4 — Presentation (UI + routes)        🔄 EN CURSO
+  4A — Fundación + Auth                    ✅ COMPLETADA (commit 105e9ed)
+  4B — Páginas públicas                    ✅ COMPLETADA (commit 18092c0)
+  4C — Dashboard de negocio                ⬜ PENDIENTE
+  4D — Dashboard de usuario                ⬜ PENDIENTE
+  4E — Admin + Webhooks Flow               ⬜ PENDIENTE
 Fase 5 — Composition root (wire-up DI)     ⬜ PENDIENTE
+         (se entrelaza con 4C)
 ```
+
+### Detalle de sub-fases pendientes
+
+**4C — Dashboard de negocio**
+- `/dashboard` — overview con stats (vistas, clicks)
+- `/dashboard/listing/nuevo` — crear listing (form + server action)
+- `/dashboard/listing/[id]/editar` — editar listing + gestión de fotos
+- `/dashboard/suscripcion` — estado del plan + flujo de pago Flow
+
+**4D — Dashboard de usuario**
+- `/mi-cuenta/favoritos` — lugares guardados
+- `/mi-cuenta/feed` — activity feed (FeedItem)
+- `/mi-cuenta/perfil` — editar datos personales
+
+**4E — Admin + Webhooks**
+- `/admin` — panel de claims y tags pendientes (rol ADMIN requerido)
+- `/api/webhooks/flow` — handler de webhooks de pago
 
 No avanzar a la siguiente fase sin OK explícito del usuario.
