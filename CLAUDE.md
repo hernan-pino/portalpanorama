@@ -206,20 +206,13 @@ Fase 3 — Infrastructure (Prisma, adapters) ✅ COMPLETADA
 Fase 4 — Presentation (UI + routes)        🔄 EN CURSO
   4A — Fundación + Auth                    ✅ COMPLETADA (commit 105e9ed)
   4B — Páginas públicas                    ✅ COMPLETADA (commit 18092c0)
-  4C — Dashboard de negocio                ⬜ PENDIENTE
+  4C — Dashboard de negocio                ✅ COMPLETADA (commit e250ca0)
   4D — Dashboard de usuario                ⬜ PENDIENTE
   4E — Admin + Webhooks Flow               ⬜ PENDIENTE
-Fase 5 — Composition root (wire-up DI)     ⬜ PENDIENTE
-         (se entrelaza con 4C)
+Fase 5 — Composition root (wire-up DI)     🔄 EN CURSO (parcial en container.ts)
 ```
 
 ### Detalle de sub-fases pendientes
-
-**4C — Dashboard de negocio**
-- `/dashboard` — overview con stats (vistas, clicks)
-- `/dashboard/listing/nuevo` — crear listing (form + server action)
-- `/dashboard/listing/[id]/editar` — editar listing + gestión de fotos
-- `/dashboard/suscripcion` — estado del plan + flujo de pago Flow
 
 **4D — Dashboard de usuario**
 - `/mi-cuenta/favoritos` — lugares guardados
