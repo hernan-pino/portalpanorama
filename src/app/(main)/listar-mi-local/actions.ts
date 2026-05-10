@@ -81,8 +81,9 @@ export async function startSubscriptionAction(
   const session = await auth()
   if (!session?.user?.id) redirect('/login')
 
-  const listingId = formData.get('listingId') as string
-  if (!listingId) return { error: 'Datos inválidos' }
+  const listingIdRaw = z.string().min(1).max(36).regex(/^[a-z0-9]+$/).safeParse(formData.get('listingId'))
+  if (!listingIdRaw.success) return { error: 'Datos inválidos' }
+  const listingId = listingIdRaw.data
 
   let paymentUrl: string
   try {

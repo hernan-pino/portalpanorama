@@ -50,7 +50,8 @@ Leído por `/retomar` al iniciar sesión y por `/cerrar-fase` al cerrar un paso.
 ---
 
 ### Paso 7.2 — Checkout flow `/listar-mi-local` (4 pasos)
-**Estado:** ⬜ PENDIENTE
+**Estado:** ✅ COMPLETADO
+**Commit:** 3337b6f
 **Archivos nuevos:**
 ```
 src/app/listar-mi-local/
