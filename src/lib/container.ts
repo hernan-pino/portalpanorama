@@ -9,6 +9,7 @@ import { ResendEmailService } from '@infrastructure/email/ResendEmailService'
 import { PostgresFTSSearchService } from '@infrastructure/search/PostgresFTSSearchService'
 import { PostgresAnalyticsService } from '@infrastructure/db/PostgresAnalyticsService'
 import { FlowPaymentGateway } from '@infrastructure/payment/FlowPaymentGateway'
+import { BecomeBusinessOwnerUseCase } from '@application/user/BecomeBusinessOwnerUseCase'
 import { RegisterUserUseCase } from '@application/user/RegisterUserUseCase'
 import { GetUserDashboardUseCase } from '@application/user/GetUserDashboardUseCase'
 import { GetUserFeedUseCase } from '@application/user/GetUserFeedUseCase'
@@ -34,6 +35,13 @@ import { GetListingSubscriptionsUseCase } from '@application/subscription/GetLis
 
 export const container = {
   // ── Auth ──────────────────────────────────────────────────────────────
+  getBecomeBusinessOwnerUseCase() {
+    return new BecomeBusinessOwnerUseCase(
+      new PrismaUserRepository(prisma),
+      new PrismaListingRepository(prisma),
+    )
+  },
+
   getRegisterUserUseCase() {
     return new RegisterUserUseCase(
       new PrismaUserRepository(prisma),

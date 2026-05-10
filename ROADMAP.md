@@ -37,7 +37,8 @@ Leído por `/retomar` al iniciar sesión y por `/cerrar-fase` al cerrar un paso.
 ---
 
 ### Paso 7.1 — Header + bifurcación de auth
-**Estado:** ⬜ PENDIENTE
+**Estado:** ✅ COMPLETADO
+**Commit:** 0da2709
 **Archivos:** `src/components/layout/Header.tsx`
 **Qué hace:**
 - Agrega botón "Listar mi local" → `/listar-mi-local`
