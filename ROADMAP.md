@@ -70,7 +70,8 @@ src/app/listar-mi-local/
 ---
 
 ### Paso 7.3 — Dashboard negocio `/mi-negocio?tab=...`
-**Estado:** ⬜ PENDIENTE
+**Estado:** ✅ COMPLETADO
+**Commit:** 2ce5d8d
 **Archivos nuevos/modificados:**
 ```
 src/app/mi-negocio/
