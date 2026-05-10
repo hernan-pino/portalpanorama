@@ -2,19 +2,20 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 import { SearchBar } from '@components/search/SearchBar'
 import { FilterRail } from '@components/search/FilterRail'
-import { ListingCard } from '@components/listing/ListingCard'
 import { container } from '@lib/container'
 import { parseSearchParams, type RawSearchParams } from '@lib/parseSearchParams'
 
-export const metadata: Metadata = { title: 'Explorar lugares — Portal Panorama' }
+export const metadata: Metadata = { title: 'Eventos esta semana — Portal Panorama' }
 
 interface PageProps {
   searchParams: Promise<RawSearchParams>
 }
 
-export default async function ExplorarPage({ searchParams }: PageProps) {
+export default async function EventosPage({ searchParams }: PageProps) {
   const raw = await searchParams
-  const { query, barrio, categoria, priceRanges, isPremium, page, view } = parseSearchParams(raw)
+  const { query, barrio, categoria, priceRanges, isPremium, page } = parseSearchParams(raw)
+  // Eventos usa lista por defecto; solo cambia a grid si se pide explícitamente
+  const view = raw.view === 'grid' ? 'grid' : 'lista'
 
   const useCase = container.getSearchListingsUseCase()
   const result = await useCase.execute({
@@ -27,17 +28,14 @@ export default async function ExplorarPage({ searchParams }: PageProps) {
     limit: 24,
   })
 
-  const activeFilters = [query, barrio, categoria, priceRanges?.length, isPremium].filter(Boolean)
-  const headTitle = query ?? barrio ?? categoria ?? 'Todo Santiago'
+  const activeLabel = query ?? barrio ?? categoria ?? 'esta semana'
 
   return (
     <div className="page-enter">
       <div className="search-shell container">
 
-        {/* ── Filter rail (Client Component) ── */}
         <FilterRail />
 
-        {/* ── Main ── */}
         <div className="search-shell__main">
 
           {/* Breadcrumb + título */}
@@ -45,17 +43,13 @@ export default async function ExplorarPage({ searchParams }: PageProps) {
             <nav style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', letterSpacing: '0.10em', textTransform: 'uppercase', color: 'var(--fg-muted)', display: 'flex', gap: 'var(--s-2)', alignItems: 'center' }}>
               <Link href="/explorar" style={{ color: 'inherit', textDecoration: 'none' }}>Explorar</Link>
               <span style={{ opacity: 0.4 }}>/</span>
-              <span style={{ color: 'var(--fg)' }}>{headTitle}</span>
+              <Link href="/eventos" style={{ color: 'inherit', textDecoration: 'none' }}>Eventos</Link>
+              <span style={{ opacity: 0.4 }}>/</span>
+              <span style={{ color: 'var(--fg)' }}>{activeLabel}</span>
             </nav>
             <h1 className="search-head__title">
-              {headTitle === 'Todo Santiago' ? (
-                <>
-                  <span style={{ fontStyle: 'normal' }}>Todo </span>
-                  <em style={{ color: 'var(--accent-60)' }}>Santiago</em>
-                </>
-              ) : (
-                <em style={{ color: 'var(--accent-60)' }}>{headTitle}</em>
-              )}
+              <span style={{ fontStyle: 'normal' }}>Eventos </span>
+              <em style={{ color: 'var(--accent-60)' }}>{activeLabel}</em>
             </h1>
             <div className="search-head__bar">
               <SearchBar compact />
@@ -67,11 +61,9 @@ export default async function ExplorarPage({ searchParams }: PageProps) {
             <div className="results-bar__count">
               <strong>{result.total}</strong>{' '}
               {result.total === 1 ? 'lugar' : 'lugares'}
-              {activeFilters.length === 0 && (
-                <span style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', color: 'var(--fg-muted)', letterSpacing: '0.08em', textTransform: 'uppercase', marginLeft: 'var(--s-3)' }}>
-                  ordenado por relevancia
-                </span>
-              )}
+              <span style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', color: 'var(--fg-muted)', letterSpacing: '0.08em', textTransform: 'uppercase', marginLeft: 'var(--s-3)' }}>
+                ordenado por relevancia
+              </span>
             </div>
             <div className="results-bar__tools">
               <div className="toggle-group">
@@ -85,26 +77,31 @@ export default async function ExplorarPage({ searchParams }: PageProps) {
             </div>
           </div>
 
-          {/* Results */}
+          {/* Results — lista por defecto */}
           {result.items.length > 0 ? (
             <>
               {view === 'grid' ? (
                 <div className="results-grid">
                   {result.items.map((item) => (
-                    <ListingCard
-                      key={item.listingId}
-                      listing={{
-                        slug: item.slug,
-                        name: item.name,
-                        neighborhood: item.neighborhood,
-                        categoryName: item.categoryName,
-                        averageRating: item.averageRating,
-                        reviewCount: item.reviewCount,
-                        isPremium: item.isPremium,
-                        priceRange: item.priceRange,
-                        tags: item.tags,
-                      }}
-                    />
+                    <div key={item.listingId} className="place-card">
+                      <Link href={`/lugar/${item.slug}`} style={{ textDecoration: 'none', color: 'inherit', display: 'contents' }}>
+                        <div className="place-card__media">
+                          <div className="placeholder-stripe" style={{ width: '100%', height: '100%' }} />
+                        </div>
+                        <div className="place-card__body">
+                          <div className="place-card__meta"><span>{item.neighborhood}</span></div>
+                          <h3 className="place-card__title">{item.name}</h3>
+                          {item.averageRating !== undefined && (
+                            <div className="place-card__foot">
+                              <span className="rating">
+                                <StarIcon />
+                                <span className="rating__num">{item.averageRating.toFixed(1)}</span>
+                              </span>
+                            </div>
+                          )}
+                        </div>
+                      </Link>
+                    </div>
                   ))}
                 </div>
               ) : (
@@ -129,7 +126,7 @@ export default async function ExplorarPage({ searchParams }: PageProps) {
                             {item.description}
                           </p>
                         )}
-                        <div className="place-row__foot" style={{ display: 'flex', gap: 'var(--s-3)', alignItems: 'center', marginTop: 'var(--s-2)' }}>
+                        <div style={{ display: 'flex', gap: 'var(--s-3)', alignItems: 'center', marginTop: 'var(--s-2)' }}>
                           {item.averageRating !== undefined && (
                             <span className="rating">
                               <StarIcon />
@@ -168,9 +165,9 @@ export default async function ExplorarPage({ searchParams }: PageProps) {
                 Sin resultados
               </p>
               <p style={{ color: 'var(--fg-muted)', fontSize: 'var(--t-body-sm)', marginBottom: 'var(--s-6)' }}>
-                No encontramos lugares con esa búsqueda. Probá con otros términos.
+                No encontramos eventos con esa búsqueda.
               </p>
-              <Link href="/explorar" className="btn btn--ghost">Ver todos los lugares</Link>
+              <Link href="/eventos" className="btn btn--ghost">Ver todos los eventos</Link>
             </div>
           )}
         </div>
@@ -210,7 +207,6 @@ function ListIcon() {
   )
 }
 
-/* ── Helpers ── */
 function buildUrl(current: Record<string, string | undefined>, overrides: Record<string, string | undefined>): string {
   const merged = { ...current, ...overrides }
   const p = new URLSearchParams()
@@ -218,5 +214,5 @@ function buildUrl(current: Record<string, string | undefined>, overrides: Record
     if (v !== undefined) p.set(k, v)
   }
   if (!('pagina' in overrides)) p.delete('pagina')
-  return `/explorar?${p.toString()}`
+  return `/eventos?${p.toString()}`
 }

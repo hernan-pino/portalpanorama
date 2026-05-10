@@ -1,0 +1,143 @@
+/* Leaflet overrides — integra con sistema de diseño de PP */
+
+/* Container */
+#pp-map {
+  width: 100%;
+  height: calc(100vh - 60px);
+  position: sticky;
+  top: 60px;
+  border-radius: 0;
+  z-index: 1;
+}
+
+/* Popup */
+.leaflet-popup-content-wrapper {
+  border-radius: var(--r-md) !important;
+  box-shadow: var(--shadow-pop) !important;
+  padding: 0 !important;
+  border: 1px solid var(--surface-line) !important;
+  overflow: hidden;
+  background: var(--paper-00) !important;
+}
+.leaflet-popup-content {
+  margin: 0 !important;
+  width: 240px !important;
+}
+.leaflet-popup-tip-container { display: none; }
+.leaflet-popup-close-button {
+  top: 8px !important; right: 8px !important;
+  width: 24px !important; height: 24px !important;
+  font-size: 18px !important;
+  color: var(--fg-muted) !important;
+  z-index: 10;
+}
+
+/* Mini card popup */
+.pp-popup {
+  display: flex; flex-direction: column;
+}
+.pp-popup__img {
+  height: 120px;
+  background-color: var(--paper-10);
+  background-image: repeating-linear-gradient(
+    135deg, transparent 0, transparent 9px,
+    rgba(20,17,15,0.06) 9px, rgba(20,17,15,0.06) 10px
+  );
+  position: relative;
+}
+.pp-popup__img-label {
+  position: absolute; bottom: 8px; left: 8px;
+  font-family: var(--font-mono);
+  font-size: 10px; letter-spacing: 0.08em; text-transform: uppercase;
+  background: var(--paper-00); padding: 2px 6px; border-radius: 2px;
+  color: var(--ink-100);
+}
+.pp-popup__body { padding: 12px 14px 14px; }
+.pp-popup__meta {
+  font-family: var(--font-mono); font-size: 10px;
+  letter-spacing: 0.08em; text-transform: uppercase;
+  color: var(--fg-muted); margin-bottom: 4px;
+}
+.pp-popup__name {
+  font-family: var(--font-display);
+  font-size: 18px; font-weight: 500;
+  line-height: 1.1; letter-spacing: -0.02em;
+  margin: 0 0 6px;
+  font-variation-settings: "opsz" 60;
+}
+.pp-popup__row {
+  display: flex; align-items: center; gap: 6px;
+  font-size: 12px; color: var(--fg-muted);
+}
+.pp-popup__cta {
+  display: block; margin: 10px 14px 14px;
+  background: var(--ink-100); color: var(--paper-00);
+  border-radius: var(--r-pill); height: 36px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 13px; font-weight: 500;
+  transition: background var(--d-fast);
+}
+.pp-popup__cta:hover { background: var(--accent-70); }
+
+/* Custom marker */
+.pp-marker {
+  width: 32px; height: 32px;
+  border-radius: 50%;
+  background: var(--ink-100);
+  color: var(--paper-00);
+  display: flex; align-items: center; justify-content: center;
+  font-family: var(--font-mono);
+  font-size: 10px; letter-spacing: 0.06em; text-transform: uppercase;
+  border: 2px solid var(--paper-00);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.25);
+  cursor: pointer;
+  transition: transform 140ms;
+}
+.pp-marker:hover { transform: scale(1.15); }
+.pp-marker.premium { background: var(--accent-60); }
+
+/* Cluster */
+.marker-cluster {
+  background: var(--paper-00) !important;
+  border: 2px solid var(--ink-100) !important;
+}
+.marker-cluster div {
+  background: var(--ink-100) !important;
+  color: var(--paper-00) !important;
+  font-family: var(--font-display) !important;
+  font-size: 14px !important;
+  font-weight: 500 !important;
+  border-radius: 50% !important;
+}
+.marker-cluster-small { background: var(--paper-00) !important; }
+.marker-cluster-medium { background: var(--paper-10) !important; }
+.marker-cluster-large { background: var(--accent-soft) !important; }
+
+/* Map layout — buscar con mapa */
+.buscar-map-shell {
+  display: grid;
+  grid-template-columns: 420px 1fr;
+  min-height: calc(100vh - 60px);
+  gap: 0;
+}
+.buscar-map-list {
+  overflow-y: auto;
+  height: calc(100vh - 60px);
+  padding: var(--s-5) var(--s-5) var(--s-8);
+  scrollbar-width: thin;
+}
+.buscar-map-side {
+  position: sticky;
+  top: 60px;
+  height: calc(100vh - 60px);
+}
+
+@media (max-width: 960px) {
+  .buscar-map-shell {
+    grid-template-columns: 1fr;
+    grid-template-rows: 50vh 1fr;
+  }
+  .buscar-map-side { position: relative; top: 0; height: 50vh; }
+  .buscar-map-list { height: auto; overflow-y: visible; }
+  #pp-map { height: 100%; position: relative; top: 0; }
+}

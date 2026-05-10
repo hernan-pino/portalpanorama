@@ -2,17 +2,16 @@ import Link from 'next/link'
 import { SearchBar } from '@components/search/SearchBar'
 import { ListingCard } from '@components/listing/ListingCard'
 import { container } from '@lib/container'
-import { NEIGHBORHOODS } from '@domain/shared/Neighborhoods'
 
 const CATEGORIES = [
-  { slug: 'restaurantes', name: 'Restaurantes', glyph: '01', icon: 'utensils' },
-  { slug: 'cafes',        name: 'Cafés',        glyph: '02', icon: 'coffee' },
-  { slug: 'bares',        name: 'Bares',        glyph: '03', icon: 'wine' },
-  { slug: 'museos',       name: 'Museos',       glyph: '04', icon: 'museum' },
-  { slug: 'tiendas',      name: 'Tiendas',      glyph: '05', icon: 'shopping' },
-  { slug: 'servicios',    name: 'Servicios',    glyph: '06', icon: 'scissors' },
-  { slug: 'parques',      name: 'Parques',      glyph: '07', icon: 'tree' },
-  { slug: 'eventos',      name: 'Eventos',      glyph: '08', icon: 'calendar' },
+  { slug: 'restaurantes',  name: 'Restaurantes',  glyph: '01', icon: 'utensils' },
+  { slug: 'bares',         name: 'Bares',         glyph: '02', icon: 'wine' },
+  { slug: 'cafes',         name: 'Café',          glyph: '03', icon: 'coffee' },
+  { slug: 'museos',        name: 'Museos',        glyph: '04', icon: 'museum' },
+  { slug: 'parques',       name: 'Parques',       glyph: '05', icon: 'tree' },
+  { slug: 'eventos',       name: 'Eventos',       glyph: '06', icon: 'calendar' },
+  { slug: 'vida-nocturna', name: 'Vida nocturna', glyph: '07', icon: 'moon' },
+  { slug: 'aire-libre',    name: 'Aire libre',    glyph: '08', icon: 'sun' },
 ]
 
 const STATIC_EVENTS = [
@@ -22,11 +21,9 @@ const STATIC_EVENTS = [
   { day: '17', month: 'May', title: 'Cata de Vinos Naturales', sub: 'Providencia · 19:30' },
 ]
 
-const FEATURED_NEIGHBORHOODS = NEIGHBORHOODS.slice(0, 8)
-
 export default async function HomePage() {
   const useCase = container.getSearchListingsUseCase()
-  const recent = await useCase.execute({ limit: 6 })
+  const recent = await useCase.execute({ limit: 9 })
 
   return (
     <div className="page-enter">
@@ -69,7 +66,7 @@ export default async function HomePage() {
 
       {/* ── Categorías ── */}
       <section className="container" style={{ marginTop: 'var(--s-24)' }}>
-        <SecHead num="01 / 06" title={<><em>Categorías</em> para empezar</>} ctaHref="/explorar" ctaLabel="Ver todas" />
+        <SecHead num="01 / 04" title={<><em>Categorías</em> para empezar</>} ctaHref="/explorar" ctaLabel="Ver todas" />
         <div className="cat-grid">
           {CATEGORIES.map((cat) => (
             <Link key={cat.slug} href={`/explorar?categoria=${cat.slug}`} className="cat-card">
@@ -91,21 +88,24 @@ export default async function HomePage() {
         </div>
       </section>
 
-      {/* ── Lugares recientes / Destacados ── */}
+      {/* ── Lugares recomendados ── */}
       {recent.items.length > 0 && (
         <section className="container" style={{ marginTop: 'var(--s-24)' }}>
-          <SecHead num="02 / 06" title={<>Lo más <em>recomendado</em></>} ctaHref="/explorar" ctaLabel="Ver todo el listado" />
-          <div className={recent.items.length >= 3 ? 'featured-grid' : 'results-grid'}>
-            {recent.items.map((item) => (
+          <SecHead num="02 / 04" title={<>Lo más <em>recomendado</em></>} ctaHref="/explorar" ctaLabel="Ver todo el listado" />
+          <div className="featured-grid">
+            {recent.items.slice(0, 3).map((item) => (
               <ListingCard
                 key={item.listingId}
                 listing={{
                   slug: item.slug,
                   name: item.name,
                   neighborhood: item.neighborhood,
+                  categoryName: item.categoryName,
                   averageRating: item.averageRating,
-                  isPremium: false,
-                  tags: [],
+                  reviewCount: item.reviewCount,
+                  isPremium: item.isPremium,
+                  priceRange: item.priceRange,
+                  tags: item.tags,
                 }}
               />
             ))}
@@ -115,7 +115,7 @@ export default async function HomePage() {
 
       {/* ── Eventos ── */}
       <section className="container" style={{ marginTop: 'var(--s-24)' }}>
-        <SecHead num="03 / 06" title={<>Esta <em>semana</em> en la ciudad</>} ctaHref="/explorar" ctaLabel="Ver agenda" />
+        <SecHead num="03 / 04" title={<>Esta <em>semana</em> en la ciudad</>} ctaHref="/explorar" ctaLabel="Ver agenda" />
         <div>
           {STATIC_EVENTS.map((ev) => (
             <div key={ev.title} className="event-card">
@@ -136,22 +136,30 @@ export default async function HomePage() {
         </div>
       </section>
 
-      {/* ── Barrios ── */}
-      <section className="container" style={{ marginTop: 'var(--s-24)' }}>
-        <SecHead num="04 / 06" title={<>Panoramas por <em>barrio</em></>} ctaHref="/explorar" ctaLabel="Explorar todos" />
-        <div className="chip-row" style={{ marginTop: 'var(--s-2)' }}>
-          {FEATURED_NEIGHBORHOODS.map((barrio) => (
-            <Link
-              key={barrio}
-              href={`/explorar?barrio=${encodeURIComponent(barrio)}`}
-              className="chip"
-              style={{ height: '40px', padding: '0 var(--s-4)' }}
-            >
-              {barrio}
-            </Link>
-          ))}
-        </div>
-      </section>
+      {/* ── Panoramas nuevos y bien evaluados ── */}
+      {recent.items.length > 3 && (
+        <section className="container" style={{ marginTop: 'var(--s-24)' }}>
+          <SecHead num="04 / 04" title={<>Panoramas <em>nuevos</em> y bien evaluados</>} ctaHref="/explorar" ctaLabel="Ver todos" />
+          <div className="results-grid">
+            {recent.items.slice(3).map((item) => (
+              <ListingCard
+                key={item.listingId}
+                listing={{
+                  slug: item.slug,
+                  name: item.name,
+                  neighborhood: item.neighborhood,
+                  categoryName: item.categoryName,
+                  averageRating: item.averageRating,
+                  reviewCount: item.reviewCount,
+                  isPremium: item.isPremium,
+                  priceRange: item.priceRange,
+                  tags: item.tags,
+                }}
+              />
+            ))}
+          </div>
+        </section>
+      )}
 
       {/* ── Pull quote editorial ── */}
       <section className="container" style={{ marginTop: 'var(--s-24)' }}>
@@ -253,6 +261,8 @@ function CatIcon({ name }: { name: string }) {
     scissors: <svg className="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="6" cy="6" r="3"/><circle cx="6" cy="18" r="3"/><line x1="20" x2="8.12" y1="4" y2="15.88"/><line x1="14.47" x2="20" y1="14.48" y2="20"/><line x1="8.12" x2="12" y1="8.12" y2="12"/></svg>,
     tree:     <svg className="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M12 22v-7l-2-2"/><path d="M17 8h.01"/><path d="M5 8h.01"/><path d="m7 11-2-3 2.5-3.5L12 3l4.5 1.5L19 8l-2 3"/><path d="m12 22-3-3 3-3 3 3-3 3Z"/></svg>,
     calendar: <svg className="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><rect width="18" height="18" x="3" y="4" rx="2" ry="2"/><line x1="16" x2="16" y1="2" y2="6"/><line x1="8" x2="8" y1="2" y2="6"/><line x1="3" x2="21" y1="10" y2="10"/></svg>,
+    moon:     <svg className="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></svg>,
+    sun:      <svg className="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="m4.93 4.93 1.41 1.41"/><path d="m17.66 17.66 1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="m6.34 17.66-1.41 1.41"/><path d="m19.07 4.93-1.41 1.41"/></svg>,
   }
   return <>{icons[name] ?? icons.calendar}</>
 }

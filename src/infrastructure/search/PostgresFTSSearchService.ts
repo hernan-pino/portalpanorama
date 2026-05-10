@@ -1,4 +1,4 @@
-import { PrismaClient } from '@prisma/client'
+import { PrismaClient, Prisma } from '@prisma/client'
 import { Listing } from '@domain/listing/Listing'
 import { SearchService, SearchParams, SearchResult, SearchResultItem } from '@application/ports/SearchService'
 
@@ -10,7 +10,7 @@ export class PostgresFTSSearchService implements SearchService {
     const limit = params.limit ?? 20
     const skip = (page - 1) * limit
 
-    const where: Record<string, unknown> = {
+    const where: Prisma.ListingWhereInput = {
       status: 'PUBLISHED',
     }
 
@@ -18,8 +18,20 @@ export class PostgresFTSSearchService implements SearchService {
       where.categoryId = params.categoryId
     }
 
+    if (params.categorySlug) {
+      where.category = { slug: params.categorySlug }
+    }
+
     if (params.neighborhood) {
       where.neighborhood = params.neighborhood
+    }
+
+    if (params.priceRanges && params.priceRanges.length > 0) {
+      where.priceRange = { in: params.priceRanges }
+    }
+
+    if (params.isPremium) {
+      where.plan = 'PREMIUM'
     }
 
     if (params.query) {
@@ -33,14 +45,11 @@ export class PostgresFTSSearchService implements SearchService {
     const [rows, total] = await Promise.all([
       this.prisma.listing.findMany({
         where,
-        select: {
-          id: true,
-          name: true,
-          slug: true,
-          categoryId: true,
-          neighborhood: true,
-          _count: { select: { reviews: true } },
+        include: {
+          category: { select: { name: true } },
           reviews: { select: { rating: true } },
+          _count: { select: { reviews: true } },
+          tags: { select: { name: true, status: true } },
         },
         orderBy: [{ plan: 'desc' }, { createdAt: 'desc' }],
         skip,
@@ -60,8 +69,14 @@ export class PostgresFTSSearchService implements SearchService {
         name: row.name,
         slug: row.slug,
         categoryId: row.categoryId,
+        categoryName: row.category.name,
         neighborhood: row.neighborhood,
+        description: row.description ?? undefined,
+        priceRange: row.priceRange ?? undefined,
+        isPremium: row.plan === 'PREMIUM',
         averageRating: avgRating,
+        reviewCount: row._count.reviews,
+        tags: row.tags.filter((t) => t.status === 'ACTIVE').map((t) => t.name),
       }
     })
 

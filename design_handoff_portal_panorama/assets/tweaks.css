@@ -1,0 +1,123 @@
+/* =========================================================
+   Card style variants — controlled via body[data-card-style]
+   ========================================================= */
+
+/* Base: use override radius */
+.place-card {
+  border-radius: var(--card-radius-override, var(--r-md));
+}
+
+/* Hide hours when tweaked off */
+body[data-hide-hours="1"] .place-card__row span:last-child { display: none; }
+
+/* ── EDITORIAL (default) ── already in components.css, no override needed */
+
+/* ── HORIZONTAL ── imagen a la izq, info a la der */
+body[data-card-style="horizontal"] .place-card {
+  flex-direction: row;
+  height: 160px;
+}
+body[data-card-style="horizontal"] .place-card__media {
+  width: 160px;
+  min-width: 160px;
+  aspect-ratio: auto;
+  height: 100%;
+  flex-shrink: 0;
+}
+body[data-card-style="horizontal"] .place-card__body {
+  flex: 1;
+  justify-content: center;
+  gap: 8px;
+  padding: 16px;
+}
+body[data-card-style="horizontal"] .place-card__title {
+  font-size: 18px;
+}
+body[data-card-style="horizontal"] .results-grid {
+  grid-template-columns: 1fr;
+}
+body[data-card-style="horizontal"] .featured-grid {
+  grid-template-columns: 1fr;
+}
+body[data-card-style="horizontal"] .featured-grid > :nth-child(1) {
+  grid-row: auto;
+}
+
+/* ── MINIMAL ── solo texto, sin foto, línea divisoria */
+body[data-card-style="minimal"] .place-card {
+  flex-direction: row;
+  align-items: center;
+  border: 0;
+  border-top: 1px solid var(--surface-line);
+  border-radius: 0;
+  background: transparent;
+  gap: 0;
+  padding: 16px 0;
+  box-shadow: none;
+}
+body[data-card-style="minimal"] .place-card:hover {
+  transform: none;
+  border-color: var(--surface-line);
+  box-shadow: none;
+  padding-left: 12px;
+}
+body[data-card-style="minimal"] .place-card__media {
+  display: none;
+}
+body[data-card-style="minimal"] .place-card__body {
+  flex: 1;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0;
+  gap: 16px;
+}
+body[data-card-style="minimal"] .place-card__title {
+  font-size: 20px;
+  flex: 1;
+}
+body[data-card-style="minimal"] .place-card__meta {
+  width: 180px;
+  flex-shrink: 0;
+}
+body[data-card-style="minimal"] .results-grid {
+  grid-template-columns: 1fr;
+  gap: 0;
+}
+body[data-card-style="minimal"] .featured-grid {
+  grid-template-columns: 1fr;
+  gap: 0;
+}
+body[data-card-style="minimal"] .featured-grid > :nth-child(1) {
+  grid-row: auto;
+}
+body[data-card-style="minimal"] .place-card.is-premium::before {
+  display: none;
+}
+
+/* ── GRANDE ── foto 16:9 grande, título en overlay */
+body[data-card-style="grande"] .place-card {
+  position: relative;
+}
+body[data-card-style="grande"] .place-card__media {
+  aspect-ratio: 16/9;
+}
+body[data-card-style="grande"] .place-card__title {
+  font-size: 26px;
+}
+body[data-card-style="grande"] .results-grid {
+  grid-template-columns: repeat(2, 1fr);
+}
+body[data-card-style="grande"] .featured-grid {
+  grid-template-columns: 1fr 1fr;
+}
+body[data-card-style="grande"] .featured-grid > :nth-child(1) {
+  grid-row: auto;
+  grid-column: span 2;
+}
+body[data-card-style="grande"] .featured-grid > :nth-child(1) .place-card__media {
+  aspect-ratio: 21/9;
+}
+body[data-card-style="grande"] .featured-grid > :nth-child(1) .place-card__title {
+  font-size: 32px;
+}

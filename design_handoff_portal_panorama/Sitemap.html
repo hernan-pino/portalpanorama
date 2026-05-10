@@ -1,0 +1,552 @@
+<!DOCTYPE html>
+<html lang="es" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Sitemap · Portal Panorama</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght,SOFT@0,9..144,300..700,30..100;1,9..144,300..700,30..100&amp;family=Inter+Tight:wght@400;500;600;700&amp;family=Geist+Mono:wght@400;500&amp;display=swap">
+<link rel="stylesheet" href="assets/tokens.css?v=2">
+<style>
+  :root{
+    --node-bg: var(--paper-00);
+    --node-line: var(--ink-100);
+    --rail-bg: var(--bg-raised, #efe9df);
+  }
+  *{ box-sizing: border-box; }
+  html,body{ margin:0; padding:0; background: var(--bg, #f6f2ea); color: var(--fg, #14110f); font-family: var(--font-ui, "Inter Tight", system-ui, sans-serif); }
+  a{ color: inherit; text-decoration: none; }
+  .wrap{ max-width: 1480px; margin: 0 auto; padding: 56px 40px 96px; }
+
+  /* ── HEADER ───────────────────────────── */
+  .head{ display:grid; grid-template-columns: 1.4fr 1fr; gap: 48px; align-items: end; padding-bottom: 32px; border-bottom: 1px solid var(--ink-100); margin-bottom: 56px; }
+  .eyebrow{ font-family: var(--font-mono, "Geist Mono", monospace); font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--fg-muted, #6b6259); display: inline-flex; align-items:center; gap:10px; }
+  .eyebrow::before{ content:""; width: 24px; height: 1px; background: currentColor; }
+  h1.title{ font-family: var(--font-display, "Fraunces", serif); font-weight: 400; font-size: clamp(56px, 8vw, 132px); line-height: 0.92; letter-spacing: -0.035em; margin: 14px 0 0; font-variation-settings: 'opsz' 144, 'SOFT' 50; max-width: 14ch; text-wrap: balance; }
+  h1.title em{ font-style: italic; color: var(--accent-60, #c2632a); font-variation-settings: 'opsz' 144, 'SOFT' 100; }
+  .lede{ font-size: 16px; line-height: 1.55; color: var(--fg-muted, #6b6259); max-width: 46ch; }
+  .meta{ display:flex; gap: 32px; margin-top: 24px; }
+  .meta > div{ }
+  .meta strong{ font-family: var(--font-display, "Fraunces", serif); font-weight: 500; font-size: 36px; line-height: 1; display:block; letter-spacing: -0.02em; }
+  .meta span{ font-family: var(--font-mono, "Geist Mono", monospace); font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--fg-muted, #6b6259); margin-top: 4px; display:block; }
+
+  /* ── LEGEND ──────────────────────────── */
+  .legend{ display:flex; flex-wrap: wrap; gap: 24px; padding: 18px 22px; border: 1px solid var(--surface-line, rgba(20,17,15,0.12)); border-radius: 4px; background: var(--bg-raised, #efe9df); margin-bottom: 56px; align-items:center; }
+  .legend__item{ display:flex; align-items:center; gap: 10px; font-size: 13px; color: var(--fg-muted, #6b6259); }
+  .swatch{ width: 28px; height: 16px; border-radius: 2px; border: 1px solid var(--ink-100); }
+  .swatch--public{ background: var(--paper-00, #faf6ee); }
+  .swatch--auth{ background: var(--ink-100, #14110f); border-color: var(--ink-100); }
+  .swatch--biz{ background: var(--accent-60, #c2632a); border-color: var(--accent-60); }
+  .swatch--flow{ background: var(--paper-10, #ece5d9); border: 1px dashed var(--ink-100); }
+  .legend__line{ flex:1; height:1px; background: var(--surface-line, rgba(20,17,15,0.12)); min-width: 24px; }
+
+  /* ── LANES ───────────────────────────── */
+  .lanes{ display:flex; flex-direction:column; gap: 64px; }
+  .lane{ position: relative; }
+  .lane__head{ display:grid; grid-template-columns: auto 1fr auto; gap: 20px; align-items:end; padding-bottom: 14px; border-bottom: 1px solid var(--ink-100); margin-bottom: 28px; }
+  .lane__num{ font-family: var(--font-mono, "Geist Mono", monospace); font-size: 12px; letter-spacing: 0.1em; color: var(--fg-muted, #6b6259); }
+  .lane__title{ font-family: var(--font-display, "Fraunces", serif); font-weight: 400; font-size: clamp(32px, 4vw, 56px); line-height: 1; letter-spacing: -0.02em; margin: 0; font-variation-settings: 'opsz' 100; }
+  .lane__title em{ font-style: italic; color: var(--accent-60, #c2632a); }
+  .lane__sub{ font-size: 13px; color: var(--fg-muted, #6b6259); max-width: 32ch; text-align:right; }
+
+  /* ── NODES & GRID ─────────────────────── */
+  .row{ display:grid; gap: 18px; }
+  .row--3{ grid-template-columns: repeat(3, 1fr); }
+  .row--4{ grid-template-columns: repeat(4, 1fr); }
+  .row--checkout{ grid-template-columns: repeat(4, 1fr); }
+
+  .node{
+    position: relative;
+    background: var(--node-bg);
+    border: 1px solid var(--ink-100);
+    border-radius: 4px;
+    padding: 18px 18px 16px;
+    display:flex; flex-direction: column; gap: 10px;
+    min-height: 168px;
+    transition: transform .18s ease, box-shadow .18s ease;
+  }
+  .node:hover{ transform: translateY(-2px); box-shadow: 0 8px 24px rgba(20,17,15,0.06); }
+  .node__head{ display:flex; justify-content:space-between; align-items:center; gap: 10px; }
+  .node__id{ font-family: var(--font-mono, "Geist Mono", monospace); font-size: 10px; letter-spacing: 0.08em; color: var(--fg-muted, #6b6259); padding: 3px 7px; border: 1px solid var(--surface-line, rgba(20,17,15,0.12)); border-radius: 2px; white-space: nowrap; }
+  .node__tag{ font-family: var(--font-mono, "Geist Mono", monospace); font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--fg-muted, #6b6259); display:flex; align-items:center; gap:6px; }
+  .node__tag::before{ content:""; width: 6px; height: 6px; border-radius:50%; background: currentColor; }
+  .node__title{ font-family: var(--font-display, "Fraunces", serif); font-weight: 400; font-size: 26px; line-height: 1.05; letter-spacing: -0.02em; margin: 0; font-variation-settings: 'opsz' 100; text-wrap: balance; }
+  .node__title em{ font-style: italic; color: var(--accent-60, #c2632a); }
+  .node__desc{ font-size: 13px; line-height: 1.45; color: var(--fg-muted, #6b6259); margin: 0; }
+  .node__path{ font-family: var(--font-mono, "Geist Mono", monospace); font-size: 11px; color: var(--ink-100); margin-top: auto; padding-top: 10px; border-top: 1px solid var(--surface-line, rgba(20,17,15,0.10)); display:flex; align-items:center; gap: 8px; word-break: break-all; }
+  .node__path b{ color: var(--accent-60, #c2632a); font-weight: 500; }
+
+  .node--auth{ background: var(--ink-100, #14110f); color: var(--paper-05, #faf6ee); border-color: var(--ink-100); }
+  .node--auth .node__id{ border-color: rgba(246,242,234,0.25); color: rgba(246,242,234,0.6); }
+  .node--auth .node__tag{ color: rgba(246,242,234,0.6); }
+  .node--auth .node__title em{ color: var(--accent-50, #d97851); }
+  .node--auth .node__desc{ color: rgba(246,242,234,0.7); }
+  .node--auth .node__path{ color: rgba(246,242,234,0.85); border-top-color: rgba(246,242,234,0.15); }
+  .node--auth .node__path b{ color: var(--accent-50, #d97851); }
+
+  .node--biz{ border: 2px solid var(--accent-60, #c2632a); }
+  .node--biz .node__title em, .node--biz .node__path b{ color: var(--accent-60, #c2632a); }
+
+  .node--flow{ background: transparent; border: 1px dashed var(--ink-100); min-height: 140px; }
+  .node--flow .node__title{ font-size: 22px; }
+
+  .node--small{ min-height: 110px; padding: 14px 14px 12px; }
+  .node--small .node__title{ font-size: 18px; }
+  .node--small .node__desc{ font-size: 12px; }
+
+  /* ── TABS LIST INSIDE NODE ────────────── */
+  .tabs{ display:flex; flex-wrap:wrap; gap: 4px; margin-top: 4px; }
+  .tabs span{ font-family: var(--font-mono, "Geist Mono", monospace); font-size: 10px; letter-spacing: 0.04em; padding: 3px 7px; border: 1px solid var(--surface-line, rgba(20,17,15,0.18)); border-radius: 2px; color: var(--fg-muted, #6b6259); }
+  .node--auth .tabs span{ border-color: rgba(246,242,234,0.2); color: rgba(246,242,234,0.7); }
+
+  /* ── CONNECTORS (inline arrows row) ───── */
+  .connectors{ display:grid; grid-template-columns: repeat(4, 1fr); gap: 18px; margin: 18px 0 4px; }
+  .arrow{ display:flex; align-items:center; justify-content:center; height: 44px; font-family: var(--font-mono, "Geist Mono", monospace); font-size: 10px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--fg-muted, #6b6259); position: relative; }
+  .arrow::before, .arrow::after{ content:""; flex:1; height:1px; background: var(--ink-100); opacity: .4; }
+  .arrow::before{ margin-right: 10px; }
+  .arrow::after{ margin-left: 10px; content: "→"; flex: 0; height: auto; background: transparent; opacity: 1; font-size: 14px; color: var(--accent-60); }
+
+  /* ── EDGE TABLE ────────────────────────── */
+  .edges{ margin-top: 56px; }
+  .edges table{ width: 100%; border-collapse: collapse; font-size: 13px; }
+  .edges th{ text-align:left; font-family: var(--font-mono, "Geist Mono", monospace); font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--fg-muted, #6b6259); font-weight: 500; padding: 10px 14px; border-bottom: 1px solid var(--ink-100); }
+  .edges td{ padding: 14px; border-bottom: 1px solid var(--surface-line, rgba(20,17,15,0.10)); vertical-align: top; }
+  .edges code{ font-family: var(--font-mono, "Geist Mono", monospace); font-size: 12px; background: var(--bg-raised, #efe9df); padding: 2px 6px; border-radius: 2px; }
+  .edges td:nth-child(2){ color: var(--accent-60, #c2632a); font-family: var(--font-mono, "Geist Mono", monospace); font-weight: 500; }
+  .edges tr:hover td{ background: var(--bg-raised, #efe9df); }
+
+  /* ── KEY ENTRY POINTS ────────────────── */
+  .entry{ margin-bottom: 56px; padding: 24px 28px; background: var(--bg-raised, #efe9df); border: 1px solid var(--surface-line, rgba(20,17,15,0.12)); border-radius: 4px; display:grid; grid-template-columns: auto 1fr auto; gap: 28px; align-items:center; }
+  .entry__num{ font-family: var(--font-display, "Fraunces", serif); font-style: italic; font-size: 64px; color: var(--accent-60, #c2632a); line-height: 1; font-variation-settings: 'opsz' 144, 'SOFT' 100; }
+  .entry__copy h3{ font-family: var(--font-display, "Fraunces", serif); font-weight: 400; font-size: 28px; margin: 0 0 6px; letter-spacing: -0.02em; }
+  .entry__copy p{ margin: 0; color: var(--fg-muted, #6b6259); font-size: 14px; line-height: 1.55; max-width: 60ch; }
+  .entry__bullet{ font-family: var(--font-mono, "Geist Mono", monospace); font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--fg-muted, #6b6259); display:flex; flex-direction:column; gap: 4px; align-items:flex-end; }
+
+  /* ── FOOTER NUM SCALE ─────────────────── */
+  .scale{ margin-top: 80px; padding-top: 24px; border-top: 1px solid var(--ink-100); display:grid; grid-template-columns: repeat(6, 1fr); gap: 14px; }
+  .scale > div{ font-family: var(--font-mono, "Geist Mono", monospace); font-size: 11px; letter-spacing: 0.08em; color: var(--fg-muted, #6b6259); }
+  .scale b{ font-family: var(--font-display, "Fraunces", serif); font-style: italic; font-size: 32px; color: var(--ink-100); display:block; line-height: 1; margin-bottom: 6px; font-variation-settings: 'opsz' 100; }
+
+  @media (max-width: 960px){
+    .row--3, .row--4, .row--checkout{ grid-template-columns: 1fr 1fr; }
+    .head{ grid-template-columns: 1fr; }
+    .entry{ grid-template-columns: 1fr; }
+    .lane__head{ grid-template-columns: 1fr; gap: 8px; }
+    .lane__sub{ text-align:left; }
+  }
+  @media (max-width: 560px){
+    .row--3, .row--4, .row--checkout, .scale{ grid-template-columns: 1fr; }
+    .wrap{ padding: 32px 20px 64px; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <!-- HEAD -->
+  <header class="head">
+    <div>
+      <span class="eyebrow">Portal Panorama · Mapa de páginas · v0.1</span>
+      <h1 class="title">El sitio, visto <em>desde arriba</em>.</h1>
+    </div>
+    <div>
+      <p class="lede">
+        Esta es la arquitectura completa del portal — todas las pantallas que hoy existen, agrupadas por audiencia y conectadas por los caminos reales que sigue cada usuario. Las flechas son enlaces que ya están en el código.
+      </p>
+      <div class="meta">
+        <div><strong>10</strong><span>Páginas únicas</span></div>
+        <div><strong>4</strong><span>Carriles</span></div>
+        <div><strong>17</strong><span>Vistas con tabs/steps</span></div>
+      </div>
+    </div>
+  </header>
+
+  <!-- LEGEND -->
+  <div class="legend">
+    <span class="eyebrow" style="margin-right: 4px">Leyenda</span>
+    <div class="legend__line"></div>
+    <div class="legend__item"><span class="swatch swatch--public"></span> Público</div>
+    <div class="legend__item"><span class="swatch swatch--auth"></span> Requiere sesión</div>
+    <div class="legend__item"><span class="swatch swatch--biz"></span> Para negocios</div>
+    <div class="legend__item"><span class="swatch swatch--flow"></span> Paso de flujo</div>
+    <div class="legend__line"></div>
+    <div class="legend__item" style="font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.08em;">→ camino primario</div>
+  </div>
+
+  <!-- ENTRY POINTS -->
+  <div class="entry">
+    <div class="entry__num">01</div>
+    <div class="entry__copy">
+      <h3>Punto de entrada principal</h3>
+      <p>El visitante llega a <code>/</code> (Home). Desde aquí se abren los tres caminos: <b>explorar</b> la ciudad como turista, <b>iniciar sesión</b> como usuario, o <b>listar un local</b> como dueño de negocio.</p>
+    </div>
+    <div class="entry__bullet">
+      <span>Hash router</span>
+      <span>10 rutas activas</span>
+      <span>localStorage: favs · listas · theme</span>
+    </div>
+  </div>
+
+  <!-- LANES -->
+  <div class="lanes">
+
+    <!-- LANE 1 — Núcleo público -->
+    <section class="lane">
+      <div class="lane__head">
+        <span class="lane__num">Carril 01 / 04</span>
+        <h2 class="lane__title">Núcleo <em>público</em> — explorar la ciudad</h2>
+        <span class="lane__sub">Lo que cualquier persona ve sin sesión iniciada. Es el grueso del tráfico.</span>
+      </div>
+
+      <div class="row row--3">
+        <article class="node">
+          <div class="node__head">
+            <span class="node__id">01</span>
+            <span class="node__tag">Home</span>
+          </div>
+          <h3 class="node__title">Portada <em>editorial</em></h3>
+          <p class="node__desc">Hero con buscador, categorías, destacados, eventos de la semana, CTA negocio.</p>
+          <div class="node__path"><b>#/</b></div>
+        </article>
+
+        <article class="node">
+          <div class="node__head">
+            <span class="node__id">02</span>
+            <span class="node__tag">Explorar</span>
+          </div>
+          <h3 class="node__title">Buscar / <em>resultados</em></h3>
+          <p class="node__desc">Listado con filtros (categoría, barrio, precio, horario). Vista grid o lista.</p>
+          <div class="tabs"><span>?cat=</span><span>?q=</span><span>?view=grid</span><span>?view=list</span></div>
+          <div class="node__path"><b>#/buscar</b></div>
+        </article>
+
+        <article class="node">
+          <div class="node__head">
+            <span class="node__id">03</span>
+            <span class="node__tag">Detalle</span>
+          </div>
+          <h3 class="node__title">Ficha del <em>lugar</em></h3>
+          <p class="node__desc">Galería, descripción, mapa, reseñas, sidebar con datos. Banner si no está reclamada.</p>
+          <div class="node__path"><b>#/lugar?id=</b></div>
+        </article>
+      </div>
+
+      <div class="connectors">
+        <div class="arrow">Home → Buscar</div>
+        <div class="arrow">Buscar → Lugar</div>
+        <div class="arrow">Home → Lugar</div>
+        <div class="arrow">Lugar → Perfil negocio</div>
+      </div>
+
+      <div class="row row--3">
+        <article class="node node--small">
+          <div class="node__head">
+            <span class="node__id">04</span>
+            <span class="node__tag">Perfil público</span>
+          </div>
+          <h3 class="node__title">Perfil del <em>negocio</em></h3>
+          <p class="node__desc">Vista pública del dueño / casa editorial — locales y eventos que gestiona.</p>
+          <div class="node__path"><b>#/perfil-negocio?id=</b></div>
+        </article>
+
+        <article class="node node--small">
+          <div class="node__head">
+            <span class="node__id">05</span>
+            <span class="node__tag">Marketing</span>
+          </div>
+          <h3 class="node__title">Planes <em>(Free / Premium)</em></h3>
+          <p class="node__desc">Comparación de planes para negocios. CTA al checkout.</p>
+          <div class="node__path"><b>#/planes</b></div>
+        </article>
+
+        <article class="node node--small">
+          <div class="node__head">
+            <span class="node__id">06</span>
+            <span class="node__tag">Documentación</span>
+          </div>
+          <h3 class="node__title">Sistema de <em>diseño</em></h3>
+          <p class="node__desc">Tipografía, paleta, componentes, espaciado — referencia interna.</p>
+          <div class="node__path"><b>#/sistema</b></div>
+        </article>
+      </div>
+    </section>
+
+    <!-- LANE 2 — Onboarding negocio -->
+    <section class="lane">
+      <div class="lane__head">
+        <span class="lane__num">Carril 02 / 04</span>
+        <h2 class="lane__title">Onboarding <em>negocio</em> — el embudo de conversión</h2>
+        <span class="lane__sub">Cuatro pasos lineales. Si el plan es Free, el paso 03 (pago) se salta.</span>
+      </div>
+
+      <div class="row row--checkout">
+        <article class="node node--biz">
+          <div class="node__head">
+            <span class="node__id">Paso 01</span>
+            <span class="node__tag" style="color: var(--accent-60)">Plan</span>
+          </div>
+          <h3 class="node__title">Elige tu <em>plan</em></h3>
+          <p class="node__desc">Toggle mensual / anual (−20%). Free vs Premium con precios CLP.</p>
+          <div class="node__path"><b>?step=1</b> &nbsp;<span style="color:var(--fg-muted)">cycle=anual|mensual</span></div>
+        </article>
+
+        <article class="node node--biz">
+          <div class="node__head">
+            <span class="node__id">Paso 02</span>
+            <span class="node__tag" style="color: var(--accent-60)">Datos</span>
+          </div>
+          <h3 class="node__title">Datos del <em>negocio</em></h3>
+          <p class="node__desc">Nombre, dirección, RUT, categoría, contacto, descripción.</p>
+          <div class="node__path"><b>?step=2</b></div>
+        </article>
+
+        <article class="node node--biz">
+          <div class="node__head">
+            <span class="node__id">Paso 03</span>
+            <span class="node__tag" style="color: var(--accent-60)">Pago</span>
+          </div>
+          <h3 class="node__title">Datos de <em>pago</em></h3>
+          <p class="node__desc">Tarjeta, Webpay o transferencia. Solo si plan = Premium. Trial 14 días.</p>
+          <div class="node__path"><b>?step=3</b></div>
+        </article>
+
+        <article class="node node--biz">
+          <div class="node__head">
+            <span class="node__id">Paso 04</span>
+            <span class="node__tag" style="color: var(--accent-60)">Listo</span>
+          </div>
+          <h3 class="node__title">Confirmación <em>activa</em></h3>
+          <p class="node__desc">Estado de éxito. CTA al panel del negocio.</p>
+          <div class="node__path"><b>?step=4</b></div>
+        </article>
+      </div>
+
+      <div class="connectors">
+        <div class="arrow">Plan → Datos</div>
+        <div class="arrow">Datos → Pago (Prem)</div>
+        <div class="arrow">Datos → Listo (Free)</div>
+        <div class="arrow">Listo → Panel</div>
+      </div>
+    </section>
+
+    <!-- LANE 3 — Panel usuario -->
+    <section class="lane">
+      <div class="lane__head">
+        <span class="lane__num">Carril 03 / 04</span>
+        <h2 class="lane__title">Panel del <em>usuario</em> — viajero / vecino</h2>
+        <span class="lane__sub">Una página, siete pestañas. Estado guardado en localStorage.</span>
+      </div>
+
+      <div class="row row--4">
+        <article class="node node--auth">
+          <div class="node__head">
+            <span class="node__id">Tab</span>
+            <span class="node__tag">Default</span>
+          </div>
+          <h3 class="node__title">Lugares <em>guardados</em></h3>
+          <p class="node__desc">Grid de favoritos (corazón) sincronizado con la ficha.</p>
+          <div class="node__path"><b>?tab=guardados</b></div>
+        </article>
+
+        <article class="node node--auth">
+          <div class="node__head">
+            <span class="node__id">Tab</span>
+            <span class="node__tag">Curaduría</span>
+          </div>
+          <h3 class="node__title">Mis <em>listas</em></h3>
+          <p class="node__desc">Carpetas privadas con cover en mosaico. CRUD completo.</p>
+          <div class="node__path"><b>?tab=listas</b></div>
+        </article>
+
+        <article class="node node--auth">
+          <div class="node__head">
+            <span class="node__id">Tab</span>
+            <span class="node__tag">Memoria</span>
+          </div>
+          <h3 class="node__title"><em>Historial</em> de visitas</h3>
+          <p class="node__desc">Lugares vistos recientemente.</p>
+          <div class="node__path"><b>?tab=historial</b></div>
+        </article>
+
+        <article class="node node--auth">
+          <div class="node__head">
+            <span class="node__id">Tab</span>
+            <span class="node__tag">Voz</span>
+          </div>
+          <h3 class="node__title">Mis <em>reseñas</em></h3>
+          <p class="node__desc">Editar / borrar reseñas escritas por mí.</p>
+          <div class="node__path"><b>?tab=resenas</b></div>
+        </article>
+      </div>
+
+      <div class="row row--4" style="margin-top: 18px">
+        <article class="node node--auth node--small">
+          <div class="node__head">
+            <span class="node__id">Tab</span><span class="node__tag">Agenda</span>
+          </div>
+          <h3 class="node__title">Eventos</h3>
+          <div class="node__path"><b>?tab=eventos</b></div>
+        </article>
+        <article class="node node--auth node--small">
+          <div class="node__head">
+            <span class="node__id">Tab</span><span class="node__tag">Identidad</span>
+          </div>
+          <h3 class="node__title">Perfil</h3>
+          <div class="node__path"><b>?tab=perfil</b></div>
+        </article>
+        <article class="node node--auth node--small">
+          <div class="node__head">
+            <span class="node__id">Tab</span><span class="node__tag">Ajustes</span>
+          </div>
+          <h3 class="node__title">Configuración</h3>
+          <div class="node__path"><b>?tab=config</b></div>
+        </article>
+        <article class="node node--auth node--small">
+          <div class="node__head">
+            <span class="node__id">Auth</span><span class="node__tag">Entrada</span>
+          </div>
+          <h3 class="node__title">Login</h3>
+          <p class="node__desc" style="font-size:11px">Email / Google. Redirige a Home.</p>
+          <div class="node__path"><b>#/login</b></div>
+        </article>
+      </div>
+    </section>
+
+    <!-- LANE 4 — Panel negocio -->
+    <section class="lane">
+      <div class="lane__head">
+        <span class="lane__num">Carril 04 / 04</span>
+        <h2 class="lane__title">Panel del <em>negocio</em> — dueño / equipo del local</h2>
+        <span class="lane__sub">Misma estructura de tabs, otra audiencia. Cruza con el panel de usuario.</span>
+      </div>
+
+      <div class="row row--4">
+        <article class="node node--biz">
+          <div class="node__head">
+            <span class="node__id">Tab</span>
+            <span class="node__tag" style="color: var(--accent-60)">Default</span>
+          </div>
+          <h3 class="node__title"><em>Resumen</em> · KPIs</h3>
+          <p class="node__desc">Vistas, cómo llegar, llamadas, posición. Gráfico 7 días + estado de la ficha.</p>
+          <div class="node__path"><b>?tab=resumen</b></div>
+        </article>
+
+        <article class="node node--biz">
+          <div class="node__head">
+            <span class="node__id">Tab</span>
+            <span class="node__tag" style="color: var(--accent-60)">Inventario</span>
+          </div>
+          <h3 class="node__title">Mis <em>fichas</em></h3>
+          <p class="node__desc">Locales que gestiono. Editar, ver, agregar nuevo.</p>
+          <div class="node__path"><b>?tab=fichas</b></div>
+        </article>
+
+        <article class="node node--biz">
+          <div class="node__head">
+            <span class="node__id">Tab</span>
+            <span class="node__tag" style="color: var(--accent-60)">Datos</span>
+          </div>
+          <h3 class="node__title"><em>Estadísticas</em> 6m</h3>
+          <p class="node__desc">Tendencia mensual, fuente de tráfico, acciones desde la ficha.</p>
+          <div class="node__path"><b>?tab=stats</b></div>
+        </article>
+
+        <article class="node node--biz">
+          <div class="node__head">
+            <span class="node__id">Tab</span>
+            <span class="node__tag" style="color: var(--accent-60)">Voz</span>
+          </div>
+          <h3 class="node__title">Reseñas <em>recibidas</em></h3>
+          <p class="node__desc">Responder / marcar como respondida.</p>
+          <div class="node__path"><b>?tab=resenas</b></div>
+        </article>
+      </div>
+
+      <div class="row row--4" style="margin-top: 18px">
+        <article class="node node--biz node--small">
+          <div class="node__head">
+            <span class="node__id">Tab</span><span class="node__tag" style="color:var(--accent-60)">Publicación</span>
+          </div>
+          <h3 class="node__title">Eventos</h3>
+          <div class="node__path"><b>?tab=eventos</b></div>
+        </article>
+        <article class="node node--biz node--small">
+          <div class="node__head">
+            <span class="node__id">Tab</span><span class="node__tag" style="color:var(--accent-60)">Comercial</span>
+          </div>
+          <h3 class="node__title">Plan / facturación</h3>
+          <div class="node__path"><b>?tab=plan</b></div>
+        </article>
+        <article class="node node--biz node--small">
+          <div class="node__head">
+            <span class="node__id">Tab</span><span class="node__tag" style="color:var(--accent-60)">Cruce</span>
+          </div>
+          <h3 class="node__title">Guardados</h3>
+          <p class="node__desc" style="font-size:11px">Hereda del modo usuario.</p>
+          <div class="node__path"><b>?tab=guardados</b></div>
+        </article>
+        <article class="node node--biz node--small">
+          <div class="node__head">
+            <span class="node__id">Tab</span><span class="node__tag" style="color:var(--accent-60)">Cruce</span>
+          </div>
+          <h3 class="node__title">Listas / Perfil</h3>
+          <div class="node__path"><b>?tab=listas</b> · <b>?tab=perfil</b></div>
+        </article>
+      </div>
+    </section>
+
+  </div>
+
+  <!-- EDGE TABLE -->
+  <section class="edges">
+    <div class="lane__head">
+      <span class="lane__num">Apéndice</span>
+      <h2 class="lane__title">Conexiones <em>explícitas</em> en el código</h2>
+      <span class="lane__sub">Cada fila es un enlace real entre páginas que ya está implementado.</span>
+    </div>
+
+    <table>
+      <thead>
+        <tr>
+          <th style="width: 24%">Desde</th>
+          <th style="width: 6%">→</th>
+          <th style="width: 26%">Hacia</th>
+          <th>Disparador / contexto</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td><code>/</code> Home</td><td>→</td><td><code>/buscar?cat=</code></td><td>Tarjetas de categoría y chips temáticos del hero</td></tr>
+        <tr><td><code>/</code> Home</td><td>→</td><td><code>/lugar?id=</code></td><td>Tarjetas destacadas y bloque "Panoramas nuevos"</td></tr>
+        <tr><td><code>/</code> Home</td><td>→</td><td><code>/planes</code></td><td>Banner "¿Tienes un local?" al final</td></tr>
+        <tr><td><code>/buscar</code></td><td>→</td><td><code>/lugar?id=</code></td><td>Cada resultado en grid o fila</td></tr>
+        <tr><td><code>/buscar</code></td><td>→</td><td><code>/buscar?view=</code></td><td>Toggle Grid / Lista en la barra de resultados</td></tr>
+        <tr><td><code>/lugar</code></td><td>→</td><td><code>/perfil-negocio?id=</code></td><td>Sidebar "Gestionado por" / "Ficha creada por"</td></tr>
+        <tr><td><code>/lugar</code> (no premium)</td><td>→</td><td><code>/checkout?step=1</code></td><td>Banner "Reclamar ficha"</td></tr>
+        <tr><td><code>/lugar</code></td><td>→</td><td><code>/buscar?where=</code></td><td>Sección "También te puede gustar"</td></tr>
+        <tr><td><code>/planes</code></td><td>→</td><td><code>/checkout?step=1</code></td><td>CTA "Empezar prueba" en plan Premium</td></tr>
+        <tr><td><code>/checkout?step=2</code></td><td>→</td><td><code>?step=3</code> o <code>?step=4</code></td><td>Bifurca: Premium pasa por pago, Free salta a confirmación</td></tr>
+        <tr><td><code>/checkout?step=4</code></td><td>→</td><td><code>/dashboard-negocio</code></td><td>CTA "Ir a mi panel"</td></tr>
+        <tr><td><code>/dashboard-usuario</code></td><td>→</td><td><code>/dashboard-negocio</code></td><td>Botón "Mi negocio" en el header</td></tr>
+        <tr><td><code>/dashboard-negocio</code></td><td>→</td><td><code>/dashboard-usuario</code></td><td>Botón "Mi cuenta" en el header (vuelta)</td></tr>
+        <tr><td><code>/dashboard-negocio</code></td><td>→</td><td><code>/lugar?id=</code></td><td>"Ver ficha" en cada local de "Mis fichas"</td></tr>
+        <tr><td><code>/dashboard-negocio?tab=fichas</code></td><td>→</td><td><code>/checkout?step=2</code></td><td>"Agregar local" desde el panel</td></tr>
+        <tr><td>Topbar (cualquier página)</td><td>→</td><td><code>/login</code></td><td>Botón "Iniciar sesión" en la barra superior</td></tr>
+        <tr><td><code>/login</code></td><td>→</td><td><code>/</code></td><td>Submit del formulario (mock — siempre redirige a Home)</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <!-- SCALE -->
+  <div class="scale">
+    <div><b>10</b>Páginas únicas</div>
+    <div><b>04</b>Pasos checkout</div>
+    <div><b>07</b>Tabs usuario</div>
+    <div><b>09</b>Tabs negocio</div>
+    <div><b>17</b>Aristas reales</div>
+    <div><b>v0.1</b>Edición #04 · Otoño 2026</div>
+  </div>
+
+</div>
+</body>
+</html>

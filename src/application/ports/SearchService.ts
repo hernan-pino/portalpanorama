@@ -4,7 +4,10 @@ import { Neighborhood } from '@domain/shared/Neighborhoods'
 export interface SearchParams {
   query?: string
   categoryId?: string
+  categorySlug?: string
   neighborhood?: Neighborhood
+  priceRanges?: number[]
+  isPremium?: boolean
   page?: number
   limit?: number
 }
@@ -14,8 +17,14 @@ export interface SearchResultItem {
   name: string
   slug: string
   categoryId: string
+  categoryName: string
   neighborhood: string
+  description?: string
+  priceRange?: number  // ordinal 1-4 ($/$$/$$$/$$$$), no es un monto CLP
+  isPremium: boolean
   averageRating?: number
+  reviewCount: number
+  tags: string[]
 }
 
 export interface SearchResult {

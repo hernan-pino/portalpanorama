@@ -1,24 +1,36 @@
 ---
-description: Cierre formal de una fase del proyecto. Corre tests, audita arquitectura, actualiza docs y resume el estado.
+description: Cierre formal de un paso de la Fase 7. Corre tests, audita arquitectura y seguridad, actualiza ROADMAP.md y resume el estado.
 ---
 
-Antes de cerrar esta fase:
+Antes de cerrar este paso:
 
-1. Confirma que todos los tests pasan. Usa el subagente test-runner.
-2. Pasa el subagente architecture-guardian sobre los archivos modificados
-   en esta fase.
-3. Si hubo cambios sensibles (auth, pagos, webhooks, queries, file uploads),
-   pasa también el subagente security-reviewer.
-4. Actualiza project-brief/OPEN_QUESTIONS.md con las dudas que surgieron
-   en esta fase y cómo se resolvieron. Si hay decisiones técnicas
-   importantes (ej: elección de cuid vs uuid, estructura de un agregado),
-   documéntalas también ahí.
-5. Hazme un resumen claro de:
-   - Qué se construyó en esta fase (archivos clave, decisiones importantes).
-   - Qué deuda técnica o pendientes quedaron documentados.
-   - Qué sigue en la siguiente fase según ARCHITECTURE.md y PROJECT_BRIEF.md.
-6. Sugiere un mensaje de commit descriptivo siguiendo conventional commits
-   (ej: "feat(domain): complete phase 1 - entities and value objects").
+1. **Tests:** Usa el subagente `test-runner` para confirmar que todos los tests pasan.
+
+2. **Arquitectura:** Usa el subagente `architecture-guardian` sobre los archivos modificados en este paso.
+   Verifica que no haya violaciones de la regla de dependencias (domain ← application ← infrastructure/presentation)
+   ni antipatrones listados en CLAUDE.md.
+
+3. **Seguridad:** Usa el subagente `security-reviewer` SIEMPRE que el paso haya tocado:
+   - Auth / registro / sesiones
+   - Pagos o webhooks (Flow)
+   - Inputs de usuario que van a la BD (forms, server actions)
+   - Queries SQL directas (PostgresFTSSearchService, etc.)
+   - Upload de archivos
+   Si el paso no tocó nada de eso, omite este subagente y menciona el motivo.
+
+4. **Actualiza ROADMAP.md:**
+   - Cambia el estado del paso de 🔄 EN CURSO a ✅ COMPLETADO
+   - Registra el commit hash en la columna "Commit de cierre"
+   - Si surgieron preguntas nuevas durante el paso, agrégalas en "Preguntas abiertas"
+
+5. **Resumen:** Dime:
+   - Qué se construyó exactamente (archivos creados/modificados clave).
+   - Decisiones técnicas importantes tomadas en este paso.
+   - Deuda técnica o pendientes que quedaron fuera del scope.
+   - Qué sigue (próximo paso según ROADMAP.md).
+
+6. **Commit:** Sugiere un mensaje de commit siguiendo Conventional Commits:
+   `feat(paso-7.X): descripción breve del paso`
 
 NO hagas el commit tú. Yo lo reviso y lo hago después.
-NO avances a la siguiente fase. Espera mi OK explícito.
+NO avances al siguiente paso. Espera mi OK explícito.

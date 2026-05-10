@@ -20,6 +20,7 @@ export async function Header() {
           {/* Nav */}
           <nav className="topbar__nav" aria-label="Navegación principal">
             <Link href="/explorar">Explorar</Link>
+            <Link href="/eventos">Eventos</Link>
             <Link href="/planes">Planes</Link>
           </nav>
 

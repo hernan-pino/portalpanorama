@@ -2,25 +2,21 @@
 description: Retoma el proyecto leyendo los documentos clave y el último commit. Reporta estado y espera confirmación antes de avanzar.
 ---
 
-Estoy retomando el proyecto. Antes de hacer nada:
+Estoy retomando el proyecto Portal Panorama. Antes de hacer nada:
 
-1. Lee project-brief/PROJECT_BRIEF.md
-2. Lee CLAUDE.md
-3. Lee ARCHITECTURE.md
-4. Lee project-brief/OPEN_QUESTIONS.md
-5. Lee project-brief/DESIGN_NOTES.md si existe.
-6. Revisa el último commit con `git log -1 --stat` para saber dónde
-   quedamos y qué archivos se tocaron.
-7. Revisa si hay archivos modificados sin commitear con `git status`.
+1. Lee `ROADMAP.md` — identifica qué paso está EN CURSO o es el próximo PENDIENTE.
+2. Lee `CLAUDE.md` — recuerda las reglas arquitectónicas permanentes.
+3. Lee `ARCHITECTURE.md` — bounded contexts, ports y schema de BD.
+4. Revisa el último commit con `git log -3 --stat` para saber exactamente dónde quedamos.
+5. Revisa si hay archivos modificados sin commitear con `git status`.
 
 Luego dime, en formato breve:
-- En qué fase estamos.
-- Qué quedó terminado en la fase anterior.
-- Qué sigue según el plan.
-- Si hay preguntas abiertas en OPEN_QUESTIONS.md que requieren mi
-  respuesta antes de avanzar.
-- Si hay cambios sin commitear, qué son y si conviene commitearlos
-  antes de seguir.
+
+- **Fase/Paso actual:** qué paso de la Fase 7 estamos haciendo (según ROADMAP.md).
+- **Último trabajo:** qué se hizo en el commit más reciente y qué archivos se tocaron.
+- **Próximo paso:** qué hay que hacer según el ROADMAP, con los archivos clave.
+- **Sin commitear:** si hay cambios pendientes de commit, listarlos y sugerir si commitear antes de seguir.
+- **Bloqueantes:** si hay algo marcado como ⚠️ BLOQUEADO o preguntas abiertas que requieran decisión.
 
 NO empieces a programar hasta que yo confirme explícitamente.
-NO ejecutes el siguiente paso del plan sin mi OK.
+NO ejecutes el siguiente paso sin mi OK.
