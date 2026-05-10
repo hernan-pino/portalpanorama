@@ -2,7 +2,6 @@ import type { Metadata } from 'next'
 import { Fraunces, Inter_Tight } from 'next/font/google'
 import './globals.css'
 import { Header } from '@components/layout/Header'
-import { Footer } from '@components/layout/Footer'
 
 const fraunces = Fraunces({
   subsets: ['latin'],
@@ -32,8 +31,7 @@ export default function RootLayout({
     <html lang="es" className={`${fraunces.variable} ${interTight.variable}`}>
       <body>
         <Header />
-        <main>{children}</main>
-        <Footer />
+        {children}
       </body>
     </html>
   )

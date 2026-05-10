@@ -6,6 +6,7 @@ import { signOutAction } from '@/app/actions/auth'
 export async function Header() {
   const session = await auth()
   const user = session?.user
+  const role = (user as { role?: string } | undefined)?.role
 
   return (
     <header className="topbar">
@@ -27,10 +28,7 @@ export async function Header() {
           {/* Actions */}
           <div className="topbar__actions">
             {user ? (
-              <AuthenticatedActions
-                name={user.name ?? ''}
-                role={(user as { role?: string }).role}
-              />
+              <AuthenticatedActions name={user.name ?? ''} role={role} />
             ) : (
               <GuestActions />
             )}
@@ -47,8 +45,8 @@ function GuestActions() {
       <Link href="/login" className="btn btn--ghost btn--sm">
         Iniciar sesión
       </Link>
-      <Link href="/registro" className="btn btn--primary btn--sm">
-        Registrarse
+      <Link href="/listar-mi-local" className="btn btn--primary btn--sm">
+        Listar mi local
       </Link>
     </>
   )
@@ -61,20 +59,44 @@ function AuthenticatedActions({
   name: string
   role?: string
 }) {
-  return (
-    <>
-      {role === UserRole.ADMIN && (
+  const firstName = name.split(' ')[0]
+
+  if (role === UserRole.ADMIN) {
+    return (
+      <>
         <Link href="/admin" className="btn btn--ghost btn--sm">
           Admin
         </Link>
-      )}
-      {(role === UserRole.BUSINESS_OWNER || role === UserRole.ADMIN) && (
         <Link href="/dashboard" className="btn btn--ghost btn--sm">
           Dashboard
         </Link>
-      )}
-      <Link href="/mi-cuenta/favoritos" className="btn btn--ghost btn--sm">
-        {name.split(' ')[0]}
+        <LogoutButton />
+      </>
+    )
+  }
+
+  if (role === UserRole.BUSINESS_OWNER) {
+    return (
+      <>
+        <Link href="/mi-negocio" className="btn btn--ghost btn--sm">
+          {firstName}
+        </Link>
+        <Link href="/mi-negocio" className="btn btn--primary btn--sm">
+          Mi negocio
+        </Link>
+        <LogoutButton />
+      </>
+    )
+  }
+
+  // CONSUMER
+  return (
+    <>
+      <Link href="/mi-cuenta" className="btn btn--ghost btn--sm">
+        {firstName}
+      </Link>
+      <Link href="/listar-mi-local" className="btn btn--primary btn--sm">
+        Listar mi negocio
       </Link>
       <LogoutButton />
     </>

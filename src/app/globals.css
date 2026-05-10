@@ -1151,7 +1151,7 @@ a { color: inherit; text-decoration: none; }
 .auth-shell {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  min-height: calc(100vh - 72px);
+  height: calc(100dvh - 72px);
 }
 .auth-shell__art {
   background: var(--ink-100); color: var(--paper-05);
@@ -1172,6 +1172,30 @@ a { color: inherit; text-decoration: none; }
   padding: var(--s-12);
   display: flex; flex-direction: column; justify-content: center;
   max-width: 480px;
+}
+.auth-tabs {
+  display: flex;
+  background: var(--bg-sunken);
+  border-radius: var(--r-pill);
+  padding: 3px;
+  margin-bottom: var(--s-8);
+  gap: 2px;
+}
+.auth-tabs__item {
+  flex: 1;
+  text-align: center;
+  padding: var(--s-2) 0;
+  border-radius: var(--r-pill);
+  font-size: var(--t-body-sm);
+  font-family: var(--font-sans);
+  text-decoration: none;
+  color: var(--fg-muted);
+  transition: color 0.1s;
+}
+.auth-tabs__item:hover { color: var(--fg); }
+.auth-tabs__item--active {
+  background: var(--ink-100);
+  color: var(--paper-00);
 }
 
 /* ---------- Chip row ---------- */

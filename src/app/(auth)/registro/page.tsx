@@ -17,10 +17,10 @@ export default function RegistroPage() {
 
         <blockquote style={{ margin: 0 }}>
           <h2>
-            Listá tu local. <em>Sin comisiones</em>, sin sorpresas.
+            Lo bueno de la ciudad, <em>curado</em> como revista.
           </h2>
           <p style={{ fontFamily: 'var(--font-mono)', fontSize: 'var(--t-mono-sm)', letterSpacing: 'var(--tr-wider)', textTransform: 'uppercase', color: 'var(--paper-40)', marginTop: 'var(--s-5)' }}>
-            — Para negocios · Santiago 2026
+            — Editorial · Santiago 2026
           </p>
         </blockquote>
 
@@ -35,6 +35,11 @@ export default function RegistroPage() {
           <span className="brand__mark" aria-hidden="true" />
           Portal<em>Panorama</em>
         </Link>
+
+        <div className="auth-tabs">
+          <Link href="/login" className="auth-tabs__item">Iniciar sesión</Link>
+          <span className="auth-tabs__item auth-tabs__item--active">Registrarse</span>
+        </div>
 
         <h1
           style={{
@@ -54,13 +59,6 @@ export default function RegistroPage() {
         </p>
 
         <RegisterForm />
-
-        <p style={{ fontSize: 'var(--t-body-sm)', color: 'var(--fg-muted)', marginTop: 'var(--s-6)' }}>
-          ¿Ya tenés cuenta?{' '}
-          <Link href="/login" style={{ color: 'var(--fg)', textDecoration: 'underline' }}>
-            Iniciá sesión
-          </Link>
-        </p>
       </div>
 
     </div>

@@ -36,6 +36,11 @@ export default function LoginPage() {
           Portal<em>Panorama</em>
         </Link>
 
+        <div className="auth-tabs">
+          <span className="auth-tabs__item auth-tabs__item--active">Iniciar sesión</span>
+          <Link href="/registro" className="auth-tabs__item">Registrarse</Link>
+        </div>
+
         <h1
           style={{
             fontFamily: 'var(--font-display)',
@@ -54,13 +59,6 @@ export default function LoginPage() {
         </p>
 
         <LoginForm />
-
-        <p style={{ fontSize: 'var(--t-body-sm)', color: 'var(--fg-muted)', marginTop: 'var(--s-6)' }}>
-          ¿No tenés cuenta?{' '}
-          <Link href="/registro" style={{ color: 'var(--fg)', textDecoration: 'underline' }}>
-            Registrate gratis
-          </Link>
-        </p>
       </div>
 
     </div>
