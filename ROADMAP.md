@@ -71,7 +71,7 @@ src/app/listar-mi-local/
 
 ### Paso 7.3 — Dashboard negocio `/mi-negocio?tab=...`
 **Estado:** ✅ COMPLETADO
-**Commit:** 2ce5d8d
+**Commit de cierre:** 2ce5d8d
 **Archivos nuevos/modificados:**
 ```
 src/app/mi-negocio/
@@ -199,3 +199,4 @@ src/app/mi-cuenta/
 - ¿El modelo `UserList` existe en `schema.prisma`? Verificar antes del Paso 7.4 tab Listas
 - ¿Credenciales Flow sandbox disponibles? Necesarias para Paso 7.2 step 3 y Paso 7.10
 - ¿Dominio final decidido? Necesario para `NEXTAUTH_URL` en Vercel
+- Banner de credenciales dev en `/login` — borrar antes del deploy a producción (Paso 7.10)

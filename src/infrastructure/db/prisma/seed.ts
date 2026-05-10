@@ -52,6 +52,36 @@ async function main() {
   })
   console.log(`  ✓ Usuario admin: ${admin.email}`)
 
+  // ── Consumer user ──
+  const consumerHash = await bcrypt.hash('usuario1234', 10)
+  await prisma.user.upsert({
+    where: { email: 'usuario@portalpanorama.cl' },
+    update: {},
+    create: {
+      id: createId(),
+      email: 'usuario@portalpanorama.cl',
+      name: 'Camila Torres',
+      role: 'CONSUMER',
+      passwordHash: consumerHash,
+    },
+  })
+  console.log(`  ✓ Usuario consumer: usuario@portalpanorama.cl`)
+
+  // ── Business owner user ──
+  const ownerHash = await bcrypt.hash('negocio1234', 10)
+  const owner = await prisma.user.upsert({
+    where: { email: 'negocio@portalpanorama.cl' },
+    update: {},
+    create: {
+      id: createId(),
+      email: 'negocio@portalpanorama.cl',
+      name: 'Rodrigo Pérez',
+      role: 'BUSINESS_OWNER',
+      passwordHash: ownerHash,
+    },
+  })
+  console.log(`  ✓ Usuario negocio: negocio@portalpanorama.cl`)
+
   // ── Listings ──
   const listingData = [
     {
@@ -193,6 +223,26 @@ async function main() {
     }
   }
   console.log(`  ✓ ${listingData.length} listings publicados`)
+
+  // ── Listing para el usuario negocio ──
+  await prisma.listing.upsert({
+    where: { slug: 'ambrosia-bistro' },
+    update: {},
+    create: {
+      id: createId(),
+      slug: 'ambrosia-bistro',
+      name: 'Ambrosía Bistró',
+      description: 'Cocina de autor en el corazón de Providencia. Menú de temporada con ingredientes locales.',
+      neighborhood: 'Providencia',
+      categoryId: catMap['restaurantes'],
+      ownerId: owner.id,
+      address: 'Av. Providencia 1234',
+      phone: '+56 9 8765 4321',
+      status: 'PUBLISHED',
+      plan: 'FREE',
+    },
+  })
+  console.log(`  ✓ Listing de negocio: Ambrosía Bistró`)
 
   console.log('Seed completo.')
 }

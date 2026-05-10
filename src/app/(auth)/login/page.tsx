@@ -29,6 +29,24 @@ export default function LoginPage() {
         </p>
       </div>
 
+      {/* ── DEV credentials (borrar antes de deploy) ── */}
+      <div style={{
+        position: 'fixed', bottom: 'var(--s-4)', right: 'var(--s-4)',
+        background: 'var(--bg-raised)', border: '1px solid var(--surface-line)',
+        borderRadius: 'var(--r-lg)', padding: 'var(--s-4) var(--s-5)',
+        fontSize: 'var(--t-body-sm)', zIndex: 9999,
+        boxShadow: '0 4px 16px rgba(0,0,0,.12)',
+      }}>
+        <p style={{ fontFamily: 'var(--font-mono)', fontSize: 'var(--t-mono-sm)', letterSpacing: 'var(--tr-wider)', textTransform: 'uppercase', color: 'var(--fg-subtle)', marginBottom: 'var(--s-3)' }}>
+          Dev — credenciales
+        </p>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--s-2)' }}>
+          <CredRow label="Admin" email="admin@portalpanorama.cl" pass="admin1234" />
+          <CredRow label="Negocio" email="negocio@portalpanorama.cl" pass="negocio1234" />
+          <CredRow label="Usuario" email="usuario@portalpanorama.cl" pass="usuario1234" />
+        </div>
+      </div>
+
       {/* ── Form panel ── */}
       <div className="auth-shell__form">
         <Link href="/" className="brand" style={{ marginBottom: 'var(--s-8)', display: 'inline-flex' }}>
@@ -61,6 +79,16 @@ export default function LoginPage() {
         <LoginForm />
       </div>
 
+    </div>
+  )
+}
+
+function CredRow({ label, email, pass }: { label: string; email: string; pass: string }) {
+  return (
+    <div style={{ display: 'flex', gap: 'var(--s-3)', alignItems: 'baseline' }}>
+      <span style={{ fontFamily: 'var(--font-mono)', fontSize: 'var(--t-mono-sm)', color: 'var(--fg-subtle)', minWidth: 48 }}>{label}</span>
+      <span style={{ fontFamily: 'var(--font-mono)', fontSize: 'var(--t-mono-sm)', userSelect: 'all' }}>{email}</span>
+      <span style={{ fontFamily: 'var(--font-mono)', fontSize: 'var(--t-mono-sm)', color: 'var(--fg-muted)', userSelect: 'all' }}>{pass}</span>
     </div>
   )
 }
