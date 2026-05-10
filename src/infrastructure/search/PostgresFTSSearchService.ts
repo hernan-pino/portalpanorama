@@ -89,7 +89,7 @@ export class PostgresFTSSearchService implements SearchService {
   }
 
   // In Postgres FTS mode, indexing is a no-op — the DB table IS the index
-  async indexListing(_listing: Listing): Promise<void> {}
+  async indexListing(_l: Listing): Promise<void> {}
 
-  async removeListing(_listingId: string): Promise<void> {}
+  async removeListing(_: string): Promise<void> {}
 }

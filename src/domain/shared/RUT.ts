@@ -2,7 +2,7 @@ import { DomainError } from './DomainError'
 
 export class InvalidRUTError extends DomainError {
   readonly code = 'INVALID_RUT'
-  constructor(_raw: string) {
+  constructor(_: string) {
     super('El RUT ingresado no es válido. Formato esperado: 12.345.678-9')
   }
 }

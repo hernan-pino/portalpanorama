@@ -14,7 +14,7 @@ export interface MoneyProps {
 
 export class Money {
   readonly amount: number
-  readonly currency: 'CLP' = 'CLP'
+  readonly currency = 'CLP' as const
 
   private constructor(amount: number) {
     this.amount = amount

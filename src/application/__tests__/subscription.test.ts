@@ -83,7 +83,7 @@ function mockStorageService(): StorageService {
 
 describe('HandlePaymentWebhookUseCase', () => {
   it('activa suscripción y upgradea listing a PREMIUM cuando el pago se confirma', async () => {
-    const listing = makeListing({ status: undefined as any })
+    const listing = makeListing({ status: undefined as unknown as string })
     const listingRepo = mockListingRepo({ findById: vi.fn().mockResolvedValue(listing) })
     const subRepo = mockSubRepo()
     const gateway = mockPaymentGateway({

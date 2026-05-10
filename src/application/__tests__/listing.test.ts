@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest'
+import { describe, it, expect, vi } from 'vitest'
 import { ListingStatus } from '@domain/listing/ListingStatus'
 import { ListingNotFoundError } from '@domain/listing/errors/ListingNotFoundError'
 import { ListingAlreadyClaimedError } from '@domain/listing/errors/ListingAlreadyClaimedError'

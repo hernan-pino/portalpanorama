@@ -4,7 +4,6 @@ import { z } from 'zod'
 import { auth } from '@lib/auth'
 import { container } from '@lib/container'
 import { NEIGHBORHOODS } from '@domain/shared/Neighborhoods'
-import type { Neighborhood } from '@domain/shared/Neighborhoods'
 
 const schema = z.object({
   name: z.string().min(2, 'El nombre debe tener al menos 2 caracteres.'),

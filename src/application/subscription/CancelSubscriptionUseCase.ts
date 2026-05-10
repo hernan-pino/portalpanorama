@@ -1,4 +1,4 @@
-import { Listing, ListingProps } from '@domain/listing/Listing'
+import { Listing } from '@domain/listing/Listing'
 import { ListingNotFoundError } from '@domain/listing/errors/ListingNotFoundError'
 import { SubscriptionStatus } from '@domain/subscription/SubscriptionStatus'
 import { SubscriptionNotActiveError } from '@domain/subscription/errors/SubscriptionNotActiveError'
@@ -56,7 +56,7 @@ export class CancelSubscriptionUseCase {
     }
   }
 
-  private async findOwnerEmail(listing: Listing): Promise<string | null> {
+  private async findOwnerEmail(_listing: Listing): Promise<string | null> {
     // El listingRepo no tiene método findOwner; la dirección se pasa desde afuera si fuera necesario.
     // Por ahora retornamos null: el email de cancelación lo maneja el webhook de Flow también.
     return null
