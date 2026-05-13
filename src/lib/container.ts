@@ -33,6 +33,7 @@ import { GetListingWithReviewsUseCase } from '@application/listing/GetListingWit
 import { GetOwnedListingUseCase } from '@application/listing/GetOwnedListingUseCase'
 import { GetListingSubscriptionsUseCase } from '@application/subscription/GetListingSubscriptionsUseCase'
 import { CreateReviewUseCase } from '@application/review/CreateReviewUseCase'
+import { GetOwnerProfileUseCase } from '@application/listing/GetOwnerProfileUseCase'
 
 export const container = {
   // ── Auth ──────────────────────────────────────────────────────────────
@@ -114,6 +115,13 @@ export const container = {
 
   getGetOwnedListingUseCase() {
     return new GetOwnedListingUseCase(new PrismaListingRepository(prisma))
+  },
+
+  getGetOwnerProfileUseCase() {
+    return new GetOwnerProfileUseCase(
+      new PrismaUserRepository(prisma),
+      new PrismaListingRepository(prisma),
+    )
   },
 
   // ── Business dashboard ────────────────────────────────────────────────

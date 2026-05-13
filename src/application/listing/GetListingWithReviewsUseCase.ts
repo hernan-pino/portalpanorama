@@ -17,6 +17,7 @@ export interface GetListingWithReviewsOutput {
   stats: ReviewStats
   isFavorite: boolean
   userReview: Review | null
+  ownerName: string | null
 }
 
 export class GetListingWithReviewsUseCase {
@@ -50,6 +51,9 @@ export class GetListingWithReviewsUseCase {
       ])
     }
 
-    return { listing, reviews, stats, isFavorite, userReview }
+    const owner = await this.userRepo.findById(listing.ownerId)
+    const ownerName = owner?.isBusinessOwner() ? owner.name : null
+
+    return { listing, reviews, stats, isFavorite, userReview, ownerName }
   }
 }

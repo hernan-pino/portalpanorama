@@ -35,7 +35,7 @@ export default async function LugarPage({ params }: PageProps) {
 
   if (!result) notFound()
 
-  const { listing, reviews, stats, isFavorite, userReview } = result
+  const { listing, reviews, stats, isFavorite, userReview, ownerName } = result
 
   const isLoggedIn = !!session?.user?.id
 
@@ -281,8 +281,28 @@ export default async function LugarPage({ params }: PageProps) {
               Más en {listing.neighborhood}
             </Link>
 
-            {/* Banner reclamar ficha — solo si no tiene dueño */}
-            {!listing.ownerId && (
+            {/* Gestionado por — si el owner es BUSINESS_OWNER */}
+            {ownerName ? (
+              <div style={{
+                padding: 'var(--s-5)',
+                border: '1px solid var(--surface-line)',
+                borderRadius: 'var(--r-md)',
+                display: 'flex',
+                flexDirection: 'column',
+                gap: 'var(--s-3)',
+              }}>
+                <p style={{ fontSize: 'var(--t-body-sm)', color: 'var(--fg-muted)', margin: 0, lineHeight: 'var(--lh-loose)' }}>
+                  Gestionado por
+                </p>
+                <Link
+                  href={`/perfil-negocio/${listing.ownerId}`}
+                  className="btn btn--ghost btn--sm"
+                  style={{ justifyContent: 'center' }}
+                >
+                  {ownerName}
+                </Link>
+              </div>
+            ) : (
               <div style={{
                 padding: 'var(--s-5)',
                 border: '1px solid var(--surface-line)',
