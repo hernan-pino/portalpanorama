@@ -136,13 +136,16 @@ src/lib/container.ts  (actualizado)
 
 ---
 
-### Paso 7.6 — Perfil público del negocio `/perfil-negocio/[slug]`
-**Estado:** ⬜ PENDIENTE
+### Paso 7.6 — Perfil público del negocio `/perfil-negocio/[ownerId]`
+**Estado:** ✅ COMPLETADO
 **Archivos:**
-- `src/app/perfil-negocio/[slug]/page.tsx`
-- Posible nuevo use case: `GetOwnerProfileUseCase`
-**Link desde:** sidebar de `/lugar/[slug]` → "Gestionado por [Nombre]"
-**Commit de cierre:** —
+- `src/application/listing/GetOwnerProfileUseCase.ts` — verifica isBusinessOwner(), devuelve OwnerListingDTO[] (no expone plan/pricePerMonth/ownerId)
+- `src/application/listing/GetListingWithReviewsUseCase.ts` — agrega `ownerName: string | null` al output
+- `src/lib/container.ts` — agrega `getGetOwnerProfileUseCase()`
+- `src/app/(main)/perfil-negocio/[ownerId]/page.tsx` — avatar inicial, nombre, miembro-desde, grid de lugares; React.cache() evita doble query
+- `src/app/(main)/lugar/[slug]/page.tsx` — sidebar: "Gestionado por [Nombre]" link cuando ownerName != null; "Reclamar ficha" cuando es null
+**Nota:** El param `[ownerId]` usa el ID del usuario (CUID2) como identificador. User no tiene slug propio.
+**Commit de cierre:** 6c90df1
 
 ---
 
