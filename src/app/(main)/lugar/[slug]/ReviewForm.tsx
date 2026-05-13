@@ -3,13 +3,12 @@ import { useRef, useState, useTransition } from 'react'
 import { submitReviewAction } from './actions'
 
 interface Props {
-  listingId: string
   slug: string
   isLoggedIn: boolean
   hasReviewed: boolean
 }
 
-export function ReviewForm({ listingId, slug, isLoggedIn, hasReviewed }: Props) {
+export function ReviewForm({ slug, isLoggedIn, hasReviewed }: Props) {
   const [rating, setRating] = useState(8)
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState(false)
@@ -78,7 +77,6 @@ export function ReviewForm({ listingId, slug, isLoggedIn, hasReviewed }: Props) 
         gap: 'var(--s-5)',
       }}
     >
-      <input type="hidden" name="listingId" value={listingId} />
       <input type="hidden" name="slug" value={slug} />
 
       <div>

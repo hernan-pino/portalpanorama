@@ -18,7 +18,7 @@ const businessSchema = z.object({
   neighborhood: z.string().refine(isValidNeighborhood, 'Barrio inválido'),
   address: z.string().max(200).optional(),
   phone: z.string().max(20).optional(),
-  website: z.string().url('URL inválida').optional().or(z.literal('')),
+  website: z.string().url('URL inválida.').refine((v) => /^https?:\/\//i.test(v), 'Solo se permiten URLs con http o https.').optional().or(z.literal('')),
 })
 
 export type CreateBusinessState = {

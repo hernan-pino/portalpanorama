@@ -216,7 +216,6 @@ export default async function LugarPage({ params }: PageProps) {
                   Dejá tu opinión
                 </h3>
                 <ReviewForm
-                  listingId={listing.id}
                   slug={slug}
                   isLoggedIn={isLoggedIn}
                   hasReviewed={!!userReview}

@@ -123,13 +123,16 @@ src/lib/container.ts  (actualizado)
 ---
 
 ### Paso 7.5 — Loops básicos en ficha de lugar
-**Estado:** ⬜ PENDIENTE
+**Estado:** ✅ COMPLETADO
 **Archivos:**
-- `src/app/lugar/[slug]/ReviewForm.tsx` + `actions.ts` — form submit de reseña
-- `src/app/lugar/[slug]/FavoriteButton.tsx` — toggle guardar/quitar (add action)
-- `src/infrastructure/search/PostgresFTSSearchService.ts` — verificar/arreglar filtros WHERE
-- `src/app/lugar/[slug]/page.tsx` — agregar "También te puede gustar" + banner "Reclamar ficha"
-**Commit de cierre:** —
+- `src/app/(main)/lugar/[slug]/ReviewForm.tsx` — form rating 1–10 + body, 3 estados (no-logueado, ya-reseñó, activo)
+- `src/app/(main)/lugar/[slug]/FavoriteButton.tsx` — toggle corazón con update optimista
+- `src/app/(main)/lugar/[slug]/actions.ts` — submitReviewAction (IDOR-safe: listingId resuelto desde slug) + toggleFavoriteAction
+- `src/app/(main)/lugar/[slug]/page.tsx` — integra componentes + "También te puede gustar" + banner "Reclamar ficha"
+- `src/application/listing/GetListingWithReviewsUseCase.ts` — acepta userId? opcional, devuelve isFavorite + userReview
+- `src/lib/container.ts` — agrega getCreateReviewUseCase
+- Fix seguridad XSS: `website` en 3 schemas de actions (nuevo, editar, listar-mi-local) rechaza protocolos no-http/https
+**Commit de cierre:** b6b1560 (feat) + fix seguridad en commit siguiente
 
 ---
 
@@ -204,3 +207,5 @@ src/lib/container.ts  (actualizado)
 - ¿Credenciales Flow sandbox disponibles? Necesarias para Paso 7.2 step 3 y Paso 7.10
 - ¿Dominio final decidido? Necesario para `NEXTAUTH_URL` en Vercel
 - Banner de credenciales dev en `/login` — borrar antes del deploy a producción (Paso 7.10)
+- Deuda técnica: no hay rate limiting en server actions de escritura (submitReviewAction). Spammer autenticado puede publicar reseñas masivas. Resolver antes de producción con Upstash Ratelimit o middleware.
+- Error TS preexistente: `subscription.test.ts:86` — `status: undefined as unknown as string`. Arreglar en QA (Paso 7.9).

@@ -4,10 +4,8 @@ import { auth } from '@lib/auth'
 import { container } from '@lib/container'
 import { revalidatePath } from 'next/cache'
 import { DuplicateReviewError } from '@domain/review/errors/DuplicateReviewError'
-import { ListingNotFoundError } from '@domain/listing/errors/ListingNotFoundError'
 
 const reviewSchema = z.object({
-  listingId: z.string().min(1),
   slug: z.string().min(1),
   rating: z.coerce.number().int().min(1, 'El puntaje mínimo es 1.').max(10, 'El puntaje máximo es 10.'),
   body: z
@@ -23,23 +21,28 @@ export async function submitReviewAction(
   if (!session?.user?.id) return { error: 'Tenés que iniciar sesión para dejar una reseña.' }
 
   const parsed = reviewSchema.safeParse({
-    listingId: formData.get('listingId'),
     slug: formData.get('slug'),
     rating: formData.get('rating'),
     body: formData.get('body'),
   })
   if (!parsed.success) return { error: parsed.error.issues[0]?.message ?? 'Datos inválidos.' }
 
+  // Resolvemos el listingId desde el slug en el servidor — nunca desde el cliente
+  const listingResult = await container.getGetListingBySlugUseCase().execute({ slug: parsed.data.slug })
+  if (!listingResult) return { error: 'Lugar no encontrado.' }
+
+  const listing = listingResult.listing
+  if (!listing.isPublished()) return { error: 'Lugar no disponible.' }
+
   try {
     await container.getCreateReviewUseCase().execute({
       userId: session.user.id,
-      listingId: parsed.data.listingId,
+      listingId: listing.id,
       rating: parsed.data.rating,
       body: parsed.data.body,
     })
   } catch (error) {
     if (error instanceof DuplicateReviewError) return { error: 'Ya dejaste una reseña para este lugar.' }
-    if (error instanceof ListingNotFoundError) return { error: 'Lugar no encontrado.' }
     throw error
   }
 

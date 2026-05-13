@@ -16,7 +16,7 @@ const updateSchema = z.object({
   neighborhood: z.enum(NEIGHBORHOODS).optional(),
   address: z.string().optional(),
   phone: z.string().optional(),
-  website: z.string().url('URL inválida.').optional().or(z.literal('')),
+  website: z.string().url('URL inválida.').refine((v) => /^https?:\/\//i.test(v), 'Solo se permiten URLs con http o https.').optional().or(z.literal('')),
   priceRange: z.coerce.number().int().min(1).max(4).optional() as z.ZodType<1 | 2 | 3 | 4 | undefined>,
 })
 
