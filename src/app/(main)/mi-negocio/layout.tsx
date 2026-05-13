@@ -14,7 +14,8 @@ export default async function MiNegocioLayout({
 }) {
   const session = await auth()
   if (!session?.user) redirect('/login?callbackUrl=/mi-negocio')
-  if (session.user.role !== UserRole.BUSINESS_OWNER && session.user.role !== UserRole.ADMIN) {
+  const role = (session.user as { role?: string }).role
+  if (role !== UserRole.BUSINESS_OWNER && role !== UserRole.ADMIN) {
     redirect('/listar-mi-local/step1')
   }
 
