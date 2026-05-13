@@ -3,9 +3,11 @@ import { Review } from '@domain/review/Review'
 import { AnalyticsService } from '../ports/AnalyticsService'
 import { ListingRepository } from '../ports/ListingRepository'
 import { ReviewRepository, ReviewStats } from '../ports/ReviewRepository'
+import { UserRepository } from '../ports/UserRepository'
 
 export interface GetListingWithReviewsInput {
   slug: string
+  userId?: string
   trackView?: boolean
 }
 
@@ -13,6 +15,8 @@ export interface GetListingWithReviewsOutput {
   listing: Listing
   reviews: Review[]
   stats: ReviewStats
+  isFavorite: boolean
+  userReview: Review | null
 }
 
 export class GetListingWithReviewsUseCase {
@@ -20,6 +24,7 @@ export class GetListingWithReviewsUseCase {
     private readonly listingRepo: ListingRepository,
     private readonly reviewRepo: ReviewRepository,
     private readonly analyticsService: AnalyticsService,
+    private readonly userRepo: UserRepository,
   ) {}
 
   async execute(input: GetListingWithReviewsInput): Promise<GetListingWithReviewsOutput | null> {
@@ -35,6 +40,16 @@ export class GetListingWithReviewsUseCase {
       this.reviewRepo.getStats(listing.id),
     ])
 
-    return { listing, reviews, stats }
+    let isFavorite = false
+    let userReview: Review | null = null
+
+    if (input.userId) {
+      ;[isFavorite, userReview] = await Promise.all([
+        this.userRepo.isFavorite(input.userId, listing.id),
+        this.reviewRepo.findByUserAndListing(input.userId, listing.id),
+      ])
+    }
+
+    return { listing, reviews, stats, isFavorite, userReview }
   }
 }

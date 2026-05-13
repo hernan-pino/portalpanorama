@@ -32,6 +32,7 @@ import { ResolveListingTagUseCase } from '@application/listing/ResolveListingTag
 import { GetListingWithReviewsUseCase } from '@application/listing/GetListingWithReviewsUseCase'
 import { GetOwnedListingUseCase } from '@application/listing/GetOwnedListingUseCase'
 import { GetListingSubscriptionsUseCase } from '@application/subscription/GetListingSubscriptionsUseCase'
+import { CreateReviewUseCase } from '@application/review/CreateReviewUseCase'
 
 export const container = {
   // ── Auth ──────────────────────────────────────────────────────────────
@@ -98,6 +99,16 @@ export const container = {
       new PrismaListingRepository(prisma),
       new PrismaReviewRepository(prisma),
       new PostgresAnalyticsService(prisma),
+      new PrismaUserRepository(prisma),
+    )
+  },
+
+  getCreateReviewUseCase() {
+    return new CreateReviewUseCase(
+      new PrismaReviewRepository(prisma),
+      new PrismaListingRepository(prisma),
+      new PrismaUserRepository(prisma),
+      new PrismaFeedRepository(prisma),
     )
   },
 

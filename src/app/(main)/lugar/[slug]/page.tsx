@@ -2,7 +2,11 @@ import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 import Image from 'next/image'
 import Link from 'next/link'
+import { auth } from '@lib/auth'
 import { container } from '@lib/container'
+import { ReviewForm } from './ReviewForm'
+import { FavoriteButton } from './FavoriteButton'
+import { ListingCard } from '@components/listing/ListingCard'
 
 interface PageProps {
   params: Promise<{ slug: string }>
@@ -21,11 +25,26 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 export default async function LugarPage({ params }: PageProps) {
   const { slug } = await params
 
-  const result = await container.getGetListingWithReviewsUseCase().execute({ slug, trackView: true })
+  const session = await auth()
+
+  const result = await container.getGetListingWithReviewsUseCase().execute({
+    slug,
+    userId: session?.user?.id ?? undefined,
+    trackView: true,
+  })
 
   if (!result) notFound()
 
-  const { listing, reviews, stats } = result
+  const { listing, reviews, stats, isFavorite, userReview } = result
+
+  const isLoggedIn = !!session?.user?.id
+
+  // "También te puede gustar" — misma categoría, distinto slug, hasta 4
+  const related = await container.getSearchListingsUseCase().execute({
+    categoryId: listing.categoryId,
+    limit: 5,
+  })
+  const relatedItems = related.items.filter((i) => i.slug !== slug).slice(0, 4)
 
   const [mainImage, ...thumbImages] = listing.images
 
@@ -35,7 +54,6 @@ export default async function LugarPage({ params }: PageProps) {
 
         {/* ── Hero gallery ── */}
         <div className="place-hero">
-          {/* Main image — spans 2 rows */}
           <div style={{ position: 'relative', borderRadius: 'var(--r-md)', overflow: 'hidden', background: 'var(--bg-sunken)' }}>
             {mainImage ? (
               <Image
@@ -51,7 +69,6 @@ export default async function LugarPage({ params }: PageProps) {
             )}
           </div>
 
-          {/* Thumb 1 */}
           <div style={{ position: 'relative', borderRadius: 'var(--r-md)', overflow: 'hidden', background: 'var(--bg-sunken)' }}>
             {thumbImages[0] ? (
               <Image
@@ -66,7 +83,6 @@ export default async function LugarPage({ params }: PageProps) {
             )}
           </div>
 
-          {/* Thumb 2 */}
           <div style={{ position: 'relative', borderRadius: 'var(--r-md)', overflow: 'hidden', background: 'var(--bg-sunken)' }}>
             {thumbImages[1] ? (
               <Image
@@ -100,7 +116,6 @@ export default async function LugarPage({ params }: PageProps) {
               </p>
               <h1>{listing.name}</h1>
 
-              {/* Rating */}
               {stats.count > 0 && (
                 <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--s-3)' }}>
                   <RatingStars rating={stats.averageRating} />
@@ -159,37 +174,34 @@ export default async function LugarPage({ params }: PageProps) {
             )}
 
             {/* ── Reseñas ── */}
-            <div>
+            <div style={{ marginBottom: 'var(--s-10)' }}>
               <h2 style={{ fontFamily: 'var(--font-display)', fontSize: 'var(--t-h3)', fontWeight: 400, marginBottom: 'var(--s-2)', letterSpacing: 'var(--tr-tight)' }}>
                 Reseñas {stats.count > 0 && `(${stats.count})`}
               </h2>
 
               {reviews.length > 0 ? (
-                reviews.map((review) => {
-                  const initial = 'U'
-                  return (
-                    <div key={review.id} className="review">
-                      <div className="review__avatar">
-                        <span>{initial}</span>
-                      </div>
-                      <div>
-                        <div className="review__head">
-                          <span className="review__name">Usuario verificado</span>
-                          <span className="review__when">{review.rating}/10</span>
-                        </div>
-                        <p style={{ color: 'var(--fg-muted)', lineHeight: 'var(--lh-loose)', fontSize: 'var(--t-body-sm)' }}>
-                          {review.body}
-                        </p>
-                        {review.response && (
-                          <div style={{ marginTop: 'var(--s-4)', padding: 'var(--s-4)', background: 'var(--bg-sunken)', borderRadius: 'var(--r-md)' }}>
-                            <p className="eyebrow" style={{ marginBottom: 'var(--s-2)' }}>Respuesta del dueño</p>
-                            <p style={{ fontSize: 'var(--t-body-sm)', lineHeight: 'var(--lh-loose)' }}>{review.response}</p>
-                          </div>
-                        )}
-                      </div>
+                reviews.map((review) => (
+                  <div key={review.id} className="review">
+                    <div className="review__avatar">
+                      <span>U</span>
                     </div>
-                  )
-                })
+                    <div>
+                      <div className="review__head">
+                        <span className="review__name">Usuario verificado</span>
+                        <span className="review__when">{review.rating}/10</span>
+                      </div>
+                      <p style={{ color: 'var(--fg-muted)', lineHeight: 'var(--lh-loose)', fontSize: 'var(--t-body-sm)' }}>
+                        {review.body}
+                      </p>
+                      {review.response && (
+                        <div style={{ marginTop: 'var(--s-4)', padding: 'var(--s-4)', background: 'var(--bg-sunken)', borderRadius: 'var(--r-md)' }}>
+                          <p className="eyebrow" style={{ marginBottom: 'var(--s-2)' }}>Respuesta del dueño</p>
+                          <p style={{ fontSize: 'var(--t-body-sm)', lineHeight: 'var(--lh-loose)' }}>{review.response}</p>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                ))
               ) : (
                 <div className="review" style={{ borderTop: '1px solid var(--surface-line)', paddingTop: 'var(--s-6)' }}>
                   <p style={{ color: 'var(--fg-muted)', fontSize: 'var(--t-body-sm)', gridColumn: '1 / -1' }}>
@@ -197,11 +209,32 @@ export default async function LugarPage({ params }: PageProps) {
                   </p>
                 </div>
               )}
+
+              {/* Form de nueva reseña */}
+              <div style={{ marginTop: 'var(--s-8)' }}>
+                <h3 style={{ fontFamily: 'var(--font-display)', fontSize: 'var(--t-h4)', fontWeight: 400, marginBottom: 'var(--s-4)', letterSpacing: 'var(--tr-tight)' }}>
+                  Dejá tu opinión
+                </h3>
+                <ReviewForm
+                  listingId={listing.id}
+                  slug={slug}
+                  isLoggedIn={isLoggedIn}
+                  hasReviewed={!!userReview}
+                />
+              </div>
             </div>
           </div>
 
           {/* ── Sidebar ── */}
           <aside className="place-info__sidebar">
+            {/* Botón guardar */}
+            <FavoriteButton
+              listingId={listing.id}
+              slug={slug}
+              initialIsFavorite={isFavorite}
+              isLoggedIn={isLoggedIn}
+            />
+
             <h2 style={{ fontFamily: 'var(--font-display)', fontSize: 'var(--t-h4)', fontWeight: 400, margin: 0, letterSpacing: 'var(--tr-tight)' }}>Información</h2>
 
             {listing.address && (
@@ -248,8 +281,65 @@ export default async function LugarPage({ params }: PageProps) {
             >
               Más en {listing.neighborhood}
             </Link>
+
+            {/* Banner reclamar ficha — solo si no tiene dueño */}
+            {!listing.ownerId && (
+              <div style={{
+                padding: 'var(--s-5)',
+                border: '1px solid var(--surface-line)',
+                borderRadius: 'var(--r-md)',
+                display: 'flex',
+                flexDirection: 'column',
+                gap: 'var(--s-3)',
+              }}>
+                <p style={{ fontSize: 'var(--t-body-sm)', color: 'var(--fg-muted)', margin: 0, lineHeight: 'var(--lh-loose)' }}>
+                  ¿Sos el dueño de este lugar?
+                </p>
+                <Link
+                  href={`/reclamar-ficha/${slug}`}
+                  className="btn btn--ghost btn--sm"
+                  style={{ justifyContent: 'center' }}
+                >
+                  Reclamar ficha
+                </Link>
+              </div>
+            )}
           </aside>
         </div>
+
+        {/* ── También te puede gustar ── */}
+        {relatedItems.length > 0 && (
+          <section style={{ marginTop: 'var(--s-16)', marginBottom: 'var(--s-16)' }}>
+            <h2 style={{
+              fontFamily: 'var(--font-display)',
+              fontSize: 'var(--t-h3)',
+              fontWeight: 400,
+              marginBottom: 'var(--s-8)',
+              letterSpacing: 'var(--tr-tight)',
+            }}>
+              También te puede gustar
+            </h2>
+            <div className="grid-cards">
+              {relatedItems.map((item) => (
+                <ListingCard
+                  key={item.listingId}
+                  listing={{
+                    slug: item.slug,
+                    name: item.name,
+                    neighborhood: item.neighborhood,
+                    categoryName: item.categoryName,
+                    coverUrl: undefined,
+                    averageRating: item.averageRating,
+                    reviewCount: item.reviewCount,
+                    isPremium: item.isPremium,
+                    tags: item.tags,
+                    priceRange: item.priceRange,
+                  }}
+                />
+              ))}
+            </div>
+          </section>
+        )}
 
       </div>
     </div>
