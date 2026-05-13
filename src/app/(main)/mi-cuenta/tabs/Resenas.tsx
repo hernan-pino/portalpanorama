@@ -83,7 +83,7 @@ export function TabResenas({ reviews }: { reviews: ReviewWithListingView[] }) {
                   href={`/lugar/${review.listingSlug}`}
                   className="btn btn--ghost btn--sm"
                 >
-                  Editar
+                  Ver lugar
                 </Link>
                 <button
                   className="btn btn--ghost btn--sm"

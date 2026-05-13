@@ -96,25 +96,29 @@ src/app/mi-negocio/
 ---
 
 ### Paso 7.4 — Dashboard usuario `/mi-cuenta?tab=...`
-**Estado:** ⬜ PENDIENTE
+**Estado:** ✅ COMPLETADO
 **Archivos nuevos/modificados:**
 ```
 src/app/mi-cuenta/
-  layout.tsx          (sidebar 7 tabs + header con stats)
-  page.tsx            (redirect a ?tab=guardados)
+  layout.tsx          (header usuario + sidebar 7 tabs)
+  SidebarNav.tsx      (client component con useSearchParams)
+  page.tsx            (router de tabs)
   tabs/
-    Guardados.tsx     (favoritos grid — mover de /mi-cuenta/favoritos)
-    Listas.tsx        (colecciones privadas CRUD — nuevo)
-    Historial.tsx     (lugares vistos recientemente)
-    Resenas.tsx       (mis reseñas, editar/borrar)
-    Eventos.tsx       (eventos guardados)
-    Perfil.tsx        (mover de /mi-cuenta/perfil)
-    Config.tsx        (ajustes: cambio de contraseña, notificaciones)
+    Guardados.tsx     (grid ListingCard con favoritos reales)
+    Listas.tsx        (placeholder fiel al screenshot)
+    Historial.tsx     (placeholder)
+    Resenas.tsx       (datos reales — listing name, rating, body)
+    Eventos.tsx       (placeholder)
+    Perfil.tsx        (wrappea ProfileForm existente)
+    Config.tsx        (placeholder)
+src/lib/userDashboardCache.ts  (React cache() deduplica queries)
+src/application/user/GetUserDashboardUseCase.ts  (+ reviewRepo + isBusinessOwner)
+src/application/ports/ReviewRepository.ts  (+ ReviewWithListingView + findByUserId)
+src/infrastructure/db/PrismaReviewRepository.ts  (+ findByUserId con include listing)
+src/lib/container.ts  (actualizado)
 ```
 **Redirects:** `/mi-cuenta/favoritos` → `/mi-cuenta?tab=guardados`, `/mi-cuenta/perfil` → `/mi-cuenta?tab=perfil`
-**Nota:** Tab "Listas" puede requerir migración Prisma si `UserList` no existe en schema
-**Referencia visual:** `screenshots/dasboardusuario.png`
-**Commit de cierre:** —
+**Commit de cierre:** 017c31c (fix label botón: a6e3f...)
 
 ---
 
