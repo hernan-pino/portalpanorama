@@ -55,6 +55,7 @@ export const container = {
     return new GetUserDashboardUseCase(
       new PrismaUserRepository(prisma),
       new PrismaListingRepository(prisma),
+      new PrismaReviewRepository(prisma),
     )
   },
 

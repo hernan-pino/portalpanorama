@@ -1,6 +1,6 @@
 import { Prisma, PrismaClient } from '@prisma/client'
 import { Review } from '@domain/review/Review'
-import { ReviewRepository, ReviewStats } from '@application/ports/ReviewRepository'
+import { ReviewRepository, ReviewStats, ReviewWithListingView } from '@application/ports/ReviewRepository'
 
 type ReviewRow = Prisma.ReviewGetPayload<Record<string, never>>
 
@@ -49,6 +49,23 @@ export class PrismaReviewRepository implements ReviewRepository {
       count: result._count.id,
       averageRating: result._avg.rating ?? 0,
     }
+  }
+
+  async findByUserId(userId: string): Promise<ReviewWithListingView[]> {
+    const rows = await this.prisma.review.findMany({
+      where: { userId },
+      include: { listing: { select: { name: true, slug: true } } },
+      orderBy: { createdAt: 'desc' },
+    })
+    return rows.map((row) => ({
+      id: row.id,
+      listingId: row.listingId,
+      listingName: row.listing.name,
+      listingSlug: row.listing.slug,
+      rating: row.rating,
+      body: row.body,
+      createdAt: row.createdAt,
+    }))
   }
 
   async save(review: Review): Promise<void> {

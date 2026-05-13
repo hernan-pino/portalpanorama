@@ -41,6 +41,6 @@ export async function updateProfileAction(
     throw error
   }
 
-  revalidatePath('/mi-cuenta/perfil')
+  revalidatePath('/mi-cuenta')
   return { success: true }
 }

@@ -15,6 +15,7 @@ function mockReviewRepo(partial: Partial<ReviewRepository> = {}): ReviewReposito
     findById: vi.fn().mockResolvedValue(null),
     findByListingId: vi.fn().mockResolvedValue([]),
     findByUserAndListing: vi.fn().mockResolvedValue(null),
+    findByUserId: vi.fn().mockResolvedValue([]),
     getStats: vi.fn().mockResolvedValue({ count: 0, averageRating: 0 }),
     save: vi.fn().mockResolvedValue(undefined),
     ...partial,
