@@ -150,10 +150,15 @@ src/lib/container.ts  (actualizado)
 ---
 
 ### Paso 7.7 — Imágenes reales (seed con URLs Unsplash)
-**Estado:** ⬜ PENDIENTE
+**Estado:** ✅ COMPLETADO
 **Archivos:**
-- `src/infrastructure/db/prisma/seed.ts` — agregar ListingImage con URLs reales
-- `next.config.ts` — agregar `images.unsplash.com` a remotePatterns
+- `src/infrastructure/db/prisma/seed.ts` — 3 imágenes por listing (Fachada/Interior/Detalle, Unsplash w=1200&q=80), inserción idempotente con guard `imgCount === 0`
+- `next.config.ts` — `images.unsplash.com` en remotePatterns
+- `src/application/ports/SearchService.ts` — `coverUrl?` agregado a `SearchResultItem`
+- `src/infrastructure/search/PostgresFTSSearchService.ts` — include `images` en query, mapea primera imagen a `coverUrl`
+- `src/app/(main)/page.tsx` — `coverUrl` pasado a ListingCard en ambos grids
+- `src/app/(main)/explorar/page.tsx` — `coverUrl` en grid view + imagen real en vista lista
+- `src/app/(main)/lugar/[slug]/page.tsx` — `coverUrl: undefined` → `item.coverUrl` en "También te puede gustar"
 **Commit de cierre:** —
 
 ---

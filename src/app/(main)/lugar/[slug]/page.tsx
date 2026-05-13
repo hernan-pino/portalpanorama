@@ -368,7 +368,7 @@ export default async function LugarPage({ params }: PageProps) {
                     name: item.name,
                     neighborhood: item.neighborhood,
                     categoryName: item.categoryName,
-                    coverUrl: undefined,
+                    coverUrl: item.coverUrl,
                     averageRating: item.averageRating,
                     reviewCount: item.reviewCount,
                     isPremium: item.isPremium,

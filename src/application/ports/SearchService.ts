@@ -20,6 +20,7 @@ export interface SearchResultItem {
   categoryName: string
   neighborhood: string
   description?: string
+  coverUrl?: string
   priceRange?: number  // ordinal 1-4 ($/$$/$$$/$$$$), no es un monto CLP
   isPremium: boolean
   averageRating?: number

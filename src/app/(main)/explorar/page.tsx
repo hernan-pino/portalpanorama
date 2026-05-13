@@ -1,4 +1,5 @@
 import type { Metadata } from 'next'
+import Image from 'next/image'
 import Link from 'next/link'
 import { SearchBar } from '@components/search/SearchBar'
 import { FilterRail } from '@components/search/FilterRail'
@@ -98,6 +99,7 @@ export default async function ExplorarPage({ searchParams }: PageProps) {
                         name: item.name,
                         neighborhood: item.neighborhood,
                         categoryName: item.categoryName,
+                        coverUrl: item.coverUrl,
                         averageRating: item.averageRating,
                         reviewCount: item.reviewCount,
                         isPremium: item.isPremium,
@@ -111,8 +113,12 @@ export default async function ExplorarPage({ searchParams }: PageProps) {
                 <div className="results-list">
                   {result.items.map((item) => (
                     <Link key={item.listingId} href={`/lugar/${item.slug}`} className="place-row">
-                      <div className="place-row__media">
-                        <div className="placeholder-stripe" style={{ width: '100%', height: '100%' }} />
+                      <div className="place-row__media" style={{ position: 'relative', overflow: 'hidden' }}>
+                        {item.coverUrl ? (
+                          <Image src={item.coverUrl} alt={item.name} fill sizes="120px" style={{ objectFit: 'cover' }} />
+                        ) : (
+                          <div className="placeholder-stripe" style={{ width: '100%', height: '100%' }} />
+                        )}
                       </div>
                       <div className="place-row__body">
                         <div className="place-card__meta">

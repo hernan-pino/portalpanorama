@@ -99,6 +99,11 @@ async function main() {
         { slug: 'mercado', name: 'De mercado' },
         { slug: 'vinos', name: 'Carta de vinos' },
       ],
+      images: [
+        { url: 'https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=1200&q=80', alt: 'Fachada', order: 0 },
+        { url: 'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=1200&q=80', alt: 'Interior', order: 1 },
+        { url: 'https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=1200&q=80', alt: 'Detalle', order: 2 },
+      ],
     },
     {
       slug: 'cafe-the-clinic',
@@ -114,6 +119,11 @@ async function main() {
         { slug: 'terraza', name: 'Terraza' },
         { slug: 'brunch', name: 'Brunch' },
         { slug: 'pet-friendly', name: 'Pet friendly' },
+      ],
+      images: [
+        { url: 'https://images.unsplash.com/photo-1501339847302-ac426a4a7cbb?w=1200&q=80', alt: 'Fachada', order: 0 },
+        { url: 'https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?w=1200&q=80', alt: 'Interior', order: 1 },
+        { url: 'https://images.unsplash.com/photo-1453614512568-c4024d13c247?w=1200&q=80', alt: 'Detalle', order: 2 },
       ],
     },
     {
@@ -131,6 +141,11 @@ async function main() {
         { slug: 'vinos-naturales', name: 'Vinos naturales' },
         { slug: 'cocteleria', name: 'Coctelería' },
       ],
+      images: [
+        { url: 'https://images.unsplash.com/photo-1572116469696-31de0f17cc34?w=1200&q=80', alt: 'Fachada', order: 0 },
+        { url: 'https://images.unsplash.com/photo-1514362545857-3bc16c4c7d1b?w=1200&q=80', alt: 'Interior', order: 1 },
+        { url: 'https://images.unsplash.com/photo-1474722883778-792e7990302f?w=1200&q=80', alt: 'Detalle', order: 2 },
+      ],
     },
     {
       slug: 'museo-de-la-moda',
@@ -147,6 +162,11 @@ async function main() {
         { slug: 'historia', name: 'Historia' },
         { slug: 'arte', name: 'Arte' },
       ],
+      images: [
+        { url: 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=1200&q=80', alt: 'Fachada', order: 0 },
+        { url: 'https://images.unsplash.com/photo-1490481651871-ab68de25d43d?w=1200&q=80', alt: 'Interior', order: 1 },
+        { url: 'https://images.unsplash.com/photo-1539109136881-3be0616acf4b?w=1200&q=80', alt: 'Detalle', order: 2 },
+      ],
     },
     {
       slug: 'tienda-deco-italia',
@@ -162,6 +182,11 @@ async function main() {
         { slug: 'ceramica', name: 'Cerámica' },
         { slug: 'regalos', name: 'Regalos' },
       ],
+      images: [
+        { url: 'https://images.unsplash.com/photo-1555529669-e69e7aa0ba9a?w=1200&q=80', alt: 'Fachada', order: 0 },
+        { url: 'https://images.unsplash.com/photo-1493663284031-b7e3aefcae8e?w=1200&q=80', alt: 'Interior', order: 1 },
+        { url: 'https://images.unsplash.com/photo-1586023492125-27b2c045efd7?w=1200&q=80', alt: 'Detalle', order: 2 },
+      ],
     },
     {
       slug: 'galeria-animal',
@@ -176,6 +201,11 @@ async function main() {
         { slug: 'arte-contemporaneo', name: 'Arte contemporáneo' },
         { slug: 'entrada-libre', name: 'Entrada libre' },
         { slug: 'galeria', name: 'Galería' },
+      ],
+      images: [
+        { url: 'https://images.unsplash.com/photo-1536924430914-91f9e2041b83?w=1200&q=80', alt: 'Fachada', order: 0 },
+        { url: 'https://images.unsplash.com/photo-1566054757965-8c4085344c96?w=1200&q=80', alt: 'Interior', order: 1 },
+        { url: 'https://images.unsplash.com/photo-1582555172866-f73bb12a2ab3?w=1200&q=80', alt: 'Detalle', order: 2 },
       ],
     },
   ]
@@ -221,11 +251,18 @@ async function main() {
         },
       })
     }
+
+    const imgCount = await prisma.listingImage.count({ where: { listingId: listing.id } })
+    if (imgCount === 0) {
+      await prisma.listingImage.createMany({
+        data: data.images.map((img) => ({ id: createId(), listingId: listing.id, ...img })),
+      })
+    }
   }
   console.log(`  ✓ ${listingData.length} listings publicados`)
 
   // ── Listing para el usuario negocio ──
-  await prisma.listing.upsert({
+  const ambrosia = await prisma.listing.upsert({
     where: { slug: 'ambrosia-bistro' },
     update: {},
     create: {
@@ -242,6 +279,16 @@ async function main() {
       plan: 'FREE',
     },
   })
+  const ambrosiaImgCount = await prisma.listingImage.count({ where: { listingId: ambrosia.id } })
+  if (ambrosiaImgCount === 0) {
+    await prisma.listingImage.createMany({
+      data: [
+        { id: createId(), listingId: ambrosia.id, url: 'https://images.unsplash.com/photo-1550966871-3ed3cdb5ed0c?w=1200&q=80', alt: 'Fachada', order: 0 },
+        { id: createId(), listingId: ambrosia.id, url: 'https://images.unsplash.com/photo-1559339352-11d035aa65de?w=1200&q=80', alt: 'Interior', order: 1 },
+        { id: createId(), listingId: ambrosia.id, url: 'https://images.unsplash.com/photo-1512621776951-a57141f2eefd?w=1200&q=80', alt: 'Detalle', order: 2 },
+      ],
+    })
+  }
   console.log(`  ✓ Listing de negocio: Ambrosía Bistró`)
 
   console.log('Seed completo.')
