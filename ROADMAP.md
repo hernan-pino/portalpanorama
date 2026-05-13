@@ -212,3 +212,14 @@ src/lib/container.ts  (actualizado)
 - Banner de credenciales dev en `/login` — borrar antes del deploy a producción (Paso 7.10)
 - Deuda técnica: no hay rate limiting en server actions de escritura (submitReviewAction). Spammer autenticado puede publicar reseñas masivas. Resolver antes de producción con Upstash Ratelimit o middleware.
 - Error TS preexistente: `subscription.test.ts:86` — `status: undefined as unknown as string`. Arreglar en QA (Paso 7.9).
+
+### Pendientes visuales ficha de lugar — requieren data o features nuevas
+
+Relevados al comparar con el diseño de referencia. Se resuelven en pasos posteriores:
+- **Imágenes con captions** (FACHADA, INTERIOR, DETALLE) — campo `alt` existe pero no se renderiza como label. Fácil de agregar con data real (Paso 7.7).
+- **Horario de apertura** ("Hoy abierto · 13:00 – 23:30") — no hay campo de horarios en el schema. Requiere nueva migración.
+- **Mapa "Cómo llegar"** — requiere lat/lng en el schema + integración Google Maps / Mapbox.
+- **Botón "Cómo llegar"** en headline — depende de coordenadas.
+- **Reviews con avatar real + fecha relativa** — avatar muestra inicial fija; fecha relativa requiere librería (date-fns) o helper.
+- **Botón "Compartir"** — Web Share API, bajo impacto, post-MVP.
+- **URL amigable en `/perfil-negocio/`** — actualmente usa CUID2. Requiere campo `businessSlug` en `User`.

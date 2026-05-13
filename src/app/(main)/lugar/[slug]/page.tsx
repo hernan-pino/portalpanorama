@@ -329,15 +329,36 @@ export default async function LugarPage({ params }: PageProps) {
         {/* ── También te puede gustar ── */}
         {relatedItems.length > 0 && (
           <section style={{ marginTop: 'var(--s-16)', marginBottom: 'var(--s-16)' }}>
-            <h2 style={{
-              fontFamily: 'var(--font-display)',
-              fontSize: 'var(--t-h3)',
-              fontWeight: 400,
-              marginBottom: 'var(--s-8)',
-              letterSpacing: 'var(--tr-tight)',
-            }}>
-              También te puede gustar
-            </h2>
+            <div className="sec-head">
+              <span className="sec-head__num" />
+              <h2 className="sec-head__title">
+                También te puede <em>gustar</em>
+              </h2>
+              <Link
+                href={`/explorar?barrio=${encodeURIComponent(listing.neighborhood)}`}
+                className="sec-head__cta"
+              >
+                Ver más en {listing.neighborhood} →
+              </Link>
+            </div>
+
+            {listing.isPremium() && (
+              <p style={{
+                fontSize: 'var(--t-body-sm)',
+                color: 'var(--fg-muted)',
+                marginBottom: 'var(--s-6)',
+                padding: 'var(--s-3) var(--s-4)',
+                background: 'var(--bg-sunken)',
+                borderRadius: 'var(--r-sm)',
+              }}>
+                Como dueño Premium podés{' '}
+                <Link href="/mi-negocio?tab=estadisticas" style={{ color: 'var(--accent-60)', textDecoration: 'underline' }}>
+                  personalizar o desactivar estas recomendaciones
+                </Link>{' '}
+                desde tu panel.
+              </p>
+            )}
+
             <div className="grid-cards">
               {relatedItems.map((item) => (
                 <ListingCard
