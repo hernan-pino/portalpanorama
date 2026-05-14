@@ -228,12 +228,12 @@ src/lib/container.ts  (actualizado)
 
 ## Preguntas abiertas / decisiones pendientes
 
-- ¿El modelo `UserList` existe en `schema.prisma`? Verificar antes del Paso 7.4 tab Listas
-- ¿Credenciales Flow sandbox disponibles? Necesarias para Paso 7.2 step 3 y Paso 7.10
-- ¿Dominio final decidido? Necesario para `NEXTAUTH_URL` en Vercel
+- ~~`UserList` en schema~~ — no existe. Tab "Listas" en `/mi-cuenta` queda como placeholder hasta diseñar la feature (requiere migración + use case).
+- ~~Credenciales Flow sandbox~~ — deploy con vars placeholder, activar cuando estén disponibles.
+- ~~Dominio final~~ — usar subdominio Vercel (`portal-panorama.vercel.app`) por ahora; apuntar dominio propio después.
 - Banner de credenciales dev en `/login` — borrar antes del deploy a producción (Paso 7.10)
-- Deuda técnica: no hay rate limiting en server actions de escritura (submitReviewAction). Spammer autenticado puede publicar reseñas masivas. Resolver antes de producción con Upstash Ratelimit o middleware.
-- Error TS preexistente: `subscription.test.ts:86` — `status: undefined as unknown as string`. Arreglar en QA (Paso 7.9).
+- Deuda técnica: rate limiting de reseñas — la restricción una-reseña-por-usuario-por-listing YA está en CreateReviewUseCase. Falta protección contra spammer que reseña muchos listings distintos en ráfaga. Resolver post-MVP con Upstash Ratelimit.
+- ~~Error TS preexistente: `subscription.test.ts:86`~~ — resuelto en commit e994aaf.
 
 ### Pendientes UX — anotados, evaluación pendiente
 
@@ -251,3 +251,4 @@ Relevados al comparar con el diseño de referencia. Se resuelven en pasos poster
 - **Reviews con avatar real + fecha relativa** — avatar muestra inicial fija; fecha relativa requiere librería (date-fns) o helper.
 - **Botón "Compartir"** — Web Share API, bajo impacto, post-MVP.
 - **URL amigable en `/perfil-negocio/`** — actualmente usa CUID2. Requiere campo `businessSlug` en `User`.
+- **Reseñas de Google Maps** — post-MVP: mostrar link "Ver en Google Maps" (sin costo) como primer paso; luego evaluar importar reseñas via Places API (tiene costo). Con login Google ya vinculado, la UX sería fluida. No implementar antes de tener Google OAuth activo.
