@@ -239,12 +239,12 @@ src/lib/container.ts  (actualizado)
 ---
 
 ### Paso 8.2 — Cleanup UI: tabs placeholder + footer mobile + eventos
-**Estado:** ⬜ PENDIENTE
+**Estado:** ✅ COMPLETADO
 **Archivos:**
-- `src/app/globals.css` — footer mobile: grid 2 columnas → columna única más compacta
-- `src/components/layout/Footer.tsx` — layout mobile mejorado
-- `src/app/(main)/eventos/page.tsx` — reemplazar por página "Próximamente"
-- `src/app/(main)/mi-cuenta/` — ajustar tabs: Guardados + Reseñas + Perfil activos; Listas + Eventos → Próximamente; Historial → esconder
+- `src/app/globals.css` — footer 600px: padding reducido, brand-display 40px fijo, footer__bottom apilado vertical
+- `src/app/(main)/eventos/page.tsx` — reemplazado por página "Próximamente" estática (sin container ni search)
+- `src/app/(main)/mi-cuenta/SidebarNav.tsx` — Historial eliminado del nav; Listas y Eventos con badge "Pronto"
+- `src/app/(main)/mi-cuenta/tabs/Listas.tsx` — mock data eliminado, placeholder "Próximamente" coherente con TabEventos
 **Commit de cierre:** —
 
 ---

@@ -5,10 +5,9 @@ import { signOut } from 'next-auth/react'
 
 const TABS = [
   { key: 'guardados', label: 'Guardados' },
-  { key: 'listas', label: 'Mis listas' },
-  { key: 'historial', label: 'Historial' },
   { key: 'resenas', label: 'Mis reseñas' },
-  { key: 'eventos', label: 'Eventos' },
+  { key: 'listas', label: 'Mis listas', soon: true },
+  { key: 'eventos', label: 'Eventos', soon: true },
   { key: 'perfil', label: 'Perfil' },
   { key: 'config', label: 'Configuración' },
 ]
@@ -19,13 +18,29 @@ export function SidebarNav() {
 
   return (
     <nav className="dash-sidenav">
-      {TABS.map(({ key, label }) => (
+      {TABS.map(({ key, label, soon }) => (
         <Link
           key={key}
           href={`/mi-cuenta?tab=${key}`}
           className={`dash-sidenav__link${current === key ? ' active' : ''}`}
+          style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 'var(--s-2)' }}
         >
-          {label}
+          <span>{label}</span>
+          {soon && (
+            <span style={{
+              fontFamily: 'var(--font-mono)',
+              fontSize: '9px',
+              letterSpacing: '0.08em',
+              textTransform: 'uppercase',
+              color: 'var(--fg-subtle)',
+              background: 'var(--surface-line)',
+              padding: '2px 5px',
+              borderRadius: '3px',
+              flexShrink: 0,
+            }}>
+              Pronto
+            </span>
+          )}
         </Link>
       ))}
 
