@@ -10,7 +10,8 @@
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "test:watch": "vitest",
-    "db:seed": "npx tsx src/infrastructure/db/prisma/seed.ts"
+    "db:seed": "npx tsx src/infrastructure/db/prisma/seed.ts",
+    "postinstall": "prisma generate"
   },
   "prisma": {
     "seed": "npx tsx src/infrastructure/db/prisma/seed.ts"
