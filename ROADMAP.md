@@ -171,7 +171,7 @@ src/lib/container.ts  (actualizado)
 - `src/app/(main)/mi-cuenta/layout.tsx` — mismo refactor + `dash-user-header`, `dash-header-meta`
 - `src/app/(main)/mi-negocio/SidebarNav.tsx` — inline styles → `dash-sidenav__link` + clase `.active`
 - `src/app/(main)/mi-cuenta/SidebarNav.tsx` — mismo refactor
-**Commit de cierre:** —
+**Commit de cierre:** b878675
 
 ---
 
