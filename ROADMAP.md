@@ -196,13 +196,16 @@ src/lib/container.ts  (actualizado)
 ---
 
 ### Paso 7.10 — Deploy Vercel
-**Estado:** ⬜ PENDIENTE
-**Qué hacer:**
-- Crear proyecto en Vercel conectado al repo
-- Configurar env vars: DATABASE_URL, NEXTAUTH_SECRET, NEXTAUTH_URL, RESEND_API_KEY, FLOW_API_KEY, FLOW_SECRET, FLOW_WEBHOOK_SECRET
-- Verificar build sin errores de TypeScript
-- Configurar URL de webhook Flow en producción
-**Commit de cierre:** —
+**Estado:** ✅ COMPLETADO
+**Qué se hizo:**
+- Repo transferido a hernan-pino/portalpanorama (privado)
+- Proyecto creado en Vercel, conectado a GitHub (deploy automático en cada push a main)
+- 10 env vars configuradas en producción (Flow con placeholders, Resend pendiente)
+- Fix: `postinstall: prisma generate` para que Vercel genere el cliente Prisma
+- Fix: Next.js 15.3.2 → 15.5.18 (CVE-2025-66478, Vercel bloqueaba versiones vulnerables)
+- Fix: prop `userName` no usada eliminada de MobileNav (error ESLint en build)
+**URL producción:** https://portal-panorama.vercel.app
+**Commit de cierre:** 067083f
 
 ---
 
