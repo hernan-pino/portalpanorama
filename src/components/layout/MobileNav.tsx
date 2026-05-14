@@ -6,11 +6,10 @@ import { UserRole } from '@domain/user/UserRole'
 
 interface MobileNavProps {
   isAuthenticated: boolean
-  userName?: string
   role?: string
 }
 
-export function MobileNav({ isAuthenticated, userName, role }: MobileNavProps) {
+export function MobileNav({ isAuthenticated, role }: MobileNavProps) {
   const [open, setOpen] = useState(false)
   const close = () => setOpen(false)
 

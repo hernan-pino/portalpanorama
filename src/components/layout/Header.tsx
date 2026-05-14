@@ -35,7 +35,6 @@ export async function Header() {
             )}
             <MobileNav
               isAuthenticated={!!user}
-              userName={user?.name ?? undefined}
               role={role}
             />
           </div>
