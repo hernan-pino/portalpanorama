@@ -25,7 +25,7 @@ export default async function Step2Page({
     redirect('/mi-negocio')
   }
 
-  const categories = await container.getCategories()
+  const categories = await container.getGetCategoriesUseCase().execute()
 
   return (
     <div className="checkout-step-content checkout-step-content--narrow">

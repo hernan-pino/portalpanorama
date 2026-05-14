@@ -5,7 +5,7 @@ import { CreateListingForm } from './CreateListingForm'
 export const metadata: Metadata = { title: 'Nuevo listing' }
 
 export default async function NuevoListingPage() {
-  const categories = await container.getCategories()
+  const categories = await container.getGetCategoriesUseCase().execute()
 
   return (
     <div style={{ padding: 'var(--s-10) var(--s-8)', maxWidth: '640px' }}>

@@ -191,7 +191,7 @@ src/lib/container.ts  (actualizado)
 - `src/lib/parseSearchParams.ts` — fix seguridad: query.slice(0,100), parseInt en priceRanges
 - `src/infrastructure/db/prisma/seed.ts` — 3 listings PREMIUM (La Bodeguita, Bar Loreto, Ambrosía)
 - `src/app/globals.css` — featured-slider, filter-rail__header, filter-rail__total
-**Commit de cierre:** pendiente
+**Commit de cierre:** 5850a68
 
 ---
 

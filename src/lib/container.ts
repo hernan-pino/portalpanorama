@@ -35,6 +35,8 @@ import { GetListingSubscriptionsUseCase } from '@application/subscription/GetLis
 import { CreateReviewUseCase } from '@application/review/CreateReviewUseCase'
 import { GetOwnerProfileUseCase } from '@application/listing/GetOwnerProfileUseCase'
 import { GetCategoryFacetsUseCase } from '@application/listing/GetCategoryFacetsUseCase'
+import { GetCategoriesUseCase } from '@application/listing/GetCategoriesUseCase'
+import { PrismaCategoryRepository } from '@infrastructure/db/PrismaCategoryRepository'
 
 export const container = {
   // ── Auth ──────────────────────────────────────────────────────────────
@@ -221,7 +223,7 @@ export const container = {
     )
   },
 
-  async getCategories() {
-    return prisma.category.findMany({ orderBy: { name: 'asc' } })
+  getGetCategoriesUseCase() {
+    return new GetCategoriesUseCase(new PrismaCategoryRepository(prisma))
   },
 }

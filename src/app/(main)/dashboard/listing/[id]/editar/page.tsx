@@ -20,7 +20,7 @@ export default async function EditarListingPage({ params }: PageProps) {
   const listing = await container.getGetOwnedListingUseCase().execute({ listingId: id, userId: session.user.id })
   if (!listing) notFound()
 
-  const categories = await container.getCategories()
+  const categories = await container.getGetCategoriesUseCase().execute()
 
   const listingData = {
     id: listing.id,

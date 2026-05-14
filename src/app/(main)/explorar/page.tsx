@@ -21,10 +21,10 @@ export default async function ExplorarPage({ searchParams }: PageProps) {
   const [result, categoryFacets, dbCategories] = await Promise.all([
     useCase.execute({ query, neighborhood: barrio, categorySlug: categoria, priceRanges, isPremium, page, limit: 24 }),
     container.getGetCategoryFacetsUseCase().execute(),
-    container.getCategories(),
+    container.getGetCategoriesUseCase().execute(),
   ])
   const categoryCounts = Object.fromEntries(categoryFacets.map((f) => [f.categorySlug, f.count]))
-  const categories = dbCategories.map((c) => ({ slug: c.slug, name: c.name }))
+  const categories = dbCategories
 
   const activeFilters = [query, barrio, categoria, priceRanges?.length, isPremium].filter(Boolean)
   const headTitle = query ?? barrio ?? categoria ?? 'Todo Santiago'
