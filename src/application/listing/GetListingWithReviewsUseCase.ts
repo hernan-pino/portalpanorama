@@ -1,6 +1,7 @@
 import { Listing } from '@domain/listing/Listing'
 import { Review } from '@domain/review/Review'
 import { AnalyticsService } from '../ports/AnalyticsService'
+import { GoogleReviewDTO, GoogleReviewRepository } from '../ports/GoogleReviewRepository'
 import { ListingRepository } from '../ports/ListingRepository'
 import { ReviewRepository, ReviewStats } from '../ports/ReviewRepository'
 import { UserRepository } from '../ports/UserRepository'
@@ -14,6 +15,7 @@ export interface GetListingWithReviewsInput {
 export interface GetListingWithReviewsOutput {
   listing: Listing
   reviews: Review[]
+  googleReviews: GoogleReviewDTO[]
   stats: ReviewStats
   isFavorite: boolean
   userReview: Review | null
@@ -26,6 +28,7 @@ export class GetListingWithReviewsUseCase {
     private readonly reviewRepo: ReviewRepository,
     private readonly analyticsService: AnalyticsService,
     private readonly userRepo: UserRepository,
+    private readonly googleReviewRepo?: GoogleReviewRepository,
   ) {}
 
   async execute(input: GetListingWithReviewsInput): Promise<GetListingWithReviewsOutput | null> {
@@ -36,9 +39,10 @@ export class GetListingWithReviewsUseCase {
       this.analyticsService.trackView(listing.id).catch(() => undefined)
     }
 
-    const [reviews, stats] = await Promise.all([
+    const [reviews, stats, googleReviews] = await Promise.all([
       this.reviewRepo.findByListingId(listing.id),
       this.reviewRepo.getStats(listing.id),
+      this.googleReviewRepo?.findByListingId(listing.id) ?? Promise.resolve([]),
     ])
 
     let isFavorite = false
@@ -54,6 +58,6 @@ export class GetListingWithReviewsUseCase {
     const owner = await this.userRepo.findById(listing.ownerId)
     const ownerName = owner?.isBusinessOwner() ? owner.name : null
 
-    return { listing, reviews, stats, isFavorite, userReview, ownerName }
+    return { listing, reviews, googleReviews, stats, isFavorite, userReview, ownerName }
   }
 }

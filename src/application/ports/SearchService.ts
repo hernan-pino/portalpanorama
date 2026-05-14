@@ -6,6 +6,7 @@ export interface SearchParams {
   categoryId?: string
   categorySlug?: string
   neighborhood?: Neighborhood
+  commune?: string
   priceRanges?: number[]
   isPremium?: boolean
   page?: number
@@ -19,12 +20,14 @@ export interface SearchResultItem {
   categoryId: string
   categoryName: string
   neighborhood: string
+  commune?: string
   description?: string
   coverUrl?: string
   priceRange?: number  // ordinal 1-4 ($/$$/$$$/$$$$), no es un monto CLP
   isPremium: boolean
   averageRating?: number
   reviewCount: number
+  isGoogleRating?: boolean
   tags: string[]
 }
 

@@ -37,6 +37,7 @@ import { GetOwnerProfileUseCase } from '@application/listing/GetOwnerProfileUseC
 import { GetCategoryFacetsUseCase } from '@application/listing/GetCategoryFacetsUseCase'
 import { GetCategoriesUseCase } from '@application/listing/GetCategoriesUseCase'
 import { PrismaCategoryRepository } from '@infrastructure/db/PrismaCategoryRepository'
+import { PrismaGoogleReviewRepository } from '@infrastructure/db/PrismaGoogleReviewRepository'
 
 export const container = {
   // ── Auth ──────────────────────────────────────────────────────────────
@@ -108,6 +109,7 @@ export const container = {
       new PrismaReviewRepository(prisma),
       new PostgresAnalyticsService(prisma),
       new PrismaUserRepository(prisma),
+      new PrismaGoogleReviewRepository(prisma),
     )
   },
 

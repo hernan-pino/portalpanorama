@@ -9,6 +9,7 @@ export interface ListingCardData {
   coverUrl?: string
   averageRating?: number
   reviewCount?: number
+  isGoogleRating?: boolean
   isPremium: boolean
   tags: string[]
   priceRange?: number
@@ -85,8 +86,11 @@ export function ListingCard({ listing }: { listing: ListingCardData }) {
                 <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
               </svg>
               <span className="rating__num">{listing.averageRating.toFixed(1)}</span>
-              {listing.reviewCount !== undefined && (
+              {listing.reviewCount !== undefined && listing.reviewCount > 0 && (
                 <span className="rating__count">· {listing.reviewCount}</span>
+              )}
+              {listing.isGoogleRating && (
+                <span className="rating__source">G</span>
               )}
             </span>
           </div>

@@ -16,9 +16,9 @@ type ListingRow = Prisma.ListingGetPayload<{
 type ClaimRow = Prisma.ListingClaimGetPayload<Record<string, never>>
 
 export function toListingDomain(row: ListingRow): Listing {
-  if (!isValidNeighborhood(row.neighborhood)) {
-    throw new Error(`Neighborhood inválido en DB: ${row.neighborhood}`)
-  }
+  const neighborhood = isValidNeighborhood(row.neighborhood)
+    ? row.neighborhood
+    : 'Santiago Centro'
 
   const images: ListingImage[] = row.images
     .sort((a, b) => a.order - b.order)
@@ -44,7 +44,8 @@ export function toListingDomain(row: ListingRow): Listing {
     plan: row.plan as ListingPlan,
     status: row.status as ListingStatus,
     categoryId: row.categoryId,
-    neighborhood: row.neighborhood,
+    neighborhood,
+    commune: row.commune ?? undefined,
     address: row.address ?? undefined,
     phone: row.phone ?? undefined,
     website: row.website ?? undefined,
@@ -53,6 +54,8 @@ export function toListingDomain(row: ListingRow): Listing {
     images,
     tags,
     pricePerMonth: row.pricePerMonthAmount != null ? Money.create(row.pricePerMonthAmount) : undefined,
+    googleRating: row.googleRating ?? undefined,
+    googleReviewCount: row.googleReviewCount ?? undefined,
     createdAt: row.createdAt,
     updatedAt: row.updatedAt,
   })

@@ -4,6 +4,7 @@ import { isValidCategorySlug, type CategorySlug } from '@domain/shared/Categorie
 export interface RawSearchParams {
   q?: string
   barrio?: string
+  comuna?: string
   categoria?: string
   precio?: string
   rating?: string
@@ -16,6 +17,7 @@ export interface RawSearchParams {
 export interface ParsedSearchParams {
   query: string | undefined
   barrio: Neighborhood | undefined
+  comuna: string | undefined
   categoria: CategorySlug | undefined
   priceRanges: number[] | undefined
   isPremium: boolean | undefined
@@ -28,6 +30,9 @@ export function parseSearchParams(raw: RawSearchParams): ParsedSearchParams {
 
   const barrio =
     raw.barrio && isValidNeighborhood(raw.barrio) ? raw.barrio : undefined
+
+  const comuna =
+    typeof raw.comuna === 'string' ? raw.comuna.trim().slice(0, 60) || undefined : undefined
 
   const categoria =
     raw.categoria && isValidCategorySlug(raw.categoria) ? raw.categoria : undefined
@@ -43,5 +48,5 @@ export function parseSearchParams(raw: RawSearchParams): ParsedSearchParams {
 
   const view = raw.view === 'lista' ? 'lista' : 'grid'
 
-  return { query, barrio, categoria, priceRanges, isPremium, page, view }
+  return { query, barrio, comuna, categoria, priceRanges, isPremium, page, view }
 }

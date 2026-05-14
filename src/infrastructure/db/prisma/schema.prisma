@@ -140,25 +140,48 @@ model Listing {
   priceRange          Int?
   ownerId             String
   pricePerMonthAmount Int?
+  lat               Float?
+  lng               Float?
+  commune           String?
+  businessHours     Json?
+  googlePlaceId     String?       @unique
+  googleRating      Float?
+  googleReviewCount Int?
+  attributes        Json?         @db.JsonB
   createdAt           DateTime      @default(now())
   updatedAt           DateTime      @updatedAt
 
-  category     Category          @relation(fields: [categoryId], references: [id])
-  owner        User              @relation("ListingOwner", fields: [ownerId], references: [id])
-  images       ListingImage[]
-  tags         ListingTag[]
-  reviews      Review[]
-  claims       ListingClaim[]
-  favorites    UserFavorite[]
-  subscription Subscription?
-  feedItems    FeedItem[]
-  analytics    ListingAnalytics?
+  category      Category          @relation(fields: [categoryId], references: [id])
+  owner         User              @relation("ListingOwner", fields: [ownerId], references: [id])
+  images        ListingImage[]
+  tags          ListingTag[]
+  reviews       Review[]
+  googleReviews GoogleReview[]
+  claims        ListingClaim[]
+  favorites     UserFavorite[]
+  subscription  Subscription?
+  feedItems     FeedItem[]
+  analytics     ListingAnalytics?
 
   @@index([status])
   @@index([plan, status])
-  @@index([categoryId])
-  @@index([neighborhood])
+  @@index([categoryId, status])
+  @@index([neighborhood, status])
+  @@index([commune, status])
   @@index([ownerId])
+}
+
+model GoogleReview {
+  id          String   @id
+  listingId   String
+  authorName  String
+  rating      Float
+  body        String   @db.Text
+  publishedAt DateTime
+
+  listing Listing @relation(fields: [listingId], references: [id], onDelete: Cascade)
+
+  @@index([listingId])
 }
 
 model ListingImage {

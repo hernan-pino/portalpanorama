@@ -15,19 +15,19 @@ interface PageProps {
 
 export default async function ExplorarPage({ searchParams }: PageProps) {
   const raw = await searchParams
-  const { query, barrio, categoria, priceRanges, isPremium, page, view } = parseSearchParams(raw)
+  const { query, barrio, comuna, categoria, priceRanges, isPremium, page, view } = parseSearchParams(raw)
 
   const useCase = container.getSearchListingsUseCase()
   const [result, categoryFacets, dbCategories] = await Promise.all([
-    useCase.execute({ query, neighborhood: barrio, categorySlug: categoria, priceRanges, isPremium, page, limit: 24 }),
+    useCase.execute({ query, neighborhood: barrio, commune: comuna, categorySlug: categoria, priceRanges, isPremium, page, limit: 24 }),
     container.getGetCategoryFacetsUseCase().execute(),
     container.getGetCategoriesUseCase().execute(),
   ])
   const categoryCounts = Object.fromEntries(categoryFacets.map((f) => [f.categorySlug, f.count]))
   const categories = dbCategories
 
-  const activeFilters = [query, barrio, categoria, priceRanges?.length, isPremium].filter(Boolean)
-  const headTitle = query ?? barrio ?? categoria ?? 'Todo Santiago'
+  const activeFilters = [query, barrio, comuna, categoria, priceRanges?.length, isPremium].filter(Boolean)
+  const headTitle = query ?? barrio ?? comuna ?? categoria ?? 'Todo Santiago'
 
   return (
     <div className="page-enter">
@@ -98,6 +98,7 @@ export default async function ExplorarPage({ searchParams }: PageProps) {
                         coverUrl: item.coverUrl,
                         averageRating: item.averageRating,
                         reviewCount: item.reviewCount,
+                        isGoogleRating: item.isGoogleRating,
                         isPremium: item.isPremium,
                         priceRange: item.priceRange,
                         tags: item.tags,

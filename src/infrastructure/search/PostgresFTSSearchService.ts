@@ -26,6 +26,10 @@ export class PostgresFTSSearchService implements SearchService {
       where.neighborhood = params.neighborhood
     }
 
+    if (params.commune) {
+      where.commune = params.commune
+    }
+
     if (params.priceRanges && params.priceRanges.length > 0) {
       where.priceRange = { in: params.priceRanges }
     }
@@ -60,10 +64,16 @@ export class PostgresFTSSearchService implements SearchService {
     ])
 
     const items: SearchResultItem[] = rows.map((row) => {
-      const avgRating =
-        row.reviews.length > 0
-          ? row.reviews.reduce((sum, r) => sum + r.rating, 0) / row.reviews.length
+      const hasInternalReviews = row._count.reviews > 0
+      const avgRating = hasInternalReviews
+        ? row.reviews.reduce((sum, r) => sum + r.rating, 0) / row.reviews.length
+        : row.googleRating != null
+          ? row.googleRating * 2  // normalize Google 1-5 to platform 1-10 scale for display
           : undefined
+      const reviewCount = hasInternalReviews
+        ? row._count.reviews
+        : (row.googleReviewCount ?? 0)
+      const isGoogleRating = !hasInternalReviews && row.googleRating != null
 
       return {
         listingId: row.id,
@@ -72,12 +82,14 @@ export class PostgresFTSSearchService implements SearchService {
         categoryId: row.categoryId,
         categoryName: row.category.name,
         neighborhood: row.neighborhood,
+        commune: row.commune ?? undefined,
         description: row.description ?? undefined,
         coverUrl: row.images[0]?.url,
         priceRange: row.priceRange ?? undefined,
         isPremium: row.plan === 'PREMIUM',
         averageRating: avgRating,
-        reviewCount: row._count.reviews,
+        reviewCount,
+        isGoogleRating,
         tags: row.tags.filter((t) => t.status === 'ACTIVE').map((t) => t.name),
       }
     })

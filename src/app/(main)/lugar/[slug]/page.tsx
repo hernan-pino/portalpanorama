@@ -35,7 +35,7 @@ export default async function LugarPage({ params }: PageProps) {
 
   if (!result) notFound()
 
-  const { listing, reviews, stats, isFavorite, userReview, ownerName } = result
+  const { listing, reviews, googleReviews, stats, isFavorite, userReview, ownerName } = result
 
   const isLoggedIn = !!session?.user?.id
 
@@ -311,6 +311,37 @@ export default async function LugarPage({ params }: PageProps) {
               <p style={{ color: 'var(--fg-muted)', fontSize: 'var(--t-body-sm)' }}>
                 Todavía no hay reseñas. ¡Sé el primero!
               </p>
+            </div>
+          )}
+
+          {googleReviews.length > 0 && (
+            <div style={{ marginTop: 'var(--s-10)', paddingTop: 'var(--s-8)', borderTop: '1px solid var(--surface-line)' }}>
+              <div style={{ display: 'flex', alignItems: 'baseline', gap: 'var(--s-3)', marginBottom: 'var(--s-6)' }}>
+                <h3 style={{ fontFamily: 'var(--font-display)', fontSize: 'var(--t-h4)', fontWeight: 400, letterSpacing: 'var(--tr-tight)', margin: 0 }}>
+                  Reseñas de Google
+                </h3>
+                {listing.googleRating != null && (
+                  <span style={{ fontFamily: 'var(--font-mono)', fontSize: 'var(--t-mono-sm)', color: 'var(--fg-muted)', letterSpacing: 'var(--tr-wide)', textTransform: 'uppercase' }}>
+                    {listing.googleRating.toFixed(1)}/5 · {listing.googleReviewCount ?? googleReviews.length} reseñas
+                  </span>
+                )}
+              </div>
+              {googleReviews.map((gr) => (
+                <div key={gr.id} className="review">
+                  <div className="review__avatar review__avatar--google">
+                    <span>G</span>
+                  </div>
+                  <div>
+                    <div className="review__head">
+                      <span className="review__name">{gr.authorName}</span>
+                      <span className="review__when">{gr.rating.toFixed(1)}/5</span>
+                    </div>
+                    <p style={{ color: 'var(--fg-muted)', lineHeight: 'var(--lh-loose)', fontSize: 'var(--t-body-sm)' }}>
+                      {gr.body}
+                    </p>
+                  </div>
+                </div>
+              ))}
             </div>
           )}
 

@@ -51,6 +51,7 @@ export interface ListingProps {
   readonly status: ListingStatus
   readonly categoryId: string
   readonly neighborhood: Neighborhood
+  readonly commune?: string
   readonly address?: string
   readonly phone?: string
   readonly website?: string
@@ -59,6 +60,8 @@ export interface ListingProps {
   readonly images: ReadonlyArray<ListingImage>
   readonly tags: ReadonlyArray<ListingTag>
   readonly pricePerMonth?: Money
+  readonly googleRating?: number
+  readonly googleReviewCount?: number
   readonly createdAt: Date
   readonly updatedAt: Date
 }
@@ -72,6 +75,7 @@ export class Listing {
   readonly status: ListingStatus
   readonly categoryId: string
   readonly neighborhood: Neighborhood
+  readonly commune?: string
   readonly address?: string
   readonly phone?: string
   readonly website?: string
@@ -80,6 +84,8 @@ export class Listing {
   readonly images: ReadonlyArray<ListingImage>
   readonly tags: ReadonlyArray<ListingTag>
   readonly pricePerMonth?: Money
+  readonly googleRating?: number
+  readonly googleReviewCount?: number
   readonly createdAt: Date
   readonly updatedAt: Date
 
@@ -94,6 +100,7 @@ export class Listing {
     this.status = props.status
     this.categoryId = props.categoryId
     this.neighborhood = props.neighborhood
+    this.commune = props.commune
     this.address = props.address
     this.phone = props.phone
     this.website = props.website
@@ -102,6 +109,8 @@ export class Listing {
     this.images = props.images
     this.tags = props.tags
     this.pricePerMonth = props.pricePerMonth
+    this.googleRating = props.googleRating
+    this.googleReviewCount = props.googleReviewCount
     this.createdAt = props.createdAt
     this.updatedAt = props.updatedAt
   }
@@ -226,6 +235,7 @@ export class Listing {
       status: this.status,
       categoryId: this.categoryId,
       neighborhood: this.neighborhood,
+      commune: this.commune,
       address: this.address,
       phone: this.phone,
       website: this.website,
@@ -234,6 +244,8 @@ export class Listing {
       images: this.images,
       tags: this.tags,
       pricePerMonth: this.pricePerMonth,
+      googleRating: this.googleRating,
+      googleReviewCount: this.googleReviewCount,
       createdAt: this.createdAt,
       updatedAt: this.updatedAt,
     }
