@@ -34,6 +34,7 @@ import { GetOwnedListingUseCase } from '@application/listing/GetOwnedListingUseC
 import { GetListingSubscriptionsUseCase } from '@application/subscription/GetListingSubscriptionsUseCase'
 import { CreateReviewUseCase } from '@application/review/CreateReviewUseCase'
 import { GetOwnerProfileUseCase } from '@application/listing/GetOwnerProfileUseCase'
+import { GetCategoryFacetsUseCase } from '@application/listing/GetCategoryFacetsUseCase'
 
 export const container = {
   // ── Auth ──────────────────────────────────────────────────────────────
@@ -86,6 +87,10 @@ export const container = {
   // ── Public ────────────────────────────────────────────────────────────
   getSearchListingsUseCase() {
     return new SearchListingsUseCase(new PostgresFTSSearchService(prisma))
+  },
+
+  getGetCategoryFacetsUseCase() {
+    return new GetCategoryFacetsUseCase(new PostgresFTSSearchService(prisma))
   },
 
   getGetListingBySlugUseCase() {

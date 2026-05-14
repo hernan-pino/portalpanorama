@@ -18,15 +18,11 @@ export default async function ExplorarPage({ searchParams }: PageProps) {
   const { query, barrio, categoria, priceRanges, isPremium, page, view } = parseSearchParams(raw)
 
   const useCase = container.getSearchListingsUseCase()
-  const result = await useCase.execute({
-    query,
-    neighborhood: barrio,
-    categorySlug: categoria,
-    priceRanges,
-    isPremium,
-    page,
-    limit: 24,
-  })
+  const [result, categoryFacets] = await Promise.all([
+    useCase.execute({ query, neighborhood: barrio, categorySlug: categoria, priceRanges, isPremium, page, limit: 24 }),
+    container.getGetCategoryFacetsUseCase().execute(),
+  ])
+  const categoryCounts = Object.fromEntries(categoryFacets.map((f) => [f.categorySlug, f.count]))
 
   const activeFilters = [query, barrio, categoria, priceRanges?.length, isPremium].filter(Boolean)
   const headTitle = query ?? barrio ?? categoria ?? 'Todo Santiago'
@@ -36,24 +32,22 @@ export default async function ExplorarPage({ searchParams }: PageProps) {
       <div className="search-shell container">
 
         {/* ── Filter rail (Client Component) ── */}
-        <FilterRail />
+        <FilterRail totalResults={result.total} categoryCounts={categoryCounts} />
 
         {/* ── Main ── */}
         <div className="search-shell__main">
 
-          {/* Breadcrumb + título */}
+          {/* Encabezado de búsqueda */}
           <div className="search-head">
-            <nav style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', letterSpacing: '0.10em', textTransform: 'uppercase', color: 'var(--fg-muted)', display: 'flex', gap: 'var(--s-2)', alignItems: 'center' }}>
-              <Link href="/explorar" style={{ color: 'inherit', textDecoration: 'none' }}>Explorar</Link>
-              <span style={{ opacity: 0.4 }}>/</span>
-              <span style={{ color: 'var(--fg)' }}>{headTitle}</span>
-            </nav>
+            <div className="hero__eyebrow" style={{ margin: 0 }}>
+              <span className="line" aria-hidden="true" />
+              <span className="eyebrow">
+                {categoria ? `${headTitle} · Lugares` : query ? 'Búsqueda · Lugares' : 'Explorar · Lugares'}
+              </span>
+            </div>
             <h1 className="search-head__title">
               {headTitle === 'Todo Santiago' ? (
-                <>
-                  <span style={{ fontStyle: 'normal' }}>Todo </span>
-                  <em style={{ color: 'var(--accent-60)' }}>Santiago</em>
-                </>
+                <>Todo <em style={{ color: 'var(--accent-60)' }}>Santiago</em></>
               ) : (
                 <em style={{ color: 'var(--accent-60)' }}>{headTitle}</em>
               )}
@@ -119,15 +113,17 @@ export default async function ExplorarPage({ searchParams }: PageProps) {
                         ) : (
                           <div className="placeholder-stripe" style={{ width: '100%', height: '100%' }} />
                         )}
+                        {item.isPremium && (
+                          <span className="premium-badge" style={{ position: 'absolute', top: '8px', left: '8px', zIndex: 3, background: 'var(--paper-00)', fontSize: '10px', padding: '2px 6px' }}>
+                            Premium
+                          </span>
+                        )}
                       </div>
                       <div className="place-row__body">
                         <div className="place-card__meta">
                           <span>{item.categoryName}</span>
                           <span className="dot" aria-hidden="true" />
                           <span>{item.neighborhood}</span>
-                          {item.isPremium && (
-                            <><span className="dot" aria-hidden="true" /><span className="premium-badge" style={{ fontSize: '10px', padding: '2px 6px' }}>Premium</span></>
-                          )}
                         </div>
                         <h3 className="place-row__title">{item.name}</h3>
                         {item.description && (

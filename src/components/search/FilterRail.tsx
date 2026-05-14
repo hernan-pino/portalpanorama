@@ -28,7 +28,12 @@ const RATING_OPTIONS = [
 
 const VISIBLE_NEIGHBORHOODS = NEIGHBORHOODS.slice(0, 10)
 
-function FilterRailInner() {
+interface FilterRailProps {
+  totalResults?: number
+  categoryCounts?: Record<string, number>
+}
+
+function FilterRailInner({ totalResults, categoryCounts }: FilterRailProps) {
   const router = useRouter()
   const searchParams = useSearchParams()
   const [isPending, startTransition] = useTransition()
@@ -77,6 +82,14 @@ function FilterRailInner() {
   return (
     <aside className="filter-rail" data-pending={isPending || undefined}>
 
+      {/* Header: título + total resultados — visible solo en desktop */}
+      <div className="filter-rail__header">
+        <span className="eyebrow">Filtros</span>
+        {totalResults !== undefined && (
+          <p className="filter-rail__total">{totalResults} {totalResults === 1 ? 'resultado' : 'resultados'}</p>
+        )}
+      </div>
+
       {/* Toggle visible solo en tablet/móvil */}
       <button
         className="filter-rail__toggle"
@@ -106,6 +119,9 @@ function FilterRailInner() {
             onChange={() => toggleSingle('categoria', cat.slug)}
           />
           <span>{cat.name}</span>
+          {categoryCounts?.[cat.slug] !== undefined && (
+            <span className="filter-rail__count">{categoryCounts[cat.slug]}</span>
+          )}
         </label>
       ))}
 
@@ -162,10 +178,10 @@ function FilterRailInner() {
   )
 }
 
-export function FilterRail() {
+export function FilterRail(props: FilterRailProps) {
   return (
     <Suspense fallback={<aside className="filter-rail" />}>
-      <FilterRailInner />
+      <FilterRailInner {...props} />
     </Suspense>
   )
 }

@@ -30,6 +30,7 @@ function mockListingRepo(partial: Partial<ListingRepository> = {}): ListingRepos
 function mockSearchService(partial: Partial<SearchService> = {}): SearchService {
   return {
     search: vi.fn().mockResolvedValue({ items: [], total: 0, page: 1, totalPages: 0 }),
+    getCategoryFacets: vi.fn().mockResolvedValue([]),
     indexListing: vi.fn().mockResolvedValue(undefined),
     removeListing: vi.fn().mockResolvedValue(undefined),
     ...partial,

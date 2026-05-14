@@ -24,7 +24,7 @@ export interface ParsedSearchParams {
 }
 
 export function parseSearchParams(raw: RawSearchParams): ParsedSearchParams {
-  const query = raw.q?.trim() || undefined
+  const query = raw.q?.trim().slice(0, 100) || undefined
 
   const barrio =
     raw.barrio && isValidNeighborhood(raw.barrio) ? raw.barrio : undefined
@@ -33,7 +33,7 @@ export function parseSearchParams(raw: RawSearchParams): ParsedSearchParams {
     raw.categoria && isValidCategorySlug(raw.categoria) ? raw.categoria : undefined
 
   const priceRanges = raw.precio
-    ? raw.precio.split(',').map(Number).filter((n) => n >= 1 && n <= 4)
+    ? raw.precio.split(',').map((s) => parseInt(s, 10)).filter((n) => !isNaN(n) && n >= 1 && n <= 4)
     : undefined
 
   const isPremium = raw.premium === '1' ? true : undefined

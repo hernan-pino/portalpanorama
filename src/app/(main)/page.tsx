@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import { SearchBar } from '@components/search/SearchBar'
 import { ListingCard } from '@components/listing/ListingCard'
+import { FeaturedSlider } from '@components/home/FeaturedSlider'
 import { container } from '@lib/container'
 
 const CATEGORIES = [
@@ -33,7 +34,7 @@ export default async function HomePage() {
         <div className="hero__copy">
           <p className="hero__eyebrow">
             <span className="line" aria-hidden="true" />
-            <span className="eyebrow">Edición · Otoño en Santiago</span>
+            <span className="eyebrow">Edición #04 · Otoño en Santiago</span>
           </p>
           <h1 className="hero__title">
             Lo bueno de la ciudad, <em>curado</em> como revista.
@@ -66,7 +67,7 @@ export default async function HomePage() {
 
       {/* ── Categorías ── */}
       <section className="container" style={{ marginTop: 'var(--s-24)' }}>
-        <SecHead num="01 / 04" title={<><em>Categorías</em> para empezar</>} ctaHref="/explorar" ctaLabel="Ver todas" />
+        <SecHead num="01 / 06" title={<><em>Categorías</em> para empezar</>} ctaHref="/explorar" ctaLabel="Ver todas" />
         <div className="cat-grid">
           {CATEGORIES.map((cat) => (
             <Link key={cat.slug} href={`/explorar?categoria=${cat.slug}`} className="cat-card">
@@ -91,8 +92,8 @@ export default async function HomePage() {
       {/* ── Lugares recomendados ── */}
       {recent.items.length > 0 && (
         <section className="container" style={{ marginTop: 'var(--s-24)' }}>
-          <SecHead num="02 / 04" title={<>Lo más <em>recomendado</em></>} ctaHref="/explorar" ctaLabel="Ver todo el listado" />
-          <div className="featured-grid">
+          <SecHead num="02 / 06" title={<>Lo más <em>recomendado</em></>} ctaHref="/explorar" ctaLabel="Ver todo el listado" />
+          <FeaturedSlider>
             {recent.items.slice(0, 3).map((item) => (
               <ListingCard
                 key={item.listingId}
@@ -110,13 +111,13 @@ export default async function HomePage() {
                 }}
               />
             ))}
-          </div>
+          </FeaturedSlider>
         </section>
       )}
 
       {/* ── Eventos ── */}
       <section className="container" style={{ marginTop: 'var(--s-24)' }}>
-        <SecHead num="03 / 04" title={<>Esta <em>semana</em> en la ciudad</>} ctaHref="/explorar" ctaLabel="Ver agenda" />
+        <SecHead num="03 / 06" title={<>Esta <em>semana</em> en la ciudad</>} ctaHref="/explorar" ctaLabel="Ver agenda" />
         <div>
           {STATIC_EVENTS.map((ev) => (
             <div key={ev.title} className="event-card">
@@ -140,7 +141,7 @@ export default async function HomePage() {
       {/* ── Panoramas nuevos y bien evaluados ── */}
       {recent.items.length > 3 && (
         <section className="container" style={{ marginTop: 'var(--s-24)' }}>
-          <SecHead num="04 / 04" title={<>Panoramas <em>nuevos</em> y bien evaluados</>} ctaHref="/explorar" ctaLabel="Ver todos" />
+          <SecHead num="04 / 06" title={<>Panoramas <em>nuevos</em> y bien evaluados</>} ctaHref="/explorar" ctaLabel="Ver todos" />
           <div className="results-grid">
             {recent.items.slice(3).map((item) => (
               <ListingCard
@@ -183,7 +184,7 @@ export default async function HomePage() {
         <div style={{ marginTop: 'var(--s-6)', display: 'flex', gap: 'var(--s-3)', alignItems: 'center' }}>
           <span className="eyebrow">— Editorial</span>
           <span style={{ flex: 1, height: '1px', background: 'var(--surface-line)' }} />
-          <span className="eyebrow">Otoño · Santiago 2026</span>
+          <span className="eyebrow">Nº 04 · Mayo 2026</span>
         </div>
       </section>
 

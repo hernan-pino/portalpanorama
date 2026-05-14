@@ -1,6 +1,6 @@
 import { PrismaClient, Prisma } from '@prisma/client'
 import { Listing } from '@domain/listing/Listing'
-import { SearchService, SearchParams, SearchResult, SearchResultItem } from '@application/ports/SearchService'
+import { SearchService, SearchParams, SearchResult, SearchResultItem, CategoryFacet } from '@application/ports/SearchService'
 
 export class PostgresFTSSearchService implements SearchService {
   constructor(private readonly prisma: PrismaClient) {}
@@ -88,6 +88,21 @@ export class PostgresFTSSearchService implements SearchService {
       page,
       totalPages: Math.ceil(total / limit),
     }
+  }
+
+  async getCategoryFacets(): Promise<CategoryFacet[]> {
+    const groups = await this.prisma.listing.groupBy({
+      by: ['categoryId'],
+      where: { status: 'PUBLISHED' },
+      _count: { id: true },
+    })
+    if (groups.length === 0) return []
+    const categories = await this.prisma.category.findMany({
+      where: { id: { in: groups.map((g) => g.categoryId) } },
+      select: { id: true, slug: true },
+    })
+    const slugMap = Object.fromEntries(categories.map((c) => [c.id, c.slug]))
+    return groups.map((g) => ({ categorySlug: slugMap[g.categoryId] ?? '', count: g._count.id }))
   }
 
   // In Postgres FTS mode, indexing is a no-op — the DB table IS the index

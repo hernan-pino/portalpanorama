@@ -176,10 +176,22 @@ src/lib/container.ts  (actualizado)
 ---
 
 ### Paso 7.9 — QA Visual vs handoff
-**Estado:** ⬜ PENDIENTE
+**Estado:** ✅ COMPLETADO
 **Referencia:** `design_handoff_portal_panorama/index.html`
-**Archivos:** `src/app/globals.css`, componentes según hallazgos
-**Commit de cierre:** —
+**Páginas revisadas:** Home (`/`), Explorar (`/explorar`)
+**Archivos clave modificados:**
+- `src/components/listing/ListingCard.tsx` — Premium badge position:absolute sobre imagen
+- `src/components/home/FeaturedSlider.tsx` — nuevo Client Component slider con flechas
+- `src/components/search/FilterRail.tsx` — header Filtros/Resultados + counts dinámicos por categoría
+- `src/app/(main)/page.tsx` — numeración secciones 01/06, eyebrow #04, pull-quote, FeaturedSlider
+- `src/app/(main)/explorar/page.tsx` — hero__eyebrow, badge lista, facets en paralelo
+- `src/application/ports/SearchService.ts` — CategoryFacet + getCategoryFacets()
+- `src/application/listing/GetCategoryFacetsUseCase.ts` — nuevo use case
+- `src/infrastructure/search/PostgresFTSSearchService.ts` — implementación getCategoryFacets
+- `src/lib/parseSearchParams.ts` — fix seguridad: query.slice(0,100), parseInt en priceRanges
+- `src/infrastructure/db/prisma/seed.ts` — 3 listings PREMIUM (La Bodeguita, Bar Loreto, Ambrosía)
+- `src/app/globals.css` — featured-slider, filter-rail__header, filter-rail__total
+**Commit de cierre:** pendiente
 
 ---
 

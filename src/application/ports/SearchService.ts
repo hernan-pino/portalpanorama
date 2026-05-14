@@ -35,8 +35,14 @@ export interface SearchResult {
   totalPages: number
 }
 
+export interface CategoryFacet {
+  categorySlug: string
+  count: number
+}
+
 export interface SearchService {
   search(params: SearchParams): Promise<SearchResult>
+  getCategoryFacets(): Promise<CategoryFacet[]>
   indexListing(listing: Listing): Promise<void>
   removeListing(listingId: string): Promise<void>
 }

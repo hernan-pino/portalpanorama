@@ -33,6 +33,11 @@ export function ListingCard({ listing }: { listing: ListingCardData }) {
         ) : (
           <div className="placeholder-stripe" style={{ width: '100%', height: '100%' }} />
         )}
+        {listing.isPremium && (
+          <span className="premium-badge" style={{ position: 'absolute', top: '12px', left: '12px', zIndex: 3, background: 'var(--paper-00)' }}>
+            Premium
+          </span>
+        )}
       </div>
 
       {/* Body */}
@@ -45,12 +50,6 @@ export function ListingCard({ listing }: { listing: ListingCardData }) {
             <>
               <span className="dot" aria-hidden="true" />
               <span>{'$'.repeat(listing.priceRange)}</span>
-            </>
-          )}
-          {listing.isPremium && (
-            <>
-              <span className="dot" aria-hidden="true" />
-              <span className="premium-badge" style={{ fontSize: '10px', padding: '2px 6px' }}>Premium</span>
             </>
           )}
         </div>

@@ -83,10 +83,23 @@ async function main() {
   console.log(`  ✓ Usuario negocio: negocio@portalpanorama.cl`)
 
   // ── Listings ──
-  const listingData = [
+  const listingData: Array<{
+    slug: string
+    name: string
+    neighborhood: string
+    categorySlug: string
+    description: string
+    address?: string
+    phone?: string
+    priceRange?: number
+    plan?: 'FREE' | 'PREMIUM'
+    tags: { slug: string; name: string }[]
+    images: { url: string; alt: string; order: number }[]
+  }> = [
     {
       slug: 'la-bodeguita-de-lastarria',
       name: 'La Bodeguita de Lastarria',
+      plan: 'PREMIUM',
       neighborhood: 'Lastarria',
       categorySlug: 'restaurantes',
       description:
@@ -129,6 +142,7 @@ async function main() {
     {
       slug: 'bar-loreto',
       name: 'Bar Loreto',
+      plan: 'PREMIUM',
       neighborhood: 'Italia',
       categorySlug: 'bares',
       description:
@@ -221,6 +235,7 @@ async function main() {
         phone: data.phone ?? null,
         priceRange: data.priceRange ?? null,
         status: 'PUBLISHED',
+        plan: data.plan ?? 'FREE',
       },
       create: {
         id: createId(),
@@ -234,7 +249,7 @@ async function main() {
         phone: data.phone ?? null,
         priceRange: data.priceRange ?? null,
         status: 'PUBLISHED',
-        plan: 'FREE',
+        plan: data.plan ?? 'FREE',
       },
     })
 
@@ -264,7 +279,7 @@ async function main() {
   // ── Listing para el usuario negocio ──
   const ambrosia = await prisma.listing.upsert({
     where: { slug: 'ambrosia-bistro' },
-    update: {},
+    update: { plan: 'PREMIUM' },
     create: {
       id: createId(),
       slug: 'ambrosia-bistro',
@@ -276,7 +291,7 @@ async function main() {
       address: 'Av. Providencia 1234',
       phone: '+56 9 8765 4321',
       status: 'PUBLISHED',
-      plan: 'FREE',
+      plan: 'PREMIUM',
     },
   })
   const ambrosiaImgCount = await prisma.listingImage.count({ where: { listingId: ambrosia.id } })
