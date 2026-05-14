@@ -234,7 +234,7 @@ src/lib/container.ts  (actualizado)
 - `src/app/(main)/page.tsx` — sección `biz-cta` comentada (FASE 9), no eliminada
 - `src/components/layout/Footer.tsx` — "Negocios" → "Cuenta" (Registrarse + Iniciar sesión)
 - Nav desktop y mobile: link "Planes" comentado (FASE 9)
-**Commit de cierre:** —
+**Commit de cierre:** 3596349
 
 ---
 
