@@ -30,7 +30,7 @@ Antes de cerrar este paso:
    - Qué sigue (próximo paso según ROADMAP.md).
 
 6. **Commit:** Sugiere un mensaje de commit siguiendo Conventional Commits:
-   `feat(paso-7.X): descripción breve del paso`
+   `feat(paso-8.X): descripción breve del paso`
 
 NO hagas el commit tú. Yo lo reviso y lo hago después.
 NO avances al siguiente paso. Espera mi OK explícito.

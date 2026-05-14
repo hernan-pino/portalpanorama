@@ -24,11 +24,10 @@ export function Footer() {
           </div>
 
           <div>
-            <h4>Negocios</h4>
+            <h4>Cuenta</h4>
             <ul>
-              <li><Link href="/planes">Planes y precios</Link></li>
-              <li><Link href="/dashboard">Mi dashboard</Link></li>
-              <li><Link href="/registro">Crear cuenta</Link></li>
+              <li><Link href="/registro">Registrarse</Link></li>
+              <li><Link href="/login">Iniciar sesión</Link></li>
             </ul>
           </div>
 

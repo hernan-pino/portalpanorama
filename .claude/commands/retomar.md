@@ -12,7 +12,7 @@ Estoy retomando el proyecto Portal Panorama. Antes de hacer nada:
 
 Luego dime, en formato breve:
 
-- **Fase/Paso actual:** qué paso de la Fase 7 estamos haciendo (según ROADMAP.md).
+- **Fase/Paso actual:** qué paso de la Fase 8 estamos haciendo (según ROADMAP.md).
 - **Último trabajo:** qué se hizo en el commit más reciente y qué archivos se tocaron.
 - **Próximo paso:** qué hay que hacer según el ROADMAP, con los archivos clave.
 - **Sin commitear:** si hay cambios pendientes de commit, listarlos y sugerir si commitear antes de seguir.

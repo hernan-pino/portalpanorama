@@ -39,7 +39,9 @@ export function MobileNav({ isAuthenticated, role }: MobileNavProps) {
             <nav className="mobile-nav-links" aria-label="Menú principal">
               <Link href="/explorar" onClick={close}>Explorar</Link>
               <Link href="/eventos" onClick={close}>Eventos</Link>
+              {/* FASE 9: descomentar cuando el flow de negocios esté activo
               <Link href="/planes" onClick={close}>Planes</Link>
+              */}
             </nav>
 
             <div className="mobile-nav-divider" />
@@ -56,11 +58,6 @@ export function MobileNav({ isAuthenticated, role }: MobileNavProps) {
                       Mi cuenta
                     </Link>
                   ) : null}
-                  {role !== UserRole.BUSINESS_OWNER && role !== UserRole.ADMIN && (
-                    <Link href="/listar-mi-local" className="btn btn--primary btn--sm" onClick={close}>
-                      Listar mi negocio
-                    </Link>
-                  )}
                   <button
                     className="btn btn--ghost btn--sm"
                     onClick={() => { close(); signOut({ callbackUrl: '/' }) }}
@@ -69,14 +66,9 @@ export function MobileNav({ isAuthenticated, role }: MobileNavProps) {
                   </button>
                 </>
               ) : (
-                <>
-                  <Link href="/login" className="btn btn--ghost btn--sm" onClick={close}>
-                    Iniciar sesión
-                  </Link>
-                  <Link href="/listar-mi-local" className="btn btn--primary btn--sm" onClick={close}>
-                    Listar mi local
-                  </Link>
-                </>
+                <Link href="/login" className="btn btn--primary btn--sm" onClick={close}>
+                  Iniciar sesión
+                </Link>
               )}
             </div>
           </div>

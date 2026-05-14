@@ -131,7 +131,7 @@
 
 /* ---------- Base reset ---------- */
 *, *::before, *::after { box-sizing: border-box; }
-html, body { margin: 0; padding: 0; }
+html, body { margin: 0; padding: 0; overflow-x: hidden; }
 body {
   background: var(--bg);
   color: var(--fg);
@@ -1462,6 +1462,7 @@ select.form-input { cursor: pointer; }
 @media (max-width: 960px) {
   .topbar__inner { grid-template-columns: auto auto; }
   .topbar__nav { display: none; }
+  .topbar__auth { display: none; }
   .featured-grid > * { flex: 0 0 280px; }
   .cat-grid { grid-template-columns: repeat(2, 1fr); }
   .results-grid, .grid-cards { grid-template-columns: repeat(2, 1fr); }

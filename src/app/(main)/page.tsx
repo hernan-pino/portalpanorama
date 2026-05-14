@@ -188,7 +188,7 @@ export default async function HomePage() {
         </div>
       </section>
 
-      {/* ── BIZ CTA ── */}
+      {/* FASE 9 — Re-habilitar cuando el flow de negocios esté activo
       <section className="container">
         <div className="biz-cta">
           <div className="biz-cta__copy">
@@ -222,6 +222,7 @@ export default async function HomePage() {
           </div>
         </div>
       </section>
+      */}
 
     </div>
   )

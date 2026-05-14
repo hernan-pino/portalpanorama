@@ -23,16 +23,20 @@ export async function Header() {
           <nav className="topbar__nav" aria-label="Navegación principal">
             <Link href="/explorar">Explorar</Link>
             <Link href="/eventos">Eventos</Link>
+            {/* FASE 9: descomentar cuando el flow de negocios esté activo
             <Link href="/planes">Planes</Link>
+            */}
           </nav>
 
           {/* Actions */}
           <div className="topbar__actions">
-            {user ? (
-              <AuthenticatedActions name={user.name ?? ''} role={role} />
-            ) : (
-              <GuestActions />
-            )}
+            <div className="topbar__auth">
+              {user ? (
+                <AuthenticatedActions name={user.name ?? ''} role={role} />
+              ) : (
+                <GuestActions />
+              )}
+            </div>
             <MobileNav
               isAuthenticated={!!user}
               role={role}
@@ -46,14 +50,9 @@ export async function Header() {
 
 function GuestActions() {
   return (
-    <>
-      <Link href="/login" className="btn btn--ghost btn--sm">
-        Iniciar sesión
-      </Link>
-      <Link href="/listar-mi-local" className="btn btn--primary btn--sm">
-        Listar mi local
-      </Link>
-    </>
+    <Link href="/login" className="btn btn--primary btn--sm">
+      Iniciar sesión
+    </Link>
   )
 }
 
@@ -99,9 +98,6 @@ function AuthenticatedActions({
     <>
       <Link href="/mi-cuenta" className="btn btn--ghost btn--sm">
         {firstName}
-      </Link>
-      <Link href="/listar-mi-local" className="btn btn--primary btn--sm">
-        Listar mi negocio
       </Link>
       <LogoutButton />
     </>

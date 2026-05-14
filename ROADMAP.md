@@ -209,6 +209,94 @@ src/lib/container.ts  (actualizado)
 
 ---
 
+## Fase 8 — Pre-launch: Consumer-Only + Datos Reales
+
+**Objetivo:** Dejar el sitio listo para el primer wave de usuarios reales.
+- Scope consumer-only (sin flujo de negocios público)
+- Datos reales de Google Maps (1000+ negocios, Santiago completo)
+- Mobile polish en los puntos identificados
+- Schema extensible por categoría (`attributes JSONB`)
+
+**Contexto clave:**
+- El site es ahora un directorio de consumo puro: buscar, guardar, reseñar
+- Los CTAs de "Listar mi local" se eliminaron del sitio público
+- Los tabs placeholder se simplifican: solo lo que funciona queda activo
+- El schema se extiende con `lat`, `lng`, `businessHours`, `googlePlaceId`, `attributes`
+
+---
+
+### Paso 8.1 — Consumer-only en todo el sitio + header mobile fix
+**Estado:** ✅ COMPLETADO
+**Archivos:**
+- `src/components/layout/Header.tsx` — quitar "Listar mi local/negocio", wrapper `.topbar__auth`, solo "Iniciar sesión" para invitados
+- `src/components/layout/MobileNav.tsx` — quitar CTAs de listar, solo "Iniciar sesión" para invitados
+- `src/app/globals.css` — `.topbar__auth { display: none }` en ≤960px (fix overflow), `overflow-x: hidden` en html/body
+- `src/app/(main)/page.tsx` — sección `biz-cta` comentada (FASE 9), no eliminada
+- `src/components/layout/Footer.tsx` — "Negocios" → "Cuenta" (Registrarse + Iniciar sesión)
+- Nav desktop y mobile: link "Planes" comentado (FASE 9)
+**Commit de cierre:** —
+
+---
+
+### Paso 8.2 — Cleanup UI: tabs placeholder + footer mobile + eventos
+**Estado:** ⬜ PENDIENTE
+**Archivos:**
+- `src/app/globals.css` — footer mobile: grid 2 columnas → columna única más compacta
+- `src/components/layout/Footer.tsx` — layout mobile mejorado
+- `src/app/(main)/eventos/page.tsx` — reemplazar por página "Próximamente"
+- `src/app/(main)/mi-cuenta/` — ajustar tabs: Guardados + Reseñas + Perfil activos; Listas + Eventos → Próximamente; Historial → esconder
+**Commit de cierre:** —
+
+---
+
+### Paso 8.3 — Schema migration: geo + horarios + atributos por categoría
+**Estado:** ⬜ PENDIENTE
+**Archivos:**
+- `src/infrastructure/db/prisma/schema.prisma` — nuevos campos en `Listing`:
+  `lat Float?`, `lng Float?`, `businessHours Json?`, `googlePlaceId String? @unique`,
+  `googleRating Float?`, `googleReviewCount Int?`, `attributes Json? @db.JsonB`
+  + índices: `@@index([categoryId, status])`, `@@index([neighborhood, status])`
+- Nueva migración Prisma
+- `src/domain/listing/ListingAttributes.ts` — tipos TS por categoría (RestaurantAttributes, BarAttributes, etc.)
+**Bloqueante:** necesitar el JSON de Google Maps para validar campos antes de migrar
+**Commit de cierre:** —
+
+---
+
+### Paso 8.4 — Import pipeline Google Maps → BD
+**Estado:** ⬜ PENDIENTE
+**Archivos nuevos:**
+- `src/infrastructure/db/scripts/import-google-places.ts`
+  Upsert por `googlePlaceId`, logs de creado/actualizado/fallado
+  `ownerId` = admin, `status` = PUBLISHED, `plan` = FREE
+**Mapeos a implementar:**
+- `types[]` → categoryId + `attributes.data` inicial
+- `addressComponents` → catálogo de barrios de `Neighborhoods.ts`
+- `regularOpeningHours.periods[]` → `businessHours Json`
+- `priceLevel` → `priceRange` (1–4)
+**Bloqueante:** tener el JSON del dump y acordar mapeos con el usuario
+**Commit de cierre:** —
+
+---
+
+### Paso 8.5 — QA + deploy datos reales
+**Estado:** ⬜ PENDIENTE
+- Importar en local, verificar búsqueda + filtros con 1000+ listings
+- Deploy migración a Neon producción (`prisma migrate deploy`)
+- Importar en producción
+- Smoke test en `portal-panorama.vercel.app`
+**Commit de cierre:** —
+
+---
+
+### Paso 8.6 — Mobile QA final
+**Estado:** ⬜ PENDIENTE
+- Revisar Home, Explorar, Ficha de lugar, Mi cuenta en 375px y 768px
+- Verificar header y footer nuevos con datos reales
+**Commit de cierre:** —
+
+---
+
 ## Estados posibles de cada paso
 
 | Símbolo | Significado |
