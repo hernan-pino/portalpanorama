@@ -159,13 +159,18 @@ src/lib/container.ts  (actualizado)
 - `src/app/(main)/page.tsx` — `coverUrl` pasado a ListingCard en ambos grids
 - `src/app/(main)/explorar/page.tsx` — `coverUrl` en grid view + imagen real en vista lista
 - `src/app/(main)/lugar/[slug]/page.tsx` — `coverUrl: undefined` → `item.coverUrl` en "También te puede gustar"
-**Commit de cierre:** —
+**Commit de cierre:** 669f114
 
 ---
 
-### Paso 7.8 — QA Responsive (960px y 600px)
-**Estado:** ⬜ PENDIENTE
-**Archivos:** `src/app/globals.css`, componentes según hallazgos
+### Paso 7.8 — QA Responsive (960px y 600px + monitores grandes)
+**Estado:** ✅ COMPLETADO
+**Archivos:**
+- `src/app/globals.css` — clases `.dash-*`, responsive dashboards 960px/600px, `form-grid-2` colapso, `--content-max` 1280→1440px
+- `src/app/(main)/mi-negocio/layout.tsx` — inline styles → clases `dash-shell/sidebar/content`
+- `src/app/(main)/mi-cuenta/layout.tsx` — mismo refactor + `dash-user-header`, `dash-header-meta`
+- `src/app/(main)/mi-negocio/SidebarNav.tsx` — inline styles → `dash-sidenav__link` + clase `.active`
+- `src/app/(main)/mi-cuenta/SidebarNav.tsx` — mismo refactor
 **Commit de cierre:** —
 
 ---
@@ -217,6 +222,12 @@ src/lib/container.ts  (actualizado)
 - Banner de credenciales dev en `/login` — borrar antes del deploy a producción (Paso 7.10)
 - Deuda técnica: no hay rate limiting en server actions de escritura (submitReviewAction). Spammer autenticado puede publicar reseñas masivas. Resolver antes de producción con Upstash Ratelimit o middleware.
 - Error TS preexistente: `subscription.test.ts:86` — `status: undefined as unknown as string`. Arreglar en QA (Paso 7.9).
+
+### Pendientes UX — anotados, evaluación pendiente
+
+- **Featured grid → slider horizontal**: la primera card del grid asimétrico (span 2 filas) se ve muy grande en tablet/móvil. Alternativa: convertir a scroll horizontal tipo carrusel. Evaluar en Paso 7.9 QA Visual.
+
+---
 
 ### Pendientes visuales ficha de lugar — requieren data o features nuevas
 

@@ -1,4 +1,5 @@
 'use client'
+import { useState } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { useTransition, Suspense } from 'react'
 import { NEIGHBORHOODS } from '@domain/shared/Neighborhoods'
@@ -31,12 +32,16 @@ function FilterRailInner() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const [isPending, startTransition] = useTransition()
+  const [mobileOpen, setMobileOpen] = useState(false)
 
   const activeCategoria = searchParams.get('categoria') ?? ''
   const activeBarrio    = searchParams.get('barrio') ?? ''
   const activePrecios   = (searchParams.get('precio') ?? '').split(',').filter(Boolean)
   const activeRating    = searchParams.get('rating') ?? ''
   const activePremium   = searchParams.get('premium') === '1'
+
+  const activeCount = [activeCategoria, activeBarrio, activeRating, activePremium]
+    .filter(Boolean).length + activePrecios.length
 
   function push(params: URLSearchParams) {
     params.delete('pagina')
@@ -71,6 +76,26 @@ function FilterRailInner() {
 
   return (
     <aside className="filter-rail" data-pending={isPending || undefined}>
+
+      {/* Toggle visible solo en tablet/móvil */}
+      <button
+        className="filter-rail__toggle"
+        onClick={() => setMobileOpen((o) => !o)}
+        aria-expanded={mobileOpen}
+      >
+        <span>
+          Filtros{activeCount > 0 && (
+            <span style={{ marginLeft: 6, background: 'var(--ink-100)', color: 'var(--paper-00)', borderRadius: 'var(--r-pill)', padding: '1px 7px', fontSize: 'var(--t-mono-sm)', fontFamily: 'var(--font-mono)' }}>
+              {activeCount}
+            </span>
+          )}
+        </span>
+        <svg className="ico-sm" viewBox="0 0 24 24" aria-hidden="true" style={{ transform: mobileOpen ? 'rotate(180deg)' : undefined, transition: 'transform var(--d-fast)' }}>
+          <path d="M6 9l6 6 6-6" />
+        </svg>
+      </button>
+
+      <div className={`filter-rail__body${mobileOpen ? ' is-open' : ''}`}>
 
       <h5>Categorías</h5>
       {CATEGORIES.map((cat) => (
@@ -132,6 +157,7 @@ function FilterRailInner() {
         <span>Solo Premium</span>
       </label>
 
+      </div>
     </aside>
   )
 }

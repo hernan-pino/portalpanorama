@@ -22,24 +22,12 @@ export default async function MiNegocioLayout({
   const firstName = session.user.name?.split(' ')[0] ?? 'Bienvenido'
 
   return (
-    <div style={{ display: 'flex', minHeight: 'calc(100dvh - 72px)' }}>
+    <div className="dash-shell">
       {/* Sidebar */}
-      <aside
-        style={{
-          width: '220px',
-          flexShrink: 0,
-          borderRight: '1px solid var(--surface-line)',
-          background: 'var(--bg-raised)',
-          padding: 'var(--s-6) 0',
-          display: 'flex',
-          flexDirection: 'column',
-        }}
-      >
+      <aside className="dash-sidebar">
         <div style={{ padding: '0 var(--s-5)', marginBottom: 'var(--s-6)' }}>
           <p className="eyebrow" style={{ marginBottom: 'var(--s-1)' }}>Mi negocio</p>
-          <p style={{ fontSize: 'var(--t-body-sm)', fontWeight: 500, color: 'var(--fg-default)' }}>
-            {firstName}
-          </p>
+          <p style={{ fontSize: 'var(--t-body-sm)', fontWeight: 500 }}>{firstName}</p>
         </div>
         <Suspense fallback={null}>
           <SidebarNav />
@@ -47,7 +35,7 @@ export default async function MiNegocioLayout({
       </aside>
 
       {/* Main content */}
-      <div style={{ flex: 1, overflow: 'auto' }}>
+      <div className="dash-content">
         {children}
       </div>
     </div>

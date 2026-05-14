@@ -2,6 +2,7 @@ import Link from 'next/link'
 import { auth } from '@lib/auth'
 import { UserRole } from '@domain/user/UserRole'
 import { signOutAction } from '@/app/actions/auth'
+import { MobileNav } from './MobileNav'
 
 export async function Header() {
   const session = await auth()
@@ -32,6 +33,11 @@ export async function Header() {
             ) : (
               <GuestActions />
             )}
+            <MobileNav
+              isAuthenticated={!!user}
+              userName={user?.name ?? undefined}
+              role={role}
+            />
           </div>
         </div>
       </div>

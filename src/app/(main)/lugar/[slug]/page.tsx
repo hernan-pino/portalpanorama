@@ -173,55 +173,6 @@ export default async function LugarPage({ params }: PageProps) {
               </div>
             )}
 
-            {/* ── Reseñas ── */}
-            <div style={{ marginBottom: 'var(--s-10)' }}>
-              <h2 style={{ fontFamily: 'var(--font-display)', fontSize: 'var(--t-h3)', fontWeight: 400, marginBottom: 'var(--s-2)', letterSpacing: 'var(--tr-tight)' }}>
-                Reseñas {stats.count > 0 && `(${stats.count})`}
-              </h2>
-
-              {reviews.length > 0 ? (
-                reviews.map((review) => (
-                  <div key={review.id} className="review">
-                    <div className="review__avatar">
-                      <span>U</span>
-                    </div>
-                    <div>
-                      <div className="review__head">
-                        <span className="review__name">Usuario verificado</span>
-                        <span className="review__when">{review.rating}/10</span>
-                      </div>
-                      <p style={{ color: 'var(--fg-muted)', lineHeight: 'var(--lh-loose)', fontSize: 'var(--t-body-sm)' }}>
-                        {review.body}
-                      </p>
-                      {review.response && (
-                        <div style={{ marginTop: 'var(--s-4)', padding: 'var(--s-4)', background: 'var(--bg-sunken)', borderRadius: 'var(--r-md)' }}>
-                          <p className="eyebrow" style={{ marginBottom: 'var(--s-2)' }}>Respuesta del dueño</p>
-                          <p style={{ fontSize: 'var(--t-body-sm)', lineHeight: 'var(--lh-loose)' }}>{review.response}</p>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                ))
-              ) : (
-                <div className="review" style={{ borderTop: '1px solid var(--surface-line)', paddingTop: 'var(--s-6)' }}>
-                  <p style={{ color: 'var(--fg-muted)', fontSize: 'var(--t-body-sm)', gridColumn: '1 / -1' }}>
-                    Todavía no hay reseñas. ¡Sé el primero!
-                  </p>
-                </div>
-              )}
-
-              {/* Form de nueva reseña */}
-              <div style={{ marginTop: 'var(--s-8)' }}>
-                <h3 style={{ fontFamily: 'var(--font-display)', fontSize: 'var(--t-h4)', fontWeight: 400, marginBottom: 'var(--s-4)', letterSpacing: 'var(--tr-tight)' }}>
-                  Dejá tu opinión
-                </h3>
-                <ReviewForm
-                  slug={slug}
-                  isLoggedIn={isLoggedIn}
-                  hasReviewed={!!userReview}
-                />
-              </div>
-            </div>
           </div>
 
           {/* ── Sidebar ── */}
@@ -325,6 +276,51 @@ export default async function LugarPage({ params }: PageProps) {
             )}
           </aside>
         </div>
+
+        {/* ── Reseñas ── */}
+        <section style={{ marginTop: 'var(--s-12)', paddingTop: 'var(--s-8)', borderTop: '1px solid var(--surface-line)' }}>
+          <h2 style={{ fontFamily: 'var(--font-display)', fontSize: 'var(--t-h2)', fontWeight: 400, marginBottom: 'var(--s-6)', letterSpacing: 'var(--tr-tight)' }}>
+            Reseñas {stats.count > 0 && `(${stats.count})`}
+          </h2>
+
+          {reviews.length > 0 ? (
+            reviews.map((review) => (
+              <div key={review.id} className="review">
+                <div className="review__avatar">
+                  <span>U</span>
+                </div>
+                <div>
+                  <div className="review__head">
+                    <span className="review__name">Usuario verificado</span>
+                    <span className="review__when">{review.rating}/10</span>
+                  </div>
+                  <p style={{ color: 'var(--fg-muted)', lineHeight: 'var(--lh-loose)', fontSize: 'var(--t-body-sm)' }}>
+                    {review.body}
+                  </p>
+                  {review.response && (
+                    <div style={{ marginTop: 'var(--s-4)', padding: 'var(--s-4)', background: 'var(--bg-sunken)', borderRadius: 'var(--r-md)' }}>
+                      <p className="eyebrow" style={{ marginBottom: 'var(--s-2)' }}>Respuesta del dueño</p>
+                      <p style={{ fontSize: 'var(--t-body-sm)', lineHeight: 'var(--lh-loose)' }}>{review.response}</p>
+                    </div>
+                  )}
+                </div>
+              </div>
+            ))
+          ) : (
+            <div style={{ paddingTop: 'var(--s-4)', paddingBottom: 'var(--s-6)' }}>
+              <p style={{ color: 'var(--fg-muted)', fontSize: 'var(--t-body-sm)' }}>
+                Todavía no hay reseñas. ¡Sé el primero!
+              </p>
+            </div>
+          )}
+
+          <div style={{ marginTop: 'var(--s-8)' }}>
+            <h3 style={{ fontFamily: 'var(--font-display)', fontSize: 'var(--t-h4)', fontWeight: 400, marginBottom: 'var(--s-4)', letterSpacing: 'var(--tr-tight)' }}>
+              Dejá tu opinión
+            </h3>
+            <ReviewForm slug={slug} isLoggedIn={isLoggedIn} hasReviewed={!!userReview} />
+          </div>
+        </section>
 
         {/* ── También te puede gustar ── */}
         {relatedItems.length > 0 && (
