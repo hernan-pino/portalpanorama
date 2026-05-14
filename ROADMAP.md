@@ -245,7 +245,7 @@ src/lib/container.ts  (actualizado)
 - `src/app/(main)/eventos/page.tsx` — reemplazado por página "Próximamente" estática (sin container ni search)
 - `src/app/(main)/mi-cuenta/SidebarNav.tsx` — Historial eliminado del nav; Listas y Eventos con badge "Pronto"
 - `src/app/(main)/mi-cuenta/tabs/Listas.tsx` — mock data eliminado, placeholder "Próximamente" coherente con TabEventos
-**Commit de cierre:** —
+**Commit de cierre:** da13423
 
 ---
 
