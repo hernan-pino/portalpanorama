@@ -18,11 +18,13 @@ export default async function ExplorarPage({ searchParams }: PageProps) {
   const { query, barrio, categoria, priceRanges, isPremium, page, view } = parseSearchParams(raw)
 
   const useCase = container.getSearchListingsUseCase()
-  const [result, categoryFacets] = await Promise.all([
+  const [result, categoryFacets, dbCategories] = await Promise.all([
     useCase.execute({ query, neighborhood: barrio, categorySlug: categoria, priceRanges, isPremium, page, limit: 24 }),
     container.getGetCategoryFacetsUseCase().execute(),
+    container.getCategories(),
   ])
   const categoryCounts = Object.fromEntries(categoryFacets.map((f) => [f.categorySlug, f.count]))
+  const categories = dbCategories.map((c) => ({ slug: c.slug, name: c.name }))
 
   const activeFilters = [query, barrio, categoria, priceRanges?.length, isPremium].filter(Boolean)
   const headTitle = query ?? barrio ?? categoria ?? 'Todo Santiago'
@@ -32,7 +34,7 @@ export default async function ExplorarPage({ searchParams }: PageProps) {
       <div className="search-shell container">
 
         {/* ── Filter rail (Client Component) ── */}
-        <FilterRail totalResults={result.total} categoryCounts={categoryCounts} />
+        <FilterRail totalResults={result.total} categoryCounts={categoryCounts} categories={categories} />
 
         {/* ── Main ── */}
         <div className="search-shell__main">

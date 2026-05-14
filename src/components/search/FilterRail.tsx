@@ -4,15 +4,6 @@ import { useRouter, useSearchParams } from 'next/navigation'
 import { useTransition, Suspense } from 'react'
 import { NEIGHBORHOODS } from '@domain/shared/Neighborhoods'
 
-const CATEGORIES = [
-  { slug: 'restaurantes', name: 'Restaurantes' },
-  { slug: 'cafes',        name: 'Cafés' },
-  { slug: 'bares',        name: 'Bares' },
-  { slug: 'museos',       name: 'Museos' },
-  { slug: 'tiendas',      name: 'Tiendas' },
-  { slug: 'servicios',    name: 'Servicios' },
-]
-
 const PRICE_RANGES = [
   { value: '1', label: '$' },
   { value: '2', label: '$$' },
@@ -31,9 +22,10 @@ const VISIBLE_NEIGHBORHOODS = NEIGHBORHOODS.slice(0, 10)
 interface FilterRailProps {
   totalResults?: number
   categoryCounts?: Record<string, number>
+  categories?: { slug: string; name: string }[]
 }
 
-function FilterRailInner({ totalResults, categoryCounts }: FilterRailProps) {
+function FilterRailInner({ totalResults, categoryCounts, categories = [] }: FilterRailProps) {
   const router = useRouter()
   const searchParams = useSearchParams()
   const [isPending, startTransition] = useTransition()
@@ -111,7 +103,7 @@ function FilterRailInner({ totalResults, categoryCounts }: FilterRailProps) {
       <div className={`filter-rail__body${mobileOpen ? ' is-open' : ''}`}>
 
       <h5>Categorías</h5>
-      {CATEGORIES.map((cat) => (
+      {categories.map((cat) => (
         <label key={cat.slug}>
           <input
             type="checkbox"
