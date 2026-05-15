@@ -219,7 +219,7 @@ async function main() {
       plan: 'FREE' as const,
     }
 
-    let existingListing = googlePlaceId
+    const existingListing = googlePlaceId
       ? await prisma.listing.findUnique({ where: { googlePlaceId } })
       : null
 
