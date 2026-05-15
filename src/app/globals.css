@@ -510,7 +510,7 @@ a { color: inherit; text-decoration: none; }
 .rating__num { font-weight: 600; }
 .rating__count { color: var(--fg-muted); }
 .rating__source { font-size: 9px; font-weight: 700; color: var(--paper-00); background: #4285f4; border-radius: 3px; padding: 1px 4px; margin-left: 2px; vertical-align: middle; }
-.review__avatar--google { background: #4285f4 !important; }
+.review__avatar--google { background: var(--paper-10) !important; border: 1px solid var(--surface-line); display: flex; align-items: center; justify-content: center; }
 
 /* ---------- Categories ---------- */
 .cat-grid {
