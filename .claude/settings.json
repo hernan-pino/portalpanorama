@@ -3,7 +3,9 @@
     "allow": [
       "Bash(git commit -m ' *)",
       "Bash(node -e ' *)",
-      "Bash(npm test *)"
+      "Bash(npm test *)",
+      "Read(//c/Users/herna/AppData/Roaming/**)",
+      "PowerShell(Get-ChildItem \"$env:APPDATA\\\\com.vercel.cli\\\\\" -ErrorAction SilentlyContinue; Get-ChildItem \"$env:LOCALAPPDATA\\\\com.vercel.cli\\\\\" -ErrorAction SilentlyContinue)"
     ]
   }
 }

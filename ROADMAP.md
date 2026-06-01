@@ -1,7 +1,52 @@
 # ROADMAP — Portal Panorama
 
-Documento central de seguimiento. Se actualiza al cerrar cada paso.
-Leído por `/retomar` al iniciar sesión y por `/cerrar-fase` al cerrar un paso.
+Documento central de seguimiento del proyecto.
+
+---
+
+## 📍 ESTADO HOY (2026-06-01)
+
+### Dónde estamos
+
+- **El sitio funciona y está desplegado** en `portal-panorama.vercel.app`.
+- La BD (Neon PostgreSQL) **solo tiene el seed inicial**: 6 categorías, 1 admin, 6 listings de ejemplo. **No hay datos reales.**
+- El intento de importar 1449 lugares desde Excel **se ejecutó una vez pero ya no está en la BD**. Las fotos de Google nunca cargaron (API key da 4xx).
+
+### Decisión actual (importante)
+
+El usuario decidió **pausar la importación de datos** y **rediseñar el modelo del producto desde lo conceptual** antes de cargar más lugares.
+
+Motivos: el modelo actual mezcla "panorama" (lugar permanente) y "evento" (temporal) en una sola entidad `Listing`, sin sub-tipos definidos y con campos que aplican a unos lugares y a otros no. Cargar 1449 lugares con un modelo poco claro genera más problemas que valor.
+
+### Próximo paso inmediato
+
+1. Responder las preguntas de **[PRODUCTO.md](PRODUCTO.md)** — definir qué es el producto, qué entidades tiene, qué MVP queremos.
+2. Con esas respuestas, **rediseñar el schema de BD** (panorama vs evento separados, sub-tipos, campos comunes vs específicos).
+3. Migrar / resetear la BD al modelo nuevo.
+4. Cargar lugares **a mano** (sin import masivo) hasta validar el concepto.
+
+### Qué se descartó del Paso 8
+
+- **Script de import desde Excel** (`import-from-excel.ts`) — ❌ eliminado
+- **Script de fix de fotos** (`fix-photos.ts`) — ❌ eliminado
+- **Deps `@vercel/blob` y `xlsx`** — ❌ eliminadas
+- **Carpeta `datosNegoios/`** (Excel fuente) — ❌ eliminada
+- **Comando `npm run db:import`** — ❌ eliminado
+
+### Qué quedó del Paso 8 (a revisar cuando rediseñemos modelo)
+
+Estos archivos siguen en el código y **están enchufados al flujo de la app**. Se revisan/borran/refactorizan en la **Fase 9** cuando ya tengamos el modelo nuevo:
+
+- `src/application/ports/GoogleReviewRepository.ts`
+- `src/infrastructure/db/PrismaGoogleReviewRepository.ts`
+- `src/domain/listing/ListingAttributes.ts`
+- `src/domain/shared/Communes.ts`
+- Campos en schema: `commune`, `googlePlaceId`, `googleRating`, `googleReviewCount`, `attributes`, modelo `GoogleReview`
+- Referencias a estos campos en use cases, search, página de lugar
+
+### Bloqueos activos
+
+- 🚫 **API key de Google Maps** para fotos da 4xx. No es bloqueante por ahora porque ya no vamos a importar desde Google — pero si en el futuro decidimos integrarnos a Google Places, hay que arreglar la key (restricciones IP/Referer, habilitar Places API New, o cuota).
 
 ---
 
@@ -250,49 +295,140 @@ src/lib/container.ts  (actualizado)
 ---
 
 ### Paso 8.3 — Schema migration: geo + horarios + atributos por categoría
-**Estado:** ⬜ PENDIENTE
+**Estado:** 🔁 EN REVISIÓN — código hecho, pero el modelo se va a rediseñar en Fase 9 (ver "Estado hoy" arriba)
+**Estado original:** ✅ COMPLETADO
 **Archivos:**
-- `src/infrastructure/db/prisma/schema.prisma` — nuevos campos en `Listing`:
-  `lat Float?`, `lng Float?`, `businessHours Json?`, `googlePlaceId String? @unique`,
-  `googleRating Float?`, `googleReviewCount Int?`, `attributes Json? @db.JsonB`
-  + índices: `@@index([categoryId, status])`, `@@index([neighborhood, status])`
-- Nueva migración Prisma
-- `src/domain/listing/ListingAttributes.ts` — tipos TS por categoría (RestaurantAttributes, BarAttributes, etc.)
-**Bloqueante:** necesitar el JSON de Google Maps para validar campos antes de migrar
-**Commit de cierre:** —
+- `src/infrastructure/db/prisma/schema.prisma` — +8 campos en `Listing` (lat, lng, commune, businessHours, googlePlaceId, googleRating, googleReviewCount, attributes JSONB) + modelo `GoogleReview` + índices compuestos
+- `src/domain/listing/ListingAttributes.ts` — tipos TS para `attributes` JSONB
+- `src/domain/shared/Communes.ts` — 24 comunas RM como const array
+- `src/domain/listing/Listing.ts` — campos googleRating, googleReviewCount, commune en entidad
+- `src/infrastructure/db/PrismaListingRepository.ts` — mapper actualizado, neighborhood soft-fail
+**Commit de cierre:** a524149
 
 ---
 
 ### Paso 8.4 — Import pipeline Google Maps → BD
-**Estado:** ⬜ PENDIENTE
-**Archivos nuevos:**
-- `src/infrastructure/db/scripts/import-google-places.ts`
-  Upsert por `googlePlaceId`, logs de creado/actualizado/fallado
-  `ownerId` = admin, `status` = PUBLISHED, `plan` = FREE
-**Mapeos a implementar:**
-- `types[]` → categoryId + `attributes.data` inicial
-- `addressComponents` → catálogo de barrios de `Neighborhoods.ts`
-- `regularOpeningHours.periods[]` → `businessHours Json`
-- `priceLevel` → `priceRange` (1–4)
-**Bloqueante:** tener el JSON del dump y acordar mapeos con el usuario
-**Commit de cierre:** —
+**Estado:** 🔁 EN REVISIÓN — script eliminado el 2026-06-01. La estrategia "import masivo desde Google" se descartó. Ver "Estado hoy" arriba.
+**Estado original:** ✅ COMPLETADO
+**Archivos nuevos/modificados:**
+- `src/infrastructure/db/scripts/import-from-excel.ts` — upsert 1449 listings por googlePlaceId, fotos a Vercel Blob, GoogleReview delete+recreate, mapeo 32 keywords → 8 categorías
+- `src/application/ports/GoogleReviewRepository.ts` — port GoogleReviewRepository (GoogleReviewDTO)
+- `src/infrastructure/db/PrismaGoogleReviewRepository.ts` — implementación
+- `src/application/listing/GetListingWithReviewsUseCase.ts` — googleReviews en output, Promise.all paralelo
+- `src/application/ports/SearchService.ts` — commune + isGoogleRating en tipos
+- `src/infrastructure/search/PostgresFTSSearchService.ts` — filtro commune + fallback Google rating (×2 escala 1-10)
+- `src/lib/parseSearchParams.ts` — parsea ?comuna=
+- `src/components/listing/ListingCard.tsx` — badge "G" cuando isGoogleRating
+- `src/app/(main)/explorar/page.tsx` — filtro ?comuna=
+- `src/app/(main)/lugar/[slug]/page.tsx` — sub-sección Google reviews
+- `src/lib/container.ts` — wire PrismaGoogleReviewRepository
+- `package.json` — script db:import, deps @vercel/blob + xlsx
+**Resultado import:** 1399 creados, 50 actualizados, 0 skipped, 6559 reseñas
+**Commit de cierre:** a524149
+
+---
+
+### Paso 8.4.1 — Fixes post-import: categorías, deploy, Google reviews UI
+**Estado:** 🔁 EN REVISIÓN — script `fix-photos.ts` eliminado el 2026-06-01. El filtro de Google reviews en la UI sigue activo (se revisa en Fase 9).
+**Estado original:** ✅ COMPLETADO
+**Qué se hizo:**
+- `src/domain/shared/Categories.ts` — agregados 5 slugs del import (outdoor, cultura, vida-nocturna, entretenimiento, deportes) que faltaban; sin ellos `isValidCategorySlug()` descartaba la mayoría de los filtros
+- `src/infrastructure/db/scripts/import-from-excel.ts` — `let` → `const` (ESLint estaba bloqueando el deploy en Vercel)
+- `src/infrastructure/db/scripts/fix-photos.ts` (nuevo) — reimporta fotos con `?key=GOOGLE_MAPS_API_KEY&maxWidthPx=800`
+- `src/app/(main)/lugar/[slug]/page.tsx` — ícono real de Google (4 colores) en avatar + filtro `rating >= 4` en Google reviews
+- `src/app/globals.css` — `.review__avatar--google` con fondo claro y borde
+**Resultado fix-photos:** 0/1386 success — la API key sigue dando 4xx (revisar restricciones de key en Google Cloud Console)
+**Commits:** 2a76f9a (categorías) · f4155ec (eslint + script fotos) · 4a45992 (Google reviews UI)
 
 ---
 
 ### Paso 8.5 — QA + deploy datos reales
-**Estado:** ⬜ PENDIENTE
-- Importar en local, verificar búsqueda + filtros con 1000+ listings
-- Deploy migración a Neon producción (`prisma migrate deploy`)
-- Importar en producción
-- Smoke test en `portal-panorama.vercel.app`
-**Commit de cierre:** —
+**Estado:** ❌ CANCELADO — la estrategia de "1000+ listings importados de Google" se descartó. Reemplazado por Fase 9.
 
 ---
 
 ### Paso 8.6 — Mobile QA final
-**Estado:** ⬜ PENDIENTE
-- Revisar Home, Explorar, Ficha de lugar, Mi cuenta en 375px y 768px
-- Verificar header y footer nuevos con datos reales
+**Estado:** ⏸️ POSPUESTO — se hace después de que el modelo nuevo (Fase 9) esté listo y haya datos reales para revisar.
+
+---
+
+### Paso 8.7 — Limpieza parcial del import descartado
+**Estado:** ✅ COMPLETADO (2026-06-01)
+**Qué se hizo:**
+- Eliminados `src/infrastructure/db/scripts/import-from-excel.ts` y `fix-photos.ts`
+- Eliminadas deps `@vercel/blob` y `xlsx` de `package.json`
+- Eliminado script `db:import` de `package.json`
+- Eliminada carpeta `datosNegoios/` (Excel fuente)
+- `.gitignore` actualizado con `.env.vercel`, `datosNegoios/`, `.claude/scheduled_tasks.lock`
+- Typecheck verificado sin errores
+**Commit de cierre:** (pendiente — se commitea junto con la reorganización de docs)
+
+---
+
+## Fase 9 — Rediseño del producto (en preparación)
+
+**Objetivo:** redefinir conceptualmente qué es Portal Panorama, qué entidades tiene, y qué entra al MVP. Después, alinear el código (schema, dominio, UI) al modelo nuevo.
+
+**Disparador:** completar las respuestas de [PRODUCTO.md](PRODUCTO.md).
+
+---
+
+### Paso 9.1 — Responder PRODUCTO.md
+**Estado:** 🔄 EN CURSO (esperando que el usuario responda las preguntas)
+**Qué hay que hacer:** El usuario responde los 11 bloques de preguntas en [PRODUCTO.md](PRODUCTO.md). Conversamos juntos y refinamos hasta tener:
+- Una visión de 1 párrafo del producto
+- Un modelo de entidades definitivo (panorama vs evento, sub-tipos, campos comunes vs específicos)
+- Un scope de MVP chico y claro
+- Un plan de 3 fases máximo
+**Commit de cierre:** —
+
+---
+
+### Paso 9.2 — Diseñar el schema nuevo
+**Estado:** ⬜ PENDIENTE (depende de 9.1)
+**Qué hay que hacer:**
+- Decidir si `Listing` se separa en `Place` + `Event` o se mantiene unificado
+- Decidir sub-tipos de `Place` (restorán, bar, museo, etc.) y sus campos específicos
+- Decidir qué campos del modelo actual se conservan, cuáles se borran, cuáles se renombran
+- Escribir el nuevo `schema.prisma`
+- Documentar la decisión en `ARCHITECTURE.md`
+**Archivos a modificar:** `src/infrastructure/db/prisma/schema.prisma`, `ARCHITECTURE.md`, archivos en `src/domain/`
+**Commit de cierre:** —
+
+---
+
+### Paso 9.3 — Migrar la BD al modelo nuevo
+**Estado:** ⬜ PENDIENTE (depende de 9.2)
+**Qué hay que hacer:**
+- `prisma migrate reset` en local (borra todo, parte limpio)
+- Generar nueva migración con `prisma migrate dev`
+- Actualizar `seed.ts` con datos coherentes al modelo nuevo
+- En producción (Neon): `prisma migrate deploy` cuando esté validado en local
+**Riesgo:** destructivo. La BD se borra. Pero como solo hay seed data, no hay pérdida real.
+**Commit de cierre:** —
+
+---
+
+### Paso 9.4 — Refactorizar dominio, use cases y UI al modelo nuevo
+**Estado:** ⬜ PENDIENTE (depende de 9.2)
+**Qué hay que hacer:**
+- Adaptar entidades en `src/domain/` al modelo nuevo
+- Adaptar use cases en `src/application/`
+- Adaptar páginas y componentes en `src/app/` y `src/components/`
+- Borrar lo que ya no aplica (probablemente: `GoogleReviewRepository`, `ListingAttributes`, campos en schema, sub-sección de Google reviews en la ficha)
+- Decidir qué hacer con `Communes.ts` (probablemente se queda — las comunas RM son útiles igual)
+- Verificar typecheck + tests
+**Commit de cierre:** —
+
+---
+
+### Paso 9.5 — Cargar lugares a mano + validar
+**Estado:** ⬜ PENDIENTE (depende de 9.3 y 9.4)
+**Qué hay que hacer:**
+- Crear formulario admin para cargar lugares uno por uno (o usar `prisma studio` al principio)
+- Cargar 10-30 lugares reales bien curados
+- Verificar que las búsquedas, filtros, ficha y dashboards funcionan con el modelo nuevo
+- Smoke test en producción
 **Commit de cierre:** —
 
 ---
@@ -302,9 +438,12 @@ src/lib/container.ts  (actualizado)
 | Símbolo | Significado |
 |---------|------------|
 | ⬜ PENDIENTE | No empezado |
-| 🔄 EN CURSO | Trabajo activo en esta sesión |
-| ✅ COMPLETADO | Cerrado con `/cerrar-fase`, commit registrado |
+| 🔄 EN CURSO | Trabajo activo |
+| ✅ COMPLETADO | Cerrado, commit registrado |
 | ⚠️ BLOQUEADO | Esperando decisión o dependencia externa |
+| 🔁 EN REVISIÓN | Código existe pero se va a rediseñar; ver nota del paso |
+| ❌ CANCELADO | Se descartó; ver nota del paso |
+| ⏸️ POSPUESTO | Se hace más adelante, no aplica ahora |
 
 ---
 
@@ -342,4 +481,11 @@ Relevados al comparar con el diseño de referencia. Se resuelven en pasos poster
 - **Reviews con avatar real + fecha relativa** — avatar muestra inicial fija; fecha relativa requiere librería (date-fns) o helper.
 - **Botón "Compartir"** — Web Share API, bajo impacto, post-MVP.
 - **URL amigable en `/perfil-negocio/`** — actualmente usa CUID2. Requiere campo `businessSlug` en `User`.
-- **Reseñas de Google Maps** — post-MVP: mostrar link "Ver en Google Maps" (sin costo) como primer paso; luego evaluar importar reseñas via Places API (tiene costo). Con login Google ya vinculado, la UX sería fluida. No implementar antes de tener Google OAuth activo.
+- **Reseñas de Google Maps** — ✅ implementado en Paso 8.4: modelo GoogleReview separado, sub-sección en ficha, 6559 reseñas importadas.
+- **Deuda técnica (Paso 8.4):** normalización Google rating (×2 escala 1-10) vive en `PostgresFTSSearchService` — si se agrega Meilisearch, deberá replicarse. Mover al contrato del port como nota cuando se implemente Meilisearch.
+- **Seguridad pendiente (Paso 8.4):** `uploadPhotoToBlob` en el script de import no valida el hostname de la URL antes del fetch (SSRF si se entrega un Excel malicioso). El script corre localmente y no en CI, riesgo bajo por ahora. Fix: allowlist de hostnames permitidos antes del fetch.
+- **Seguridad pendiente (Paso 8.4):** `?comuna=` acepta cualquier string hasta 60 chars sin allowlist (a diferencia de `barrio` y `categoria`). No es SQL injection (Prisma parametriza), pero permite enumeración. Fix: validar con `isValidCommune()` en `parseSearchParams.ts`.
+- **Arquitectura pendiente (Paso 8.4.1):** filtro `googleReviews.filter(gr => gr.rating >= 4)` en `lugar/[slug]/page.tsx` es lógica de negocio (umbral de calidad) en presentation. Mover al use case `GetListingWithReviewsUseCase` o como constante de dominio `GOOGLE_REVIEW_MIN_RATING = 4`.
+- **Seguridad pendiente (Paso 8.4.1):** `fix-photos.ts` tiene 3 vulnerabilidades — (a) SSRF: no valida host antes del fetch (allowlist `maps.googleapis.com`, `lh3.googleusercontent.com`); (b) API key en URL puede aparecer en logs si se agrega logging futuro al catch; (c) `slug` desde BD no se re-sanitiza antes del path en Blob. Mitigado por contexto: corre localmente, no en CI, con datos conocidos.
+- **Feature pendiente — ranking por rating + cantidad de reviews:** el usuario quiere que listings con mismo rating se ordenen por cantidad de reviews (ej: 4.5 con 700 reviews antes que 4.5 con 10). Implementar como nuevo campo computado (Bayesian average o weighted score) en `Listing` o en `SearchResultItem`.
+- **Bloqueo activo — fotos:** la API key de Google Maps devuelve 4xx en todas las URLs (`places.googleapis.com/v1/places/.../photos/...`). El script `fix-photos.ts` no logró subir ninguna foto. Posibles causas: restricción de IP/Referer en la key, falta de habilitar Places API (New), o cuota agotada.
