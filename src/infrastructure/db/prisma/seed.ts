@@ -12,303 +12,265 @@ if (!connectionString) throw new Error('DATABASE_URL not set')
 const adapter = new PrismaPg({ connectionString })
 const prisma = new PrismaClient({ adapter })
 
+// ──────────────────────────────────────────────────────────────────────────────
+// Seed Fase 9 — solo CATÁLOGOS + admin. Los lugares (Place) entran por CSV en la
+// Etapa 5; los eventos están apagados. Idempotente: upsert por slug.
+// Orden obligatorio: catálogos ANTES que cualquier lugar (FKs por slug).
+// ──────────────────────────────────────────────────────────────────────────────
+
+/** lowercase, sin tildes (ñ→n), kebab-case. "Ñuñoa" → "nunoa", "Irarrázaval" → "irarrazaval" */
+function slugify(s: string): string {
+  return s
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[̀-ͯ]/g, '')
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '')
+}
+
+// ─── Metro de Santiago (red operativa, 7 líneas) ────────────────────────────────
+// Colores corregidos (decisión 2.6): L3 café, L6 morada. lat/lng = null en MVP
+// (la estación se elige a mano por slug; nearest-station automático = v2).
+// Las combinaciones (Baquedano = L1+L5) se resuelven por dedup: la estación que
+// aparece en varias líneas queda conectada a todas.
+
+const METRO_LINES: { code: string; name: string; color: string; stations: string[] }[] = [
+  {
+    code: 'L1', name: 'Línea 1', color: '#E1251B',
+    stations: ['San Pablo', 'Neptuno', 'Pajaritos', 'Las Rejas', 'Ecuador', 'San Alberto Hurtado', 'Universidad de Santiago', 'Estación Central', 'Unión Latinoamericana', 'República', 'Los Héroes', 'La Moneda', 'Universidad de Chile', 'Santa Lucía', 'Universidad Católica', 'Baquedano', 'Salvador', 'Manuel Montt', 'Pedro de Valdivia', 'Los Leones', 'Tobalaba', 'El Golf', 'Alcántara', 'Escuela Militar', 'Manquehue', 'Hernando de Magallanes', 'Los Dominicos'],
+  },
+  {
+    code: 'L2', name: 'Línea 2', color: '#F5A800',
+    stations: ['Vespucio Norte', 'Zapadores', 'Dorsal', 'Einstein', 'Cementerios', 'Cerro Blanco', 'Patronato', 'Puente Cal y Canto', 'Santa Ana', 'Los Héroes', 'Toesca', 'Parque O\'Higgins', 'Rondizzoni', 'Franklin', 'El Llano', 'San Miguel', 'Lo Vial', 'Departamental', 'Ciudad del Niño', 'Lo Ovalle', 'El Parrón', 'La Cisterna', 'El Bosque', 'Observatorio', 'Copa Lo Martínez', 'Hospital El Pino'],
+  },
+  {
+    code: 'L3', name: 'Línea 3', color: '#8B4513',
+    stations: ['Plaza Quilicura', 'Lo Cruzat', 'Ferrocarril', 'Cardenal Caro', 'Vivaceta', 'Conchalí', 'Plaza Chacabuco', 'Hospitales', 'Puente Cal y Canto', 'Plaza de Armas', 'Parque Almagro', 'Matta', 'Irarrázaval', 'Monseñor Eyzaguirre', 'Ñuñoa', 'Chile España', 'Villa Frei', 'Plaza Egaña', 'Fernando Castillo Velasco'],
+  },
+  {
+    code: 'L4', name: 'Línea 4', color: '#004F9F',
+    stations: ['Tobalaba', 'Cristóbal Colón', 'Francisco Bilbao', 'Príncipe de Gales', 'Simón Bolívar', 'Plaza Egaña', 'Los Orientales', 'Grecia', 'Los Presidentes', 'Quilín', 'Las Torres', 'Macul', 'Vicuña Mackenna', 'Vicente Valdés', 'Rojas Magallanes', 'Trinidad', 'San José de la Estrella', 'Los Quillayes', 'Elisa Correa', 'Hospital Sótero del Río', 'Protectora de la Infancia', 'Las Mercedes', 'Plaza de Puente Alto'],
+  },
+  {
+    code: 'L4A', name: 'Línea 4A', color: '#009CDE',
+    stations: ['La Cisterna', 'San Ramón', 'Santa Rosa', 'La Granja', 'Santa Julia', 'Vicuña Mackenna'],
+  },
+  {
+    code: 'L5', name: 'Línea 5', color: '#00A651',
+    stations: ['Plaza de Maipú', 'Santiago Bueras', 'Del Sol', 'Monte Tabor', 'Las Parcelas', 'Laguna Sur', 'Barrancas', 'Pudahuel', 'San Pablo', 'Lo Prado', 'Blanqueado', 'Gruta de Lourdes', 'Quinta Normal', 'Cumming', 'Santa Ana', 'Plaza de Armas', 'Bellas Artes', 'Baquedano', 'Parque Bustamante', 'Santa Isabel', 'Irarrázaval', 'Ñuble', 'Rodrigo de Araya', 'Carlos Valdovinos', 'Camino Agrícola', 'San Joaquín', 'Pedrero', 'Mirador', 'Bellavista de La Florida', 'Vicente Valdés'],
+  },
+  {
+    code: 'L6', name: 'Línea 6', color: '#943C93',
+    stations: ['Cerrillos', 'Lo Valledor', 'Presidente Pedro Aguirre Cerda', 'Franklin', 'Bío Bío', 'Ñuble', 'Estadio Nacional', 'Ñuñoa', 'Inés de Suárez', 'Los Leones'],
+  },
+]
+
+// ─── Comunas de la Región Metropolitana (52) ────────────────────────────────────
+const COMMUNES = [
+  'Alhué', 'Buin', 'Calera de Tango', 'Cerrillos', 'Cerro Navia', 'Colina', 'Conchalí', 'Curacaví', 'El Bosque', 'El Monte', 'Estación Central', 'Huechuraba', 'Independencia', 'Isla de Maipo', 'La Cisterna', 'La Florida', 'La Granja', 'La Pintana', 'La Reina', 'Lampa', 'Las Condes', 'Lo Barnechea', 'Lo Espejo', 'Lo Prado', 'Macul', 'Maipú', 'María Pinto', 'Melipilla', 'Padre Hurtado', 'Paine', 'Pedro Aguirre Cerda', 'Peñaflor', 'Peñalolén', 'Pirque', 'Providencia', 'Pudahuel', 'Puente Alto', 'Quilicura', 'Quinta Normal', 'Recoleta', 'Renca', 'San Bernardo', 'San Joaquín', 'San José de Maipo', 'San Miguel', 'San Pedro', 'San Ramón', 'Santiago', 'Talagante', 'Tiltil', 'Vitacura', 'Ñuñoa',
+]
+
+// ─── Barrios reconocidos (lista del usuario) → comuna(s) ─────────────────────────
+// M2M: un barrio puede caer en varias comunas (Bellavista, Barrio Italia). El Place
+// se filtra independiente por barrio o por comuna.
+const NEIGHBORHOODS: { name: string; communeNames: string[] }[] = [
+  { name: 'Barrio Lastarria', communeNames: ['Santiago'] },
+  { name: 'Bellavista', communeNames: ['Recoleta', 'Providencia'] },
+  { name: 'Barrio Italia', communeNames: ['Providencia', 'Ñuñoa'] },
+  { name: 'Barrio París-Londres', communeNames: ['Santiago'] },
+  { name: 'Isidora Goyenechea', communeNames: ['Las Condes'] },
+  { name: 'Estación Central', communeNames: ['Estación Central'] },
+  { name: 'Patronato', communeNames: ['Recoleta'] },
+  { name: 'Barrio Yungay', communeNames: ['Santiago'] },
+  { name: 'Barrio Brasil', communeNames: ['Santiago'] },
+]
+
+// ─── Categorías (7) + subcategorías (B.4 / doc 04) ───────────────────────────────
+// 4 activas con lugares permanentes; 3 event-only registradas pero apagadas.
+const CATEGORIES: {
+  name: string; isActive: boolean; eventOnly: boolean; subcategories: string[]
+}[] = [
+  {
+    name: 'Gastronomía', isActive: true, eventOnly: false,
+    subcategories: ['Restaurante', 'Café / Cafetería', 'Bar', 'Botillería', 'Fuente de soda', 'Food truck', 'Heladería', 'Pastelería / Panadería', 'Jugería', 'Cevichería', 'Picada', 'Sushi / Asiática'],
+  },
+  {
+    name: 'Naturaleza y aire libre', isActive: true, eventOnly: false,
+    subcategories: ['Parque urbano', 'Cerro / Trekking', 'Playa / Lago / Río', 'Reserva natural', 'Mirador', 'Jardín botánico', 'Camping', 'Piscina / Balneario'],
+  },
+  {
+    name: 'Arte y cultura', isActive: true, eventOnly: false,
+    subcategories: ['Museo', 'Galería de arte', 'Exposición temporal', 'Centro cultural', 'Monumento / Patrimonio', 'Experiencia inmersiva', 'Cine / Cineteca', 'Biblioteca'],
+  },
+  {
+    name: 'Locales y tiendas', isActive: true, eventOnly: false,
+    subcategories: ['Librería', 'Disquería / Vinilería', 'Tienda de diseño', 'Vintage / Segunda mano', 'Vinoteca / Botillería premium', 'Chocolatería', 'Florería', 'Tienda de plantas', 'Juguetería', 'Tienda de mascotas'],
+  },
+  {
+    name: 'Shows y entretenimiento', isActive: false, eventOnly: true,
+    subcategories: ['Concierto', 'Comedia / Stand-up', 'Teatro', 'Danza / Ballet', 'Ópera / Clásica', 'Festival', 'Fiesta / Club', 'Karaoke', 'Cine al aire libre', 'Escape room', 'Trivia / Pub quiz', 'Magia / Circo'],
+  },
+  {
+    name: 'Talleres y actividades', isActive: false, eventOnly: true,
+    subcategories: ['Taller creativo', 'Clase de cocina', 'Cata de vinos / cervezas', 'Yoga / Meditación', 'Deporte / Aventura', 'Tour guiado', 'Pintura con copa', 'Cerámica', 'Fotografía', 'Baile', 'Idiomas', 'Tecnología / Código'],
+  },
+  {
+    name: 'Ferias y mercados', isActive: false, eventOnly: true,
+    subcategories: ['Feria artesanal', 'Feria gastronómica', 'Mercado de diseño', 'Feria de antigüedades', 'Farmers market', 'Pop-up', 'Feria de libro', 'Mercado navideño'],
+  },
+]
+
+// ─── Tags — 4 capas (doc 04) ─────────────────────────────────────────────────────
+// Universales (categoryId = null): SOCIAL, ACCESS, VIBE. Las reglas de límite/
+// exclusión viven en el dominio, no en el schema.
+// Reserva NO es tag (enum ReservationPolicy). Precio NO es tag (enum PriceRange).
+// Métodos de pago NO son tag (Place.paymentMethods String[]). Lluvia = enum RainPolicy.
+const TAGS_SOCIAL = ['En pareja', 'Con familia', 'Con niños pequeños', 'Pet friendly', 'Con amigos', 'Ideal ir solo/a', 'Apto adultos mayores', 'Acceso universal', 'Para cumpleaños', 'Evento corporativo', 'Ideal como regalo']
+const TAGS_ACCESS = ['Cerca del metro', 'Accesible en micro', 'Requiere auto', 'Estacionamiento propio', 'Estacionamiento cercano', 'Bicicletero', 'Acceso silla de ruedas', 'Baño disponible', 'Cambiador de pañales', 'Zona de lactancia', 'Al aire libre']
+const TAGS_VIBE = ['Tranquilo', 'Animado', 'Íntimo / Romántico', 'Fotogénico', 'Fiestero', 'Relajado', 'Cultureta', 'Casual', 'Especial / Único', 'De barrio', 'Trendy', 'Familiar', 'Creativo', 'Aventurero']
+
+// Específicos (condicionales por categoría). Primer paso, refinable. Solo las 4
+// categorías activas; los específicos de las event-only se seedearán al encender eventos.
+const TAGS_SPECIFIC: Record<string, string[]> = {
+  'Gastronomía': ['Terraza', 'Terraza cubierta', 'Happy hour', 'Menú del día', 'Menú infantil', 'Opciones veganas', 'Vegetariano', 'Sin gluten', 'Música en vivo', 'Pantalla deportes', 'Para llevar', 'Delivery propio', 'Vista panorámica', 'Sillas para bebés', 'Cocina chilena', 'Cocina peruana', 'Cocina italiana', 'Cocina japonesa', 'Cocina china', 'Cocina árabe', 'Cocina mexicana'],
+  'Naturaleza y aire libre': ['Dificultad baja', 'Dificultad media', 'Dificultad alta', 'Con zona de picnic', 'Con sombra', 'Señal de celular', 'Apto coche guagua', 'Solo verano', 'Abierto todo el año'],
+  'Arte y cultura': ['Visita guiada disponible', 'Audioguía', 'Fotografía permitida', 'Cafetería interna', 'Tienda interna', 'Exposición permanente', 'Exposición temporal', 'Talleres asociados'],
+  'Locales y tiendas': ['Solo para llevar', 'Con zona de estar', 'Productos nacionales', 'Productos importados', 'Artesanal / Local', 'Envío disponible'],
+}
+
 async function main() {
-  console.log('Seeding database…')
+  console.log('Seeding catálogos (Fase 9)…')
 
-  // ── Categories ──
-  const categories = [
-    { slug: 'restaurantes', name: 'Restaurantes' },
-    { slug: 'cafes',        name: 'Cafés' },
-    { slug: 'bares',        name: 'Bares' },
-    { slug: 'museos',       name: 'Museos' },
-    { slug: 'tiendas',      name: 'Tiendas' },
-    { slug: 'servicios',    name: 'Servicios' },
-  ]
-
-  const catMap: Record<string, string> = {}
-  for (const cat of categories) {
-    const record = await prisma.category.upsert({
-      where: { slug: cat.slug },
-      update: { name: cat.name },
-      create: { id: createId(), slug: cat.slug, name: cat.name },
+  // ── Metro: líneas → estaciones (dedup de combinaciones) ──
+  const lineIdByCode: Record<string, string> = {}
+  for (const line of METRO_LINES) {
+    const rec = await prisma.metroLine.upsert({
+      where: { code: line.code },
+      update: { name: line.name, color: line.color },
+      create: { id: createId(), code: line.code, name: line.name, color: line.color },
     })
-    catMap[cat.slug] = record.id
+    lineIdByCode[line.code] = rec.id
   }
-  console.log(`  ✓ ${categories.length} categorías`)
+  console.log(`  ✓ ${METRO_LINES.length} líneas de Metro`)
 
-  // ── Admin user ──
-  const adminId = createId()
+  // estación → set de líneas a las que pertenece
+  const stationLines = new Map<string, { name: string; lineCodes: Set<string> }>()
+  for (const line of METRO_LINES) {
+    for (const name of line.stations) {
+      const slug = slugify(name)
+      if (!stationLines.has(slug)) stationLines.set(slug, { name, lineCodes: new Set() })
+      stationLines.get(slug)!.lineCodes.add(line.code)
+    }
+  }
+  for (const [slug, { name, lineCodes }] of stationLines) {
+    const connectLines = [...lineCodes].map((c) => ({ id: lineIdByCode[c] }))
+    await prisma.metroStation.upsert({
+      where: { slug },
+      update: { name, lines: { set: connectLines } },
+      create: { id: createId(), slug, name, lines: { connect: connectLines } },
+    })
+  }
+  console.log(`  ✓ ${stationLines.size} estaciones de Metro`)
+
+  // ── Comunas ──
+  const communeIdByName: Record<string, string> = {}
+  for (const name of COMMUNES) {
+    const slug = slugify(name)
+    const rec = await prisma.commune.upsert({
+      where: { slug },
+      update: { name },
+      create: { id: createId(), slug, name },
+    })
+    communeIdByName[name] = rec.id
+  }
+  console.log(`  ✓ ${COMMUNES.length} comunas`)
+
+  // ── Barrios (M2M con comunas) ──
+  for (const n of NEIGHBORHOODS) {
+    const communeIds = n.communeNames.map((name) => {
+      const id = communeIdByName[name]
+      if (!id) throw new Error(`Comuna no encontrada para barrio ${n.name}: ${name}`)
+      return { id }
+    })
+    const slug = slugify(n.name)
+    await prisma.neighborhood.upsert({
+      where: { slug },
+      update: { name: n.name, communes: { set: communeIds } },
+      create: { id: createId(), slug, name: n.name, communes: { connect: communeIds } },
+    })
+  }
+  console.log(`  ✓ ${NEIGHBORHOODS.length} barrios`)
+
+  // ── Categorías + subcategorías ──
+  const categoryIdByName: Record<string, string> = {}
+  let sortOrder = 1
+  for (const cat of CATEGORIES) {
+    const slug = slugify(cat.name === 'Naturaleza y aire libre' ? 'naturaleza'
+      : cat.name === 'Arte y cultura' ? 'arte-cultura'
+      : cat.name === 'Locales y tiendas' ? 'locales-tiendas'
+      : cat.name === 'Shows y entretenimiento' ? 'shows'
+      : cat.name === 'Talleres y actividades' ? 'talleres'
+      : cat.name === 'Ferias y mercados' ? 'ferias'
+      : cat.name) // Gastronomía → gastronomia
+    const rec = await prisma.category.upsert({
+      where: { slug },
+      update: { name: cat.name, isActive: cat.isActive, eventOnly: cat.eventOnly, sortOrder },
+      create: { id: createId(), slug, name: cat.name, isActive: cat.isActive, eventOnly: cat.eventOnly, sortOrder },
+    })
+    categoryIdByName[cat.name] = rec.id
+    sortOrder++
+
+    for (const sub of cat.subcategories) {
+      const subSlug = slugify(sub)
+      await prisma.subcategory.upsert({
+        where: { categoryId_slug: { categoryId: rec.id, slug: subSlug } },
+        update: { name: sub },
+        create: { id: createId(), slug: subSlug, name: sub, categoryId: rec.id },
+      })
+    }
+  }
+  console.log(`  ✓ ${CATEGORIES.length} categorías + subcategorías`)
+
+  // ── Tags ──
+  async function upsertTag(name: string, layer: 'SOCIAL' | 'SPECIFIC' | 'ACCESS' | 'VIBE', categoryId: string | null) {
+    const slug = slugify(name)
+    await prisma.tag.upsert({
+      where: { slug },
+      update: { name, layer, categoryId },
+      create: { id: createId(), slug, name, layer, categoryId },
+    })
+  }
+  for (const name of TAGS_SOCIAL) await upsertTag(name, 'SOCIAL', null)
+  for (const name of TAGS_ACCESS) await upsertTag(name, 'ACCESS', null)
+  for (const name of TAGS_VIBE) await upsertTag(name, 'VIBE', null)
+  let specificCount = 0
+  for (const [catName, tags] of Object.entries(TAGS_SPECIFIC)) {
+    const categoryId = categoryIdByName[catName]
+    for (const name of tags) { await upsertTag(name, 'SPECIFIC', categoryId); specificCount++ }
+  }
+  console.log(`  ✓ tags: ${TAGS_SOCIAL.length} social · ${TAGS_ACCESS.length} access · ${TAGS_VIBE.length} vibe · ${specificCount} específicos`)
+
+  // ── Admin ──
   const passwordHash = await bcrypt.hash('admin1234', 10)
   const admin = await prisma.user.upsert({
     where: { email: 'admin@portalpanorama.cl' },
-    update: {},
-    create: {
-      id: adminId,
-      email: 'admin@portalpanorama.cl',
-      name: 'Admin',
-      role: 'ADMIN',
-      passwordHash,
-    },
+    update: { role: 'ADMIN' },
+    create: { id: createId(), email: 'admin@portalpanorama.cl', name: 'Admin', role: 'ADMIN', passwordHash },
   })
   console.log(`  ✓ Usuario admin: ${admin.email}`)
 
-  // ── Consumer user ──
-  const consumerHash = await bcrypt.hash('usuario1234', 10)
+  // ── Usuario de prueba (consumidor) ──
+  const userHash = await bcrypt.hash('usuario1234', 10)
   await prisma.user.upsert({
     where: { email: 'usuario@portalpanorama.cl' },
-    update: {},
-    create: {
-      id: createId(),
-      email: 'usuario@portalpanorama.cl',
-      name: 'Camila Torres',
-      role: 'CONSUMER',
-      passwordHash: consumerHash,
-    },
+    update: { role: 'USER' },
+    create: { id: createId(), email: 'usuario@portalpanorama.cl', name: 'Camila Torres', role: 'USER', passwordHash: userHash },
   })
-  console.log(`  ✓ Usuario consumer: usuario@portalpanorama.cl`)
+  console.log(`  ✓ Usuario de prueba: usuario@portalpanorama.cl`)
 
-  // ── Business owner user ──
-  const ownerHash = await bcrypt.hash('negocio1234', 10)
-  const owner = await prisma.user.upsert({
-    where: { email: 'negocio@portalpanorama.cl' },
-    update: {},
-    create: {
-      id: createId(),
-      email: 'negocio@portalpanorama.cl',
-      name: 'Rodrigo Pérez',
-      role: 'BUSINESS_OWNER',
-      passwordHash: ownerHash,
-    },
-  })
-  console.log(`  ✓ Usuario negocio: negocio@portalpanorama.cl`)
-
-  // ── Listings ──
-  const listingData: Array<{
-    slug: string
-    name: string
-    neighborhood: string
-    categorySlug: string
-    description: string
-    address?: string
-    phone?: string
-    priceRange?: number
-    plan?: 'FREE' | 'PREMIUM'
-    tags: { slug: string; name: string }[]
-    images: { url: string; alt: string; order: number }[]
-  }> = [
-    {
-      slug: 'la-bodeguita-de-lastarria',
-      name: 'La Bodeguita de Lastarria',
-      plan: 'PREMIUM',
-      neighborhood: 'Lastarria',
-      categorySlug: 'restaurantes',
-      description:
-        'Cocina chilena de mercado con carta que cambia según la temporada. Ambiente íntimo en una casona del siglo XIX restaurada con gusto. El lomo a lo pobre aquí se hace con papas fritas en aceite de pato.',
-      address: 'Rosal 358, Lastarria',
-      phone: '+56 2 2632 7000',
-      priceRange: 3,
-      tags: [
-        { slug: 'chilena', name: 'Cocina chilena' },
-        { slug: 'mercado', name: 'De mercado' },
-        { slug: 'vinos', name: 'Carta de vinos' },
-      ],
-      images: [
-        { url: 'https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=1200&q=80', alt: 'Fachada', order: 0 },
-        { url: 'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=1200&q=80', alt: 'Interior', order: 1 },
-        { url: 'https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=1200&q=80', alt: 'Detalle', order: 2 },
-      ],
-    },
-    {
-      slug: 'cafe-the-clinic',
-      name: 'Café The Clinic',
-      neighborhood: 'Bellavista',
-      categorySlug: 'cafes',
-      description:
-        'El café del semanario de humor político más leído de Chile. Terraza en Bellavista, sandwiches enormes, cerveza artesanal y la mejor ensalada de berros de Santiago.',
-      address: 'Patio Bellavista, Constitución 30',
-      phone: '+56 2 2730 1040',
-      priceRange: 2,
-      tags: [
-        { slug: 'terraza', name: 'Terraza' },
-        { slug: 'brunch', name: 'Brunch' },
-        { slug: 'pet-friendly', name: 'Pet friendly' },
-      ],
-      images: [
-        { url: 'https://images.unsplash.com/photo-1501339847302-ac426a4a7cbb?w=1200&q=80', alt: 'Fachada', order: 0 },
-        { url: 'https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?w=1200&q=80', alt: 'Interior', order: 1 },
-        { url: 'https://images.unsplash.com/photo-1453614512568-c4024d13c247?w=1200&q=80', alt: 'Detalle', order: 2 },
-      ],
-    },
-    {
-      slug: 'bar-loreto',
-      name: 'Bar Loreto',
-      plan: 'PREMIUM',
-      neighborhood: 'Italia',
-      categorySlug: 'bares',
-      description:
-        'Cantina italiana en barrio Italia. Vinos de autor, tablas de embutidos importados y una selección de vermú que no encontrarás en ningún otro bar de Santiago.',
-      address: 'Loreto 49, Providencia',
-      phone: '+56 2 2209 8300',
-      priceRange: 3,
-      tags: [
-        { slug: 'vermut', name: 'Vermú' },
-        { slug: 'vinos-naturales', name: 'Vinos naturales' },
-        { slug: 'cocteleria', name: 'Coctelería' },
-      ],
-      images: [
-        { url: 'https://images.unsplash.com/photo-1572116469696-31de0f17cc34?w=1200&q=80', alt: 'Fachada', order: 0 },
-        { url: 'https://images.unsplash.com/photo-1514362545857-3bc16c4c7d1b?w=1200&q=80', alt: 'Interior', order: 1 },
-        { url: 'https://images.unsplash.com/photo-1474722883778-792e7990302f?w=1200&q=80', alt: 'Detalle', order: 2 },
-      ],
-    },
-    {
-      slug: 'museo-de-la-moda',
-      name: 'Museo de la Moda',
-      neighborhood: 'Vitacura',
-      categorySlug: 'museos',
-      description:
-        'La colección de moda más importante de Latinoamérica. Más de 10.000 piezas que van desde los años 1600 hasta el presente. Vale la pena la visita solo por la sala Chanel.',
-      address: 'Av. Vitacura 4562, Vitacura',
-      phone: '+56 2 2219 3623',
-      priceRange: 2,
-      tags: [
-        { slug: 'moda', name: 'Moda' },
-        { slug: 'historia', name: 'Historia' },
-        { slug: 'arte', name: 'Arte' },
-      ],
-      images: [
-        { url: 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=1200&q=80', alt: 'Fachada', order: 0 },
-        { url: 'https://images.unsplash.com/photo-1490481651871-ab68de25d43d?w=1200&q=80', alt: 'Interior', order: 1 },
-        { url: 'https://images.unsplash.com/photo-1539109136881-3be0616acf4b?w=1200&q=80', alt: 'Detalle', order: 2 },
-      ],
-    },
-    {
-      slug: 'tienda-deco-italia',
-      name: 'Deco Italia',
-      neighborhood: 'Italia',
-      categorySlug: 'tiendas',
-      description:
-        'Diseño chileno contemporáneo. Muebles, cerámica y textiles de productores nacionales. El espacio fue una vieja ferretería que conserva el piso de madera original.',
-      address: 'Condell 1460, Providencia',
-      priceRange: 3,
-      tags: [
-        { slug: 'diseno-chileno', name: 'Diseño chileno' },
-        { slug: 'ceramica', name: 'Cerámica' },
-        { slug: 'regalos', name: 'Regalos' },
-      ],
-      images: [
-        { url: 'https://images.unsplash.com/photo-1555529669-e69e7aa0ba9a?w=1200&q=80', alt: 'Fachada', order: 0 },
-        { url: 'https://images.unsplash.com/photo-1493663284031-b7e3aefcae8e?w=1200&q=80', alt: 'Interior', order: 1 },
-        { url: 'https://images.unsplash.com/photo-1586023492125-27b2c045efd7?w=1200&q=80', alt: 'Detalle', order: 2 },
-      ],
-    },
-    {
-      slug: 'galeria-animal',
-      name: 'Galería Animal',
-      neighborhood: 'Lastarria',
-      categorySlug: 'servicios',
-      description:
-        'La galería de arte contemporáneo más influyente de Chile. Representa a más de 30 artistas nacionales e internacionales. Entrada libre, siempre hay algo interesante.',
-      address: 'Av. Nueva Costanera 3731, Vitacura',
-      priceRange: 1,
-      tags: [
-        { slug: 'arte-contemporaneo', name: 'Arte contemporáneo' },
-        { slug: 'entrada-libre', name: 'Entrada libre' },
-        { slug: 'galeria', name: 'Galería' },
-      ],
-      images: [
-        { url: 'https://images.unsplash.com/photo-1536924430914-91f9e2041b83?w=1200&q=80', alt: 'Fachada', order: 0 },
-        { url: 'https://images.unsplash.com/photo-1566054757965-8c4085344c96?w=1200&q=80', alt: 'Interior', order: 1 },
-        { url: 'https://images.unsplash.com/photo-1582555172866-f73bb12a2ab3?w=1200&q=80', alt: 'Detalle', order: 2 },
-      ],
-    },
-  ]
-
-  for (const data of listingData) {
-    const catId = catMap[data.categorySlug]
-    const listing = await prisma.listing.upsert({
-      where: { slug: data.slug },
-      update: {
-        name: data.name,
-        description: data.description,
-        address: data.address ?? null,
-        phone: data.phone ?? null,
-        priceRange: data.priceRange ?? null,
-        status: 'PUBLISHED',
-        plan: data.plan ?? 'FREE',
-      },
-      create: {
-        id: createId(),
-        slug: data.slug,
-        name: data.name,
-        description: data.description,
-        neighborhood: data.neighborhood,
-        categoryId: catId,
-        ownerId: admin.id,
-        address: data.address ?? null,
-        phone: data.phone ?? null,
-        priceRange: data.priceRange ?? null,
-        status: 'PUBLISHED',
-        plan: data.plan ?? 'FREE',
-      },
-    })
-
-    for (const tag of data.tags) {
-      await prisma.listingTag.upsert({
-        where: { listingId_slug: { listingId: listing.id, slug: tag.slug } },
-        update: {},
-        create: {
-          id: createId(),
-          listingId: listing.id,
-          slug: tag.slug,
-          name: tag.name,
-          status: 'ACTIVE',
-        },
-      })
-    }
-
-    const imgCount = await prisma.listingImage.count({ where: { listingId: listing.id } })
-    if (imgCount === 0) {
-      await prisma.listingImage.createMany({
-        data: data.images.map((img) => ({ id: createId(), listingId: listing.id, ...img })),
-      })
-    }
-  }
-  console.log(`  ✓ ${listingData.length} listings publicados`)
-
-  // ── Listing para el usuario negocio ──
-  const ambrosia = await prisma.listing.upsert({
-    where: { slug: 'ambrosia-bistro' },
-    update: { plan: 'PREMIUM' },
-    create: {
-      id: createId(),
-      slug: 'ambrosia-bistro',
-      name: 'Ambrosía Bistró',
-      description: 'Cocina de autor en el corazón de Providencia. Menú de temporada con ingredientes locales.',
-      neighborhood: 'Providencia',
-      categoryId: catMap['restaurantes'],
-      ownerId: owner.id,
-      address: 'Av. Providencia 1234',
-      phone: '+56 9 8765 4321',
-      status: 'PUBLISHED',
-      plan: 'PREMIUM',
-    },
-  })
-  const ambrosiaImgCount = await prisma.listingImage.count({ where: { listingId: ambrosia.id } })
-  if (ambrosiaImgCount === 0) {
-    await prisma.listingImage.createMany({
-      data: [
-        { id: createId(), listingId: ambrosia.id, url: 'https://images.unsplash.com/photo-1550966871-3ed3cdb5ed0c?w=1200&q=80', alt: 'Fachada', order: 0 },
-        { id: createId(), listingId: ambrosia.id, url: 'https://images.unsplash.com/photo-1559339352-11d035aa65de?w=1200&q=80', alt: 'Interior', order: 1 },
-        { id: createId(), listingId: ambrosia.id, url: 'https://images.unsplash.com/photo-1512621776951-a57141f2eefd?w=1200&q=80', alt: 'Detalle', order: 2 },
-      ],
-    })
-  }
-  console.log(`  ✓ Listing de negocio: Ambrosía Bistró`)
-
-  console.log('Seed completo.')
+  console.log('Seed completo ✅')
 }
 
 main()
   .catch((e) => { console.error(e); process.exit(1) })
-  .finally(() => prisma.$disconnect())
+  .finally(async () => { await prisma.$disconnect() })

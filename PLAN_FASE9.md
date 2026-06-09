@@ -1,0 +1,998 @@
+# PLAN FASE 9 — Rediseño del producto
+
+Documento vivo. Se actualiza cada vez que avanzamos. Aquí vive el **orden de trabajo**
+y el **estado de avance** de la Fase 9. Para el detalle de pasos de código, ver
+[ROADMAP.md](ROADMAP.md). Para las preguntas de producto, ver [PRODUCTO.md](PRODUCTO.md).
+
+**Última actualización:** 2026-06-08
+
+---
+
+## 📍 EN QUÉ VAMOS AHORA MISMO
+
+- **Etapa:** 3 — Migrar la BD + seed 🔄 **EN CURSO** (catálogos ✅; falta prod). Etapa 2 ✅
+  **APROBADA 2026-06-08** (schema + plantilla CSV + ARCHITECTURE). Etapa 1 ✅, Etapa 0 ✅.
+  - **BD local reseteada y schema nuevo aplicado** (`prisma db push --force-reset`, 2026-06-08) +
+    **cliente Prisma regenerado** al modelo nuevo. La app actual quedó **rota** (todo referencia
+    `Listing`) hasta la Etapa 4 — esperado.
+  - **Seed de catálogos corrido ✅:** 7 líneas Metro + **125 estaciones** (combinaciones por dedup,
+    sin lat/lng), **52 comunas**, **9 barrios** (M2M), 7 categorías + subcategorías, **80 tags**
+    (11 social · 11 access · 14 vibe · 44 específicos), admin + usuario de prueba. **Sin lugares**
+    (entran por CSV, Etapa 5).
+  - **Cambio de schema durante la Etapa 3 (2026-06-08):** `Neighborhood` pasó de FK única a **M2M
+    con `Commune`** (slug único global) — un barrio puede caer en >1 comuna (Bellavista = Recoleta +
+    Providencia; Barrio Italia = Providencia + Ñuñoa). Pedido del usuario. SCHEMA.md actualizado.
+  - **Próximo paso real:** **Etapa 4** — refactor de dominio/use cases/UI al modelo nuevo (lo que
+    desbloquea la app). El push a **prod (Neon)** se hace junto con el redeploy de Etapa 4, para no
+    dejar el sitio roto más de lo necesario.
+  - **Auth NO bloquea:** tablas de Auth.js + `passwordHash` ya estaban; `User` quedó con role
+    admin/user, sin `rut`, con `homeCommune`. Verificación de email = decisión de flujo, Etapa 4.
+- **Estado de los 4 entregables:** 1 (visión) ✅ · 2 (modelo de entidades) ✅ · 3 (matriz de
+  permisos) ✅ · 4 (scope MVP) ✅ **APROBADO 2026-06-07.** Ver "Entregable 4 — Scope del MVP".
+- **2026-06-07 — Revisión de la Etapa 1 + 3 pre-preguntas resueltas** antes de redactar el scope
+  (ver "Pre-scope — decisiones del 2026-06-07"): dedicación/runway, ritmo de carga, y filtros vivos
+  en el MVP. También se detectaron 2 reconciliaciones menores (origen de estrellas vía Apify, no a
+  mano; remapear taxonomía vieja de filtros a las 7 categorías nuevas).
+- **Bloque 6 (monetización) REABIERTO y definido el 2026-06-06** (modelo, no se construye en MVP):
+  posicionamiento pagado, planes de ficha/eventos, newsletter por IA. Ver sección "Modelo de
+  monetización".
+- **Los 6 docs de `input/` ya se leyeron e integraron** (2026-06-06): contradicciones resueltas a
+  favor de nuestras decisiones, refinamientos capturados. Ver "Refinamientos del modelo".
+- **Modo de trabajo elegido:** conversado, por grupos / pregunta por pregunta.
+- **Decisión transversal:** generar un **PRD** (visión + entidades + permisos + scope MVP) como
+  norte permanente del proyecto.
+
+### Próximo paso concreto
+**Sub-productos de la Etapa 2 COMPLETOS (2026-06-07):** schema ([SCHEMA.md](SCHEMA.md)) ·
+plantilla CSV ([PLANTILLA_CSV.md](PLANTILLA_CSV.md) + [input/plantilla_lugares.csv](input/plantilla_lugares.csv)) ·
+[ARCHITECTURE.md](ARCHITECTURE.md) reescrito al modelo nuevo (150 líneas; apunta a SCHEMA.md para
+datos). Lo que toca: que el usuario **revise/apruebe** schema + plantilla + arquitectura. Después →
+**Etapa 3** (`prisma migrate reset` + migración + seed). **El seed debe poblar los catálogos ANTES
+de cargar lugares** (FKs por slug): resolver los huecos **H2** (~143 estaciones metro), **H3**
+(barrios por comuna) y **H4** (28 comunas faltantes de 52). El **mapeo Apify → plantilla** se hará
+al ver el output de Apify (Etapa 5).
+
+### Pre-scope — decisiones del 2026-06-07
+_(Cerradas antes de redactar el entregable 4. Lo acotan directamente.)_
+
+- **P1 — Dedicación / runway (Bloque 6.3/6.4):** **side-project serio** (horas fijas/semana, con
+  trabajo aparte) y **sin runway**, pero **sin urgencia de monetizar** — proyecto de mediano-largo
+  plazo. → Implicancia: MVP **lean, barato y por capas**. Cuidar **costos** (nada caro corriendo
+  desde el día 1) y sobre todo **el tiempo del usuario** (recurso más escaso). El núcleo prueba el
+  concepto; el resto entra de a poco.
+- **P2 — Carga inicial y ritmo:**
+  - El import **NO se botó**; lo que falló en el modelo viejo fue el schema/categorías sin definir,
+    no la idea de importar. El commit `466c96b` botó el import de 1449, no la estrategia.
+  - **Carga manual de ~10 fichas por el form de admin** primero → valida el modelo nuevo y el flujo
+    de creación end-to-end.
+  - **Carga grande por CSV/JSON curado.** Fuente (**Apify** vs **scraper propio**) = decisión de
+    **costo**, se zanja en Etapa 5 (no afecta el scope). **Claude entrega la plantilla de columnas**
+    (nombre/formato/obligatoriedad de cada campo) — sale **directo del schema** → sub-producto de la
+    Etapa 2, disponible antes de cargar.
+  - **Lanzamiento público con ~100 lugares** como techo, **paulatino**: soft-launch privado →
+    **masa mínima** → público → **~20/semana** hasta 100+, con analytics corriendo.
+  - **Criterio rector: densidad > cantidad.** Concentrar geográficamente (ej. 50 en Providencia +
+    Ñuñoa) para que los filtros devuelvan resultados y el sitio se sienta con vida. Disperso = vacío.
+- **P3 — Filtros vivos en el MVP + búsqueda por facetas:**
+  - **Búsqueda por facetas con contadores** (rescata el patrón de la 1ª versión): cada filtro
+    muestra cuántas fichas tiene al lado (*Gastronomía (24)*) y los filtros/categorías con **0
+    fichas se ocultan** (o se desactivan en gris). Mata el "0 resultados decepcionante" y **disimula
+    la baja densidad** del arranque.
+  - **MVP = contadores estáticos + ocultar vacíos** (barato en Postgres). El **recálculo dinámico**
+    (el contador de cada faceta se actualiza al combinar varios filtros) = refinamiento posterior.
+  - **Filtros vivos en el MVP** (tienen data estructurada): *¿Con quién voy?* (contexto social) ·
+    *¿Cuánto gasto?* (priceRange) · *¿Dónde?* (comuna/barrio/cerca del metro/al aire libre/
+    estacionamiento) · *Accesibilidad* · *Ambiente*.
+  - **Fuera del MVP:** *¿Cuándo?* (Hoy/finde/noches/feriados) → depende de **eventos (apagados)** y
+    **horario estructurado (puerta abierta)**. Se oculta hasta que exista esa data; entra con eventos.
+- **Reconciliaciones menores (anotadas, no bloquean):**
+  - **Estrellas/reseñas de Google = del scrape de Apify ya curado en el CSV**, NO tecleadas a mano.
+    Reconcilia B.7 ("a mano para evitar la API que daba 4xx") con la decisión de fotos: Apify ≠ la
+    API key oficial que fallaba.
+  - **Taxonomía de filtros del material de referencia** usa las 6 categorías **viejas**; al construir
+    la UI de filtros (Etapa 4) **remapear a las 7 nuevas** (ya decidido en B.4).
+
+---
+
+## El principio que ordena todo
+
+```
+Producto (qué)  →  Entidades (datos)  →  Permisos (accesos)  →  Código
+   Etapa 0            Etapa 1-2            Etapa 1-2          Etapa 2-5
+
+Cada etapa solo se diseña cuando la anterior está clara. Nunca al revés.
+```
+
+Las preguntas van **primero**. Schema, permisos y código se derivan de ellas.
+
+---
+
+## Las 6 etapas
+
+```
+ETAPA 0 — Definir el producto   ✅ COMPLETADA (2026-06-04)
+ETAPA 1 — Síntesis              ✅ COMPLETADA (2026-06-07)
+ETAPA 2 — Diseñar schema nuevo  ✅ COMPLETADA + APROBADA (2026-06-08)  (= Paso 9.2)
+ETAPA 3 — Migrar la BD + seed   🔄 EN CURSO — local ✅, prod pendiente  (= Paso 9.3)
+ETAPA 4 — Refactor dominio + UI ⬜ pendiente (próxima)  (= Paso 9.4)
+ETAPA 5 — Cargar lugares a mano ⬜ pendiente  (= Paso 9.5)
+```
+
+---
+
+## ETAPA 0 — Definir el producto (las preguntas)
+
+Conversado, por grupos. De lo más fundamental a lo más estratégico.
+
+| Sub-sesión | Bloques PRODUCTO.md | Qué definimos | Estado |
+|---|---|---|---|
+| **A. El norte** | 1, 7 | Qué es el producto + qué es el MVP mínimo | ✅ COMPLETADA |
+| **B. Las entidades** | 2, 3 | Lugar vs Evento, sub-tipos, campos comunes vs específicos | ✅ COMPLETADA |
+| **C. Usuarios y planes** | 4, 5 | Quién usa el sitio, qué da Free vs Premium (incluye permisos) | ✅ COMPLETADA (lado usuario; planes/premium parqueado) |
+| **D. Lo estratégico** | 6, 8, 9, 10, 11 | Plata, validación, plataforma, crecimiento, IA | ✅ COMPLETADA (plata parqueada) |
+
+**Nota sobre permisos:** el tema "qué puede/no puede hacer cada usuario" NO se trata
+aparte. Cae dentro de la sub-sesión C (Bloques 4 y 5) y se formaliza como **matriz de
+permisos** en la Etapa 1.
+
+### Respuestas capturadas hasta ahora
+_(se van llenando acá a medida que el usuario responde)_
+
+**Sub-sesión A — El norte:**
+- 1.1 ¿Qué es? — ✅ **"Portal Panorama es una plataforma para descubrir, decidir y guardar
+  qué hacer en tu ciudad: lugares, panoramas y experiencias, todo centralizado."**
+  - Se eligió "plataforma" (no "guía" = planes ya armados por otro; no "app" = solo
+    celular). Plataforma deja abierta la futura app de "qué hacer ahora según
+    ubicación + presupuesto" sin amarrarse a eso desde el inicio.
+  - El abanico de contenido es ancho: restaurantes, parques/plazas, heladerías, hiking,
+    talleres/clases (ej: pintura en pareja), eventos. No es solo "restaurantes y eventos".
+- 1.2 ¿Para quién? — ✅ **"El organizador"** (nombre interno del usuario primario).
+  - *"El que organiza los panoramas del grupo: joven (mediados de los 20), vive solo
+    pero tiene pareja y grupo de amigos, es el iniciador/activo de las juntas, con plata
+    justa para salir un par de veces al mes, ya aburrido de lo viral, que quiere acertar
+    y quedar bien con su gente sin tener que investigar él mismo."*
+  - Dolor central: quiere experimentar cosas nuevas pero **buscar cansa**.
+  - Motivación: **mejor precio/calidad** (no botar la plata) + **quedar bien** socialmente.
+  - Decisión de scope: **MVP enfocado 100% en el organizador**. La persona que recibe la
+    invitación (pareja/amigo que no organiza) se diseña después.
+- 1.3 ¿Qué da que Google/IG no? — ✅ **Diferenciador:** "Todo lo que hay que hacer en tu
+  ciudad, centralizado en un solo lugar, con la info estructurada para **filtrar por tu
+  necesidad** (familia, pareja, al aire libre, comuna, presupuesto) y comparar sin saltar
+  entre apps."
+  - **Pilar central = FILTRABILIDAD por contexto social** (el que, si falla, mata el
+    producto; "nadie lo tiene"). La **centralización** es el cimiento que la hace posible
+    — van juntas, filtrabilidad al frente.
+  - Fallas concretas que ataca:
+    - *Google Maps:* filtros pobres (no filtra por ocasión/necesidad), sin vista completa,
+      difícil comparar, falta info.
+    - *Instagram:* flujo engorroso (guardas y se pierde, no hay buscador, sin info
+      práctica → terminas saltando a Google).
+    - *Ambos:* eventos/ferias esporádicas imposibles de filtrar por comuna.
+  - 5 fuentes de valor (de [PRODUCTO.md] y la conversación):
+    1. Permanentes + eventos en un mismo directorio filtrable (nadie los mezcla bien).
+    2. **Filtros de contexto social** (niños, pareja, gratis, pet friendly, comuna) — nadie lo tiene.
+    3. Info operacional centralizada (horario, precio, reserva, cómo llegar) — hoy en 4 fuentes.
+    4. Eventos chicos sin canal propio (ferias, talleres, pop-ups) — invisibles sin seguidores.
+    5. Regiones ignoradas (Valpo, Conce, La Serena vacíos; 90% del contenido es Santiago).
+- 1.4 La única cosa que hace bien — ✅ **La ficha completa, útil y estructurada.**
+  - Insight clave: la ficha ES lo que habilita el filtro. No se puede filtrar por
+    "tiene estacionamiento" o "apto niños" si ese dato no vive estructurado en la ficha.
+    La ficha bien hecha es a la vez la **respuesta** (lo que el organizador lee para
+    decidir) y la **materia prima del filtro**. Si la ficha es pobre, no hay producto.
+  - Campos que el usuario nombró (input directo para entidades, Bloque 2/3):
+    - **Lugar:** qué ofrece, métodos de pago, ubicación + **estación de metro cercana**,
+      menú, horario, ¿reserva o solo llegar?, tags de servicio (baño, estacionamiento,
+      zona fumadores, acceso silla de ruedas, pet friendly…).
+    - **Evento:** ¿apto familia?, ¿apto niños?, ¿romántico/parejas?, canales oficiales /
+      redes para saber más.
+  - Caso de uso concreto pedido: filtrar/descubrir **por estación de metro**
+    ("¿qué hay cerca de Los Leones?").
+- 7.1 Si lanzaras UNA cosa — ✅ **MVP de lanzamiento:**
+  - **~100 lugares**, los más mainstream / mejor valorados de Google Maps.
+  - **Zona:** lo más transitado de la capital con varios puntos de conexión —
+    Providencia, Ñuñoa, Santiago Centro, quizá Vitacura y Barrio Italia.
+  - **Solo lugares, NO eventos** al inicio (los eventos son efímeros y no hay forma de
+    conseguir la info por cuenta propia todavía).
+  - **Guardar desde el día 1** → requiere **registro/login** para listas privadas.
+
+**Sub-sesión B — Las entidades** _(cerrada 2026-06-03, a partir de los 6 docs de `input/`)_:
+
+- **B.1 Evento = entidad propia.** Tabla `events` **separada** de los lugares, con FK
+  **opcional** al local (`place_id` nullable → permite eventos sin local fijo: concierto
+  en parque, feria itinerante). Un local puede tener muchos eventos; el evento tiene campos
+  propios (puertas, duración, ticketera, expiración) y su categoría puede diferir de la del
+  local (un bar que hace teatro). Se **descarta** el enfoque del doc 04 (evento como fila de
+  `places` con `place_type='event'`). Razón: el doc 05 es el pensamiento más evolucionado.
+- **B.2 El lugar es siempre permanente.** `place` no lleva campo "tipo". Toda la dimensión
+  temporal (puntual / recurrente) vive en `events`. Lo **recurrente** (taller cada sábado,
+  feria mensual) es un **sabor del evento** (flag `is_recurring`), no un tipo de lugar — y
+  se trabaja más adelante junto con los eventos.
+- **B.3 Lanzamiento = solo lugares.** El schema incluye `events` desde ya, pero al salir al
+  aire se carga **solo contenido de lugares** (~100 en zonas conectadas de Santiago).
+  Eventos = se encienden después. Schema preparado para no romper nada al activarlos.
+- **B.4 Categorías = las 7 del doc 04** (se botan las 6 viejas): Gastronomía · Shows y
+  entretenimiento · Arte y cultura · Naturaleza y aire libre · Talleres y actividades ·
+  Ferias y mercados · **Locales y tiendas** (nueva). Al lanzar se muestran solo las que
+  tienen lugares permanentes (**Gastronomía, Naturaleza, Arte y cultura, Locales y tiendas**);
+  las event-only (Shows, Ferias, Talleres) quedan **registradas** en el catálogo y se
+  encienden con los eventos.
+- **B.5 Estructura de categoría de la ficha:** categoría principal **+ subcategoría = obligatorias**;
+  categoría/subcategoría **secundaria = opcional** (una sola). Regla: la categoría la define el
+  **uso real** del lugar, no lo que vende. Flujo "sugerir categoría faltante → pendiente de
+  revisión" del doc 04 = **lado negocio (post-MVP)**; en el MVP el admin crea la categoría que
+  falte directo. El schema prevé el estado "pendiente de revisión".
+- **B.6 Sistema de tags = 4 capas del doc 04** (categoría → contexto social máx 4 → atributos
+  específicos condicionales → vibe máx 3), con sus exclusiones mutuas. **Tag nuevo aportado por
+  el usuario:** `tipo de cocina` (peruana, china, árabe, italiana, japonesa, chilena…) como
+  **atributo condicional de Gastronomía**, multi-selección.
+- **B.7 Reseñas/evaluación:** MVP muestra **estrellas + nº de reseñas de Google** (es dato
+  necesario para comparar; idealmente ingresado **a mano** al cargar cada lugar para evitar la
+  API/scraping de Google que daba problemas de key). **Sin reseñas escritas** en la plataforma
+  todavía. **Visión futura** (schema lo debe prever): reseñas **propias con peso**, **usuarios
+  con niveles** cuyas reseñas valen más, y mostrar las **mejores reseñas de Google** en la ficha.
+- **B.8 Metro = opción B (manual).** Al cargar la ficha, campo **opcional** para la estación más
+  cercana (o vacío si no aplica); **sin** distancia ni minutos a pie ni geocodificación en el MVP.
+  Filtrable por estación/línea. La maquinaria automática (geocodificar + Haversine + nearest_stations)
+  queda para v2.
+- **B.9 Guardar = listas múltiples con nombre** (ej: "Citas", "Con los cabros"). **Compartir una
+  ficha individual** (botón → link) = **sí en MVP** (barato). **Compartir una lista/colección** =
+  según esfuerzo (el salto de valor sobre "listas múltiples" no es enorme → posible fast-follow).
+- **B.10 Ficha lleva CTA "Cómo llegar / Indicaciones"** que abre el mapa (Google/Apple) en
+  navegación hacia el lugar. Funciona solo con la dirección de texto → no requiere lat/lng.
+- **B.11 Parqueado por decisión del usuario:** todo el modelo **gratis vs premium** (doc 03) y la
+  **monetización** (doc 01) se definen más adelante. El schema preverá `is_premium` / propiedad de
+  ficha, pero al lanzar **todo lo carga el admin y todo es gratis**; el self-service de negocios y
+  los pagos son post-MVP.
+
+**Sub-sesión C — Usuarios (lado consumidor)** _(cerrada 2026-06-04)_:
+
+- **C.1 Niveles / reputación de usuario:** ❌ **fuera del MVP** y probablemente no se
+  implemente nunca. A lo más en v2 un reconocimiento liviano tipo Google Maps (contador de
+  aportes / votos), pero baja prioridad. **No es lo que el usuario busca.** El norte real es
+  **IA: recomendaciones por IA**. Lo único que sí importa de este tema: que **existan reseñas
+  propias** (no los niveles). Conecta con B.7.
+- **C.2 Onboarding / home:**
+  - **MVP:** home "por acción, sin encuesta forzada". El usuario **rechaza** las páginas que
+    obligan a responder antes de ver contenido. Estructura: search bar + **fila social arriba**
+    (*¿A quién llevas hoy?*: solo, en pareja, con amigos, en familia, con niños, con mascota) +
+    **fila de categorías más buscadas** (Gastronomía, Al aire libre, Arte y cultura, Locales y
+    tiendas). Los chips llevan directo a explorar ya filtrado. "Qué comer hoy…" como placeholder
+    del buscador, no como botón. Objetivo: al llegar se entiende al toque qué hay, sin leer mucho.
+  - **v2:** **mini-encuesta tipo pop-up (opcional / salteable) + IA** que recomienda según lo
+    seleccionado. Conecta con el norte de recomendaciones por IA.
+- **C.3 Perfil del usuario:**
+  - **MVP:** cuenta básica (nombre, email, pass) **sin avatar** + **lugares guardados** (listas
+    múltiples, B.9) + **comuna home** (opcional, ver C.3-bis) + **historial de lugares visitados**.
+  - **Secciones del perfil:** "Mis listas / lugares guardados" (MVP) · "Mi historial" (MVP) ·
+    **"Mis reseñas"** (la sección existe; contenido = v2) · **"Mis eventos guardados"** (separado
+    de lugares; v2, pero el schema lo prevé).
+  - **Preferencias guardadas** (contexto habitual): v2.
+  - **Historial:** sirve de combustible para la IA más adelante. Cómo se modela en BD = se define
+    en la Etapa 2.
+- **C.3-bis Orden de resultados + comuna home:**
+  - **Orden por defecto SIEMPRE = "reputación"** = puntaje calculado con **nota de Google ×
+    cantidad de reseñas** (mejor primero). Es el motor de orden.
+  - **Comuna home = preferencia opcional**, se puede dejar **vacía**. Si está vacía → la búsqueda
+    usa solo el orden por reputación. Si el usuario la define (se le pide al registrarse:
+    *"¿Quieres que al buscar aparezcan primero los de tu comuna?"*), su comuna sube primero **sin
+    romper el orden por reputación dentro de ella**.
+  - **Debe ser transparente y desactivable:** como la comuna es manual, en la búsqueda se muestra
+    algo tipo *"Mostrando primero Providencia · cambiar"*, para que si el usuario está en otro
+    lado (trabajo, casa de un amigo) lo vea y lo cambie. El dato nunca lo deja atrapado.
+  - **Pendiente técnico (Etapa 2):** definir la **fórmula de reputación** que combina nota +
+    cantidad (un 5.0 con 3 reseñas no debe ganarle a un 4.7 con 2.000).
+- **C.4 lat/lng (ajusta B.8):** se **guarda la coordenada desde el MVP** (viene **gratis** en el
+  scrape de Google Maps de los mejor valorados). El botón "cómo llegar" (B.10) se hace solo con la
+  **dirección de texto**; el **mapa** y el **"cerca de mí"** (ordenar por distancia) necesitan
+  **lat/lng**, por eso se captura ahora aunque la UI de mapa/distancia/metro-automático se
+  construya en **v2**. Separamos **dato** (barato hoy) de **feature** (después). Campos al cargar
+  un lugar: dirección de texto (calle+número+comuna) · lat/lng · estación de metro (manual,
+  opcional). Nuevo deseo: **vista de mapa al filtrar** + **"cerca de mí" por geolocalización** = v2.
+- **C.5 Self-service del dueño (v2, parqueado con B.11):** cuando los locales creen/reclamen su
+  ficha, el camino lógico para obtener lat/lng será **pegar el link de su Google Maps** (principal
+  — además sirve de prueba de propiedad y rellena dirección/estrellas/reseñas/horario de una), con
+  **geocoding de la dirección** como respaldo. No bloquea nada del MVP: el schema solo necesita el
+  campo `lat/lng`, que ya se guarda desde el MVP.
+
+**Sub-sesión D — Lo estratégico** _(cerrada 2026-06-04 — Bloques 8, 9, 10, 11; el 6 queda parqueado)_:
+
+- **D.1 Validación (Bloque 8):** la métrica que importa NO es el volumen bruto sino el
+  **comportamiento**: **activación** (% de visitantes que crea cuenta o **guarda** un lugar),
+  **retención** (¿vuelven?), **engagement por ficha** (tiempo en ficha, fichas/sesión) y
+  **save rate** (% que guarda ≥1 lugar). El piso que propuso el usuario ("~1000 visitas +
+  ~10 cuentas") se conserva como **mínimo de tráfico** para que las otras métricas tengan
+  sentido, **no** como la prueba de validación. Plazo: **al menos 1 mes** corriendo.
+- **D.2 Instrumentación desde el día 1 (va al MVP):** trackear todo desde el lanzamiento.
+  **GA4** (visitas, tiempo de sesión, páginas/sesión, embudos) + **Meta Pixel** + **Google
+  tag/Ads** (retargeting y medición de campañas) + **eventos custom** (guardar, crear cuenta,
+  compartir) para medir activación/save rate. → tarea de infraestructura del MVP. Implica una
+  **página legal de privacidad/cookies** (ver Ítems abiertos).
+- **D.3 Plataforma (Bloque 9):** **web mobile-first en el MVP** (en Chile el tráfico web es
+  ~70-75% celular y el organizador busca con el teléfono en la calle; desktop importa para que
+  las fichas SEO se vean bien). **PWA como puente** (instalable + push) cuando se enciendan
+  eventos, sin construir nativo. **App nativa solo post-validación de retención** (probablemente
+  React Native). Honra la palabra "plataforma" sin amarrarse a la app desde el inicio.
+- **D.4 Crecimiento (Bloque 10):** primer usuario llega por **SEO orgánico + Instagram + foros**
+  (pseudo-campaña de lanzamiento). **SEO = pilar, no adorno**, y conecta con "la ficha es el
+  producto" (A.1.4): cada lugar cargado es un anzuelo de tráfico gratis y permanente. Realista:
+  ganar en búsquedas de **intención/descubrimiento** ("dónde comer en Providencia con niños"),
+  no tanto en la búsqueda de marca ni sobre Google Maps. **Implicancia técnica (Etapa 2/4):**
+  SSR/SSG, metadata por lugar, slugs limpios, **datos estructurados schema.org `LocalBusiness`
+  (JSON-LD)**, sitemap, buen rendimiento. Contenido: ~100 lugares cargados a mano + datos del
+  scrape de Google Maps de los mejor valorados (lat/lng, estrellas, reseñas, horario).
+- **D.5 GEO/AEO — "SEO de los chatbots" (insight del usuario, 2026-06-04):** optimizar para que
+  Claude/ChatGPT/Gemini **citen la ficha** cuando alguien pide panoramas. Clave: es **casi el
+  mismo trabajo que el SEO** (contenido estructurado, factual, schema.org). La inversión en "la
+  ficha bien hecha" paga **triple**: humano + Google + LLMs. Refuerza la decisión de fichas
+  estructuradas desde ya.
+- **D.6 IA (Bloque 11):**
+  - **11.1 ¿Central o secundaria?** → **Central como visión/norte**, **ausente del MVP**. El
+    producto se diseña sabiendo que la IA viene (data preparada: fichas estructuradas, historial,
+    tags).
+  - **11.2 ¿Qué resuelve que un filtro NO puede?** Solo dos cosas son IA-only de verdad:
+    (a) **armar el panorama encadenado** (plan coherente café→parque→bar cruzando geo + horario +
+    presupuesto + con quién; un filtro da lista, no plan) y (b) **recomendar por gusto/historial**
+    (inferir el gusto, no aplicar reglas fijas). La **búsqueda en lenguaje natural ≈ un buen
+    filtro** (bajo valor marginal; a lo más capa de entrada para enganchar nuevos, a testear).
+  - **11.3 ¿MVP o Fase 2+?** → **Fase 2+**. Único guiño posible en MVP: **"relacionados" al final
+    de la ficha** hechos **sin IA real** al inicio (similitud por tags + categoría + comuna, pura
+    query SQL), upgradeable a embeddings después. Rampa ideal.
+  - **Tensión estratégica capturada (catch del usuario):** si la IA entrega "la" respuesta, mata
+    la superficie de **browse rankeado**, que es el inventario del futuro **posicionamiento
+    pagado**. Resolución: la IA va **encima** del browse (capa de asistencia), no en vez de él; y
+    el posicionamiento pagado puede vivir dentro de la IA (recomendación patrocinada y declarada).
+    Como la monetización está parqueada (B.11), solo se **registra la tensión** para no diseñar una
+    IA que se coma su propia fuente de ingresos.
+- **D.7 Modelo de negocio (Bloque 6):** **sigue parqueado** por decisión del usuario. El MVP no
+  tiene ruta de ingresos y eso es una decisión consciente, no un olvido.
+
+### Ítems de la sub-sesión D — RESUELTOS (2026-06-04), entran al scope/schema de la Etapa 1-2
+
+1. **Fotos de las fichas — RESUELTO.**
+   - **Schema:** **galería** por lugar (foto **principal** + resto) + campo **crédito/origen**.
+   - **Storage:** descargar la imagen y **re-alojarla en almacenamiento propio** — **UploadThing
+     _o_ Vercel Blob** (equivalentes; se zanja en implementación, Etapa 4). **Prohibido** guardar
+     base64 en la BD o hacer hotlink de la URL externa (las URLs de Google expiran y rompen). Se
+     guarda **tu** URL. Ambos proveedores sirven para la **carga admin** (SDK de servidor) y para
+     el **self-service del local** (componente de navegador) — mismo storage, sin reconstruir nada.
+   - **Sourcing MVP:** scraper propio o **Apify** (devuelve en un tiro fotos + estrellas + nº
+     reseñas + horario + lat/lng), **priorizando las fotos que el propio local ya publicó** (su
+     web/IG). Legalmente es zona gris para scraped → mitigar con crédito + bajar si lo piden.
+   - **Carga:** **Excel/CSV curado de ~100 filas** → script de import que por cada fila descarga la
+     imagen y la re-aloja (Etapa 5; **depende del schema**, no se construye aún). Es **distinto**
+     del import de 1449 descartado (ese falló por modelo confuso; 100 con modelo claro es válido).
+   - **Rights-clean a futuro (insight de negocio):** el self-service del local sube sus propias
+     fotos (derechos limpios) **+ ofrecer servicio de fotos "profesionales"** → derechos 100%
+     propios, **calidad visual consistente** y **posible fuente de ingresos**.
+
+2. **Frescura de la data — RESUELTO.** Mitigación en capas:
+   - **En el origen (lo más fuerte):** lanzar con contenido **estable/constante** — gratis y/o
+     "virales" conocidos: plazas, museos, bibliotecas, cerros, bares y cafés conocidos. Casi no
+     cambian → poca pega de mantención.
+   - **Disclaimer** en la ficha: los horarios pueden variar según fecha (ferias, feriados) →
+     verificar en la **web/redes del lugar**.
+   - **Botón "reportar dato incorrecto / lugar cerrado"** → frescura colaborativa gratis + señal
+     de engagement.
+   - **Revisión manual** del admin cada **~2-3 meses** (manejable con 100 lugares).
+
+3. **Listas curadas / editorial — RESUELTO.**
+   - **Schema:** modelar la **colección** de forma que sirva para **listas privadas de usuario
+     (B.9) Y listas curadas públicas**, con flag `is_curated`/tipo + **slug** + descripción
+     editorial. Puerta abierta a costo casi nulo (reúsa la infra de listas de usuario).
+   - **MVP:** lanzar **3-5 listas curadas** como landing pages de **SEO** ("mejores X de Y"),
+     reusando esa misma infra (el admin las arma, **sin** montar CMS/blog aparte). Alto retorno
+     SEO + "vida", bajo costo.
+   - **Blog** como motor de contenido aparte = **más adelante** (post-MVP).
+
+4. **Página legal de privacidad/cookies — RESUELTO (tarea, no decisión).** Obligatoria al usar
+   GA4 + Meta Pixel + guardar historial. Crear **política de privacidad + aviso de cookies** según
+   requerimientos legales chilenos (Ley 19.628) y estándares. Tarea del scope MVP.
+
+### 🅿️ Oro parqueado (insights que aparecieron y van a otros bloques)
+- **Guardar/organizar favoritos** — hoy el usuario usa listas de Google Maps pero las
+  encuentra restrictivas; quiere algo más visual y ordenado. → va a 1.3 (diferenciador)
+  y a entidades (listas/colecciones del usuario).
+- **App "qué hacer ahora"** — sugerir panoramas según ubicación + presupuesto en el
+  momento. → MVP / más adelante (no base).
+- **Datos para decidir (campos de un lugar):** distancia / qué tan lejos, ticket
+  promedio o menú, reseñas, imágenes, y **cercanía a línea/estación de metro**.
+  → va a entidades (Bloque 2/3).
+- **Ocasiones de uso (el "para qué"):** me junto con un amigo o cita y no sé qué hacer;
+  qué hay de nuevo; tengo tiempo libre justo ahora; hora de almuerzo, dónde bajoneo
+  cerca. → alimenta 1.2 (para quién) y 1.4 (la cosa que hace bien).
+- **Notificaciones / suscripción por tema o palabra clave** — el usuario se suscribe a
+  un tema (ej: conciertos, stand-up) y le avisan cuando entra un evento nuevo que
+  matchea. → post-MVP, pero el modelo de datos debe poder soportarlo.
+- **Compartir ficha** — enviar un lugar/evento a la pareja o al grupo ("mira, me tinca
+  este lugar, ¿qué les parece?"). → entidades (la ficha debe ser compartible) + post-MVP.
+- **Lado de OFERTA (insight estratégico)** — además del organizador (consumidor), hay
+  dueños de eventos/lugares chicos sin canal propio (ferias, talleres, pop-ups) que hoy
+  no tienen dónde publicar. Define modelo de negocio: ¿quién paga?, ¿quién carga
+  contenido? → se trata a fondo en sub-sesión C (usuarios y planes).
+- **Panorama encadenado / descubrir por cercanía** — el evento es el ancla; alrededor
+  mostrar qué comer/tomar antes o después ("¿qué hay cerca?"). → post-MVP, pero exige
+  buena geolocalización en la data (refuerza lo del metro/lat-lng).
+- **Filtrar por región** — hoy todo es Santiago; sumar Valpo, Conce, La Serena, etc.
+  → más adelante.
+- **Búsqueda en lenguaje natural** — "panorama para este finde, en familia, en X comuna,
+  presupuesto Y → recomiéndame". → post-MVP; refuerza que la data debe estar bien
+  estructurada desde ya.
+- **Estrategia de eventos (post-MVP)** — primero juntar datos de visita con lugares →
+  luego contactar organizadores → ofrecerles publicar; a los **primeros ~20, plan
+  premium gratis** para recolectar data. Resuelve el lado de oferta. → sub-sesión C/D.
+- **Listas curadas por la página** ("10 bares imperdibles") — DECISIÓN ABIERTA: ¿feature
+  dentro de la app o blog para SEO? → resolver en scope MVP (Etapa 1).
+- **IA como norte real del producto** (2026-06-04) — el usuario es claro: lo que de verdad
+  busca es **recomendaciones por IA**, más que gamificación/niveles. → se trabaja a fondo en
+  sub-sesión D; el modelo de datos (historial, contexto, reseñas) debe quedar preparado para
+  alimentarla. La mini-encuesta + IA de C.2 es una primera expresión de esto.
+- **Filtrar por plato + reseña por plato (Gastronomía)** (2026-06-04) — diferenciador fuerte:
+  buscar un plato (ej: "completo") y que liste **todos los lugares que lo venden**, y dentro de
+  la ficha poder **reseñar un plato puntual** (el local puede ser bueno pero el plato X malo).
+  **Complejo en BD** (suena a tabla `dishes` + relación con `places` + reseñas a nivel de plato).
+  Conecta con reseñas propias (B.7) y el tag "tipo de cocina" (B.6). → al diseñar el schema
+  (Etapa 2) decidir si dejamos la **puerta abierta** en el modelo aunque no se implemente en MVP.
+
+---
+
+## 📎 Material de referencia para sub-sesión B (taxonomía de filtros)
+
+_(Aportado por el usuario el 2026-06-02 — mockup de filtros por categoría + insights.
+Transcrito porque las imágenes no quedan versionadas. Insumo directo para entidades.)_
+
+**Categorías (tabs):** Todos · Restaurantes y bares · Eventos y shows ·
+Lugares y parques · Talleres y actividades · Ferias y mercados.
+
+**Filtros universales (aplican a TODO, sin importar el tipo):**
+
+- **¿Con quién voy?** — Solo/a · En pareja · Con amigos · En familia ·
+  Con niños pequeños · Con adultos mayores · Con mascotas · Grupo grande.
+- **¿Cuánto gasto?** — Gratis · Menos de $5.000 · $5.000–$15.000 ·
+  $15.000–$30.000 · Más de $30.000.
+- **¿Cuándo?** — Hoy · Este finde · Esta semana · Solo noches · Solo tardes · Feriados.
+- **¿Dónde?** — Comuna · Barrio · Cerca del metro · Al aire libre ·
+  Con estacionamiento · Accesible en micro.
+- **Accesibilidad** — Acceso en silla de ruedas · Baño disponible ·
+  Cambiador de pañales · Zona de lactancia.
+- **Ambiente general** — Tranquilo · Animado · Familiar · Íntimo · Fotogénico · Sin reserva.
+
+**Insights clave a recordar al diseñar el modelo:**
+
+1. **"¿Con quién voy?" es el filtro más poderoso y el más ignorado por las plataformas
+   existentes.** Es la PRIMERA pregunta real que se hace la gente — no el precio ni la
+   categoría. Diseñar el onboarding desde ahí ("¿A quién llevas hoy?") cambia toda la
+   experiencia de búsqueda.
+2. **La info que más falta es operacional, no de marketing:** horario real en feriados,
+   si requiere reserva, qué pasa si llueve, cuánto demora la lista de espera en promedio.
+   Ningún negocio la publica solo porque no sabe que la gente la busca.
+3. **Las ferias son el caso extremo de frustración:** la gente llega y no estaba (o estaba
+   a medias). Un botón de confirmación semanal ("confirmamos para este sábado") por sí
+   solo ya justificaría instalar la plataforma. → relevante cuando entren eventos/ferias.
+
+---
+
+## ETAPA 1 — Síntesis (entregables)
+
+Cuando la Etapa 0 esté completa, se producen 4 entregables que el usuario aprueba:
+
+1. ✅ Visión del producto en 1 párrafo (aprobada 2026-06-05)
+2. ✅ Modelo de entidades definitivo (lugar/evento, sub-tipos, campos) (aprobado 2026-06-05)
+3. ✅ Matriz de permisos (rol × plan × acciones) (aprobada 2026-06-06)
+4. ✅ Scope del MVP (aprobado 2026-06-07) — ver abajo
+
+### Entregable 4 — Scope del MVP (APROBADO 2026-06-07)
+
+Restricción transversal (de P1): **lean, barato, por capas, densidad > cantidad.** El núcleo
+prueba el concepto; el resto entra de a poco.
+
+**✅ SÍ entra al MVP:**
+- **Contenido:** ~100 lugares permanentes (techo), carga paulatina (10 a mano → soft-launch → masa
+  mínima densa → ~20/semana). Concentrados en pocas zonas conectadas (Providencia + Ñuñoa primero).
+  Solo 4 categorías con lugares: Gastronomía · Naturaleza y aire libre · Arte y cultura · Locales y
+  tiendas.
+- **Ficha:** completa y estructurada (nombre, descripción, cat+subcat, dirección, comuna/barrio,
+  lat/lng, metro manual, priceRange, contacto/redes, horario texto libre, métodos de pago, reserva
+  sí/no, galería con crédito) · estrellas + nº reseñas de Google (scrape Apify) · tags 4 capas · CTA
+  "Cómo llegar" · compartir ficha · bloque "relacionados" (sin IA: tags + categoría + comuna).
+- **Búsqueda/filtros (el pilar):** facetas con contadores + ocultar vacíos (estáticos). Filtros
+  vivos: ¿Con quién voy? · ¿Cuánto gasto? · ¿Dónde? · Accesibilidad · Ambiente. Orden por defecto =
+  reputación. Home "por acción" (search + chips sociales + chips de categoría).
+- **Usuario:** cuenta básica (sin avatar) · listas múltiples con nombre · historial de visitados ·
+  comuna home opcional (transparente/desactivable). Secciones "Mis reseñas"/"Mis eventos guardados"
+  existen vacías.
+- **Crecimiento/infra:** SEO día 1 (SSR/SSG, slugs, metadata por lugar, JSON-LD `LocalBusiness`,
+  sitemap) · 3-5 listas curadas como landing SEO · instrumentación (GA4 + Meta Pixel + Google tag +
+  eventos custom) · página de privacidad + cookies · botón "reportar dato incorrecto/cerrado" ·
+  web mobile-first.
+
+**🔜 NO ahora, pero pronto (v2 — puertas abiertas en schema):** eventos (y con ellos filtro
+¿Cuándo?, "próximos eventos aquí", eventos guardados) · reseñas propias con peso + niveles ·
+IA (recomendación por gusto/historial, panorama encadenado, mini-encuesta onboarding, lenguaje
+natural) · self-service de negocios (Free/Premium) + posicionamiento pagado + newsletter por IA /
+suscripción por keyword · mapa + "cerca de mí" + metro automático · recálculo dinámico de facetas ·
+compartir colección · horario estructurado ("abierto ahora") · PWA.
+
+**❌ Se descarta (no va en este producto por ahora):** niveles/gamificación de usuario (a lo más
+contador liviano en v2) · app nativa antes de validar retención · venta de entradas/ticketera propia
+(se enlaza a la del organizador) · import masivo sin curar (el de 1449).
+
+**Decisión `Dish`/platos (2026-06-07):** **puerta abierta barata, sin tabla ni app ni API en MVP.**
+NO se crea tabla `Dish`. SÍ se diseña `Review` (v2/apagada) con el **objetivo reseñado extensible**
+(hoy Place; mañana Dish/Event sin romper). Cuando lleguen los platos = módulo nuevo que se enchufa.
+La idea de **app aparte + API** (que conecta con GEO/AEO, D.5) = **oro parqueado / visión futura**,
+no pega del MVP; con buen modelo, exponer API después es trivial.
+
+### Entregable 3 — Matriz de permisos (APROBADA 2026-06-06)
+
+**Regla de oro:** el **usuario siempre ve toda la info** que existe en la ficha. El plan del negocio
+solo cambia **qué autogestiona** y sus **herramientas de conversión/visibilidad** — nunca qué ve el usuario.
+
+**A) Lado consumidor (vive en el MVP):**
+
+| Acción | Visitante | Usuario | Admin |
+|---|:---:|:---:|:---:|
+| Explorar / filtrar / buscar | ✅ | ✅ | ✅ |
+| Ver ficha completa + toda su info | ✅ | ✅ | ✅ |
+| Ver listas curadas (landing SEO) | ✅ | ✅ | ✅ |
+| Compartir ficha / "Cómo llegar" | ✅ | ✅ | ✅ |
+| Reportar dato incorrecto / cerrado | ✅ | ✅ | ✅ |
+| Guardar en lista | ❌ → invita a registro | ✅ | ✅ |
+| Crear/renombrar/borrar listas propias | ❌ | ✅ | ✅ |
+| Comuna home · "Mi historial" | ❌ | ✅ | ✅ |
+| Escribir reseña propia *(v2)* | ❌ | 🔒 v2 | 🔒 v2 |
+| Suscribirse a keyword/tema *(post-MVP)* | ❌ | 🔒 | 🔒 |
+| Gestión total de contenido (CRUD lugares, categorías, tags, listas curadas, fotos, reportes, vender slots) | ❌ | ❌ | ✅ |
+
+**B) Lado negocio (post-MVP — el admin hace todo en el MVP):**
+
+| Acción | Negocio Free | Negocio Premium |
+|---|:---:|:---:|
+| Reclamar ficha + editar info básica | ✅ | ✅ |
+| Subir/gestionar fotos · descripción | ✅ | ✅ |
+| Responder reseñas · responder reportes | ✅ | ✅ |
+| Subir 1 evento gratis | ✅ | ✅ |
+| Editar categoría/subcategoría | ❌ (admin) | ✅ |
+| Editar vibe / atributos personalizados | ❌ (admin) | ✅ |
+| Estadísticas (vistas/guardados/clics) | ❌ | ✅ |
+| Card destacada + badge | ❌ | ✅ |
+| Mini-banner de ofertas · botón reserva/CTA | ❌ | ✅ |
+| Subir/destacar más eventos | ❌ | ✅ |
+| Acceso a posicionamiento pagado | ❌ (add-on / admin a mano) | ✅ |
+
+### Entregable 1 — Visión del producto (APROBADA 2026-06-05)
+
+> **Portal Panorama es una plataforma para descubrir, decidir y guardar qué hacer en tu
+> ciudad** —lugares, panoramas y experiencias, todo centralizado en un solo lugar. Está
+> pensada para **"el organizador"**: el que arma los planes del grupo y quiere acertar sin
+> tener que investigar saltando entre Google, Instagram y mil pestañas. Su diferenciador es
+> la **filtrabilidad por contexto social** (con quién voy, presupuesto, comuna, al aire
+> libre, apto niños/mascotas) construida sobre **fichas completas y estructuradas** —porque
+> la ficha bien hecha es a la vez la respuesta que se lee para decidir y la materia prima del
+> filtro. El MVP arranca con **~100 lugares permanentes** de las zonas más conectadas de
+> Santiago, con registro para **guardar en listas**, y está diseñado desde el día 1 para
+> crecer hacia **eventos, recomendaciones por IA y posicionamiento de negocios**, sin
+> amarrarse a ninguno de ellos todavía.
+
+### Entregable 2 — Modelo de entidades (APROBADO 2026-06-05)
+
+Modelo **conceptual** (entidades + campos). Los tipos exactos del `schema.prisma` se fijan
+en la Etapa 2. Decisiones de modelado tomadas: tags como **tabla relacional** (no JSON),
+`Review` y `Report` se crean ahora aunque vacíos/apagados, y `Dish` queda como puerta abierta.
+
+**🏠 `Place` (Lugar)** — entidad central del MVP, siempre permanente, sin campo "tipo":
+- Identidad: `id` (cuid2) · `slug` · `name`
+- Categorización: categoría principal + subcategoría **(obligatorias)** · cat/subcat secundaria **(opcional, una sola)**
+- Contenido: descripción / qué ofrece · menú o link
+- Ubicación: dirección de texto · `commune` (FK) · `neighborhood` (FK opcional) · `lat`/`lng` · `metroStationId` (FK opcional)
+- **Presupuesto: `priceRange`** (enum: Gratis · <$5.000 · $5.000–15.000 · $15.000–30.000 · >$30.000)
+- **Contacto: `phone` · `website` · redes sociales** (Instagram, etc.) — todos opcionales
+- Operacional: `horario` (texto libre en MVP; estructurar por día = puerta abierta para badge "Abierto ahora") · métodos de pago · ¿reserva o solo llegar?
+- Reputación Google: `googlePlaceId` · `googleRating` · `googleReviewCount`
+- Reputación calculada: `score` (nota × nº reseñas — fórmula en Etapa 2)
+- Galería: foto principal + resto · crédito/origen (storage propio, nunca base64/hotlink)
+- Tags: 4 capas (ver `Tag`)
+- Propiedad/estado: `isPremium` (parqueado, default false) · `ownerId` (nullable, self-service post-MVP) · estado pendiente-revisión / publicado
+
+**🎫 `Event`** — en el schema desde ya, **apagado** en MVP. FK `placeId` nullable · categoría
+propia · fecha/puertas · duración · ticketera/link · expiración · `isRecurring` · apto familia/
+niños · romántico · canales oficiales · tags propios.
+
+**🗂️ `Category` + `Subcategory`** — catálogo de 7 categorías. Al lanzar solo se muestran las con
+lugares (Gastronomía, Naturaleza, Arte y cultura, Locales y tiendas); event-only (Shows, Ferias,
+Talleres) registradas pero apagadas.
+
+**🏷️ `Tag`** — tabla relacional, sistema de 4 capas con exclusiones: contexto social (máx 4) ·
+atributos condicionales por categoría (ej `tipo de cocina` multi en Gastronomía) · vibe (máx 3).
+
+**🚇 `MetroStation` + `MetroLine`** — catálogo. Estación → línea; la línea lleva su **color**
+(L1 roja, L2 amarilla, L3 café, L4 azul, L4A celeste, L5 verde, L6 morada — colores exactos por
+afinar). Place tiene FK opcional a estación. Filtrable por estación y por línea.
+
+**📍 `Commune` + `Neighborhood`** — `Neighborhood` vinculado a su `Commune`, pero el Place es
+**filtrable independiente** por barrio o por comuna (dos barrios reconocidos en la misma comuna
+se filtran por separado; la comuna sirve para periferia sin barrio reconocido).
+
+**👤 `User`** — cuenta básica: nombre, email, password (**sin avatar**) · `homeCommune` (opcional) · `role` (admin / user).
+
+**📚 `Collection`** — **una sola entidad** para listas de usuario Y listas curadas: `name` ·
+`ownerId` (nullable si curada) · `isCurated` · `slug` (curadas, SEO) · descripción editorial.
+`CollectionItem` = relación Collection ↔ Place.
+
+**🕓 `VisitHistory`** — lugares visitados del usuario (combustible IA): `userId` · `placeId` · timestamp.
+
+**Puertas abiertas (creadas/registradas, no implementadas en MVP):**
+- `Review` (reseña propia con peso) — sección "Mis reseñas" vacía; contenido v2 → **se crea ahora**
+- `Report` (reportar dato incorrecto / lugar cerrado) → **se crea ahora**
+- `Subscription` (suscripción por tema/palabra clave para avisos de eventos) → puerta abierta
+- `Dish`/platos (filtrar y reseñar por plato) → puerta abierta (decidir campo/tabla en Etapa 2)
+- Saved events (eventos guardados, separados de lugares) → v2
+- Horario estructurado por día (para badge "Abierto ahora") → puerta abierta
+
+### Modelo de monetización (Bloque 6 — REABIERTO 2026-06-06)
+
+Se reabre el Bloque 6 para definir el **modelo** (no se construye en MVP; solo deja las puertas
+abiertas en el schema). **Principio rector (del usuario):** nunca se gatea la info útil — la ficha
+completa es gratis para todos, siempre. Se monetiza la **visibilidad**, no la **información**, y
+toda visibilidad pagada es **declarada y transparente** (resuelve la tensión IA-vs-browse de D.6).
+
+**Fuentes de ingreso:**
+1. **Posicionamiento pagado / publicidad declarada.**
+   - Layout aprobado (mockup del usuario, 2026-06-06): **zona dedicada "Publicidad pagada"** arriba,
+     separada y etiquetada, con **hasta 3 slots**; **debajo, bloque aparte "resultado filtro por
+     score"** sin contaminar. La separación visual ES la transparencia. En mobile la fila de 3 se
+     vuelve carrusel/stack (UI).
+   - **Home:** carrusel ("lo nuevo", "lo mejor de la semana", "lo más valorado") donde **uno de los
+     ítems puede ser premium/patrocinado** (mecánica fina por definir).
+   - **Cobro: tarifa plana mensual** por contexto (ej "sushi en Providencia"). CPC/subasta = después si hay demanda.
+   - **Relevancia:** el aviso va **acotado a su categoría/comuna** (útil, no spam).
+   - **Venta:** el **admin vende a mano** al arranque, apuntando a una ficha **con o sin** dueño
+     (`SponsoredPlacement` puede existir sin owner). El norte: que el negocio **reclame su ficha**
+     para **traspasarle la mantención** (frescura) — con el tiempo, destacarse probablemente exija
+     haber reclamado.
+2. **Planes de ficha de negocio (self-service, post-MVP).** Free: reclama ficha + toda la info (ya
+   completa) + sube/gestiona fotos + **1 evento gratis** + **responder reportes** + **responder
+   reseñas** (Free a propósito: fomenta interacción → más vida en la ficha). Premium **agrega
+   promoción/herramientas, NO info**: estadísticas (vistas/guardados/clics), card destacada con
+   badge, mini-banner interno con ofertas, botón de reserva, subir/destacar más eventos, acceso al
+   posicionamiento pagado.
+   - **Resolución contradicción doc 03 (#2, 2026-06-06):** el **usuario siempre ve toda la info que
+     existe** (galería, descripción, tags) — nunca se le gatea info. Lo que el plan controla es qué
+     puede **autogestionar el negocio** + las herramientas de conversión/visibilidad, no qué ve el
+     usuario. Esto **anula** el gateo de galería/descripción/responder-reseñas que proponía el doc 03.
+3. **Planes de eventos (post-MVP) — modelo del doc 05.** Visibilidad = **plan del local × tier del
+   evento** (escalera):
+   - Local gratis + evento gratis → **solo** en la ficha del local.
+   - Local premium + evento gratis → ficha + búsquedas de categoría (no home/destacados).
+   - Cualquier local + **evento destacado** ($4.990–$6.990) → home, "Esta semana", búsquedas, ficha.
+   - **Plan productora** ($29.990–39.990/mes) → todos sus eventos del mes destacados + **página de productora propia**.
+   - **Plan venue/recinto** ($49.990–69.990/mes) → todo lo de productora + agenda integrada del
+     recinto + notificación a seguidores. Para recintos/bares con shows recurrentes y organizadores
+     de ferias (suben muchos eventos).
+   - `max_free_events` = **1** por local. **Expiración automática:** el evento se archiva al día
+     siguiente de su fecha (no se borra → historial del local). Destaque también vendible **por
+     palabra clave**. Primeros ~20 organizadores: premium gratis (data). La ficha de lugar tiene
+     sección **"Próximos eventos en este lugar"** (`Event.placeId`).
+4. **Servicio de fotos profesionales** (ya capturado en "fotos RESUELTO").
+5. **Upsell de servicios (más adelante):** marketing, automatizaciones, consultorías + un **hub con
+   material gratuito** de presencia online (estilo "optimiza tu Google My Business"). Oro parqueado.
+6. **Newsletter / notificaciones (post-MVP, ingreso a futuro).** Envío **personalizado por IA**
+   según **palabras/temas a los que el usuario se suscribe** (ej: "eventos del finde", "solo
+   conciertos de rock"). **Gratis al inicio** (canal de adquisición + hábito). Monetización futura:
+   **vender posición patrocinada dentro del newsletter del keyword relevante** (ej: un venue de rock
+   paga por aparecer en el envío de "conciertos de rock"). **NO** cobrar por estar listado (no
+   sirve). Conecta con `Subscription` (user → keyword/tema) y el motor de matching/IA.
+
+**Implicancia de schema (puertas abiertas, no se construye en MVP):** `SponsoredPlacement`/
+`Promotion` (ficha + contexto + vigencia, con o sin owner), la dimensión `Plan` (más allá del
+`isPremium` ya previsto) y `Subscription` (user → keyword/tema, alimenta newsletter + avisos).
+
+### Refinamientos del modelo (de los 6 docs de `input/`, 2026-06-06)
+
+Tras leer los 6 docs completos. **Regla:** donde un doc contradice una decisión nuestra, **gana la
+decisión nuestra** (los docs son borradores previos). Decisiones tomadas:
+- **Contradicción #1 (schema):** los docs 04/05/06 asumen tabla única `places` con `place_type`
+  ('permanent'|'event'|'recurring'). **Anulado** → `events` es tabla separada con FK opcional (B.1).
+  Los SQL de los docs valen como referencia de **campos**, no de estructura.
+- **Contradicción #3 (colores metro):** el doc 06 tiene L3/L6 mal. Se usan los **reales**:
+  L1 roja `#E1251B` · L2 amarilla `#F5A800` · **L3 café** · L4 azul `#004F9F` · L4A celeste
+  `#009CDE` · L5 verde `#00A651` · **L6 morada**. (Hex de L3/L6 reales por confirmar al cargar.)
+- **C — tags de "Logística de acceso":** 4º grupo universal propio (estacionamiento propio/cercano,
+  bicicletero, accesible en micro, requiere auto). "Cerca del metro" NO es tag manual → sale de la
+  relación con `MetroStation`.
+- **D — campos extra de ubicación:** `accessDetail` ("Entrada por Espacio B, 2° piso") y `reference`
+  ("frente al Jumbo") = texto opcional. `rainPolicy` (enum se suspende/se traslada/continúa) =
+  opcional, solo en categorías al aire libre.
+- **E — metro:** `MetroStation.lines` es **array** (combinaciones tipo Baquedano L1+L5 = doble
+  color). L7/L8/L9 **fuera** del catálogo (faltan años). Filtro por línea = **múltiple** (L1 *o* L3).
+  La maquinaria automática (geocode + Haversine + `nearestStations`) sigue siendo **v2** (B.8); en
+  MVP la estación se asigna a mano y se guarda lat/lng.
+- **Catálogos a cargar (de docs 04 y 06):** 52 comunas de la RM · 7 líneas + ~143 estaciones ·
+  subcategorías y tags por capa por categoría (la taxonomía completa del doc 04).
+- **Tags = 4 capas:** contexto social (máx 4) · atributos específicos condicionales por categoría
+  (recomendado máx 8 en UI) · logística de acceso · vibe (máx 3, solo admin en fichas gratis).
+  Exclusiones mutuas: recurrente semanal ↔ evento único, +18 ↔ todas las edades. (Reserva = campo
+  estructurado `Place.reservation`, NO tag — redundancia quitada el 2026-06-07.)
+
+---
+
+## Etapa 2 — decisiones de diseño (CERRADAS 2026-06-07)
+
+_Auditoría del `schema.prisma` y el dominio actuales (modelo viejo `Listing`) contra el modelo
+nuevo + los 6 docs de `input/`. Conflictos y huecos resueltos antes de escribir el schema._
+
+**Contexto del punto de partida:** todo el código actual está sobre **`Listing`** unificado
+(con `BUSINESS_OWNER`, `ListingClaim`, `Subscription` Flow, `FeedItem`, `ListingAnalytics` como
+núcleo). El modelo nuevo es **`Place` (sin tipo) + `Event` separado** con monetización parqueada.
+`Event` **no existe** en el schema real (solo en el borrador de `ARCHITECTURE.md`) → se crea de cero.
+Renombrar/reestructurar/apagar capas = la Etapa 4 será grande.
+
+### Decisiones tomadas (todas con la opción recomendada)
+
+- **D-Etapa2.1 — Entidades parqueadas = "limpio + puertas baratas".** Se mantienen columnas/flags
+  futuros baratos (`isPremium`, `ownerId` nullable) y tablas dormidas claras (`Event`, `Review`,
+  `Report`, suscripción-tema). Se **borran** los subsistemas pesados (`Subscription` Flow,
+  `ListingClaim`, `FeedItem`, `ListingAnalytics`) y sus use cases; vuelven con el self-service.
+  Cumple el plan (prevé `isPremium`/`ownerId`) sin arrastrar código muerto.
+- **D-Etapa2.2 — Categoría secundaria = 4 FKs en `Place`.** `categoryId` + `subcategoryId`
+  obligatorias; `secondaryCategoryId` + `secondarySubcategoryId` nullables. El peso 1.0/0.5 (doc 04)
+  se aplica en la query de búsqueda, no en el modelo.
+- **D-Etapa2.3 — Tags 4 capas = una tabla `Tag` + `layer`.** `Tag` con `layer`
+  (SOCIAL/SPECIFIC/ACCESS/VIBE) + `categoryId` nullable (null = universal, seteado = condicional a
+  esa categoría) + join `PlaceTag`. Límites (social máx 4, vibe máx 3) y exclusiones mutuas
+  (recurrente semanal ↔ evento único, +18 ↔ todas las edades) = en **dominio**. **Reserva NO es tag**
+  (se quitó la redundancia 2026-06-07): vive como campo estructurado `Place.reservation`
+  (`ReservationPolicy`); el filtro "Sin reserva" se deriva de `reservation = WALK_IN`.
+- **D-Etapa2.4 — `Review` extensible = polimórfico + escala 1–5.** `targetType` (PLACE/DISH/EVENT)
+  + `targetId`, `unique(targetType,targetId,userId)`, escala **1–5** alineada con Google. Sumar
+  Dish/Event no toca el schema (integridad referencial la cuida el dominio, no FK). `Review` se crea
+  pero apagado (sección "Mis reseñas" vacía en MVP).
+- **D-Etapa2.5 — `score` (reputación) = promedio bayesiano. ✅ APROBADO por el usuario 2026-06-07.**
+  `score = (v/(v+m))·R + (m/(v+m))·C` — `R`=`googleRating`, `v`=`googleReviewCount`, `C`=promedio
+  global (prior), `m`=umbral de confianza (**fijo en 50**; re-afinable con data si hace falta).
+  Columna `score Float`, **recalculada al cargar/editar** (no en runtime). `C` y todos los `score`
+  se re-baten en batch cuando entra carga nueva. Borde: lugar sin reseñas de Google → `score = C`.
+  Es el orden por defecto de toda búsqueda. Verificado con el caso 5,0/3-reseñas (4,25) < 4,7/2.000
+  (4,69), que es justo lo que se quería evitar.
+- **D-Etapa2.6 — Colores del Metro (corrige el doc 06, que tenía L3/L6 cruzados).**
+  L1 Roja `#E1251B` · L2 Amarilla `#F5A800` · **L3 Café `#8B4513`** · L4 Azul `#004F9F` ·
+  L4A Celeste `#009CDE` · L5 Verde `#00A651` · **L6 Morada `#943C93`**. (Confirmado vía Wikipedia +
+  arte oficial del roundel; tono fino re-confirmable al cargar.)
+
+### Conflictos resueltos en esta auditoría
+- **C1 colores metro** → D-Etapa2.6 (L3 café / L6 morada; doc 06 estaba mal).
+- **C2 barrios** (doc 06 los descarta en v1, plan los incluye) → gana el plan: `Neighborhood` queda
+  en el schema. Pero falta la **data** de barrios (ver hueco H3).
+- **C3 categorías viejas en código** (`Categories.ts` tiene 11 planas) → se reescribe al catálogo
+  de **7 categorías + subcategorías** del doc 04.
+- **C4 colisión de nombre `Subscription`** (pago Flow vs suscripción-tema) → el de pago se **borra**
+  (D-Etapa2.1); el nuevo de newsletter/keyword se llama distinto (ej. `TopicSubscription`).
+- **C5 tags array vs relacional** → relacional (D-Etapa2.3); los `text[]` de los docs valen como
+  *qué tags*, no como estructura.
+- **C6 `priceRange`** → enum de **5** buckets (incluye Gratis), no `Int`.
+- **C7 `businessHours Json`** → horario **texto libre** en MVP; estructurado por día = puerta abierta.
+
+### Huecos detectados (no bloquean el schema; sí el seed/Etapa 3 y 5)
+- **H2 — catálogo de ~143 estaciones de metro** (nombre, líneas, lat/lng): no existe, hay que
+  generarlo para el seed.
+- **H3 — lista de barrios por comuna**: no existe en ningún doc; definir los del arranque
+  (Providencia + Ñuñoa) o seedear vacío y llenar a mano.
+- **H4 — comunas en código = 24 de 52**: `Communes.ts` incompleto vs las 52 de la RM (doc 06).
+- _(H1, H5, H6, H7, H8 → resueltos arriba como D-Etapa2.1–2.5.)_
+
+### Cambios mecánicos (sin decisión, se aplican al escribir el schema)
+Rename `Listing`→`Place` + quitar tipo + crear `Event`; `Commune`/`Neighborhood` de
+constante-código → tablas; `UserFavorite` → `Collection`/`CollectionItem`; agregar `VisitHistory`
+y `Report`; galería con `credit` + `isPrimary`; `attributes Json` → tags relacionales; quitar las
+`GoogleReview` escritas (solo `googleRating`/`googleReviewCount`, B.7); rol `UserRole` →
+admin/user (`BUSINESS_OWNER` se va con D-Etapa2.1).
+
+---
+
+## Etapa 2 — schema escrito (2026-06-07)
+
+`src/infrastructure/db/prisma/schema.prisma` reescrito de cero aplicando las 6 decisiones.
+**Validado** con `prisma format` + `prisma validate` (✅). Resumen de lo que quedó:
+
+**Auth (sin cambios):** `Account`, `Session`, `VerificationToken` tal cual (Auth.js v5). MVP =
+email + `passwordHash`; OAuth post-MVP entra por `Account` sin tocar schema.
+
+**`User`:** `role UserRole` (enum reducido a **USER/ADMIN**), `passwordHash?`, `emailVerified?`,
+`image?`, **`homeCommuneId?`** (FK opcional, C.3-bis). Se **quitó `rut`**. Relaciones: collections,
+visitHistory, reviews, reports, topicSubscriptions, ownedPlaces, accounts, sessions.
+
+**`Place`** (era `Listing`, sin campo tipo): identidad (slug/name/description/menuUrl) · **4 FKs de
+categoría** (`categoryId`+`subcategoryId` obligatorias, `secondary*` nullables) · ubicación
+(`address`, `communeId`, `neighborhoodId?`, `lat`/`lng`, `metroStationId?`, `accessDetail?`,
+`reference?`, `rainPolicy?`) · `priceRange` (enum 5 buckets) · `reservation` (enum) ·
+`paymentMethods String[]` · `schedule` (texto libre) · contacto (`phone`/`website`/`instagram`) ·
+Google (`googlePlaceId?`/`googleRating?`/`googleReviewCount?`) · **`score Float`** (bayesiano,
+recalculado) · puertas baratas (`isPremium`, `ownerId?`, `status PlaceStatus`). Índices por status,
+categoría, comuna, barrio, metro, priceRange, **score desc**, owner.
+
+**`PlaceImage`:** `url` (storage propio) + `alt?` + `credit?` + `isPrimary` + `sortOrder`.
+
+**Catálogos:** `Category` (7, con `isActive`/`eventOnly`/`sortOrder`) + `Subcategory` ·
+`Tag` (enum **`TagLayer` SOCIAL/SPECIFIC/ACCESS/VIBE** + `categoryId?` null=universal) + join
+`PlaceTag` · `MetroLine` (code+color hex) ↔ `MetroStation` **many-to-many** (Baquedano L1+L5) ·
+`Commune` + `Neighborhood` (filtrables independientes).
+
+**`Event`** (apagado, status `DRAFT`): `placeId?` nullable · categoría propia · temporal
+(`startsAt`/`doorsAt`/`durationMin`/`isRecurring`/`recurrenceRule`/`expiresAt`) · tickets/canales ·
+apto familia/niños/romántico · ubicación propia opcional.
+
+**`Collection`** (listas usuario + curadas): `ownerId?` null=curada · `isCurated` · `slug?` (SEO) ·
+`description?` + `CollectionItem`. **`VisitHistory`** (combustible IA). **`Review`** polimórfico
+(`ReviewTarget` PLACE/DISH/EVENT + `targetId`, **sin FK al objetivo**, escala 1–5, apagado).
+**`Report`** (`placeId` + `userId?` nullable para visitante + `ReportReason`/`ReportStatus`).
+**`TopicSubscription`** (user → keyword, puerta abierta newsletter/avisos).
+
+**Borrado del modelo viejo** (D-Etapa2.1): `Listing`, `ListingPlan`, `ListingStatus`,
+`ClaimStatus`, `SubscriptionStatus`, `TagStatus`, `FeedItemType`, `GoogleReview`, `ListingImage`,
+`ListingTag`, `ListingClaim`, `Subscription` (Flow), `UserFavorite`, `FeedItem`,
+`ListingAnalytics`, rol `BUSINESS_OWNER`/`CONSUMER`. Vuelven con el self-service post-MVP.
+
+> ⚠️ Esto **rompe** `domain/`, `application/`, `app/`, `components/`, el seed y el container —
+> todos referencian `Listing`/`prisma.listing`. Su adaptación es la **Etapa 4** (grande). El schema
+> aún no se ha migrado a la BD (eso es Etapa 3); el cliente Prisma generado sigue siendo el viejo.
+
+---
+
+## ETAPA 2-5 — Construcción
+
+Solo se tocan cuando la Etapa 1 está aprobada. Detalle en ROADMAP pasos 9.2-9.5.
+
+- **Etapa 2 (9.2):** decidir Place+Event vs unificado, sub-tipos, escribir `schema.prisma`
+- **Etapa 3 (9.3):** `prisma migrate reset` + nueva migración + seed coherente
+- **Etapa 4 (9.4):** adaptar `domain/`, `application/`, `app/`, `components/`; borrar lo que no aplica
+  - ⚠️ **Gap de diseño detectado (2026-06-07):** el handoff (`design_handoff_portal_panorama/`)
+    describe el producto **viejo** (home tipo Yelp, planes plus/pro, dashboards de negocio). La UI
+    **nueva** — home "por acción" (search + chips sociales + categorías), **facetas con contadores**,
+    sin lado negocio — **no tiene referencia visual**. Antes de construir la UI hay que **definir esas
+    pantallas** (rediseñar/extender el handoff o bocetar las nuevas). No bloquea Etapas 2-3.
+- **Etapa 5 (9.5):** form admin o Prisma Studio, cargar 10-30 lugares, validar end-to-end
+
+---
+
+## Bitácora de decisiones
+_(registro de las decisiones de producto que vamos tomando — la fuente de verdad)_
+
+- **2026-06-01** — Se decide rediseñar el producto antes de cargar datos. Modo de trabajo
+  para las preguntas: conversado por grupos. Se crea este plan + skill `retomar`.
+- **2026-06-07** — **Limpieza de docs + sincronización de ROADMAP/CLAUDE + gap de UI anotado.** Se
+  borraron archivos obsoletos del modelo viejo: `migration_preview.sql` (migración del schema viejo),
+  `docs/historico/OPEN_QUESTIONS.md` (Q&A + decisiones D1–D46 que contradicen la Fase 9),
+  `screenshots/` (capturas de features que se eliminan) y la carpeta vacía `project-brief/`. Se
+  actualizó **ROADMAP.md** (Paso 9.2 → ✅) y **CLAUDE.md** (Workflow por Fases ahora refleja Fases
+  6–9; ejemplos `Listing`→`Place`; notas de que Money/RUT son del lado negocio post-MVP). Se detectó
+  y anotó un **gap de diseño**: la UI nueva (home por acción + facetas) no tiene referencia visual en
+  el handoff (que es del producto viejo) → definir antes de la Etapa 4 (ver nota en "ETAPA 2-5").
+  Docs que se conservan: `STACK_DECISION` (sigue vigente), `PROJECT_BRIEF`/`DESIGN_NOTES`/
+  `UI_FIDELITY` (historia archivada), `input/` (borradores ya integrados), `design_handoff` (tokens).
+- **2026-06-07** — **`ARCHITECTURE.md` reescrito al modelo nuevo (150 líneas).** Se eliminó el modelo
+  viejo (Listing/Flow/claims/feed/subscription) y las ~160 líneas de schema Prisma inline (ahora en
+  [SCHEMA.md](SCHEMA.md), una sola fuente de verdad). Quedó cubriendo capas/contextos/puertas/
+  eventos/reglas: estructura de carpetas objetivo Fase 9, 4 bounded contexts nuevos (Catalog &
+  Discovery · User & Collections · Engagement dormido · Events dormido), tabla de Ports (sin
+  `PaymentGateway`), eventos de dominio, reglas (score bayesiano, límites de tags, reserva-no-tag,
+  reseña polimórfica única, colección curada sin owner), SEO (ISR para ficha y listas curadas +
+  JSON-LD) y auth (email/pass, verificación a decidir en Etapa 4). **Con esto los sub-productos de la
+  Etapa 2 están completos** (schema + plantilla CSV + arquitectura). Próximo: aprobación del usuario →
+  Etapa 3 (migración + seed, resolviendo H2/H3/H4 de catálogos).
+- **2026-06-07** — **Plantilla CSV de carga entregada + redundancia de reserva quitada.** Se creó la
+  **plantilla de columnas** ([PLANTILLA_CSV.md](PLANTILLA_CSV.md) + [input/plantilla_lugares.csv](input/plantilla_lugares.csv)),
+  derivada directo del schema: 34 columnas con formato/obligatoriedad/origen sugerido (Apify/manual/
+  auto), FKs por slug, listas con `;`, y nota de que `score`/`status`/`is_premium`/`owner_id` NO van
+  en el CSV. Decisión de orden: la plantilla se hace **ahora** (es la "lista de compras" del producto,
+  independiente de la fuente); el **mapeo Apify → plantilla** se hará al ver el output de Apify
+  (Etapa 5). También se **quitó la redundancia** de la reserva: vive solo como campo estructurado
+  `Place.reservation` (no hay tag "con/sin reserva"; "Sin reserva" = `WALK_IN`). Se creó además
+  [SCHEMA.md](SCHEMA.md) (doc legible del modelo). Falta el último sub-producto de la Etapa 2:
+  `ARCHITECTURE.md`.
+- **2026-06-07** — **`schema.prisma` nuevo ESCRITO y validado** (detalle en "Etapa 2 — schema
+  escrito"). Se reescribió de cero el schema aplicando las 6 decisiones de diseño: `Place` (sin
+  tipo, 4 FKs de categoría, `score`, puertas baratas) + `Event` separado apagado + catálogos
+  (`Category`/`Subcategory`, `Tag`+`PlaceTag` con `TagLayer`, `MetroLine`↔`MetroStation` m-n,
+  `Commune`/`Neighborhood`) + `Collection`/`CollectionItem` + `VisitHistory` + `Review` polimórfico
+  + `Report` + `TopicSubscription`. Auth.js intacto; `User` ajustado (role USER/ADMIN, sin `rut`,
+  con `homeCommune`). Se borró todo el modelo viejo de `Listing` + subsistemas Flow/Claim/Feed/
+  Analytics. `prisma format` + `validate` ✅. **Pendiente:** que el usuario apruebe el schema; luego
+  sub-productos (plantilla CSV, `ARCHITECTURE.md`) y Etapa 3 (migración + seed). Nota: el schema
+  rompe domain/app/components/seed (Etapa 4) y aún no se migró a la BD.
+- **2026-06-07** — **Etapa 2 arranca: auditoría del modelo viejo + decisiones de diseño del schema
+  CERRADAS** (detalle en "Etapa 2 — decisiones de diseño"). Se cruzó el `schema.prisma`/dominio
+  actuales (todo sobre `Listing` unificado) contra el modelo nuevo y los 6 docs. Se detectaron 7
+  conflictos (C1–C7) y 3 huecos de data (H2 estaciones metro, H3 barrios, H4 comunas 24/52). Se
+  resolvieron 6 decisiones de diseño con la opción recomendada: **(2.1)** entidades parqueadas =
+  "limpio + puertas baratas" (se borran Flow/Claim/Feed/Analytics, quedan isPremium/ownerId +
+  tablas dormidas); **(2.2)** categoría secundaria = 4 FKs en Place; **(2.3)** tags 4 capas = una
+  tabla `Tag` + `layer` + `categoryId` nullable, límites/exclusiones en dominio; **(2.4)** `Review`
+  polimórfico (targetType+targetId) escala 1–5; **(2.5)** `score` = promedio bayesiano (m=50,
+  recalculado al editar); **(2.6)** colores del Metro corregidos (L3 café `#8B4513` / L6 morada
+  `#943C93`; el doc 06 los tenía cruzados). Próximo: **escribir el `schema.prisma` nuevo**.
+- **2026-06-07** — **🎉 ETAPA 1 COMPLETADA. Entregable 4 (scope MVP) aprobado.** Se redactó el scope
+  (ver "Entregable 4 — Scope del MVP"): SÍ entra (núcleo de ficha + filtros por facetas + cuenta/
+  listas + SEO/instrumentación, ~100 lugares paulatinos densos) · NO ahora (eventos, reseñas
+  propias, IA, self-service/monetización, mapa) · descartado (gamificación, app nativa temprana,
+  ticketera, import sin curar). **Decisión `Dish`/platos:** puerta abierta barata vía `Review` con
+  objetivo reseñado **extensible** (Place hoy, Dish/Event mañana), **sin tabla/app/API en MVP**; la
+  app+API de platos = oro parqueado (conecta GEO/AEO). Con esto los 4 entregables de la Etapa 1 están
+  aprobados y la **Etapa 1 queda cerrada**. Próximo: **Etapa 2 — diseñar el `schema.prisma` nuevo**
+  (Paso 9.2), cuyos sub-productos son la fórmula de `score`, el modelado extensible de `Review`, y la
+  plantilla de columnas del CSV de carga.
+- **2026-06-07** — **Revisión de la Etapa 1 + 3 pre-preguntas resueltas antes de redactar el scope.**
+  Se auditó toda la síntesis contra PRODUCTO.md: entregables 1-3 sólidos y coherentes. Se detectaron
+  3 huecos que afectaban el scope y se resolvieron (detalle en "Pre-scope — decisiones del
+  2026-06-07"): **(P1)** dedicación = **side-project serio sin runway pero sin urgencia de
+  monetizar** → MVP **lean, barato y por capas**; **(P2)** el import NO se botó (falló el schema del
+  modelo viejo, no la idea) → **~10 fichas a mano por el form** primero, luego **CSV/JSON curado**
+  (Apify vs scraper = decisión de costo en Etapa 5; Claude entrega la plantilla de columnas derivada
+  del schema), lanzamiento público **paulatino a ~100** (soft-launch → masa mínima → ~20/semana),
+  con criterio rector **densidad > cantidad**; **(P3)** **búsqueda por facetas con contadores +
+  ocultar vacíos** (estáticos en MVP, dinámico después), y se fija qué **filtros viven en el MVP**
+  (contexto social, gasto, dónde, accesibilidad, ambiente) vs **fuera** (*¿Cuándo?*, depende de
+  eventos + horario estructurado). Dos reconciliaciones menores anotadas: estrellas de Google vienen
+  del **scrape de Apify** (no a mano), y remapear la taxonomía vieja de filtros a las 7 categorías
+  nuevas. Próximo: **redactar el entregable 4 (scope MVP)** y cerrar la Etapa 1.
+- **2026-06-06** — **Etapa 1 — Síntesis avanza fuerte.** Entregables 1 (visión) y 2 (modelo de
+  entidades) **aprobados**. Se **reabrió el Bloque 6 (monetización)** para definir el modelo (no se
+  construye en MVP). Decisiones: principio rector "**nunca se gatea la info útil**, se monetiza la
+  visibilidad declarada"; **posicionamiento pagado** en zona "Publicidad pagada" separada (hasta 3
+  slots) + ítem premium en carrusel del home, **tarifa plana mensual**, acotado al contexto, vendido
+  a mano por el admin (con o sin owner), con el norte de que el negocio **reclame su ficha** para
+  traspasarle la mantención; **planes de eventos del doc 05** (escalera local×evento, destacado
+  $4.990–6.990, productora, **venue/recinto**, 1 evento gratis, expiración automática, moderación
+  reactiva); **Free vs Premium** de ficha (responder reseñas = **Free**); **newsletter por IA +
+  suscripción por keyword** como ingreso futuro; servicios/hub como oro parqueado. Se **leyeron los
+  6 docs de `input/`**: contradicciones resueltas a favor de nuestras decisiones (#1 schema separado,
+  #2 no gatear info, #3 colores reales de metro), y refinamientos C/D/E capturados (tags de acceso,
+  campos accessDetail/reference/rainPolicy, metro con `lines` array + filtro múltiple). **Entregable 3
+  (matriz de permisos) también aprobado** este mismo día. Próximo (otro día): **entregable 4 (scope
+  MVP)**, lo único que falta para cerrar la Etapa 1.
+- **2026-06-04** — **4 ítems abiertos de la sub-sesión D RESUELTOS** (detalle en sección "Ítems
+  de la sub-sesión D — RESUELTOS"): (1) **fotos** = schema de galería + crédito, storage propio
+  (UploadThing o Vercel Blob, **nunca** base64/hotlink), sourcing por Apify/scraper priorizando
+  fotos publicadas por el local, carga vía Excel curado de ~100 + import que descarga y re-aloja,
+  futuro rights-clean por self-service + **servicio de fotos pro como posible ingreso**; (2)
+  **frescura** = lanzar con lugares estables/constantes + disclaimer "verificar en redes" + botón
+  de reporte + revisión cada ~2-3 meses; (3) **listas curadas** = misma entidad-colección que las
+  listas de usuario (flag is_curated + slug), 3-5 al lanzar como landing SEO, blog aparte después;
+  (4) **privacidad** = crear política + aviso de cookies (Ley 19.628), tarea del scope. Terreno
+  limpio para la Etapa 1.
+- **2026-06-04** — **Sub-sesión D (Lo estratégico) completada → Etapa 0 CERRADA.** Decisiones
+  (detalle en "Respuestas capturadas → Sub-sesión D"): validación por **comportamiento**
+  (activación + retención + engagement por ficha + save rate), no por volumen bruto, mínimo 1 mes;
+  **instrumentación total desde el día 1** (GA4 + Meta Pixel + Google tag + eventos custom) al MVP;
+  **web mobile-first** en MVP, **PWA** como puente, app nativa post-validación; crecimiento por
+  **SEO + IG + foros**, con **SEO elevado a pilar** (schema.org/JSON-LD, SSR, slugs, sitemap) y el
+  insight **GEO/AEO** (que los LLMs citen la ficha = casi el mismo trabajo que SEO); **IA = norte/
+  visión pero fuera del MVP (Fase 2+)**, IA-only real solo en "armar panorama encadenado" y
+  "recomendar por gusto/historial" (lenguaje natural ≈ filtro), con "relacionados sin IA" por tags
+  como único guiño posible en MVP; tensión capturada IA-vs-posicionamiento-pagado; **Bloque 6
+  (plata) sigue parqueado**. Quedan **4 ítems abiertos para la Etapa 1** (fotos, frescura de data,
+  listas curadas, página de privacidad). Próximo: **Etapa 1 — Síntesis (PRD).**
+- **2026-06-04** — Sub-sesión C (Usuarios, lado consumidor) completada. Decisiones (detalle en
+  "Respuestas capturadas → Sub-sesión C"): niveles/reputación fuera del MVP y posiblemente nunca
+  (el norte real es IA/recomendaciones); home "por acción" sin encuesta forzada (search + chips
+  social + categorías), mini-encuesta+IA a v2; perfil = cuenta básica sin avatar + lugares
+  guardados + comuna home opcional + historial de visitados, con secciones "Mis reseñas" y "Mis
+  eventos guardados" cuyo contenido es v2; orden por defecto = reputación (nota×nº reseñas de
+  Google), comuna home opcional que sube la propia comuna primero de forma transparente y
+  desactivable; **se ajusta B.8** → lat/lng se guarda desde el MVP (gratis del scrape), mapa y
+  "cerca de mí" a v2; self-service del dueño (v2) vía link de Google Maps. Nuevos insights
+  parqueados: IA como norte y filtro/reseña por plato. **Planes/premium siguen parqueados.**
+  Próximo: sub-sesión D (lo estratégico, con IA al frente).
+- **2026-06-03** — Sub-sesión B (Las entidades) completada, cruzando los 6 docs de trabajo
+  que el usuario aportó en `input/`. Decisiones clave (detalle en "Respuestas capturadas →
+  Sub-sesión B"): evento = tabla separada con FK opcional al local (descartado el enfoque del
+  doc 04); el lugar siempre es permanente (lo recurrente vive en eventos); lanzamiento solo con
+  lugares; 7 categorías nuevas del doc 04; categoría+subcategoría obligatorias, secundaria
+  opcional; tags en 4 capas + nuevo tag "tipo de cocina"; reseñas = estrellas+nº de Google a
+  mano en MVP, reseñas propias con peso y niveles de usuario como visión; metro manual (opción B);
+  guardar = listas múltiples + compartir ficha individual; CTA "cómo llegar"; **gratis vs premium
+  y monetización parqueados** para definir después. Próximo: sub-sesión C (lado usuario).
+- **2026-06-02** — Sub-sesión A (El norte) completada. Decisiones: producto =
+  "plataforma para descubrir, decidir y guardar qué hacer en tu ciudad"; usuario primario
+  = "el organizador"; pilar central = filtrabilidad por contexto social sobre base
+  centralizada; la única cosa que se hace bien = la ficha completa y estructurada; MVP =
+  ~100 lugares (solo lugares, no eventos) en zonas conectadas de Santiago, con
+  registro/login para guardar listas. Se acuerda producir un PRD al cerrar la Etapa 0.

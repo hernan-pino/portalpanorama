@@ -6,54 +6,97 @@ datasource db {
   provider = "postgresql"
 }
 
+// ═══════════════════════════════════════════════════════════════════════════════
+// Portal Panorama — schema Fase 9 (modelo nuevo: Place sin tipo + Event separado)
+//
+// Decisiones de diseño en PLAN_FASE9.md → "Etapa 2 — decisiones de diseño":
+//   2.1 limpio + puertas baratas (sin Flow/Claim/Feed/Analytics)
+//   2.2 categoría secundaria = 4 FKs en Place
+//   2.3 tags 4 capas = una tabla Tag + layer (límites/exclusiones en dominio)
+//   2.4 Review polimórfico (targetType+targetId), escala 1–5, apagado en MVP
+//   2.5 score = promedio bayesiano (m=50), recalculado al cargar/editar
+//   2.6 colores del Metro corregidos (L3 café / L6 morada)
+//
+// IDs de dominio = CUID2 generados en la app (`id String @id`, sin default).
+// Los modelos de Auth.js conservan @default(cuid()) porque los crea el adapter.
+// ═══════════════════════════════════════════════════════════════════════════════
+
 // ─── Enums ────────────────────────────────────────────────────────────────────
 
 enum UserRole {
-  CONSUMER
-  BUSINESS_OWNER
+  USER
   ADMIN
 }
 
-enum ListingPlan {
+// 5 buckets (incluye Gratis) — C6. El filtro "¿Cuánto gasto?" mapea a esto.
+enum PriceRange {
   FREE
-  PREMIUM
+  UNDER_5000
+  FROM_5000_TO_15000
+  FROM_15000_TO_30000
+  OVER_30000
 }
 
-enum ListingStatus {
+// ¿reserva o solo llegar? (campo operacional de la ficha, B/entregable 2).
+// ÚNICA fuente de verdad de la reserva: NO existe tag "con/sin reserva" (se quitó
+// la redundancia). El filtro "Sin reserva" se deriva de `reservation = WALK_IN`.
+enum ReservationPolicy {
+  REQUIRED
+  WALK_IN
+  RECOMMENDED
+}
+
+// Solo aplica a categorías al aire libre (refinamiento D, input/)
+enum RainPolicy {
+  SUSPENDED
+  RELOCATED
+  CONTINUES
+}
+
+enum PlaceStatus {
+  PENDING_REVIEW
+  PUBLISHED
+  ARCHIVED
+}
+
+// Sistema de 4 capas (2.3). Universal si Tag.categoryId == null;
+// condicional a una categoría si está seteado (ej. "tipo de cocina" → Gastronomía).
+enum TagLayer {
+  SOCIAL // contexto social: ¿con quién voy? (máx 4 por ficha, en dominio)
+  SPECIFIC // atributos específicos condicionales por categoría
+  ACCESS // logística de acceso (estacionamiento, bicicletero, accesible en micro…)
+  VIBE // ambiente (máx 3 por ficha, en dominio)
+}
+
+// Objetivo reseñado extensible (2.4): hoy PLACE; DISH/EVENT entran sin tocar el schema.
+enum ReviewTarget {
+  PLACE
+  DISH
+  EVENT
+}
+
+enum ReportReason {
+  WRONG_INFO
+  CLOSED
+  DUPLICATE
+  OTHER
+}
+
+enum ReportStatus {
+  OPEN
+  RESOLVED
+  DISMISSED
+}
+
+enum EventStatus {
   DRAFT
   PUBLISHED
-  CLAIMED
-  SUSPENDED
-}
-
-enum ClaimStatus {
-  PENDING
-  APPROVED
-  REJECTED
-}
-
-enum SubscriptionStatus {
-  ACTIVE
-  PAST_DUE
-  CANCELLED
-}
-
-enum TagStatus {
-  ACTIVE
-  PENDING_APPROVAL
-  REJECTED
-}
-
-enum FeedItemType {
-  NEW_PHOTO
-  HOURS_UPDATED
-  NEW_REVIEW
-  INFO_UPDATED
+  ARCHIVED
 }
 
 // ─── Auth.js adapter models ───────────────────────────────────────────────────
-// Requeridos por @auth/prisma-adapter. Campos extra en User (emailVerified,
-// image) son ignorados por los mappers de dominio — solo los usa Auth.js.
+// Requeridos por @auth/prisma-adapter. MVP: email + contraseña (passwordHash).
+// Google/Apple post-MVP entran por `Account` (OAuth) sin tocar el schema.
 
 model Account {
   id                String  @id @default(cuid())
@@ -93,208 +136,387 @@ model VerificationToken {
   @@unique([identifier, token])
 }
 
-// ─── Domain models ────────────────────────────────────────────────────────────
+// ─── Usuario ──────────────────────────────────────────────────────────────────
 
 model User {
   id            String    @id
   email         String    @unique
   name          String
-  role          UserRole  @default(CONSUMER)
-  rut           String?
+  role          UserRole  @default(USER)
   passwordHash  String?
   // Auth.js required
   emailVerified DateTime?
   image         String?
+  // Preferencia opcional (C.3-bis): sube su comuna primero, transparente/desactivable
+  homeCommuneId String?
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
 
-  listings      Listing[]      @relation("ListingOwner")
-  favorites     UserFavorite[]
-  reviews       Review[]
-  claims        ListingClaim[]
-  feedItems     FeedItem[]
-  subscriptions Subscription[]
-  accounts      Account[]
-  sessions      Session[]
+  homeCommune        Commune?            @relation("HomeCommune", fields: [homeCommuneId], references: [id])
+  collections        Collection[]
+  visitHistory       VisitHistory[]
+  reviews            Review[]
+  reports            Report[]
+  topicSubscriptions TopicSubscription[]
+  ownedPlaces        Place[]             @relation("PlaceOwner")
+  accounts           Account[]
+  sessions           Session[]
+
+  @@index([homeCommuneId])
 }
+
+// ─── Catálogos geográficos ────────────────────────────────────────────────────
+
+model Commune {
+  id            String         @id
+  slug          String         @unique
+  name          String
+  neighborhoods Neighborhood[] // M2M: un barrio puede caer en varias comunas
+  places        Place[]
+  events        Event[]
+  homeUsers     User[]         @relation("HomeCommune")
+}
+
+// Un barrio puede pertenecer a >1 comuna (Bellavista = Recoleta + Providencia;
+// Barrio Italia = Providencia + Ñuñoa). El Place guarda su comuna exacta aparte;
+// el barrio es metadata filtrable independiente. Por eso slug es único global.
+model Neighborhood {
+  id   String @id
+  slug String @unique
+  name String
+
+  communes Commune[]
+  places   Place[]
+  events   Event[]
+}
+
+// ─── Catálogo de Metro ────────────────────────────────────────────────────────
+// Estación ↔ línea = many-to-many (Baquedano = L1+L5, doble color). Refinamiento E.
+
+model MetroLine {
+  id       String         @id
+  code     String         @unique // L1, L2, L3, L4, L4A, L5, L6
+  name     String
+  color    String // hex (2.6): L1 #E1251B · L2 #F5A800 · L3 #8B4513 · L4 #004F9F · L4A #009CDE · L5 #00A651 · L6 #943C93
+  stations MetroStation[]
+}
+
+model MetroStation {
+  id    String      @id
+  slug  String      @unique
+  name  String
+  lat   Float?
+  lng   Float?
+  lines MetroLine[]
+
+  places Place[]
+  events Event[]
+}
+
+// ─── Categorías ───────────────────────────────────────────────────────────────
+// 7 categorías (B.4). `eventOnly` = Shows/Ferias/Talleres: registradas pero
+// apagadas hasta encender eventos. `isActive` = se muestra en la UI.
 
 model Category {
-  id       String    @id
-  slug     String    @unique
-  name     String
-  listings Listing[]
+  id        String  @id
+  slug      String  @unique
+  name      String
+  sortOrder Int     @default(0)
+  isActive  Boolean @default(true)
+  eventOnly Boolean @default(false)
+
+  subcategories   Subcategory[]
+  tags            Tag[] // tags condicionales a esta categoría (Tag.categoryId)
+  primaryPlaces   Place[]       @relation("PlaceCategory")
+  secondaryPlaces Place[]       @relation("PlaceSecondaryCategory")
+  events          Event[]
 }
 
-model Listing {
-  id                  String        @id
-  slug                String        @unique
-  name                String
-  description         String?       @db.Text
-  plan                ListingPlan   @default(FREE)
-  status              ListingStatus @default(DRAFT)
-  categoryId          String
-  neighborhood        String
-  address             String?
-  phone               String?
-  website             String?
-  priceRange          Int?
-  ownerId             String
-  pricePerMonthAmount Int?
-  lat               Float?
-  lng               Float?
-  commune           String?
-  businessHours     Json?
-  googlePlaceId     String?       @unique
+model Subcategory {
+  id         String @id
+  slug       String
+  name       String
+  categoryId String
+
+  category        Category @relation(fields: [categoryId], references: [id])
+  primaryPlaces   Place[]  @relation("PlaceSubcategory")
+  secondaryPlaces Place[]  @relation("PlaceSecondarySubcategory")
+  events          Event[]
+
+  @@unique([categoryId, slug])
+  @@index([categoryId])
+}
+
+// ─── Tags (4 capas) ───────────────────────────────────────────────────────────
+
+model Tag {
+  id         String   @id
+  slug       String   @unique
+  name       String
+  layer      TagLayer
+  // null = universal; seteado = condicional a esa categoría (ej. tipo de cocina)
+  categoryId String?
+
+  category Category?  @relation(fields: [categoryId], references: [id])
+  places   PlaceTag[]
+
+  @@index([layer])
+  @@index([categoryId])
+}
+
+model PlaceTag {
+  placeId String
+  tagId   String
+
+  place Place @relation(fields: [placeId], references: [id], onDelete: Cascade)
+  tag   Tag   @relation(fields: [tagId], references: [id], onDelete: Cascade)
+
+  @@id([placeId, tagId])
+  @@index([tagId])
+}
+
+// ─── Place (Lugar) — entidad central del MVP, siempre permanente, sin tipo ──────
+
+model Place {
+  id          String  @id
+  slug        String  @unique
+  name        String
+  description String? @db.Text
+  menuUrl     String?
+
+  // Categorización (2.2): principal + subcat obligatorias; secundaria opcional
+  categoryId             String
+  subcategoryId          String
+  secondaryCategoryId    String?
+  secondarySubcategoryId String?
+
+  // Ubicación
+  address        String?
+  communeId      String
+  neighborhoodId String?
+  lat            Float?
+  lng            Float?
+  metroStationId String?
+  accessDetail   String? // "Entrada por Espacio B, 2° piso"
+  reference      String? // "frente al Jumbo"
+  rainPolicy     RainPolicy? // solo categorías al aire libre
+
+  // Presupuesto / operacional
+  priceRange     PriceRange?
+  reservation    ReservationPolicy?
+  paymentMethods String[] // métodos de pago (informativo, no filtro MVP)
+  schedule       String?            @db.Text // horario en texto libre (estructurado = puerta abierta)
+
+  // Contacto / redes
+  phone     String?
+  website   String?
+  instagram String?
+
+  // Reputación Google (B.7) + score calculado (2.5, promedio bayesiano)
+  googlePlaceId     String? @unique
   googleRating      Float?
   googleReviewCount Int?
-  attributes        Json?         @db.JsonB
-  createdAt           DateTime      @default(now())
-  updatedAt           DateTime      @updatedAt
+  score             Float   @default(0)
 
-  category      Category          @relation(fields: [categoryId], references: [id])
-  owner         User              @relation("ListingOwner", fields: [ownerId], references: [id])
-  images        ListingImage[]
-  tags          ListingTag[]
-  reviews       Review[]
-  googleReviews GoogleReview[]
-  claims        ListingClaim[]
-  favorites     UserFavorite[]
-  subscription  Subscription?
-  feedItems     FeedItem[]
-  analytics     ListingAnalytics?
+  // Propiedad / estado (puertas baratas, 2.1) — todo lo carga el admin en MVP
+  isPremium Boolean     @default(false)
+  ownerId   String?
+  status    PlaceStatus @default(PENDING_REVIEW)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  category             Category      @relation("PlaceCategory", fields: [categoryId], references: [id])
+  subcategory          Subcategory   @relation("PlaceSubcategory", fields: [subcategoryId], references: [id])
+  secondaryCategory    Category?     @relation("PlaceSecondaryCategory", fields: [secondaryCategoryId], references: [id])
+  secondarySubcategory Subcategory?  @relation("PlaceSecondarySubcategory", fields: [secondarySubcategoryId], references: [id])
+  commune              Commune       @relation(fields: [communeId], references: [id])
+  neighborhood         Neighborhood? @relation(fields: [neighborhoodId], references: [id])
+  metroStation         MetroStation? @relation(fields: [metroStationId], references: [id])
+  owner                User?         @relation("PlaceOwner", fields: [ownerId], references: [id])
+
+  images          PlaceImage[]
+  tags            PlaceTag[]
+  events          Event[]
+  collectionItems CollectionItem[]
+  visitHistory    VisitHistory[]
+  reports         Report[]
 
   @@index([status])
-  @@index([plan, status])
   @@index([categoryId, status])
-  @@index([neighborhood, status])
-  @@index([commune, status])
+  @@index([communeId, status])
+  @@index([neighborhoodId, status])
+  @@index([metroStationId])
+  @@index([priceRange, status])
+  @@index([score(sort: Desc)])
   @@index([ownerId])
 }
 
-model GoogleReview {
-  id          String   @id
-  listingId   String
-  authorName  String
-  rating      Float
-  body        String   @db.Text
-  publishedAt DateTime
-
-  listing Listing @relation(fields: [listingId], references: [id], onDelete: Cascade)
-
-  @@index([listingId])
-}
-
-model ListingImage {
+model PlaceImage {
   id        String  @id
-  listingId String
-  url       String
+  placeId   String
+  url       String // storage propio (nunca base64/hotlink)
   alt       String?
-  order     Int     @default(0)
+  credit    String? // crédito / origen
+  isPrimary Boolean @default(false)
+  sortOrder Int     @default(0)
 
-  listing Listing @relation(fields: [listingId], references: [id], onDelete: Cascade)
+  place Place @relation(fields: [placeId], references: [id], onDelete: Cascade)
 
-  @@index([listingId, order])
+  @@index([placeId, sortOrder])
 }
 
-model ListingTag {
-  id        String    @id
-  listingId String
-  slug      String
-  name      String
-  status    TagStatus @default(ACTIVE)
+// ─── Event — en el schema desde ya, APAGADO en el MVP ───────────────────────────
 
-  listing Listing @relation(fields: [listingId], references: [id], onDelete: Cascade)
+model Event {
+  id          String  @id
+  slug        String  @unique
+  name        String
+  description String? @db.Text
 
-  @@unique([listingId, slug])
-  @@index([slug, status])
+  placeId       String? // nullable: evento sin local fijo (concierto en parque, feria)
+  categoryId    String // puede diferir de la del local (un bar que hace teatro)
+  subcategoryId String?
+
+  // Dimensión temporal
+  startsAt       DateTime
+  doorsAt        DateTime?
+  durationMin    Int?
+  isRecurring    Boolean   @default(false)
+  recurrenceRule String? // sabor recurrente (taller cada sábado) — se trabaja con eventos
+  expiresAt      DateTime? // se archiva el día siguiente de su fecha (historial del local)
+
+  // Acceso / tickets / canales
+  ticketUrl       String?
+  officialChannel String?
+  website         String?
+  instagram       String?
+
+  // Apto (campos propios del evento)
+  familyFriendly Boolean?
+  kidsFriendly   Boolean?
+  romantic       Boolean?
+
+  // Ubicación propia (puede heredar del place o ser independiente)
+  address        String?
+  communeId      String?
+  neighborhoodId String?
+  lat            Float?
+  lng            Float?
+  metroStationId String?
+
+  status    EventStatus @default(DRAFT)
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
+
+  place        Place?        @relation(fields: [placeId], references: [id])
+  category     Category      @relation(fields: [categoryId], references: [id])
+  subcategory  Subcategory?  @relation(fields: [subcategoryId], references: [id])
+  commune      Commune?      @relation(fields: [communeId], references: [id])
+  neighborhood Neighborhood? @relation(fields: [neighborhoodId], references: [id])
+  metroStation MetroStation? @relation(fields: [metroStationId], references: [id])
+
+  @@index([placeId])
+  @@index([status, startsAt])
+  @@index([categoryId, status])
 }
 
-model ListingClaim {
-  id         String      @id
-  listingId  String
-  claimantId String
-  status     ClaimStatus @default(PENDING)
-  message    String?     @db.Text
-  reviewNote String?     @db.Text
-  createdAt  DateTime    @default(now())
+// ─── Colecciones — una entidad para listas de usuario Y listas curadas ──────────
+
+model Collection {
+  id          String   @id
+  name        String
+  ownerId     String? // null = lista curada (pública, del admin)
+  isCurated   Boolean  @default(false)
+  slug        String?  @unique // solo curadas (landing SEO)
+  description String?  @db.Text
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  owner User?            @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  items CollectionItem[]
+
+  @@index([ownerId])
+}
+
+model CollectionItem {
+  collectionId String
+  placeId      String
+  sortOrder    Int      @default(0)
+  createdAt    DateTime @default(now())
+
+  collection Collection @relation(fields: [collectionId], references: [id], onDelete: Cascade)
+  place      Place      @relation(fields: [placeId], references: [id], onDelete: Cascade)
+
+  @@id([collectionId, placeId])
+  @@index([placeId])
+}
+
+// ─── Historial de visitas (combustible para la IA, post-MVP) ────────────────────
+
+model VisitHistory {
+  id        String   @id
+  userId    String
+  placeId   String
+  visitedAt DateTime @default(now())
+
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  place Place @relation(fields: [placeId], references: [id], onDelete: Cascade)
+
+  @@index([userId, visitedAt(sort: Desc)])
+  @@index([placeId])
+}
+
+// ─── Review (propia, polimórfica) — creada pero APAGADA en el MVP (2.4) ──────────
+// Sin FK al objetivo: la integridad referencial la cuida el dominio, no la BD,
+// para que sumar Dish/Event no toque el schema.
+
+model Review {
+  id         String       @id
+  targetType ReviewTarget @default(PLACE)
+  targetId   String
+  userId     String
+  rating     Int // escala 1–5 (alineada con Google) — rango validado en dominio
+  body       String?      @db.Text
+  response   String?      @db.Text // respuesta del negocio (post-MVP)
+  createdAt  DateTime     @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([targetType, targetId, userId])
+  @@index([targetType, targetId])
+  @@index([userId])
+}
+
+// ─── Report — "reportar dato incorrecto / lugar cerrado" (frescura colaborativa) ─
+
+model Report {
+  id         String       @id
+  placeId    String
+  userId     String? // nullable: el visitante también puede reportar
+  reason     ReportReason
+  message    String?      @db.Text
+  status     ReportStatus @default(OPEN)
+  createdAt  DateTime     @default(now())
   resolvedAt DateTime?
 
-  listing  Listing @relation(fields: [listingId], references: [id])
-  claimant User    @relation(fields: [claimantId], references: [id])
+  place Place @relation(fields: [placeId], references: [id], onDelete: Cascade)
+  user  User? @relation(fields: [userId], references: [id], onDelete: SetNull)
 
-  @@index([listingId])
-  @@index([claimantId])
+  @@index([placeId])
   @@index([status])
 }
 
-model Review {
+// ─── TopicSubscription — puerta abierta (newsletter + avisos por keyword/tema) ───
+
+model TopicSubscription {
   id        String   @id
-  listingId String
   userId    String
-  rating    Int
-  body      String   @db.Text
-  response  String?  @db.Text
+  keyword   String // tema o palabra clave (ej. "conciertos de rock")
   createdAt DateTime @default(now())
 
-  listing Listing @relation(fields: [listingId], references: [id])
-  user    User    @relation(fields: [userId], references: [id])
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  @@unique([listingId, userId])
-  @@index([listingId])
+  @@unique([userId, keyword])
   @@index([userId])
-}
-
-model Subscription {
-  id                  String             @id
-  listingId           String             @unique
-  userId              String
-  status              SubscriptionStatus @default(ACTIVE)
-  flowPlanId          String
-  flowSubId           String?            @unique
-  pricePerMonthAmount Int
-  currentPeriodEnd    DateTime?
-  createdAt           DateTime           @default(now())
-  updatedAt           DateTime           @updatedAt
-
-  listing Listing @relation(fields: [listingId], references: [id])
-  user    User    @relation(fields: [userId], references: [id])
-
-  @@index([userId])
-}
-
-model UserFavorite {
-  userId    String
-  listingId String
-  createdAt DateTime @default(now())
-
-  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
-  listing Listing @relation(fields: [listingId], references: [id], onDelete: Cascade)
-
-  @@id([userId, listingId])
-}
-
-model FeedItem {
-  id        String       @id
-  userId    String
-  listingId String
-  type      FeedItemType
-  payload   Json
-  read      Boolean      @default(false)
-  createdAt DateTime     @default(now())
-
-  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
-  listing Listing @relation(fields: [listingId], references: [id], onDelete: Cascade)
-
-  @@index([userId, createdAt(sort: Desc)])
-  @@index([listingId])
-}
-
-// D9: contadores en Postgres, migrable a Plausible/GA sin tocar use cases
-model ListingAnalytics {
-  listingId  String   @id
-  viewCount  Int      @default(0)
-  clickCount Int      @default(0)
-  updatedAt  DateTime @updatedAt
-
-  listing Listing @relation(fields: [listingId], references: [id], onDelete: Cascade)
 }

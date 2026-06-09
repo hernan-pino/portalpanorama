@@ -4,26 +4,34 @@ Documento central de seguimiento del proyecto.
 
 ---
 
-## 📍 ESTADO HOY (2026-06-01)
+## 📍 ESTADO HOY (2026-06-08)
 
 ### Dónde estamos
 
-- **El sitio funciona y está desplegado** en `portal-panorama.vercel.app`.
-- La BD (Neon PostgreSQL) **solo tiene el seed inicial**: 6 categorías, 1 admin, 6 listings de ejemplo. **No hay datos reales.**
-- El intento de importar 1449 lugares desde Excel **se ejecutó una vez pero ya no está en la BD**. Las fotos de Google nunca cargaron (API key da 4xx).
+- **El sitio en `portal-panorama.vercel.app`** sigue sobre el código viejo (`Listing`); la BD local
+  ya está en el modelo nuevo, así que el código actual **no compila** contra ella hasta la Etapa 4.
+- La BD local (Neon) fue **reseteada al schema nuevo** (`db push --force-reset`, 2026-06-08) y
+  **seedeada con catálogos** (Metro, comunas, barrios M2M, categorías, subcategorías, tags + admin).
+  **Sin lugares** todavía (entran por CSV en la Etapa 5). **No hay datos reales.**
+- **Fase 9 en curso.** Etapas 0, 1 ✅. **Etapa 2 ✅ APROBADA (2026-06-08).** **Etapa 3 🔄** —
+  migración + seed de catálogos **local hechos**; falta replicar a **prod** (se hace junto al
+  redeploy de la Etapa 4). Próximo: **Etapa 4 (refactor dominio/UI)**.
 
 ### Decisión actual (importante)
 
-El usuario decidió **pausar la importación de datos** y **rediseñar el modelo del producto desde lo conceptual** antes de cargar más lugares.
-
-Motivos: el modelo actual mezcla "panorama" (lugar permanente) y "evento" (temporal) en una sola entidad `Listing`, sin sub-tipos definidos y con campos que aplican a unos lugares y a otros no. Cargar 1449 lugares con un modelo poco claro genera más problemas que valor.
+Se rediseñó el producto desde lo conceptual antes de cargar datos. El modelo nuevo separa
+**`Place` (lugar permanente, sin tipo) + `Event` (tabla separada, apagado en MVP)**, con
+monetización/self-service parqueados. El detalle vivo de la Fase 9 vive en
+**[PLAN_FASE9.md](PLAN_FASE9.md)** (fuente de verdad del avance); este ROADMAP lleva el estado de pasos.
 
 ### Próximo paso inmediato
 
-1. Responder las preguntas de **[PRODUCTO.md](PRODUCTO.md)** — definir qué es el producto, qué entidades tiene, qué MVP queremos.
-2. Con esas respuestas, **rediseñar el schema de BD** (panorama vs evento separados, sub-tipos, campos comunes vs específicos).
-3. Migrar / resetear la BD al modelo nuevo.
-4. Cargar lugares **a mano** (sin import masivo) hasta validar el concepto.
+1. ~~Escribir el `schema.prisma` nuevo~~ ✅ (Paso 9.2 — schema + plantilla CSV + arquitectura).
+2. **Migrar / resetear la BD al modelo nuevo + seed coherente** (Paso 9.3). El seed debe poblar los
+   **catálogos** (categorías, tags, comunas, barrios, estaciones de metro) **antes** de cargar
+   lugares — ver huecos H2/H3/H4 en `PLAN_FASE9.md`.
+3. Refactor de dominio, use cases y UI (Paso 9.4).
+4. Cargar lugares **a mano** (sin import masivo) hasta validar el concepto (Paso 9.5).
 
 ### Qué se descartó del Paso 8
 
@@ -373,38 +381,55 @@ src/lib/container.ts  (actualizado)
 
 ---
 
-### Paso 9.1 — Responder PRODUCTO.md
-**Estado:** 🔄 EN CURSO (esperando que el usuario responda las preguntas)
-**Qué hay que hacer:** El usuario responde los 11 bloques de preguntas en [PRODUCTO.md](PRODUCTO.md). Conversamos juntos y refinamos hasta tener:
-- Una visión de 1 párrafo del producto
-- Un modelo de entidades definitivo (panorama vs evento, sub-tipos, campos comunes vs específicos)
-- Un scope de MVP chico y claro
-- Un plan de 3 fases máximo
-**Commit de cierre:** —
+### Paso 9.1 — Responder PRODUCTO.md (= Etapas 0 + 1 del PLAN_FASE9)
+**Estado:** ✅ COMPLETADO (2026-06-07)
+**Qué se hizo:** Se respondieron los 11 bloques de [PRODUCTO.md](PRODUCTO.md) (conversado, por
+grupos) y se produjeron los 4 entregables de la síntesis, todos aprobados:
+- Visión del producto en 1 párrafo ✅
+- Modelo de entidades definitivo (`Place` + `Event` separados, categorías/tags/metro/colecciones) ✅
+- Matriz de permisos (rol × plan × acción) ✅
+- Scope del MVP (lean, ~100 lugares densos, sin eventos/IA/pagos) ✅
+**Detalle completo:** `PLAN_FASE9.md` (Etapas 0 y 1).
+**Commit de cierre:** — (docs vivos, sin commit dedicado aún)
 
 ---
 
 ### Paso 9.2 — Diseñar el schema nuevo
-**Estado:** ⬜ PENDIENTE (depende de 9.1)
-**Qué hay que hacer:**
-- Decidir si `Listing` se separa en `Place` + `Event` o se mantiene unificado
-- Decidir sub-tipos de `Place` (restorán, bar, museo, etc.) y sus campos específicos
-- Decidir qué campos del modelo actual se conservan, cuáles se borran, cuáles se renombran
-- Escribir el nuevo `schema.prisma`
-- Documentar la decisión en `ARCHITECTURE.md`
-**Archivos a modificar:** `src/infrastructure/db/prisma/schema.prisma`, `ARCHITECTURE.md`, archivos en `src/domain/`
+**Estado:** ✅ COMPLETADO + APROBADO (2026-06-08).
+**Qué se hizo** (detalle en `PLAN_FASE9.md` → "Etapa 2 — schema escrito"):
+- `schema.prisma` reescrito al modelo nuevo (`Place` sin tipo + `Event` separado apagado; catálogos
+  `Category`/`Subcategory`/`Tag`+`PlaceTag`/`MetroLine`↔`MetroStation`/`Commune`/`Neighborhood`;
+  `Collection`/`CollectionItem`, `VisitHistory`, `Review` polimórfico, `Report`, `TopicSubscription`).
+  Borrado el modelo viejo (Flow/claims/feed/analytics). `prisma format` + `validate` ✅.
+- [SCHEMA.md](SCHEMA.md) — doc legible del modelo (fuente única; ARCHITECTURE ya no duplica el schema).
+- [PLANTILLA_CSV.md](PLANTILLA_CSV.md) + [input/plantilla_lugares.csv](input/plantilla_lugares.csv) —
+  plantilla de carga (34 columnas, FKs por slug). El mapeo Apify → plantilla se hará en Paso 9.5.
+- `ARCHITECTURE.md` reescrito al modelo nuevo (150 líneas, apunta a SCHEMA.md para datos).
+- Redundancia quitada: reserva = campo `Place.reservation`, no tag.
+**Pendiente:** que el usuario apruebe schema + plantilla + arquitectura. El cliente Prisma generado
+sigue siendo el viejo hasta correr la migración (Paso 9.3); el código de dominio/app aún referencia
+`Listing` (se adapta en Paso 9.4).
+**Archivos:** `src/infrastructure/db/prisma/schema.prisma`, `SCHEMA.md`, `PLANTILLA_CSV.md`,
+`input/plantilla_lugares.csv`, `ARCHITECTURE.md`
 **Commit de cierre:** —
 
 ---
 
 ### Paso 9.3 — Migrar la BD al modelo nuevo
-**Estado:** ⬜ PENDIENTE (depende de 9.2)
-**Qué hay que hacer:**
-- `prisma migrate reset` en local (borra todo, parte limpio)
-- Generar nueva migración con `prisma migrate dev`
-- Actualizar `seed.ts` con datos coherentes al modelo nuevo
-- En producción (Neon): `prisma migrate deploy` cuando esté validado en local
-**Riesgo:** destructivo. La BD se borra. Pero como solo hay seed data, no hay pérdida real.
+**Estado:** 🔄 EN CURSO — local ✅ (2026-06-08), prod pendiente.
+**Qué se hizo (local):**
+- `prisma db push --force-reset --accept-data-loss` (no hay historial de migraciones; el proyecto
+  usa db push). Schema nuevo aplicado + cliente Prisma regenerado.
+- `seed.ts` reescrito a **solo catálogos + admin** (sin lugares): 7 líneas Metro + 125 estaciones
+  (combinaciones por dedup, sin lat/lng), 52 comunas, 9 barrios (M2M Neighborhood↔Commune),
+  7 categorías + subcategorías (4 activas / 3 event-only apagadas), 80 tags (social/access/vibe +
+  específicos de las 4 activas), admin + usuario de prueba. Idempotente por slug.
+- **Cambio de schema:** `Neighborhood` → M2M con `Commune` (slug único global) para barrios que
+  cruzan comunas.
+**Qué falta:**
+- Replicar a **prod (Neon)** — se hace junto con el redeploy de la Etapa 4 (si no, el sitio en vivo
+  queda roto: código viejo contra schema nuevo).
+**Riesgo:** destructivo (BD se borra). Solo había seed data, sin pérdida real.
 **Commit de cierre:** —
 
 ---

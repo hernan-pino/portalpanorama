@@ -55,16 +55,16 @@ Solo instancian el use case desde `container.ts` y mapean la respuesta a JSX, re
 
 ```typescript
 // ✅ Correcto
-export default async function ListingPage({ params }) {
-  const useCase = container.getListingUseCase()
-  const result = await useCase.execute({ id: params.id })
-  return <ListingView listing={result} />
+export default async function PlacePage({ params }) {
+  const useCase = container.getPlaceBySlugUseCase()
+  const result = await useCase.execute({ slug: params.slug })
+  return <PlaceView place={result} />
 }
 
 // ❌ Prohibido — lógica en page.tsx
-export default async function ListingPage({ params }) {
-  const listing = await prisma.listing.findUnique({ where: { id: params.id } })
-  if (listing.plan === 'PREMIUM') { /* ... */ }
+export default async function PlacePage({ params }) {
+  const place = await prisma.place.findUnique({ where: { slug: params.slug } })
+  if (place.isPremium) { /* ... */ }
 }
 ```
 
@@ -75,13 +75,17 @@ export default async function ListingPage({ params }) {
 import { PrismaClient } from '@prisma/client'
 
 // ✅ Correcto — application/ define la interfaz
-interface ListingRepository {
-  findById(id: string): Promise<Listing | null>
+interface PlaceRepository {
+  findBySlug(slug: string): Promise<Place | null>
 }
 // infrastructure/ implementa con Prisma
 ```
 
 ### 3. Money como Value Object
+
+Aplica cuando se modele un monto en pesos. En el MVP la monetización está parqueada y el
+presupuesto de un `Place` es un **enum `PriceRange`** (bucket), no un monto — `Money` vuelve con
+los pagos/self-service post-MVP.
 
 ```typescript
 // ❌ Prohibido
@@ -92,6 +96,9 @@ price: Money   // { amount: number (integer CLP), currency: 'CLP' }
 ```
 
 ### 4. RUT como Value Object
+
+Aplica al lado negocio (reclamar ficha, facturación) que es **post-MVP**. El `User` consumidor del
+MVP **no lleva RUT**. Si vuelve, valida el dígito verificador en el VO.
 
 ```typescript
 // ✅ Correcto — validación del dígito verificador en el VO
@@ -203,13 +210,23 @@ Fase 0 — Documentos fundacionales          ✅ COMPLETADA
 Fase 1 — Domain layer (entidades + VOs)    ✅ COMPLETADA
 Fase 2 — Application layer (use cases)     ✅ COMPLETADA
 Fase 3 — Infrastructure (Prisma, adapters) ✅ COMPLETADA
-Fase 4 — Presentation (UI + routes)        🔄 EN CURSO
-  4A — Fundación + Auth                    ✅ COMPLETADA (commit 105e9ed)
-  4B — Páginas públicas                    ✅ COMPLETADA (commit 18092c0)
-  4C — Dashboard de negocio                ✅ COMPLETADA (commit e250ca0)
-  4D — Dashboard de usuario                ✅ COMPLETADA (commit 4732535)
-  4E — Admin + Webhooks Flow               ✅ COMPLETADA
+Fase 4 — Presentation (UI + routes)        ✅ COMPLETADA (4A-4E)
 Fase 5 — Composition root (wire-up DI)     ✅ COMPLETADA
+Fase 6 — Fidelidad visual al handoff       ✅ COMPLETADA
+Fase 7 — Cerrar MVP (flujos end-to-end)    ✅ COMPLETADA
+Fase 8 — Pre-launch consumer-only          ⏸️ DESCARTADA (import masivo) → reemplazada por Fase 9
+Fase 9 — Rediseño del producto             🔄 EN CURSO
+  Etapa 0 — Definir el producto            ✅ COMPLETADA
+  Etapa 1 — Síntesis (PRD)                 ✅ COMPLETADA
+  Etapa 2 — Diseñar schema nuevo           ✅ COMPLETADA (schema + plantilla CSV + arquitectura)
+  Etapa 3 — Migrar la BD + seed            ⬜ próxima
+  Etapa 4 — Refactor dominio + UI          ⬜ pendiente (Listing → Place; aquí se reescribe el código)
+  Etapa 5 — Cargar lugares a mano          ⬜ pendiente
 ```
 
-No avanzar a la siguiente fase sin OK explícito del usuario.
+**Fase 9 = rediseño profundo.** El modelo nuevo es **`Place` (lugar permanente, sin tipo) + `Event`
+separado** (apagado en MVP), monetización/self-service parqueados. El código actual sigue sobre el
+modelo viejo `Listing` hasta la Etapa 4. Fuente de verdad del avance: `PLAN_FASE9.md`. Modelo de
+datos: `SCHEMA.md`. Capas/contextos: `ARCHITECTURE.md`.
+
+No avanzar a la siguiente fase/etapa sin OK explícito del usuario.
