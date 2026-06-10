@@ -1,231 +1,134 @@
 import { prisma } from './db'
+
+// ── Infrastructure adapters ─────────────────────────────────────────────
 import { PrismaUserRepository } from '@infrastructure/db/PrismaUserRepository'
-import { PrismaListingRepository } from '@infrastructure/db/PrismaListingRepository'
-import { PrismaReviewRepository } from '@infrastructure/db/PrismaReviewRepository'
-import { PrismaSubscriptionRepository } from '@infrastructure/db/PrismaSubscriptionRepository'
-import { PrismaFeedRepository } from '@infrastructure/db/PrismaFeedRepository'
+import { PrismaPlaceRepository } from '@infrastructure/db/PrismaPlaceRepository'
+import { PrismaCategoryRepository } from '@infrastructure/db/PrismaCategoryRepository'
+import { PrismaTagRepository } from '@infrastructure/db/PrismaTagRepository'
+import { PrismaCollectionRepository } from '@infrastructure/db/PrismaCollectionRepository'
+import { PrismaVisitHistoryRepository } from '@infrastructure/db/PrismaVisitHistoryRepository'
+import { PrismaReportRepository } from '@infrastructure/db/PrismaReportRepository'
+import { PostgresFTSSearchService } from '@infrastructure/search/PostgresFTSSearchService'
 import { BcryptPasswordHasher } from '@infrastructure/auth/BcryptPasswordHasher'
 import { ResendEmailService } from '@infrastructure/email/ResendEmailService'
-import { PostgresFTSSearchService } from '@infrastructure/search/PostgresFTSSearchService'
-import { PostgresAnalyticsService } from '@infrastructure/db/PostgresAnalyticsService'
-import { FlowPaymentGateway } from '@infrastructure/payment/FlowPaymentGateway'
-import { BecomeBusinessOwnerUseCase } from '@application/user/BecomeBusinessOwnerUseCase'
+
+// ── Use cases ───────────────────────────────────────────────────────────
+import { SearchPlacesUseCase } from '@application/place/SearchPlacesUseCase'
+import { GetPlaceFacetsUseCase } from '@application/place/GetPlaceFacetsUseCase'
+import { GetPlaceBySlugUseCase } from '@application/place/GetPlaceBySlugUseCase'
+import { CreatePlaceUseCase } from '@application/place/CreatePlaceUseCase'
+import { UpdatePlaceUseCase } from '@application/place/UpdatePlaceUseCase'
+import { PublishPlaceUseCase } from '@application/place/PublishPlaceUseCase'
+import { ArchivePlaceUseCase } from '@application/place/ArchivePlaceUseCase'
+import { RecalculateScoresUseCase } from '@application/place/RecalculateScoresUseCase'
+import { CreateReportUseCase } from '@application/place/CreateReportUseCase'
+import { GetCategoriesUseCase } from '@application/catalog/GetCategoriesUseCase'
+import { GetCuratedCollectionUseCase } from '@application/collection/GetCuratedCollectionUseCase'
+import { CreateCollectionUseCase } from '@application/collection/CreateCollectionUseCase'
+import { RenameCollectionUseCase } from '@application/collection/RenameCollectionUseCase'
+import { DeleteCollectionUseCase } from '@application/collection/DeleteCollectionUseCase'
+import { AddPlaceToCollectionUseCase } from '@application/collection/AddPlaceToCollectionUseCase'
+import { RemovePlaceFromCollectionUseCase } from '@application/collection/RemovePlaceFromCollectionUseCase'
 import { RegisterUserUseCase } from '@application/user/RegisterUserUseCase'
-import { GetUserDashboardUseCase } from '@application/user/GetUserDashboardUseCase'
-import { GetUserFeedUseCase } from '@application/user/GetUserFeedUseCase'
-import { SaveFavoriteUseCase } from '@application/user/SaveFavoriteUseCase'
-import { RemoveFavoriteUseCase } from '@application/user/RemoveFavoriteUseCase'
 import { UpdateUserProfileUseCase } from '@application/user/UpdateUserProfileUseCase'
-import { SearchListingsUseCase } from '@application/listing/SearchListingsUseCase'
-import { GetListingBySlugUseCase } from '@application/listing/GetListingBySlugUseCase'
-import { GetBusinessDashboardUseCase } from '@application/listing/GetBusinessDashboardUseCase'
-import { CreateListingUseCase } from '@application/listing/CreateListingUseCase'
-import { UpdateListingUseCase } from '@application/listing/UpdateListingUseCase'
-import { PublishListingUseCase } from '@application/listing/PublishListingUseCase'
-import { CreateSubscriptionUseCase } from '@application/subscription/CreateSubscriptionUseCase'
-import { HandlePaymentWebhookUseCase } from '@application/subscription/HandlePaymentWebhookUseCase'
-import { ClaimListingUseCase } from '@application/listing/ClaimListingUseCase'
-import { ResolveListingClaimUseCase } from '@application/listing/ResolveListingClaimUseCase'
-import { GetPendingClaimsUseCase } from '@application/listing/GetPendingClaimsUseCase'
-import { GetPendingTagsUseCase } from '@application/listing/GetPendingTagsUseCase'
-import { ResolveListingTagUseCase } from '@application/listing/ResolveListingTagUseCase'
-import { GetListingWithReviewsUseCase } from '@application/listing/GetListingWithReviewsUseCase'
-import { GetOwnedListingUseCase } from '@application/listing/GetOwnedListingUseCase'
-import { GetListingSubscriptionsUseCase } from '@application/subscription/GetListingSubscriptionsUseCase'
-import { CreateReviewUseCase } from '@application/review/CreateReviewUseCase'
-import { GetOwnerProfileUseCase } from '@application/listing/GetOwnerProfileUseCase'
-import { GetCategoryFacetsUseCase } from '@application/listing/GetCategoryFacetsUseCase'
-import { GetCategoriesUseCase } from '@application/listing/GetCategoriesUseCase'
-import { PrismaCategoryRepository } from '@infrastructure/db/PrismaCategoryRepository'
-import { PrismaGoogleReviewRepository } from '@infrastructure/db/PrismaGoogleReviewRepository'
+import { GetUserDashboardUseCase } from '@application/user/GetUserDashboardUseCase'
+import { RecordVisitUseCase } from '@application/user/RecordVisitUseCase'
+
+// Los adapters son stateless sobre el cliente Prisma compartido: una instancia basta.
+const userRepo = new PrismaUserRepository(prisma)
+const placeRepo = new PrismaPlaceRepository(prisma)
+const categoryRepo = new PrismaCategoryRepository(prisma)
+const tagRepo = new PrismaTagRepository(prisma)
+const collectionRepo = new PrismaCollectionRepository(prisma)
+const historyRepo = new PrismaVisitHistoryRepository(prisma)
+const reportRepo = new PrismaReportRepository(prisma)
+const searchService = new PostgresFTSSearchService(prisma)
+const passwordHasher = new BcryptPasswordHasher()
+const emailService = new ResendEmailService()
 
 export const container = {
-  // ── Auth ──────────────────────────────────────────────────────────────
-  getBecomeBusinessOwnerUseCase() {
-    return new BecomeBusinessOwnerUseCase(
-      new PrismaUserRepository(prisma),
-      new PrismaListingRepository(prisma),
-    )
+  // ── Discovery (público) ─────────────────────────────────────────────
+  getSearchPlacesUseCase() {
+    return new SearchPlacesUseCase(searchService)
   },
 
-  getRegisterUserUseCase() {
-    return new RegisterUserUseCase(
-      new PrismaUserRepository(prisma),
-      new BcryptPasswordHasher(),
-      new ResendEmailService(),
-    )
+  getGetPlaceFacetsUseCase() {
+    return new GetPlaceFacetsUseCase(searchService)
   },
 
-  // ── User dashboard ────────────────────────────────────────────────────
-  getGetUserDashboardUseCase() {
-    return new GetUserDashboardUseCase(
-      new PrismaUserRepository(prisma),
-      new PrismaListingRepository(prisma),
-      new PrismaReviewRepository(prisma),
-    )
-  },
-
-  getGetUserFeedUseCase() {
-    return new GetUserFeedUseCase(
-      new PrismaUserRepository(prisma),
-      new PrismaFeedRepository(prisma),
-    )
-  },
-
-  getSaveFavoriteUseCase() {
-    return new SaveFavoriteUseCase(
-      new PrismaUserRepository(prisma),
-      new PrismaListingRepository(prisma),
-    )
-  },
-
-  getRemoveFavoriteUseCase() {
-    return new RemoveFavoriteUseCase(new PrismaUserRepository(prisma))
-  },
-
-  getUpdateUserProfileUseCase() {
-    return new UpdateUserProfileUseCase(new PrismaUserRepository(prisma))
-  },
-
-  // ── Public ────────────────────────────────────────────────────────────
-  getSearchListingsUseCase() {
-    return new SearchListingsUseCase(new PostgresFTSSearchService(prisma))
-  },
-
-  getGetCategoryFacetsUseCase() {
-    return new GetCategoryFacetsUseCase(new PostgresFTSSearchService(prisma))
-  },
-
-  getGetListingBySlugUseCase() {
-    return new GetListingBySlugUseCase(
-      new PrismaListingRepository(prisma),
-      new PostgresAnalyticsService(prisma),
-    )
-  },
-
-  getGetListingWithReviewsUseCase() {
-    return new GetListingWithReviewsUseCase(
-      new PrismaListingRepository(prisma),
-      new PrismaReviewRepository(prisma),
-      new PostgresAnalyticsService(prisma),
-      new PrismaUserRepository(prisma),
-      new PrismaGoogleReviewRepository(prisma),
-    )
-  },
-
-  getCreateReviewUseCase() {
-    return new CreateReviewUseCase(
-      new PrismaReviewRepository(prisma),
-      new PrismaListingRepository(prisma),
-      new PrismaUserRepository(prisma),
-      new PrismaFeedRepository(prisma),
-    )
-  },
-
-  getGetOwnedListingUseCase() {
-    return new GetOwnedListingUseCase(new PrismaListingRepository(prisma))
-  },
-
-  getGetOwnerProfileUseCase() {
-    return new GetOwnerProfileUseCase(
-      new PrismaUserRepository(prisma),
-      new PrismaListingRepository(prisma),
-    )
-  },
-
-  // ── Business dashboard ────────────────────────────────────────────────
-  getGetBusinessDashboardUseCase() {
-    return new GetBusinessDashboardUseCase(
-      new PrismaUserRepository(prisma),
-      new PrismaListingRepository(prisma),
-      new PrismaReviewRepository(prisma),
-      new PostgresAnalyticsService(prisma),
-    )
-  },
-
-  getCreateListingUseCase() {
-    return new CreateListingUseCase(new PrismaListingRepository(prisma))
-  },
-
-  getUpdateListingUseCase() {
-    return new UpdateListingUseCase(
-      new PrismaListingRepository(prisma),
-      new PrismaUserRepository(prisma),
-      new PrismaFeedRepository(prisma),
-    )
-  },
-
-  getPublishListingUseCase() {
-    return new PublishListingUseCase(
-      new PrismaListingRepository(prisma),
-      new PostgresFTSSearchService(prisma),
-    )
-  },
-
-  getCreateSubscriptionUseCase() {
-    return new CreateSubscriptionUseCase(
-      new PrismaListingRepository(prisma),
-      new PrismaSubscriptionRepository(prisma),
-      new FlowPaymentGateway(),
-    )
-  },
-
-  // ── Admin ─────────────────────────────────────────────────────────────
-  getClaimListingUseCase() {
-    return new ClaimListingUseCase(
-      new PrismaListingRepository(prisma),
-      new PrismaUserRepository(prisma),
-      new ResendEmailService(),
-    )
-  },
-
-  getResolveListingClaimUseCase() {
-    return new ResolveListingClaimUseCase(
-      new PrismaListingRepository(prisma),
-      new PrismaUserRepository(prisma),
-      new ResendEmailService(),
-    )
-  },
-
-  getGetPendingClaimsUseCase() {
-    return new GetPendingClaimsUseCase(
-      new PrismaListingRepository(prisma),
-      new PrismaUserRepository(prisma),
-    )
-  },
-
-  getGetPendingTagsUseCase() {
-    return new GetPendingTagsUseCase(
-      new PrismaListingRepository(prisma),
-      new PrismaUserRepository(prisma),
-    )
-  },
-
-  getResolveListingTagUseCase() {
-    return new ResolveListingTagUseCase(
-      new PrismaListingRepository(prisma),
-      new PrismaUserRepository(prisma),
-    )
-  },
-
-  getGetListingSubscriptionsUseCase() {
-    return new GetListingSubscriptionsUseCase(
-      new PrismaListingRepository(prisma),
-      new PrismaSubscriptionRepository(prisma),
-    )
-  },
-
-  getHandlePaymentWebhookUseCase() {
-    return new HandlePaymentWebhookUseCase(
-      new FlowPaymentGateway(),
-      new PrismaSubscriptionRepository(prisma),
-      new PrismaListingRepository(prisma),
-      new PrismaUserRepository(prisma),
-      new ResendEmailService(),
-    )
+  getGetPlaceBySlugUseCase() {
+    return new GetPlaceBySlugUseCase(placeRepo)
   },
 
   getGetCategoriesUseCase() {
-    return new GetCategoriesUseCase(new PrismaCategoryRepository(prisma))
+    return new GetCategoriesUseCase(categoryRepo)
+  },
+
+  getGetCuratedCollectionUseCase() {
+    return new GetCuratedCollectionUseCase(collectionRepo)
+  },
+
+  // ── Usuario ─────────────────────────────────────────────────────────
+  getRegisterUserUseCase() {
+    return new RegisterUserUseCase(userRepo, passwordHasher, emailService)
+  },
+
+  getUpdateUserProfileUseCase() {
+    return new UpdateUserProfileUseCase(userRepo)
+  },
+
+  getGetUserDashboardUseCase() {
+    return new GetUserDashboardUseCase(userRepo, collectionRepo, historyRepo)
+  },
+
+  getRecordVisitUseCase() {
+    return new RecordVisitUseCase(historyRepo)
+  },
+
+  // ── Colecciones / listas ────────────────────────────────────────────
+  getCreateCollectionUseCase() {
+    return new CreateCollectionUseCase(collectionRepo)
+  },
+
+  getRenameCollectionUseCase() {
+    return new RenameCollectionUseCase(collectionRepo)
+  },
+
+  getDeleteCollectionUseCase() {
+    return new DeleteCollectionUseCase(collectionRepo)
+  },
+
+  getAddPlaceToCollectionUseCase() {
+    return new AddPlaceToCollectionUseCase(collectionRepo)
+  },
+
+  getRemovePlaceFromCollectionUseCase() {
+    return new RemovePlaceFromCollectionUseCase(collectionRepo)
+  },
+
+  // ── Reportes ────────────────────────────────────────────────────────
+  getCreateReportUseCase() {
+    return new CreateReportUseCase(reportRepo)
+  },
+
+  // ── Admin (CRUD de lugares) ─────────────────────────────────────────
+  getCreatePlaceUseCase() {
+    return new CreatePlaceUseCase(placeRepo, tagRepo)
+  },
+
+  getUpdatePlaceUseCase() {
+    return new UpdatePlaceUseCase(placeRepo, tagRepo)
+  },
+
+  getPublishPlaceUseCase() {
+    return new PublishPlaceUseCase(placeRepo)
+  },
+
+  getArchivePlaceUseCase() {
+    return new ArchivePlaceUseCase(placeRepo)
+  },
+
+  getRecalculateScoresUseCase() {
+    return new RecalculateScoresUseCase(placeRepo)
   },
 }

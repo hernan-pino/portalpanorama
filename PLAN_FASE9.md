@@ -11,8 +11,18 @@ y el **estado de avance** de la Fase 9. Para el detalle de pasos de código, ver
 ## 📍 EN QUÉ VAMOS AHORA MISMO
 
 - **Etapa:** 4 — Refactor dominio + UI 🔄 **EN CURSO.** Sub-etapas: **4A domain ✅ · 4B application ✅**
-  (commit `750340c`, 2026-06-09) · **4C infrastructure ✅** (2026-06-09) · **4D composition root ⬜ próxima** ·
-  4E presentation ⬜ (bloqueada por gap de diseño). Etapa 3 local ✅ (prod pendiente, va con 4D).
+  (commit `750340c`, 2026-06-09) · **4C infrastructure ✅** (commit `e13f7fd`, 2026-06-09) ·
+  **4D composition root ✅** (2026-06-09) · **4E presentation ⬜ próxima** (bloqueada por gap de diseño).
+  Etapa 3 local ✅ (prod pendiente, va con 4E).
+  - **4D hecha (2026-06-09):** [container.ts](src/lib/container.ts) reescrito al modelo `Place` — 20 factory
+    functions cableando los adapters de 4C (PrismaPlaceRepository/User/Category/Tag/Collection/VisitHistory/
+    Report + PostgresFTSSearchService + BcryptPasswordHasher + ResendEmailService). Adapters instanciados una
+    sola vez (stateless sobre el cliente Prisma compartido). Borrado [formatMoney.ts](src/lib/formatMoney.ts)
+    (código muerto, 0 consumidores; `Money` parqueado post-MVP). **`lib/` pasó de 34 → 2 errores**; los 2
+    restantes están solo en [parseSearchParams.ts](src/lib/parseSearchParams.ts) (helper de presentación de
+    explorar → se reescribe en 4E con la nueva `SearchParams`: tags sociales/accesibilidad/vibe/metro/comuna).
+  - **Total de errores: 128 → 126.** Domain + application + infrastructure + `lib/container.ts` compilan en 0.
+    Lo que falta = **4E presentation**: `app/` (118) + `components/` (6) + `parseSearchParams.ts` (2).
   - **4C hecha (2026-06-09):** capa de infraestructura reescrita al modelo `Place`, **compila en 0 errores**
     contra los 10 ports. Borrados 7 archivos del modelo viejo (Listing/Feed/Subscription/GoogleReview/
     Analytics/Review/Flow). Construido: `placeCardView` (select+mapper compartido de `PlaceCardView`),
@@ -36,16 +46,16 @@ y el **estado de avance** de la Fase 9. Para el detalle de pasos de código, ver
     historial, reporte, CRUD admin de Place, RecalculateScores). Borrados subsistemas post-MVP
     (Listing/Flow/claims/feed/analytics/subscription) y **los tests** (testeaban el modelo viejo →
     se reescriben al cierre de Etapa 4).
-  - **La app sigue sin compilar** (container 4D + presentation 4E aún apuntan al modelo viejo): 128 errores
-    restantes = `lib/` (34, container) + `app/`+`components/` (94). Estado intermedio esperado: domain,
-    application e infrastructure ya compilan en 0 errores.
+  - **La app sigue sin compilar** (presentation 4E aún apunta al modelo viejo): 126 errores restantes =
+    `app/` (118) + `components/` (6) + `parseSearchParams.ts` (2). Estado intermedio esperado: domain,
+    application, infrastructure y `lib/container.ts` ya compilan en 0 errores.
   - **Decisiones de diseño de 4B:** PlaceRepository devuelve `Place` (dominio) para load/save+scoring
     y read-models DTO (`PlaceDetailView`/`PlaceCardView`) para UI; SearchService sin métodos de
     indexado (Postgres FTS consulta la tabla). Exclusiones mutuas de tags (+18↔todas las edades) NO
     implementadas aún (faltan slugs del seed) — solo los límites de cantidad.
-  - **Próximo paso real:** **4D composition root** — cablear los adapters de 4C en [container.ts](src/lib/container.ts)
-    (factory functions de los 21 use cases). Ahí la infra se conecta de verdad y caen los 34 errores de
-    `lib/`. El push a **prod (Neon)** se hace junto con el redeploy de 4D/4E.
+  - **Próximo paso real:** **4E presentation** — reescribir `app/` + `components/` al modelo `Place`
+    (126 errores) + reescribir [parseSearchParams.ts](src/lib/parseSearchParams.ts) a la nueva `SearchParams`.
+    Bloqueada por el gap de diseño (ver abajo). El push a **prod (Neon)** se hace junto con el redeploy de 4E.
   - **Gap de diseño 4E pendiente:** el usuario genera refs con Claude design; Claude prepara el
     paquete/prompt por pantalla al llegar a 4E (ver [[project_design_4e]] en memoria).
   - **Auth NO bloquea:** tablas de Auth.js + `passwordHash` ya estaban; `User` quedó con role
@@ -136,8 +146,8 @@ Las preguntas van **primero**. Schema, permisos y código se derivan de ellas.
 ETAPA 0 — Definir el producto   ✅ COMPLETADA (2026-06-04)
 ETAPA 1 — Síntesis              ✅ COMPLETADA (2026-06-07)
 ETAPA 2 — Diseñar schema nuevo  ✅ COMPLETADA + APROBADA (2026-06-08)  (= Paso 9.2)
-ETAPA 3 — Migrar la BD + seed   🔄 local ✅, prod pendiente (va con 4D)  (= Paso 9.3)
-ETAPA 4 — Refactor dominio + UI 🔄 EN CURSO — 4A ✅ · 4B ✅ · 4C ✅ · 4D/4E ⬜  (= Paso 9.4)
+ETAPA 3 — Migrar la BD + seed   🔄 local ✅, prod pendiente (va con 4E)  (= Paso 9.3)
+ETAPA 4 — Refactor dominio + UI 🔄 EN CURSO — 4A ✅ · 4B ✅ · 4C ✅ · 4D ✅ · 4E ⬜  (= Paso 9.4)
 ETAPA 5 — Cargar lugares a mano ⬜ pendiente  (= Paso 9.5)
 ```
 
