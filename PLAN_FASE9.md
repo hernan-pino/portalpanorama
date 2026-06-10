@@ -26,7 +26,18 @@ y el **estado de avance** de la Fase 9. Para el detalle de pasos de código, ver
     formularios sin decisión visual.
   - **Brief #1 listo:** [design_briefs/4E_01_ficha.md](design_briefs/4E_01_ficha.md) — paquete para que el
     usuario genere la ref de la ficha con Claude design (campos reales de `PlaceDetailView`, tokens, CTAs,
-    qué se podó). Próximo: usuario genera ref ⇄ en paralelo Claude re-cabla la plomería no-visual.
+    qué se podó). High-fidelity, mobile-first (no wireframe: el design system ya está decidido en Fase 6).
+  - **Plomería no-visual hecha (2026-06-09, commit `4d73b13`):** re-cabladas mi-cuenta + chrome al modelo
+    `Place` sobre el design system de Fase 6, sin refs. mi-cuenta: dashboard `{user, collections, history}`;
+    tab Guardados muestra colecciones; Reseñas = sección vacía v2; perfil sin RUT. Header/MobileNav: fuera
+    rama BUSINESS_OWNER y links a rutas podadas. **Errores 64 → 29**: los 29 restantes son SOLO las 3
+    pantallas-cara + sus componentes (ficha 15 · explorar 11 [page+SearchBar+FilterRail+parseSearchParams] ·
+    home 3), en espera de refs. `parseSearchParams` se defirió a explorar (es su único consumidor).
+  - **Gap admin (net-new, sin ref):** `admin/` compila pero está muerto en runtime (redirige a claims/tags
+    borrados). Hay que reconstruirlo como **CRUD de Place** (listar + crear/editar + publicar/archivar) —
+    habilita la **Etapa 5** (cargar ~100 lugares a mano). Necesita queries de catálogo (categorías ✅ via
+    GetCategories; faltan tags/comunas/barrios/metro para los selectores del form).
+  - **Próximo:** usuario genera ref de la ficha ⇄ en paralelo, opción de construir el admin CRUD de Place.
   - **4D hecha (2026-06-09):** [container.ts](src/lib/container.ts) reescrito al modelo `Place` — 20 factory
     functions cableando los adapters de 4C (PrismaPlaceRepository/User/Category/Tag/Collection/VisitHistory/
     Report + PostgresFTSSearchService + BcryptPasswordHasher + ResendEmailService). Adapters instanciados una
