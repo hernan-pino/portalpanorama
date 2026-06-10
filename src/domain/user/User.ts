@@ -1,5 +1,4 @@
 import { Email } from '@domain/shared/Email'
-import { RUT } from '@domain/shared/RUT'
 import { UserRole } from './UserRole'
 
 export interface UserProps {
@@ -7,7 +6,8 @@ export interface UserProps {
   readonly email: Email
   readonly name: string
   readonly role: UserRole
-  readonly rut?: RUT
+  // Preferencia opcional (C.3-bis): sube su comuna primero, transparente/desactivable.
+  readonly homeCommuneId?: string
   readonly createdAt: Date
 }
 
@@ -16,7 +16,7 @@ export class User {
   readonly email: Email
   readonly name: string
   readonly role: UserRole
-  readonly rut?: RUT
+  readonly homeCommuneId?: string
   readonly createdAt: Date
 
   private constructor(props: UserProps) {
@@ -24,7 +24,7 @@ export class User {
     this.email = props.email
     this.name = props.name
     this.role = props.role
-    this.rut = props.rut
+    this.homeCommuneId = props.homeCommuneId
     this.createdAt = props.createdAt
   }
 
@@ -36,29 +36,18 @@ export class User {
     return this.role === UserRole.ADMIN
   }
 
-  isBusinessOwner(): boolean {
-    return this.role === UserRole.BUSINESS_OWNER
+  withProfile(name: string, homeCommuneId?: string): User {
+    return new User({ ...this.toProps(), name, homeCommuneId })
   }
 
-  withRole(role: UserRole): User {
-    return new User({
+  private toProps(): UserProps {
+    return {
       id: this.id,
       email: this.email,
       name: this.name,
-      role,
-      rut: this.rut,
-      createdAt: this.createdAt,
-    })
-  }
-
-  withProfile(name: string, rut?: RUT): User {
-    return new User({
-      id: this.id,
-      email: this.email,
-      name,
       role: this.role,
-      rut,
+      homeCommuneId: this.homeCommuneId,
       createdAt: this.createdAt,
-    })
+    }
   }
 }

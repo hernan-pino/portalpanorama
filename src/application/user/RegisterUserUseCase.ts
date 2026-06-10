@@ -11,6 +11,7 @@ export interface RegisterUserInput {
   email: string
   name: string
   password: string
+  homeCommuneId?: string
 }
 
 export interface RegisterUserOutput {
@@ -36,7 +37,8 @@ export class RegisterUserUseCase {
       id: createId(),
       email,
       name: input.name,
-      role: UserRole.CONSUMER,
+      role: UserRole.USER,
+      homeCommuneId: input.homeCommuneId,
       createdAt: new Date(),
     })
 

@@ -1,0 +1,39 @@
+import { Score } from '@domain/place/Score'
+import { PlaceNotFoundError } from '@domain/place/errors/PlaceNotFoundError'
+import { PlaceRepository } from '../ports/PlaceRepository'
+import { TagRepository } from '../ports/TagRepository'
+import { PlaceWriteInput } from './PlaceWriteInput'
+import { assemblePlace } from './assemblePlace'
+
+// Edición de una ficha por el admin. Preserva id/slug/estado/fecha de creación;
+// recalcula el score con los nuevos valores de Google y el promedio global actual.
+export class UpdatePlaceUseCase {
+  constructor(
+    private readonly placeRepo: PlaceRepository,
+    private readonly tagRepo: TagRepository,
+  ) {}
+
+  async execute(placeId: string, input: PlaceWriteInput): Promise<void> {
+    const existing = await this.placeRepo.findById(placeId)
+    if (!existing) throw new PlaceNotFoundError(placeId)
+
+    const [tags, globalAverage] = await Promise.all([
+      this.tagRepo.findByIds(input.tagIds),
+      this.placeRepo.globalAverageRating(),
+    ])
+
+    const score = Score.bayesian(input.googleRating, input.googleReviewCount, globalAverage)
+
+    const updated = assemblePlace({
+      id: existing.id,
+      slug: existing.slug,
+      input,
+      score,
+      tags,
+      status: existing.status,
+      createdAt: existing.createdAt,
+    })
+
+    await this.placeRepo.save(updated)
+  }
+}

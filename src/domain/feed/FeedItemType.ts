@@ -1,6 +1,0 @@
-export enum FeedItemType {
-  NEW_PHOTO = 'NEW_PHOTO',
-  HOURS_UPDATED = 'HOURS_UPDATED',
-  NEW_REVIEW = 'NEW_REVIEW',
-  INFO_UPDATED = 'INFO_UPDATED',
-}

@@ -1,51 +1,54 @@
-import { Listing } from '@domain/listing/Listing'
-import { Neighborhood } from '@domain/shared/Neighborhoods'
+import { PriceRange } from '@domain/place/PriceRange'
+import { PlaceCardView } from './PlaceRepository'
 
+// Filtros vivos del MVP (entregable 4): contexto social · gasto · dónde
+// (comuna/barrio/metro) · accesibilidad · ambiente. El orden por defecto SIEMPRE
+// es score desc (reputación). El filtro "Sin reserva" se deriva de reservation.
 export interface SearchParams {
   query?: string
-  categoryId?: string
   categorySlug?: string
-  neighborhood?: Neighborhood
-  commune?: string
-  priceRanges?: number[]
-  isPremium?: boolean
+  subcategorySlug?: string
+  communeSlug?: string
+  neighborhoodSlug?: string
+  metroLineCode?: string
+  metroStationSlug?: string
+  priceRanges?: PriceRange[]
+  socialTagSlugs?: string[]
+  accessTagSlugs?: string[]
+  vibeTagSlugs?: string[]
+  walkInOnly?: boolean // "Sin reserva"
   page?: number
   limit?: number
 }
 
-export interface SearchResultItem {
-  listingId: string
-  name: string
-  slug: string
-  categoryId: string
-  categoryName: string
-  neighborhood: string
-  commune?: string
-  description?: string
-  coverUrl?: string
-  priceRange?: number  // ordinal 1-4 ($/$$/$$$/$$$$), no es un monto CLP
-  isPremium: boolean
-  averageRating?: number
-  reviewCount: number
-  isGoogleRating?: boolean
-  tags: string[]
-}
-
 export interface SearchResult {
-  items: SearchResultItem[]
+  items: PlaceCardView[]
   total: number
   page: number
   totalPages: number
 }
 
-export interface CategoryFacet {
-  categorySlug: string
+// Una opción de faceta con su contador. Las opciones con count 0 se ocultan en
+// la UI (decisión P3: "ocultar vacíos" → disimula la baja densidad del arranque).
+export interface FacetCount {
+  value: string // slug o enum
+  label: string
   count: number
+}
+
+// Contadores estáticos por dimensión (MVP: no se recombinan dinámicamente).
+export interface PlaceFacets {
+  categories: FacetCount[]
+  communes: FacetCount[]
+  neighborhoods: FacetCount[]
+  metroLines: FacetCount[]
+  priceRanges: FacetCount[]
+  social: FacetCount[]
+  access: FacetCount[]
+  vibe: FacetCount[]
 }
 
 export interface SearchService {
   search(params: SearchParams): Promise<SearchResult>
-  getCategoryFacets(): Promise<CategoryFacet[]>
-  indexListing(listing: Listing): Promise<void>
-  removeListing(listingId: string): Promise<void>
+  getFacets(): Promise<PlaceFacets>
 }

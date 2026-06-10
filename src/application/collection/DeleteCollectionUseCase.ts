@@ -1,0 +1,18 @@
+import { CollectionNotFoundError } from '@domain/collection/errors/CollectionNotFoundError'
+import { CollectionRepository } from '../ports/CollectionRepository'
+
+export interface DeleteCollectionInput {
+  userId: string
+  collectionId: string
+}
+
+export class DeleteCollectionUseCase {
+  constructor(private readonly collectionRepo: CollectionRepository) {}
+
+  async execute(input: DeleteCollectionInput): Promise<void> {
+    const collection = await this.collectionRepo.findById(input.collectionId)
+    if (!collection) throw new CollectionNotFoundError(input.collectionId)
+    collection.assertOwnership(input.userId)
+    await this.collectionRepo.delete(collection.id)
+  }
+}

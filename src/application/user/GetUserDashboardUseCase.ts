@@ -1,35 +1,36 @@
-import { Listing } from '@domain/listing/Listing'
 import { User } from '@domain/user/User'
 import { UserNotFoundError } from '@domain/user/errors/UserNotFoundError'
-import { ListingRepository } from '../ports/ListingRepository'
-import { ReviewRepository, ReviewWithListingView } from '../ports/ReviewRepository'
+import { CollectionRepository, CollectionSummary } from '../ports/CollectionRepository'
+import { PlaceCardView } from '../ports/PlaceRepository'
+import { VisitHistoryRepository } from '../ports/VisitHistoryRepository'
 import { UserRepository } from '../ports/UserRepository'
 
 export interface UserDashboardOutput {
   user: User
-  favoriteListings: Listing[]
-  ownedListings: Listing[]
-  reviews: ReviewWithListingView[]
-  isBusinessOwner: boolean
+  collections: CollectionSummary[]
+  history: PlaceCardView[]
 }
 
+// Datos de "Mi cuenta": listas múltiples + historial de visitados. Las secciones
+// "Mis reseñas" y "Mis eventos guardados" existen vacías en el MVP (sin datos aún).
 export class GetUserDashboardUseCase {
+  private static readonly HISTORY_LIMIT = 20
+
   constructor(
     private readonly userRepo: UserRepository,
-    private readonly listingRepo: ListingRepository,
-    private readonly reviewRepo: ReviewRepository,
+    private readonly collectionRepo: CollectionRepository,
+    private readonly historyRepo: VisitHistoryRepository,
   ) {}
 
   async execute(userId: string): Promise<UserDashboardOutput> {
     const user = await this.userRepo.findById(userId)
     if (!user) throw new UserNotFoundError(userId)
 
-    const [favoriteListings, ownedListings, reviews] = await Promise.all([
-      this.userRepo.findFavoriteListings(userId),
-      this.listingRepo.findByOwnerId(userId),
-      this.reviewRepo.findByUserId(userId),
+    const [collections, history] = await Promise.all([
+      this.collectionRepo.findByOwnerId(userId),
+      this.historyRepo.findRecentByUserId(userId, GetUserDashboardUseCase.HISTORY_LIMIT),
     ])
 
-    return { user, favoriteListings, ownedListings, reviews, isBusinessOwner: user.isBusinessOwner() }
+    return { user, collections, history }
   }
 }
