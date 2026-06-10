@@ -4,27 +4,35 @@ Documento vivo. Se actualiza cada vez que avanzamos. Aquí vive el **orden de tr
 y el **estado de avance** de la Fase 9. Para el detalle de pasos de código, ver
 [ROADMAP.md](ROADMAP.md). Para las preguntas de producto, ver [PRODUCTO.md](PRODUCTO.md).
 
-**Última actualización:** 2026-06-08
+**Última actualización:** 2026-06-09
 
 ---
 
 ## 📍 EN QUÉ VAMOS AHORA MISMO
 
-- **Etapa:** 3 — Migrar la BD + seed 🔄 **EN CURSO** (catálogos ✅; falta prod). Etapa 2 ✅
-  **APROBADA 2026-06-08** (schema + plantilla CSV + ARCHITECTURE). Etapa 1 ✅, Etapa 0 ✅.
-  - **BD local reseteada y schema nuevo aplicado** (`prisma db push --force-reset`, 2026-06-08) +
-    **cliente Prisma regenerado** al modelo nuevo. La app actual quedó **rota** (todo referencia
-    `Listing`) hasta la Etapa 4 — esperado.
-  - **Seed de catálogos corrido ✅:** 7 líneas Metro + **125 estaciones** (combinaciones por dedup,
-    sin lat/lng), **52 comunas**, **9 barrios** (M2M), 7 categorías + subcategorías, **80 tags**
-    (11 social · 11 access · 14 vibe · 44 específicos), admin + usuario de prueba. **Sin lugares**
-    (entran por CSV, Etapa 5).
-  - **Cambio de schema durante la Etapa 3 (2026-06-08):** `Neighborhood` pasó de FK única a **M2M
-    con `Commune`** (slug único global) — un barrio puede caer en >1 comuna (Bellavista = Recoleta +
-    Providencia; Barrio Italia = Providencia + Ñuñoa). Pedido del usuario. SCHEMA.md actualizado.
-  - **Próximo paso real:** **Etapa 4** — refactor de dominio/use cases/UI al modelo nuevo (lo que
-    desbloquea la app). El push a **prod (Neon)** se hace junto con el redeploy de Etapa 4, para no
-    dejar el sitio roto más de lo necesario.
+- **Etapa:** 4 — Refactor dominio + UI 🔄 **EN CURSO.** Sub-etapas: **4A domain ✅ · 4B application ✅**
+  (commit `750340c`, 2026-06-09) · **4C infrastructure ⬜ próxima** · 4D composition root ⬜ ·
+  4E presentation ⬜ (bloqueada por gap de diseño). Etapa 3 local ✅ (prod pendiente, va con 4C/4D).
+  - **4A + 4B hechas (2026-06-09):** reescritas las capas independientes de framework al modelo nuevo.
+    Domain: `place/` (entidad `Place` con invariantes de tags SOCIAL≤4/VIBE≤3 + transiciones +
+    `Score` bayesiano m=50), `catalog/TagLayer`, `collection/Collection`, `report/ReportReason`;
+    `User` a USER/ADMIN+homeCommune (sin RUT); `Review` polimórfica 1–5. Application: **10 ports**
+    (PlaceRepository = agregado + read-models; SearchService con facetas; Collection/Category/Tag/
+    VisitHistory/Report/User; EmailService slim) + **21 use cases** (discovery, colecciones,
+    historial, reporte, CRUD admin de Place, RecalculateScores). Borrados subsistemas post-MVP
+    (Listing/Flow/claims/feed/analytics/subscription) y **los tests** (testeaban el modelo viejo →
+    se reescriben al cierre de Etapa 4).
+  - **La app NO compila** (infra y presentation aún apuntan a `Listing`) — estado intermedio esperado.
+  - **Decisiones de diseño de 4B:** PlaceRepository devuelve `Place` (dominio) para load/save+scoring
+    y read-models DTO (`PlaceDetailView`/`PlaceCardView`) para UI; SearchService sin métodos de
+    indexado (Postgres FTS consulta la tabla). Exclusiones mutuas de tags (+18↔todas las edades) NO
+    implementadas aún (faltan slugs del seed) — solo los límites de cantidad.
+  - **Próximo paso real:** **4C infrastructure** — `PrismaPlaceRepository` (mapper + upsert con tags/
+    imágenes, la pieza grande), `PostgresFTSSearchService` (places + facetas), repos User/Category/
+    Tag/Collection/VisitHistory/Report; borrar infra muerta; adelgazar `ResendEmailService` a
+    `sendWelcome`. El push a **prod (Neon)** se hace junto con el redeploy de 4D/4E.
+  - **Gap de diseño 4E pendiente:** el usuario genera refs con Claude design; Claude prepara el
+    paquete/prompt por pantalla al llegar a 4E (ver [[project_design_4e]] en memoria).
   - **Auth NO bloquea:** tablas de Auth.js + `passwordHash` ya estaban; `User` quedó con role
     admin/user, sin `rut`, con `homeCommune`. Verificación de email = decisión de flujo, Etapa 4.
 - **Estado de los 4 entregables:** 1 (visión) ✅ · 2 (modelo de entidades) ✅ · 3 (matriz de
@@ -113,8 +121,8 @@ Las preguntas van **primero**. Schema, permisos y código se derivan de ellas.
 ETAPA 0 — Definir el producto   ✅ COMPLETADA (2026-06-04)
 ETAPA 1 — Síntesis              ✅ COMPLETADA (2026-06-07)
 ETAPA 2 — Diseñar schema nuevo  ✅ COMPLETADA + APROBADA (2026-06-08)  (= Paso 9.2)
-ETAPA 3 — Migrar la BD + seed   🔄 EN CURSO — local ✅, prod pendiente  (= Paso 9.3)
-ETAPA 4 — Refactor dominio + UI ⬜ pendiente (próxima)  (= Paso 9.4)
+ETAPA 3 — Migrar la BD + seed   🔄 local ✅, prod pendiente (va con 4C/4D)  (= Paso 9.3)
+ETAPA 4 — Refactor dominio + UI 🔄 EN CURSO — 4A ✅ · 4B ✅ · 4C/4D/4E ⬜  (= Paso 9.4)
 ETAPA 5 — Cargar lugares a mano ⬜ pendiente  (= Paso 9.5)
 ```
 
@@ -856,6 +864,18 @@ Solo se tocan cuando la Etapa 1 está aprobada. Detalle en ROADMAP pasos 9.2-9.5
 ## Bitácora de decisiones
 _(registro de las decisiones de producto que vamos tomando — la fuente de verdad)_
 
+- **2026-06-09** — **Etapa 4 arranca: 4A (domain) + 4B (application) COMPLETAS** (commit `750340c`).
+  Refactor de demolición + reconstrucción (no rename): se botaron los subsistemas post-MVP completos
+  (Listing/Flow/claims/feed/analytics/subscription, ~3.000 líneas) y se reescribió el núcleo
+  independiente de framework al modelo nuevo. **Domain:** `Place` (invariantes de tags SOCIAL≤4/
+  VIBE≤3, transiciones de estado, `Score` bayesiano), `TagLayer`, `Collection`, `ReportReason`,
+  `User` (USER/ADMIN + homeCommune, sin RUT), `Review` polimórfica 1–5. **Application:** 10 ports +
+  21 use cases del scope MVP (discovery con facetas, colecciones, historial, reporte, CRUD admin de
+  Place, RecalculateScores). Decisiones: PlaceRepository separa agregado de dominio vs read-models
+  DTO; SearchService sin indexado (Postgres FTS sobre la tabla). Pendiente conocido: exclusiones
+  mutuas de tags (solo se pusieron los límites de cantidad), reescritura de tests, push a prod.
+  **La app no compila** (infra/UI aún en `Listing`) — estado intermedio esperado. **Próximo: 4C
+  infrastructure** (PrismaPlaceRepository + FTS con facetas + repos restantes).
 - **2026-06-01** — Se decide rediseñar el producto antes de cargar datos. Modo de trabajo
   para las preguntas: conversado por grupos. Se crea este plan + skill `retomar`.
 - **2026-06-07** — **Limpieza de docs + sincronización de ROADMAP/CLAUDE + gap de UI anotado.** Se
