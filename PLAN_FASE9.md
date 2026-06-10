@@ -12,8 +12,21 @@ y el **estado de avance** de la Fase 9. Para el detalle de pasos de código, ver
 
 - **Etapa:** 4 — Refactor dominio + UI 🔄 **EN CURSO.** Sub-etapas: **4A domain ✅ · 4B application ✅**
   (commit `750340c`, 2026-06-09) · **4C infrastructure ✅** (commit `e13f7fd`, 2026-06-09) ·
-  **4D composition root ✅** (2026-06-09) · **4E presentation ⬜ próxima** (bloqueada por gap de diseño).
-  Etapa 3 local ✅ (prod pendiente, va con 4E).
+  **4D composition root ✅** (2026-06-09) · **4E presentation 🔄 EN CURSO** (pasada 1 poda ✅; pasada 2
+  reescritura design-gated ⬜). Etapa 3 local ✅ (prod pendiente, va con 4E).
+  - **4E en curso (2026-06-09):** **Pasada 1 — poda ✅** (commit `4144e7d`): borradas 50 rutas/componentes
+    post-MVP cuyos use cases ya no existen (negocio self-service, suscripciones/Flow, claims, tags-moderación,
+    eventos, feed, favoritos-único). Errores 126 → 64. **Superficie consumer que queda** (15 archivos): ficha
+    `lugar/[slug]` (15) · mi-cuenta (13) · componentes SearchBar/FilterRail/Header/MobileNav (6) · explorar (5)
+    · home (3) · parseSearchParams (2).
+  - **Enfoque acordado 4E pasada 2 (híbrido):** design-gate solo las **3 pantallas-cara** (ficha → explorar →
+    home), donde la taxonomía nueva cambia el diseño; el resto (auth, mi-cuenta, admin CRUD, layout chrome,
+    parseSearchParams) = plomería sin ref, sobre el design system de Fase 6 que sigue vivo. El usuario se
+    inclinaba por "esperar refs por pantalla"; se acotó a las 3 hero para no gastar su tiempo (P1) en
+    formularios sin decisión visual.
+  - **Brief #1 listo:** [design_briefs/4E_01_ficha.md](design_briefs/4E_01_ficha.md) — paquete para que el
+    usuario genere la ref de la ficha con Claude design (campos reales de `PlaceDetailView`, tokens, CTAs,
+    qué se podó). Próximo: usuario genera ref ⇄ en paralelo Claude re-cabla la plomería no-visual.
   - **4D hecha (2026-06-09):** [container.ts](src/lib/container.ts) reescrito al modelo `Place` — 20 factory
     functions cableando los adapters de 4C (PrismaPlaceRepository/User/Category/Tag/Collection/VisitHistory/
     Report + PostgresFTSSearchService + BcryptPasswordHasher + ResendEmailService). Adapters instanciados una
