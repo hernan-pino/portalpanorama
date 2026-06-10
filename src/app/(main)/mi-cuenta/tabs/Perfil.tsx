@@ -13,7 +13,6 @@ export function TabPerfil({ user }: { user: User }) {
       <ProfileForm
         name={user.name}
         email={user.email.value}
-        rut={user.rut?.formatted}
       />
     </div>
   )

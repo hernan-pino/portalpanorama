@@ -5,10 +5,9 @@ import { updateProfileAction } from './actions'
 interface ProfileFormProps {
   name: string
   email: string
-  rut?: string
 }
 
-export function ProfileForm({ name, email, rut }: ProfileFormProps) {
+export function ProfileForm({ name, email }: ProfileFormProps) {
   const [isPending, startTransition] = useTransition()
   const [status, setStatus] = useState<{ error?: string; success?: boolean } | null>(null)
 
@@ -72,28 +71,6 @@ export function ProfileForm({ name, email, rut }: ProfileFormProps) {
         <p style={{ fontSize: 'var(--t-body-sm)', color: 'var(--fg-subtle)' }}>
           El email no se puede cambiar desde acá.
         </p>
-      </div>
-
-      {/* RUT */}
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--s-2)' }}>
-        <label htmlFor="rut" style={{ fontSize: 'var(--t-body-sm)', fontWeight: 500 }}>
-          RUT <span style={{ fontWeight: 400, color: 'var(--fg-subtle)' }}>(opcional)</span>
-        </label>
-        <input
-          id="rut"
-          name="rut"
-          type="text"
-          defaultValue={rut ?? ''}
-          placeholder="12.345.678-9"
-          style={{
-            padding: 'var(--s-3) var(--s-4)',
-            border: '1px solid var(--surface-line)',
-            borderRadius: 'var(--r-md)',
-            fontSize: 'var(--t-body)',
-            background: 'var(--bg-base)',
-            color: 'var(--fg-base)',
-          }}
-        />
       </div>
 
       {status?.error && (

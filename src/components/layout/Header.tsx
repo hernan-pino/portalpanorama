@@ -71,23 +71,6 @@ function AuthenticatedActions({
         <Link href="/admin" className="btn btn--ghost btn--sm">
           Admin
         </Link>
-        <Link href="/dashboard" className="btn btn--ghost btn--sm">
-          Dashboard
-        </Link>
-        <LogoutButton />
-      </>
-    )
-  }
-
-  if (role === UserRole.BUSINESS_OWNER) {
-    return (
-      <>
-        <Link href="/mi-negocio" className="btn btn--ghost btn--sm">
-          {firstName}
-        </Link>
-        <Link href="/mi-negocio" className="btn btn--primary btn--sm">
-          Mi negocio
-        </Link>
         <LogoutButton />
       </>
     )

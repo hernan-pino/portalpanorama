@@ -15,7 +15,7 @@ export default async function MiCuentaLayout({ children }: { children: React.Rea
   if (!session?.user?.id) redirect('/login?callbackUrl=/mi-cuenta')
 
   const data = await getUserDashboard(session.user.id)
-  const { user, favoriteListings, reviews, isBusinessOwner } = data
+  const { user, collections, history } = data
 
   const firstName = user.name.split(' ')[0]
   const mes = MESES_ES[user.createdAt.getMonth()].toUpperCase()
@@ -50,16 +50,13 @@ export default async function MiCuentaLayout({ children }: { children: React.Rea
                 Hola, <em>{firstName}.</em>
               </h1>
               <p style={{ fontFamily: 'var(--font-mono)', fontSize: 'var(--t-mono-sm)', color: 'var(--fg-muted)', letterSpacing: 'var(--tr-wide)', textTransform: 'uppercase' }}>
-                {favoriteListings.length} guardados · 0 listas · {reviews.length} reseñas
+                {collections.length} listas · {history.length} visitados
               </p>
             </div>
           </div>
 
           {/* Buttons */}
           <div style={{ display: 'flex', gap: 'var(--s-3)', alignItems: 'center', flexShrink: 0 }}>
-            {isBusinessOwner && (
-              <Link href="/mi-negocio" className="btn btn--ghost btn--sm">Mi negocio</Link>
-            )}
             <Link href="/mi-cuenta?tab=perfil" className="btn btn--primary btn--sm">Editar perfil</Link>
           </div>
         </div>

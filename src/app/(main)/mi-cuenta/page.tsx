@@ -25,15 +25,15 @@ export default async function MiCuentaPage({
 
   const userId = session.user.id
 
-  if (tab === 'guardados' || tab === 'resenas' || tab === 'perfil') {
+  if (tab === 'guardados' || tab === 'perfil') {
     const data = await getUserDashboard(userId)
-    if (tab === 'guardados') return <TabGuardados favoriteListings={data.favoriteListings} />
-    if (tab === 'resenas') return <TabResenas reviews={data.reviews} />
+    if (tab === 'guardados') return <TabGuardados collections={data.collections} />
     if (tab === 'perfil') return <TabPerfil user={data.user} />
   }
 
   if (tab === 'listas') return <TabListas />
   if (tab === 'historial') return <TabHistorial />
+  if (tab === 'resenas') return <TabResenas />
   if (tab === 'eventos') return <TabEventos />
   if (tab === 'config') return <TabConfig />
 

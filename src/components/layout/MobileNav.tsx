@@ -38,10 +38,6 @@ export function MobileNav({ isAuthenticated, role }: MobileNavProps) {
           <div className="mobile-nav-panel">
             <nav className="mobile-nav-links" aria-label="Menú principal">
               <Link href="/explorar" onClick={close}>Explorar</Link>
-              <Link href="/eventos" onClick={close}>Eventos</Link>
-              {/* FASE 9: descomentar cuando el flow de negocios esté activo
-              <Link href="/planes" onClick={close}>Planes</Link>
-              */}
             </nav>
 
             <div className="mobile-nav-divider" />
@@ -49,15 +45,15 @@ export function MobileNav({ isAuthenticated, role }: MobileNavProps) {
             <div className="mobile-nav-auth">
               {isAuthenticated ? (
                 <>
-                  {role === UserRole.BUSINESS_OWNER ? (
-                    <Link href="/mi-negocio" className="btn btn--ghost btn--sm" onClick={close}>
-                      Mi negocio
+                  {role === UserRole.ADMIN ? (
+                    <Link href="/admin" className="btn btn--ghost btn--sm" onClick={close}>
+                      Admin
                     </Link>
-                  ) : role !== UserRole.ADMIN ? (
+                  ) : (
                     <Link href="/mi-cuenta" className="btn btn--ghost btn--sm" onClick={close}>
                       Mi cuenta
                     </Link>
-                  ) : null}
+                  )}
                   <button
                     className="btn btn--ghost btn--sm"
                     onClick={() => { close(); signOut({ callbackUrl: '/' }) }}

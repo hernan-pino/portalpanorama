@@ -1,9 +1,8 @@
 import Link from 'next/link'
-import { ListingCard } from '@components/listing/ListingCard'
-import { ListingPlan } from '@domain/listing/ListingPlan'
-import type { Listing } from '@domain/listing/Listing'
+import Image from 'next/image'
+import type { CollectionSummary } from '@application/ports/CollectionRepository'
 
-export function TabGuardados({ favoriteListings }: { favoriteListings: Listing[] }) {
+export function TabGuardados({ collections }: { collections: CollectionSummary[] }) {
   return (
     <div style={{ padding: 'var(--s-10) var(--s-8)' }}>
       <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', marginBottom: 'var(--s-8)' }}>
@@ -12,7 +11,7 @@ export function TabGuardados({ favoriteListings }: { favoriteListings: Listing[]
         </h1>
       </div>
 
-      {favoriteListings.length === 0 ? (
+      {collections.length === 0 ? (
         <div
           style={{
             border: '1px dashed var(--surface-line)',
@@ -26,10 +25,10 @@ export function TabGuardados({ favoriteListings }: { favoriteListings: Listing[]
           }}
         >
           <p style={{ color: 'var(--fg-muted)', fontSize: 'var(--t-body-sm)' }}>
-            Guarda más lugares
+            Todavía no tienes listas
           </p>
           <p style={{ color: 'var(--fg-subtle)', fontSize: 'var(--t-body-sm)', maxWidth: 280 }}>
-            Busca y conecta con mejores lugares para guardarlos aquí.
+            Guarda lugares en listas (Citas, Con los cabros…) para tenerlos a mano.
           </p>
           <Link href="/explorar" className="btn btn--ghost" style={{ marginTop: 'var(--s-2)' }}>
             Explorar →
@@ -43,19 +42,34 @@ export function TabGuardados({ favoriteListings }: { favoriteListings: Listing[]
             gap: 'var(--s-5)',
           }}
         >
-          {favoriteListings.map((listing) => (
-            <ListingCard
-              key={listing.id}
-              listing={{
-                slug: listing.slug.value,
-                name: listing.name,
-                neighborhood: listing.neighborhood as string,
-                coverUrl: listing.images[0]?.url,
-                isPremium: listing.plan === ListingPlan.PREMIUM,
-                tags: listing.tags.map((t) => t.name),
-                priceRange: listing.priceRange,
+          {collections.map((collection) => (
+            <Link
+              key={collection.id}
+              href={`/mi-cuenta?tab=listas`}
+              style={{
+                display: 'block',
+                background: 'var(--bg-raised)',
+                border: '1px solid var(--surface-line)',
+                borderRadius: 'var(--r-lg)',
+                overflow: 'hidden',
+                textDecoration: 'none',
+                color: 'inherit',
               }}
-            />
+            >
+              <div style={{ position: 'relative', aspectRatio: '16 / 10', background: 'var(--bg-sunken)' }}>
+                {collection.coverUrl && (
+                  <Image src={collection.coverUrl} alt={collection.name} fill style={{ objectFit: 'cover' }} />
+                )}
+              </div>
+              <div style={{ padding: 'var(--s-4) var(--s-5)' }}>
+                <p style={{ fontWeight: 500, fontSize: 'var(--t-body)', marginBottom: 'var(--s-1)' }}>
+                  {collection.name}
+                </p>
+                <p style={{ fontFamily: 'var(--font-mono)', fontSize: 'var(--t-mono-sm)', color: 'var(--fg-muted)' }}>
+                  {collection.itemCount} {collection.itemCount === 1 ? 'lugar' : 'lugares'}
+                </p>
+              </div>
+            </Link>
           ))}
         </div>
       )}
