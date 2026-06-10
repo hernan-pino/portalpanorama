@@ -1,0 +1,287 @@
+import { $Enums, Prisma, PrismaClient } from '@prisma/client'
+import { Place } from '@domain/place/Place'
+import { Slug } from '@domain/shared/Slug'
+import { TagLayer } from '@domain/catalog/TagLayer'
+import { PriceRange } from '@domain/place/PriceRange'
+import { ReservationPolicy } from '@domain/place/ReservationPolicy'
+import { RainPolicy } from '@domain/place/RainPolicy'
+import { PlaceStatus } from '@domain/place/PlaceStatus'
+import {
+  PlaceCardView,
+  PlaceDetailView,
+  PlaceRatingRow,
+  PlaceRepository,
+} from '@application/ports/PlaceRepository'
+import { placeCardArgs, toPlaceCardView } from './placeCardView'
+
+// ── Agregado: Place + imágenes + tags (con su capa, para validar invariantes) ──
+const aggregateArgs = Prisma.validator<Prisma.PlaceDefaultArgs>()({
+  include: {
+    images: { orderBy: [{ isPrimary: 'desc' }, { sortOrder: 'asc' }] },
+    tags: { include: { tag: true } },
+  },
+})
+type PlaceAggregateRow = Prisma.PlaceGetPayload<typeof aggregateArgs>
+
+function toPlaceDomain(row: PlaceAggregateRow): Place {
+  return Place.create({
+    id: row.id,
+    slug: Slug.fromExisting(row.slug),
+    name: row.name,
+    description: row.description ?? undefined,
+    menuUrl: row.menuUrl ?? undefined,
+    categoryId: row.categoryId,
+    subcategoryId: row.subcategoryId,
+    secondaryCategoryId: row.secondaryCategoryId ?? undefined,
+    secondarySubcategoryId: row.secondarySubcategoryId ?? undefined,
+    address: row.address ?? undefined,
+    communeId: row.communeId,
+    neighborhoodId: row.neighborhoodId ?? undefined,
+    lat: row.lat ?? undefined,
+    lng: row.lng ?? undefined,
+    metroStationId: row.metroStationId ?? undefined,
+    accessDetail: row.accessDetail ?? undefined,
+    reference: row.reference ?? undefined,
+    rainPolicy: (row.rainPolicy as RainPolicy | null) ?? undefined,
+    priceRange: (row.priceRange as PriceRange | null) ?? undefined,
+    reservation: (row.reservation as ReservationPolicy | null) ?? undefined,
+    paymentMethods: row.paymentMethods,
+    schedule: row.schedule ?? undefined,
+    phone: row.phone ?? undefined,
+    website: row.website ?? undefined,
+    instagram: row.instagram ?? undefined,
+    googlePlaceId: row.googlePlaceId ?? undefined,
+    googleRating: row.googleRating ?? undefined,
+    googleReviewCount: row.googleReviewCount ?? undefined,
+    score: row.score,
+    isPremium: row.isPremium,
+    ownerId: row.ownerId ?? undefined,
+    status: row.status as PlaceStatus,
+    images: row.images.map((img) => ({
+      id: img.id,
+      url: img.url,
+      alt: img.alt ?? undefined,
+      credit: img.credit ?? undefined,
+      isPrimary: img.isPrimary,
+      sortOrder: img.sortOrder,
+    })),
+    tags: row.tags.map((pt) => ({
+      id: pt.tag.id,
+      slug: pt.tag.slug,
+      name: pt.tag.name,
+      layer: pt.tag.layer as TagLayer,
+    })),
+    createdAt: row.createdAt,
+    updatedAt: row.updatedAt,
+  })
+}
+
+// Campos escalares del Place para create/update. Optionals → null explícito:
+// save() persiste el agregado completo, así que un campo vaciado debe limpiarse.
+function toWriteData(place: Place) {
+  return {
+    slug: place.slug.value,
+    name: place.name,
+    description: place.description ?? null,
+    menuUrl: place.menuUrl ?? null,
+    categoryId: place.categoryId,
+    subcategoryId: place.subcategoryId,
+    secondaryCategoryId: place.secondaryCategoryId ?? null,
+    secondarySubcategoryId: place.secondarySubcategoryId ?? null,
+    address: place.address ?? null,
+    communeId: place.communeId,
+    neighborhoodId: place.neighborhoodId ?? null,
+    lat: place.lat ?? null,
+    lng: place.lng ?? null,
+    metroStationId: place.metroStationId ?? null,
+    accessDetail: place.accessDetail ?? null,
+    reference: place.reference ?? null,
+    rainPolicy: (place.rainPolicy as $Enums.RainPolicy | undefined) ?? null,
+    priceRange: (place.priceRange as $Enums.PriceRange | undefined) ?? null,
+    reservation: (place.reservation as $Enums.ReservationPolicy | undefined) ?? null,
+    paymentMethods: [...place.paymentMethods],
+    schedule: place.schedule ?? null,
+    phone: place.phone ?? null,
+    website: place.website ?? null,
+    instagram: place.instagram ?? null,
+    googlePlaceId: place.googlePlaceId ?? null,
+    googleRating: place.googleRating ?? null,
+    googleReviewCount: place.googleReviewCount ?? null,
+    score: place.score,
+    isPremium: place.isPremium,
+    ownerId: place.ownerId ?? null,
+    status: place.status as $Enums.PlaceStatus,
+    updatedAt: place.updatedAt,
+  }
+}
+
+// ── Detalle denormalizado para la ficha (read-model) ──
+const detailArgs = Prisma.validator<Prisma.PlaceDefaultArgs>()({
+  include: {
+    category: { select: { slug: true, name: true } },
+    subcategory: { select: { slug: true, name: true } },
+    secondaryCategory: { select: { slug: true, name: true } },
+    commune: { select: { slug: true, name: true } },
+    neighborhood: { select: { slug: true, name: true } },
+    metroStation: {
+      select: { slug: true, name: true, lines: { select: { code: true, color: true } } },
+    },
+    images: { orderBy: [{ isPrimary: 'desc' }, { sortOrder: 'asc' }] },
+    tags: { include: { tag: { select: { slug: true, name: true, layer: true } } } },
+  },
+})
+type PlaceDetailRow = Prisma.PlaceGetPayload<typeof detailArgs>
+
+function toPlaceDetailView(row: PlaceDetailRow): PlaceDetailView {
+  return {
+    id: row.id,
+    slug: row.slug,
+    name: row.name,
+    description: row.description ?? undefined,
+    menuUrl: row.menuUrl ?? undefined,
+    category: row.category,
+    subcategory: row.subcategory,
+    secondaryCategory: row.secondaryCategory ?? undefined,
+    address: row.address ?? undefined,
+    commune: row.commune,
+    neighborhood: row.neighborhood ?? undefined,
+    lat: row.lat ?? undefined,
+    lng: row.lng ?? undefined,
+    metroStation: row.metroStation
+      ? { slug: row.metroStation.slug, name: row.metroStation.name, lines: row.metroStation.lines }
+      : undefined,
+    accessDetail: row.accessDetail ?? undefined,
+    reference: row.reference ?? undefined,
+    rainPolicy: row.rainPolicy ?? undefined,
+    priceRange: row.priceRange ?? undefined,
+    reservation: row.reservation ?? undefined,
+    paymentMethods: row.paymentMethods,
+    schedule: row.schedule ?? undefined,
+    phone: row.phone ?? undefined,
+    website: row.website ?? undefined,
+    instagram: row.instagram ?? undefined,
+    googleRating: row.googleRating ?? undefined,
+    googleReviewCount: row.googleReviewCount ?? undefined,
+    score: row.score,
+    images: row.images.map((img) => ({
+      url: img.url,
+      alt: img.alt ?? undefined,
+      credit: img.credit ?? undefined,
+      isPrimary: img.isPrimary,
+    })),
+    tags: row.tags.map((pt) => ({ slug: pt.tag.slug, name: pt.tag.name, layer: pt.tag.layer })),
+  }
+}
+
+const RELATED_POOL = 50 // candidatos a rankear en memoria por similitud
+
+export class PrismaPlaceRepository implements PlaceRepository {
+  constructor(private readonly prisma: PrismaClient) {}
+
+  async findById(id: string): Promise<Place | null> {
+    const row = await this.prisma.place.findUnique({ where: { id }, ...aggregateArgs })
+    return row ? toPlaceDomain(row) : null
+  }
+
+  async findBySlug(slug: string): Promise<Place | null> {
+    const row = await this.prisma.place.findUnique({ where: { slug }, ...aggregateArgs })
+    return row ? toPlaceDomain(row) : null
+  }
+
+  // Upsert del encabezado + reemplazo total de imágenes y tags (el Place es el
+  // agregado dueño de ambos). En transacción para no dejar estados a medias.
+  async save(place: Place): Promise<void> {
+    const data = toWriteData(place)
+    await this.prisma.$transaction([
+      this.prisma.place.upsert({
+        where: { id: place.id },
+        create: { id: place.id, createdAt: place.createdAt, ...data },
+        update: data,
+      }),
+      this.prisma.placeImage.deleteMany({ where: { placeId: place.id } }),
+      this.prisma.placeImage.createMany({
+        data: place.images.map((img) => ({
+          id: img.id,
+          placeId: place.id,
+          url: img.url,
+          alt: img.alt ?? null,
+          credit: img.credit ?? null,
+          isPrimary: img.isPrimary,
+          sortOrder: img.sortOrder,
+        })),
+      }),
+      this.prisma.placeTag.deleteMany({ where: { placeId: place.id } }),
+      this.prisma.placeTag.createMany({
+        data: place.tags.map((t) => ({ placeId: place.id, tagId: t.id })),
+      }),
+    ])
+  }
+
+  async getDetailBySlug(slug: string): Promise<PlaceDetailView | null> {
+    const row = await this.prisma.place.findUnique({ where: { slug }, ...detailArgs })
+    return row ? toPlaceDetailView(row) : null
+  }
+
+  // "Relacionados" sin IA (D.6): similitud por categoría + comuna + tags compartidos.
+  // Se trae un pool de candidatos publicados que comparten algo y se rankea en
+  // memoria (+3 misma categoría, +2 misma comuna, +1 por tag compartido).
+  async findRelated(placeId: string, limit: number): Promise<PlaceCardView[]> {
+    const base = await this.prisma.place.findUnique({
+      where: { id: placeId },
+      select: { categoryId: true, communeId: true, tags: { select: { tagId: true } } },
+    })
+    if (!base) return []
+    const baseTagIds = new Set(base.tags.map((t) => t.tagId))
+
+    const candidates = await this.prisma.place.findMany({
+      where: {
+        id: { not: placeId },
+        status: $Enums.PlaceStatus.PUBLISHED,
+        OR: [
+          { categoryId: base.categoryId },
+          { communeId: base.communeId },
+          { tags: { some: { tagId: { in: [...baseTagIds] } } } },
+        ],
+      },
+      orderBy: { score: 'desc' },
+      take: RELATED_POOL,
+      select: { ...placeCardArgs.select, categoryId: true, communeId: true, tags: { select: { tagId: true } } },
+    })
+
+    const ranked = candidates
+      .map((c) => {
+        let affinity = 0
+        if (c.categoryId === base.categoryId) affinity += 3
+        if (c.communeId === base.communeId) affinity += 2
+        affinity += c.tags.filter((t) => baseTagIds.has(t.tagId)).length
+        return { card: toPlaceCardView(c), affinity, score: c.score }
+      })
+      .sort((a, b) => b.affinity - a.affinity || b.score - a.score)
+
+    return ranked.slice(0, limit).map((r) => r.card)
+  }
+
+  // C del bayesiano: promedio de la nota de Google en todo el catálogo con rating.
+  async globalAverageRating(): Promise<number> {
+    const agg = await this.prisma.place.aggregate({
+      _avg: { googleRating: true },
+      where: { googleRating: { not: null } },
+    })
+    return agg._avg.googleRating ?? 0
+  }
+
+  async findRatingsForScoring(): Promise<PlaceRatingRow[]> {
+    return this.prisma.place.findMany({
+      select: { id: true, googleRating: true, googleReviewCount: true },
+    })
+  }
+
+  async updateScores(scores: { id: string; score: number }[]): Promise<void> {
+    if (scores.length === 0) return
+    await this.prisma.$transaction(
+      scores.map((s) =>
+        this.prisma.place.update({ where: { id: s.id }, data: { score: s.score } }),
+      ),
+    )
+  }
+}

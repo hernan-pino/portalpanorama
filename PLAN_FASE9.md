@@ -11,8 +11,22 @@ y el **estado de avance** de la Fase 9. Para el detalle de pasos de código, ver
 ## 📍 EN QUÉ VAMOS AHORA MISMO
 
 - **Etapa:** 4 — Refactor dominio + UI 🔄 **EN CURSO.** Sub-etapas: **4A domain ✅ · 4B application ✅**
-  (commit `750340c`, 2026-06-09) · **4C infrastructure ⬜ próxima** · 4D composition root ⬜ ·
-  4E presentation ⬜ (bloqueada por gap de diseño). Etapa 3 local ✅ (prod pendiente, va con 4C/4D).
+  (commit `750340c`, 2026-06-09) · **4C infrastructure ✅** (2026-06-09) · **4D composition root ⬜ próxima** ·
+  4E presentation ⬜ (bloqueada por gap de diseño). Etapa 3 local ✅ (prod pendiente, va con 4D).
+  - **4C hecha (2026-06-09):** capa de infraestructura reescrita al modelo `Place`, **compila en 0 errores**
+    contra los 10 ports. Borrados 7 archivos del modelo viejo (Listing/Feed/Subscription/GoogleReview/
+    Analytics/Review/Flow). Construido: `placeCardView` (select+mapper compartido de `PlaceCardView`),
+    `PrismaPlaceRepository` (mapper agregado + `save` con upsert + sync de imágenes/tags en transacción +
+    read-models `getDetailBySlug`/`findRelated` [relacionados sin IA: +3 categoría/+2 comuna/+1 por tag] +
+    scoring bayesiano), `PostgresFTSSearchService` (`search` con filtros vivos + orden por score; `getFacets`
+    con contadores por categoría/comuna/barrio/precio/línea de metro/tags + ocultar vacíos), repos
+    Category/Tag/User/Collection/VisitHistory/Report, `ResendEmailService` adelgazado a `sendWelcome`.
+    `BcryptPasswordHasher` y `UploadThingStorageService` revisados sin cambios.
+  - **Decisiones de implementación de 4C:** filtros de tags = AND (cada filtro acota: silla de ruedas Y
+    baño); dedup de historial por ventana de 6h; `globalAverageRating` (C del bayesiano) = promedio de
+    `googleRating` de todo el catálogo con rating; facetas estáticas vía `groupBy`. **No ejercitada en
+    runtime aún** (el container no la cablea y los tests se reescriben al cierre de Etapa 4): lo verificado
+    es tipos + alineación con ports, no ejecución.
   - **4A + 4B hechas (2026-06-09):** reescritas las capas independientes de framework al modelo nuevo.
     Domain: `place/` (entidad `Place` con invariantes de tags SOCIAL≤4/VIBE≤3 + transiciones +
     `Score` bayesiano m=50), `catalog/TagLayer`, `collection/Collection`, `report/ReportReason`;
@@ -22,15 +36,16 @@ y el **estado de avance** de la Fase 9. Para el detalle de pasos de código, ver
     historial, reporte, CRUD admin de Place, RecalculateScores). Borrados subsistemas post-MVP
     (Listing/Flow/claims/feed/analytics/subscription) y **los tests** (testeaban el modelo viejo →
     se reescriben al cierre de Etapa 4).
-  - **La app NO compila** (infra y presentation aún apuntan a `Listing`) — estado intermedio esperado.
+  - **La app sigue sin compilar** (container 4D + presentation 4E aún apuntan al modelo viejo): 128 errores
+    restantes = `lib/` (34, container) + `app/`+`components/` (94). Estado intermedio esperado: domain,
+    application e infrastructure ya compilan en 0 errores.
   - **Decisiones de diseño de 4B:** PlaceRepository devuelve `Place` (dominio) para load/save+scoring
     y read-models DTO (`PlaceDetailView`/`PlaceCardView`) para UI; SearchService sin métodos de
     indexado (Postgres FTS consulta la tabla). Exclusiones mutuas de tags (+18↔todas las edades) NO
     implementadas aún (faltan slugs del seed) — solo los límites de cantidad.
-  - **Próximo paso real:** **4C infrastructure** — `PrismaPlaceRepository` (mapper + upsert con tags/
-    imágenes, la pieza grande), `PostgresFTSSearchService` (places + facetas), repos User/Category/
-    Tag/Collection/VisitHistory/Report; borrar infra muerta; adelgazar `ResendEmailService` a
-    `sendWelcome`. El push a **prod (Neon)** se hace junto con el redeploy de 4D/4E.
+  - **Próximo paso real:** **4D composition root** — cablear los adapters de 4C en [container.ts](src/lib/container.ts)
+    (factory functions de los 21 use cases). Ahí la infra se conecta de verdad y caen los 34 errores de
+    `lib/`. El push a **prod (Neon)** se hace junto con el redeploy de 4D/4E.
   - **Gap de diseño 4E pendiente:** el usuario genera refs con Claude design; Claude prepara el
     paquete/prompt por pantalla al llegar a 4E (ver [[project_design_4e]] en memoria).
   - **Auth NO bloquea:** tablas de Auth.js + `passwordHash` ya estaban; `User` quedó con role
@@ -121,8 +136,8 @@ Las preguntas van **primero**. Schema, permisos y código se derivan de ellas.
 ETAPA 0 — Definir el producto   ✅ COMPLETADA (2026-06-04)
 ETAPA 1 — Síntesis              ✅ COMPLETADA (2026-06-07)
 ETAPA 2 — Diseñar schema nuevo  ✅ COMPLETADA + APROBADA (2026-06-08)  (= Paso 9.2)
-ETAPA 3 — Migrar la BD + seed   🔄 local ✅, prod pendiente (va con 4C/4D)  (= Paso 9.3)
-ETAPA 4 — Refactor dominio + UI 🔄 EN CURSO — 4A ✅ · 4B ✅ · 4C/4D/4E ⬜  (= Paso 9.4)
+ETAPA 3 — Migrar la BD + seed   🔄 local ✅, prod pendiente (va con 4D)  (= Paso 9.3)
+ETAPA 4 — Refactor dominio + UI 🔄 EN CURSO — 4A ✅ · 4B ✅ · 4C ✅ · 4D/4E ⬜  (= Paso 9.4)
 ETAPA 5 — Cargar lugares a mano ⬜ pendiente  (= Paso 9.5)
 ```
 
