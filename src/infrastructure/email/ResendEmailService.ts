@@ -11,18 +11,27 @@ function escapeHtml(s: string): string {
 }
 
 export class ResendEmailService implements EmailService {
-  private readonly resend: Resend
+  private resend?: Resend
   private readonly from: string
 
+  // No se valida la API key al construir: un servicio de email no debe tumbar
+  // rutas que no mandan correo (el container instancia todos los adapters al cargar).
+  // La key se exige recién al enviar (lazy), donde sí importa.
   constructor() {
-    const apiKey = process.env.RESEND_API_KEY
-    if (!apiKey) throw new Error('RESEND_API_KEY is not set')
-    this.resend = new Resend(apiKey)
     this.from = process.env.EMAIL_FROM ?? 'Portal Panorama <hola@portalpanorama.cl>'
   }
 
+  private client(): Resend {
+    if (!this.resend) {
+      const apiKey = process.env.RESEND_API_KEY
+      if (!apiKey) throw new Error('RESEND_API_KEY is not set')
+      this.resend = new Resend(apiKey)
+    }
+    return this.resend
+  }
+
   async sendWelcome(to: string, name: string): Promise<void> {
-    await this.resend.emails.send({
+    await this.client().emails.send({
       from: this.from,
       to,
       subject: '¡Bienvenido a Portal Panorama!',

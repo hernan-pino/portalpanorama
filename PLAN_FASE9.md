@@ -4,7 +4,7 @@ Documento vivo. Se actualiza cada vez que avanzamos. Aquí vive el **orden de tr
 y el **estado de avance** de la Fase 9. Para el detalle de pasos de código, ver
 [ROADMAP.md](ROADMAP.md). Para las preguntas de producto, ver [PRODUCTO.md](PRODUCTO.md).
 
-**Última actualización:** 2026-06-09
+**Última actualización:** 2026-06-10
 
 ---
 
@@ -13,7 +13,7 @@ y el **estado de avance** de la Fase 9. Para el detalle de pasos de código, ver
 - **Etapa:** 4 — Refactor dominio + UI 🔄 **EN CURSO.** Sub-etapas: **4A domain ✅ · 4B application ✅**
   (commit `750340c`, 2026-06-09) · **4C infrastructure ✅** (commit `e13f7fd`, 2026-06-09) ·
   **4D composition root ✅** (2026-06-09) · **4E presentation 🔄 EN CURSO** (pasada 1 poda ✅; pasada 2
-  reescritura design-gated ⬜). Etapa 3 local ✅ (prod pendiente, va con 4E).
+  reescritura: ficha ✅ 2026-06-10 · explorar ⬜ · home ⬜). Etapa 3 local ✅ (prod pendiente, va con 4E).
   - **4E en curso (2026-06-09):** **Pasada 1 — poda ✅** (commit `4144e7d`): borradas 50 rutas/componentes
     post-MVP cuyos use cases ya no existen (negocio self-service, suscripciones/Flow, claims, tags-moderación,
     eventos, feed, favoritos-único). Errores 126 → 64. **Superficie consumer que queda** (15 archivos): ficha
@@ -37,7 +37,87 @@ y el **estado de avance** de la Fase 9. Para el detalle de pasos de código, ver
     borrados). Hay que reconstruirlo como **CRUD de Place** (listar + crear/editar + publicar/archivar) —
     habilita la **Etapa 5** (cargar ~100 lugares a mano). Necesita queries de catálogo (categorías ✅ via
     GetCategories; faltan tags/comunas/barrios/metro para los selectores del form).
-  - **Próximo:** usuario genera ref de la ficha ⇄ en paralelo, opción de construir el admin CRUD de Place.
+  - **Colgantes a barrer en la pasada 2 (revisión 2026-06-09):** (a) [ListingCard.tsx](src/components/listing/ListingCard.tsx)
+    sobrevivió a la poda — sigue con nombre/forma viejos (`ListingCardData`, `isPremium`) aunque ya renderiza
+    clases `.place-card`; compila porque su interfaz es local, pero sus únicos consumidores son las 3 hero →
+    renombrar/reescribir **dentro** de la pasada 2 para que no quede legacy colgando. (b) `admin/layout.tsx`
+    redirige a `/dashboard` a los no-admin; al reconstruir el admin CRUD, confirmar que esa ruta de fallback
+    existe. **Verificación de estado (2026-06-09):** confirmado que los 29 errores fuente están SOLO en el
+    cluster de las 3 hero (ficha 15 = 11 page + 4 actions · explorar 11 · home 3); domain/application/infra/
+    container en 0; schema en modelo `Place` sin modelos viejos; invariantes de capas OK. El "49" de `tsc`
+    incluye 20 errores autogenerados en `.next/types/validator.ts` (derivados de las rutas, no deuda real).
+  - **Ref de la ficha RECIBIDA Y APROBADA (2026-06-10):** el usuario generó la ref con Claude design. Zip
+    extraído a [design_briefs/4E_01_ficha_ref/](design_briefs/4E_01_ficha_ref/) (fuera de `src/`): capturas
+    móvil A (restaurante lleno) + móvil B (mirador escaso) + desktop A · código `source/*.jsx` + `ficha.css` ·
+    `tokens.md`. **Revisada y validada:** móvil impecable, degradación con gracia OK (en B desaparece Contacto,
+    aparece "Si llueve"), barra fija móvil con Guardar + Cómo llegar tal cual se pidió. Desktop-A tiene glitches
+    de **captura** (no de diseño; se reconstruye desde el código). El `tokens.md` es honesto y marca todo lo
+    fuera de sistema.
+  - **Mapeo de tokens ref → `globals.css` (a aplicar al reconstruir, NO copiar HTML):** la ref inventó nombres
+    propios. `--paper/--ink/--surface/--line` → `--paper-00..50 / --ink-100 / --bg-raised / --surface-line`;
+    `--sunset` → `--accent-60`; **radios de la ref `8/14/22` son más grandes que los nuestros `4/8/12`** → usar
+    los nuestros (ficha algo menos redondeada que el PNG); sombras inventadas → `--shadow-1..pop`; escala
+    tipográfica de la ref → nuestros `--t-*`.
+  - **Decisión cerrada — estrellas de Google (2026-06-10):** **agregar token `--star` dorado/ámbar apagado**
+    (~`#D9A444`, afinado a oklch para que se sienta nativo). NO usar el acento sunset (competiría con los CTA y
+    el rating se leería como botón). Criterio del usuario: importante pero sin ser el foco; el dorado cálido lo
+    distingue como "rating" sin romper la paleta crema.
+  - **Ficha IMPLEMENTADA (2026-06-10) ✅ — pasada 2 de 4E, pantalla #1:** reescrita
+    [lugar/[slug]/page.tsx](src/app/(main)/lugar/[slug]/page.tsx) como server component contra
+    `getGetPlaceBySlugUseCase()` (que ahora **lanza** `PlaceNotFoundError` → `notFound()`), mobile-first, un solo
+    árbol responsive (no se duplicó el chrome del mockup). Agregado token `--star` (oro/ámbar oklch) a
+    [globals.css](src/app/globals.css) + bloque `.ficha` reconstruido del handoff con **nuestros** radios (4/8/12/20),
+    no los de la ref (8/14/22). Borradas las reglas muertas `.place-*`/`.review`. Nuevos componentes cliente:
+    [SaveButton](src/app/(main)/lugar/[slug]/SaveButton.tsx) (guardar en lista: selector de colecciones + crear lista
+    nueva, B.9), [ShareButton](src/app/(main)/lugar/[slug]/ShareButton.tsx) (Web Share API + copia al portapapeles),
+    [ReportButton](src/app/(main)/lugar/[slug]/ReportButton.tsx) (reporte dato incorrecto/cerrado). Íconos en
+    [icons.tsx](src/app/(main)/lugar/[slug]/icons.tsx). [actions.ts](src/app/(main)/lugar/[slug]/actions.ts) reescrito:
+    `saveToCollectionAction` · `createListAndSaveAction` · `reportPlaceAction` (visitante anónimo o usuario). Borrados
+    `FavoriteButton`/`ReviewForm` (reseñas podadas). Etiquetas de enums (PriceRange/ReservationPolicy/RainPolicy) en
+    presentación. **Barra fija móvil** con Guardar + Cómo llegar tal cual la ref. `ListingCard` colgante NO entró
+    (la ficha usa su propio `.ficha__relcard`) → queda pendiente para explorar/home. **tsc: ficha en 0 errores**,
+    ESLint limpio. **Total fuente 29 → 14** (todos en el cluster explorar+home).
+  - **Ficha VERIFICADA en runtime (2026-06-10) ✅:** seed de demo con **7 lugares** que cubren el abanico
+    ([seed-demo.ts](src/infrastructure/db/prisma/seed-demo.ts), idempotente + `--clean`; BD local solo tenía catálogos,
+    0 lugares). Los 7 rinden HTTP 200; degradación con gracia confirmada (Mirador pobre oculta Contacto + estrellas;
+    Terraza llena muestra todo: datos, metro, rating, 3 grupos de tags, relacionados, "Si llueve"). **Fix de
+    acoplamiento encontrado al verificar:** [ResendEmailService](src/infrastructure/email/ResendEmailService.ts) lanzaba
+    `RESEND_API_KEY is not set` **al construirse** → como el container instancia todos los adapters al cargar, tumbaba
+    CUALQUIER ruta (incluida la ficha) con la key vacía. Ahora valida la key **lazy** (al enviar, no al construir).
+    `RESEND_API_KEY` está vacío en `.env.local` local (no afecta la ficha; afectaría el envío de bienvenida al registrarse).
+  - **Posible optimización anotada:** `GetUserDashboard` se llama por cada vista de ficha logueada solo para traer las
+    colecciones del SaveButton (arrastra también el historial) — si pesa, exponer un read-model "solo colecciones".
+  - **Pulido de la ficha (2026-06-10, feedback del usuario):** (a) **bug de estrellas** corregido — la estrella rellena
+    y la de contorno usaban paths distintos → relleno parcial corrido; unificadas a un solo path en
+    [icons.tsx](src/app/(main)/lugar/[slug]/icons.tsx). (b) **galería navegable** — nuevo
+    [Gallery.tsx](src/app/(main)/lugar/[slug]/Gallery.tsx): lightbox con anterior/siguiente + zoom al click + teclado
+    (←/→/Esc) + contador/crédito; miniaturas ahora son botones que abren el visor (antes decorativas). Efecto
+    secundario: las miniaturas salieron de la lámina redondeada y van bajo el hero (galería = hero+thumbs juntos).
+    (c) **relacionados → carrusel** horizontal con scroll-snap (antes grilla). (d) **bug de dato** en seed-demo:
+    Terraza tenía `secondaryCategory='gastronomia'` (duplicaba el chip) → quitado; agregada guarda defensiva en la UI
+    (no renderiza la secundaria si coincide con la principal) y Librería ahora demuestra una secundaria real
+    (Arte y cultura). tsc + ESLint limpios.
+  - **Briefs de las 2 refs que faltan LISTOS (2026-06-10):** [4E_02_explorar.md](design_briefs/4E_02_explorar.md)
+    (explorar + la tarjeta, con la composición acordada: rating en esquina de la foto + precio compacto + metro;
+    implica ampliar `PlaceCardView`) y [4E_03_home.md](design_briefs/4E_03_home.md) (home "por acción": search + fila
+    social + categorías + recomendados; reusa la tarjeta y chips de explorar). Cada archivo es autocontenido = el
+    prompt se pega entero a Claude design. El usuario los genera de forma asíncrona.
+  - **Pendiente no-visual de la ficha (anotado, no bloquea):** falta **JSON-LD `LocalBusiness`** + metadata más rica
+    (canonical, og) para SEO/GEO (scope MVP D.4/D.5). Se agrega en una pasada de SEO, no urge para el visual.
+  - **▶️ PRÓXIMO PASO (retomar acá):** **explorar** — pasada 2 de 4E, pantalla #2. Reescribir
+    [explorar/page.tsx](src/app/(main)/explorar/page.tsx) + [SearchBar](src/components/search/SearchBar.tsx) +
+    [FilterRail](src/components/search/FilterRail.tsx) + [parseSearchParams.ts](src/lib/parseSearchParams.ts) contra
+    `getSearchPlacesUseCase()`/`getGetPlaceFacetsUseCase()` y la nueva `SearchParams` (tags sociales/accesibilidad/
+    vibe/metro/comuna). Faltan los catálogos `@domain/shared/Neighborhoods` y `@domain/shared/Categories` que importan
+    SearchBar/FilterRail/parseSearchParams (ya no existen tras la poda → resolver con queries de catálogo o constantes).
+    Son **11 de los 14 errores**. Después: home (3). **Bloqueada por la ref de explorar** (gap de diseño 4E).
+  - **Decisión de tarjeta (2026-06-10, feedback del usuario):** la mini-ficha usa **toda la tarjeta**, no solo la
+    franja bajo la foto: **rating de Google superpuesto en esquina de la foto** + cuerpo (categoría·comuna, nombre)
+    + fila inferior con **precio compacto (`$`…`$$$$`, Gratis como texto)** + **badge de línea de metro**. Implica
+    **ampliar `PlaceCardView`** (sumar `metroLine {code,color}` opcional + su select en
+    [placeCardView.ts](src/infrastructure/db/placeCardView.ts)) — hacerlo al implementar explorar. La `ListingCard`
+    vieja se descarta (pedía tags/Premium/descripción que el modelo nuevo no da a la tarjeta). Brief actualizado:
+    [4E_02_explorar.md](design_briefs/4E_02_explorar.md).
   - **4D hecha (2026-06-09):** [container.ts](src/lib/container.ts) reescrito al modelo `Place` — 20 factory
     functions cableando los adapters de 4C (PrismaPlaceRepository/User/Category/Tag/Collection/VisitHistory/
     Report + PostgresFTSSearchService + BcryptPasswordHasher + ResendEmailService). Adapters instanciados una
