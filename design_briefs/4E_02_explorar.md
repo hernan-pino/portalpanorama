@@ -150,3 +150,53 @@ Con esa ref reconstruyo todo en React + Tailwind y lo cableo a `getSearchPlacesU
 
 > **Nota:** después de explorar viene **home** (pantalla #3), que reusa esta misma tarjeta + los
 > chips de "¿con quién voy?" y de categoría. Su brief sale corto apoyándose en esta ref.
+
+---
+
+## 8. Decisiones post-ref (2026-06-10) — cómo se IMPLEMENTA (manda sobre lo de arriba)
+
+> La ref llegó y se revisó con el usuario. La **tarjeta** se aprobó tal cual (foto 4:3 + rating
+> superpuesto + corazón + precio compacto + badge de metro, con degradación con gracia). Pero la
+> **composición de la página cambió** respecto al brief. Lo de abajo es lo que se construye; donde
+> contradiga a las secciones 1–6, **gana esto**.
+
+1. **Categoría = filtro PRINCIPAL (no lo social).** Se invierte la jerarquía del brief. El modelo
+   mental del usuario es "primero veo *cafetería*, después si es para *pareja*". Arriba mandan las
+   **categorías** (las 4 con lugares en el MVP) y al elegir una aparecen sus **subcategorías**. Lo
+   **social** baja a ser un filtro que refina, no la puerta de entrada. (El social sigue siendo el
+   diferenciador del producto —1.3— pero deja de ser el héroe visual: ocupaba demasiado espacio.)
+
+2. **Todo en acordeón colapsable.** Para no saturar la vista, cada bloque de filtro tiene cabecera
+   con toggle (chevron ▾/▸) + badge con nº de filtros activos, y se abre/cierra. **Categorías** =
+   primer bloque, **abierto por defecto** (es el primario). **¿Con quién vas?** = bloque colapsado
+   debajo. **Más filtros** (precio · dónde · ambiente · accesibilidad · sin reserva) = grupos
+   colapsables (en móvil dentro del bottom-sheet; en desktop en el rail). Mismo patrón en ambas vistas.
+
+3. **Categorías visibles también en desktop.** La ref las dejó solo en móvil; ahora la franja
+   superior de categorías va en **ambas** vistas (en la ref desktop directamente faltaban).
+
+4. **Fuera la nota "Mostrando primero Providencia".** Se elimina el orden por comuna-home del MVP
+   (anula lo de la sección 5 y ajusta C.3-bis del plan). El orden por defecto es **reputación** a
+   secas. Lo geográfico ("a 5 min / a 15 min" en la ficha) entra **después**, cuando se pida
+   ubicación actual y se usen las lat/lng. La `ComunaNote` no se construye.
+
+5. **Corazón para guardar desde la tarjeta** (ya viene en la ref). Se cablea al flujo de colecciones
+   de la ficha (elegir lista / crear lista). Como las listas son del usuario, si un **visitante
+   anónimo** toca el corazón → **pop-up** preguntando si quiere iniciar sesión / registrarse para
+   guardar (no redirección seca).
+
+6. **Indicador de "qué se está buscando" = filtros activos** (2026-06-10, idea del usuario). Aunque
+   se quitó la nota de comuna-home (punto 4), **se conserva ese tratamiento visual** —el pill cálido
+   con texto + acción reversible— pero repurposeado para mostrar los **filtros aplicados** (ej.
+   "Café · en pareja · Providencia · limpiar"). Da feedback de qué está acotando los resultados y
+   permite quitarlos. **Pendiente, a especificar al implementar** (no estaba en la ref).
+
+**Implicancias técnicas confirmadas (schema OK, sin migración):**
+- Ampliar `PlaceCardView` con `metroLine` (vía `Place.metroStation → MetroStation.lines[]`, que es
+  many-to-many: una estación puede tener 1-2 líneas → mostrar las que haya, normalmente 1). Toca
+  [placeCardView.ts](../src/infrastructure/db/placeCardView.ts).
+- Sumar dimensión **`subcategories`** a `PlaceFacets` (port `SearchService` + `getFacets` en infra)
+  para que las subcategorías salgan con contador y se oculten las vacías (patrón P3). Encaja con
+  facetas estáticas: una subcategoría pertenece a una sola categoría, su contador global = el de su
+  categoría. La UI agrupa por categoría usando el catálogo (`GetCategories`).
+- El resto (acordeón, pop-up de login) es **presentación pura**, sin impacto en dominio/datos.

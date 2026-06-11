@@ -1,7 +1,7 @@
 'use client'
 import { useState, useRef, useEffect, useTransition } from 'react'
 import { BookmarkIcon } from './icons'
-import { saveToCollectionAction, createListAndSaveAction } from './actions'
+import { saveToCollectionAction, createListAndSaveAction } from '@/app/actions/collections'
 
 interface Collection {
   id: string

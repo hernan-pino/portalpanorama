@@ -13,7 +13,7 @@ y el **estado de avance** de la Fase 9. Para el detalle de pasos de código, ver
 - **Etapa:** 4 — Refactor dominio + UI 🔄 **EN CURSO.** Sub-etapas: **4A domain ✅ · 4B application ✅**
   (commit `750340c`, 2026-06-09) · **4C infrastructure ✅** (commit `e13f7fd`, 2026-06-09) ·
   **4D composition root ✅** (2026-06-09) · **4E presentation 🔄 EN CURSO** (pasada 1 poda ✅; pasada 2
-  reescritura: ficha ✅ 2026-06-10 · explorar ⬜ · home ⬜). Etapa 3 local ✅ (prod pendiente, va con 4E).
+  reescritura: ficha ✅ 2026-06-10 · explorar ✅ 2026-06-10 · home ⬜). Etapa 3 local ✅ (prod pendiente, va con 4E).
   - **4E en curso (2026-06-09):** **Pasada 1 — poda ✅** (commit `4144e7d`): borradas 50 rutas/componentes
     post-MVP cuyos use cases ya no existen (negocio self-service, suscripciones/Flow, claims, tags-moderación,
     eventos, feed, favoritos-único). Errores 126 → 64. **Superficie consumer que queda** (15 archivos): ficha
@@ -104,13 +104,57 @@ y el **estado de avance** de la Fase 9. Para el detalle de pasos de código, ver
     prompt se pega entero a Claude design. El usuario los genera de forma asíncrona.
   - **Pendiente no-visual de la ficha (anotado, no bloquea):** falta **JSON-LD `LocalBusiness`** + metadata más rica
     (canonical, og) para SEO/GEO (scope MVP D.4/D.5). Se agrega en una pasada de SEO, no urge para el visual.
-  - **▶️ PRÓXIMO PASO (retomar acá):** **explorar** — pasada 2 de 4E, pantalla #2. Reescribir
-    [explorar/page.tsx](src/app/(main)/explorar/page.tsx) + [SearchBar](src/components/search/SearchBar.tsx) +
-    [FilterRail](src/components/search/FilterRail.tsx) + [parseSearchParams.ts](src/lib/parseSearchParams.ts) contra
-    `getSearchPlacesUseCase()`/`getGetPlaceFacetsUseCase()` y la nueva `SearchParams` (tags sociales/accesibilidad/
-    vibe/metro/comuna). Faltan los catálogos `@domain/shared/Neighborhoods` y `@domain/shared/Categories` que importan
-    SearchBar/FilterRail/parseSearchParams (ya no existen tras la poda → resolver con queries de catálogo o constantes).
-    Son **11 de los 14 errores**. Después: home (3). **Bloqueada por la ref de explorar** (gap de diseño 4E).
+  - **Ref de explorar RECIBIDA + decisiones cerradas (2026-06-10):** el usuario generó la ref (canvas con la
+    tarjeta + 5 frames: explorar móvil, bottom-sheet de filtros, lista, vacío, desktop) y la revisó con Claude.
+    **La tarjeta se aprobó tal cual**; **la composición de la página cambió.** Decisiones (detalle en
+    [4E_02_explorar.md](design_briefs/4E_02_explorar.md) §8): (1) **categoría = filtro principal**, no lo social
+    — modelo mental "primero cafetería, después si es para pareja"; al elegir categoría salen sus **subcategorías**;
+    lo social baja a filtro que refina (sigue siendo el diferenciador, pero deja de ser el héroe visual: ocupaba
+    mucho). (2) **Todo en acordeón colapsable** (cabecera con toggle + badge de nº activos); Categorías abierto por
+    defecto, ¿Con quién vas? colapsado, Más filtros = grupos colapsables (móvil en bottom-sheet, desktop en rail).
+    (3) **Categorías visibles también en desktop** (la ref las dejó solo en móvil). (4) **Fuera la nota "Mostrando
+    primero Providencia"** → se elimina el orden por comuna-home del MVP (**ajusta C.3-bis**); orden por defecto =
+    reputación a secas; lo geográfico ("a 5 min") entra después con ubicación actual + lat/lng. (5) **Corazón para
+    guardar desde la tarjeta** (ya en la ref) → cablear al flujo de colecciones de la ficha; **visitante anónimo →
+    pop-up** preguntando si quiere iniciar sesión/registrarse (no redirección seca). (6) **Indicador de
+    filtros activos** — se conserva el tratamiento visual del pill "Mostrando primero…" (texto + acción
+    reversible) pero repurposeado para mostrar **qué filtros están aplicados** (ej. "Café · en pareja ·
+    Providencia · limpiar"); pendiente, a especificar al implementar (no estaba en la ref).
+  - **Feasibility verificada (2026-06-10, sin migración):** `SearchParams` ya tiene category/subcategory/social/
+    etc.; `PlaceFacets` ya trae categories·social·communes·metroLines·priceRanges·access·vibe. **Dos adiciones
+    chicas que cruzan capas:** (a) ampliar `PlaceCardView` con `metroLine` (vía `Place.metroStation →
+    MetroStation.lines[]`, many-to-many: Baquedano = L1+L5 → mostrar 1-2 badges) en
+    [placeCardView.ts](src/infrastructure/db/placeCardView.ts); (b) sumar dimensión **`subcategories`** a
+    `PlaceFacets` (port `SearchService` + `getFacets`) para contador + ocultar vacías. El resto (acordeón,
+    pop-up login) es presentación pura.
+  - **Explorar IMPLEMENTADO + VERIFICADO (2026-06-10) ✅ — pasada 2 de 4E, pantalla #2:** reescrita
+    [explorar/page.tsx](src/app/(main)/explorar/page.tsx) como server component contra
+    `getSearchPlacesUseCase()` + `getGetPlaceFacetsUseCase()` + `getGetCategoriesUseCase()` + auth (corazón). Aplicadas
+    las **2 adiciones que cruzan capas**: (a) `PlaceCardView.metroLines[{code,color}]` en
+    [PlaceRepository.ts](src/application/ports/PlaceRepository.ts) + select/mapper en
+    [placeCardView.ts](src/infrastructure/db/placeCardView.ts); (b) faceta **`subcategories`** en
+    [SearchService.ts](src/application/ports/SearchService.ts) + `subcategoryFacets()` en
+    [PostgresFTSSearchService.ts](src/infrastructure/search/PostgresFTSSearchService.ts). Decisiones §8 cableadas:
+    **categoría = filtro principal** (franja superior en ambas vistas + subcategorías al elegir rubro), **acordeón**
+    colapsable ([Filters.tsx](src/components/search/Filters.tsx): rail desktop / bottom-sheet móvil, badge de nº activos),
+    **pill de filtros activos** reversible ("Mostrando · Café · Providencia · limpiar"), **sin** nota de comuna-home
+    (orden = reputación a secas), **corazón** en la tarjeta cableado al flujo de listas con **pop-up para anónimo**
+    ([SaveHeart.tsx](src/components/place/SaveHeart.tsx)). Nueva **tarjeta** [PlaceCard.tsx](src/components/place/PlaceCard.tsx)
+    (server + isla cliente del corazón; variantes grid/lista) reemplaza la `ListingCard` vieja (borrada con `FilterRail`).
+    [parseSearchParams.ts](src/lib/parseSearchParams.ts) reescrito a la nueva `SearchParams` (sin los catálogos
+    `@domain/shared/*`; saneo de forma, no de existencia). Acciones de guardar centralizadas en
+    [collections.ts](src/app/actions/collections.ts) (la ficha re-exporta de ahí; dedup). [SearchBar](src/components/search/SearchBar.tsx)
+    adelgazado a query libre. CSS de explorar/tarjeta/filtros reconstruido en [globals.css](src/app/globals.css) con los
+    tokens reales (borradas reglas muertas `.search-shell`/`.filter-rail`/`.place-row`). **tsc: clúster explorar en 0
+    errores · ESLint limpio.** Runtime con el seed de 7 lugares: `/explorar` HTTP 200 (7 lugares, 4 categorías, 6 secciones
+    de filtro, rating en 6/7 — Mirador pobre lo oculta, badges de metro, precio compacto, corazón); `?categoria=gastronomia`
+    → 3 lugares + pill activo + franja de subcategorías. **Total fuente 14 → 4** (los 4 son SOLO home).
+  - **▶️ PRÓXIMO PASO (retomar acá):** **implementar home** (pantalla #3, design-gated). Brief listo
+    [4E_03_home.md](design_briefs/4E_03_home.md) ("por acción": search + fila social + categorías + recomendados; reusa
+    `PlaceCard` + chips de explorar). Reescribir [page.tsx](src/app/(main)/page.tsx) (los 4 errores fuente restantes:
+    importa `ListingCard` borrado + `getSearchListingsUseCase` inexistente). Cierra 4E → después push a **prod (Neon)** +
+    Etapa 5 (admin CRUD + carga de lugares). **Pendiente menor anotado:** la `ListingCard` vieja ya no existe; revisar si
+    `@domain/shared/Neighborhoods` quedó huérfano (lo usaban los componentes podados) y barrerlo si nadie lo importa.
   - **Decisión de tarjeta (2026-06-10, feedback del usuario):** la mini-ficha usa **toda la tarjeta**, no solo la
     franja bajo la foto: **rating de Google superpuesto en esquina de la foto** + cuerpo (categoría·comuna, nombre)
     + fila inferior con **precio compacto (`$`…`$$$$`, Gratis como texto)** + **badge de línea de metro**. Implica

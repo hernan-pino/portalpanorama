@@ -16,6 +16,8 @@ export const placeCardArgs = Prisma.validator<Prisma.PlaceDefaultArgs>()({
     category: { select: { name: true } },
     commune: { select: { name: true } },
     neighborhood: { select: { name: true } },
+    // Línea(s) de metro de la estación más cercana (badge en la tarjeta, color oficial).
+    metroStation: { select: { lines: { select: { code: true, color: true } } } },
     // Portada: la marcada como principal, o la primera por orden.
     images: {
       orderBy: [{ isPrimary: 'desc' }, { sortOrder: 'asc' }],
@@ -39,6 +41,7 @@ export function toPlaceCardView(row: PlaceCardRow): PlaceCardView {
     coverUrl: row.images[0]?.url,
     googleRating: row.googleRating ?? undefined,
     googleReviewCount: row.googleReviewCount ?? undefined,
+    metroLines: row.metroStation?.lines.map((l) => ({ code: l.code, color: l.color })),
     score: row.score,
   }
 }

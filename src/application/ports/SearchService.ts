@@ -39,6 +39,9 @@ export interface FacetCount {
 // Contadores estáticos por dimensión (MVP: no se recombinan dinámicamente).
 export interface PlaceFacets {
   categories: FacetCount[]
+  // Subcategorías con contador. Cada una pertenece a una sola categoría; la UI
+  // las agrupa bajo su categoría (vía el catálogo) y oculta las de count 0.
+  subcategories: FacetCount[]
   communes: FacetCount[]
   neighborhoods: FacetCount[]
   metroLines: FacetCount[]

@@ -13,6 +13,9 @@ export interface PlaceCardView {
   coverUrl?: string
   googleRating?: number
   googleReviewCount?: number
+  // Líneas de metro de la estación más cercana (M2M: normalmente 1, a veces 2).
+  // La tarjeta muestra el/los badge(s) con su color oficial. Vacío si no aplica.
+  metroLines?: { code: string; color: string }[]
   score: number
 }
 

@@ -1,10 +1,10 @@
 import type { Metadata } from 'next'
-import Image from 'next/image'
 import Link from 'next/link'
-import { SearchBar } from '@components/search/SearchBar'
-import { FilterRail } from '@components/search/FilterRail'
-import { ListingCard } from '@components/listing/ListingCard'
+import { auth } from '@lib/auth'
 import { container } from '@lib/container'
+import { SearchBar } from '@components/search/SearchBar'
+import { Filters } from '@components/search/Filters'
+import { PlaceCard, type SaveContext } from '@components/place/PlaceCard'
 import { parseSearchParams, type RawSearchParams } from '@lib/parseSearchParams'
 
 export const metadata: Metadata = { title: 'Explorar lugares — Portal Panorama' }
@@ -15,166 +15,218 @@ interface PageProps {
 
 export default async function ExplorarPage({ searchParams }: PageProps) {
   const raw = await searchParams
-  const { query, barrio, comuna, categoria, priceRanges, isPremium, page, view } = parseSearchParams(raw)
+  const f = parseSearchParams(raw)
+  const session = await auth()
+  const userId = session?.user?.id ?? undefined
 
-  const useCase = container.getSearchListingsUseCase()
-  const [result, categoryFacets, dbCategories] = await Promise.all([
-    useCase.execute({ query, neighborhood: barrio, commune: comuna, categorySlug: categoria, priceRanges, isPremium, page, limit: 24 }),
-    container.getGetCategoryFacetsUseCase().execute(),
+  // Discovery + facetas + catálogo de categorías (para la franja y las subcategorías).
+  const [result, facets, categories] = await Promise.all([
+    container.getSearchPlacesUseCase().execute({
+      query: f.query,
+      categorySlug: f.categorySlug,
+      subcategorySlug: f.subcategorySlug,
+      communeSlug: f.communeSlug,
+      neighborhoodSlug: f.neighborhoodSlug,
+      metroLineCode: f.metroLineCode,
+      metroStationSlug: f.metroStationSlug,
+      priceRanges: f.priceRanges,
+      socialTagSlugs: f.socialTagSlugs,
+      accessTagSlugs: f.accessTagSlugs,
+      vibeTagSlugs: f.vibeTagSlugs,
+      walkInOnly: f.walkInOnly,
+      page: f.page,
+      limit: 24,
+    }),
+    container.getGetPlaceFacetsUseCase().execute(),
     container.getGetCategoriesUseCase().execute(),
   ])
-  const categoryCounts = Object.fromEntries(categoryFacets.map((f) => [f.categorySlug, f.count]))
-  const categories = dbCategories
 
-  const activeFilters = [query, barrio, comuna, categoria, priceRanges?.length, isPremium].filter(Boolean)
-  const headTitle = query ?? barrio ?? comuna ?? categoria ?? 'Todo Santiago'
+  // Contexto de guardado (corazón de la tarjeta). Las colecciones se traen una vez.
+  let save: SaveContext = { isLoggedIn: !!userId, collections: [] }
+  if (userId) {
+    const dashboard = await container.getGetUserDashboardUseCase().execute(userId)
+    save = {
+      isLoggedIn: true,
+      collections: dashboard.collections.map((c) => ({ id: c.id, name: c.name, itemCount: c.itemCount })),
+    }
+  }
+
+  // Mapas de contador/label para la franja de categorías y el pill de activos.
+  const catCount = new Map(facets.categories.map((c) => [c.value, c.count]))
+  const subCount = new Map(facets.subcategories.map((s) => [s.value, s.count]))
+  const labelOf = (opts: { value: string; label: string }[]) =>
+    new Map(opts.map((o) => [o.value, o.label]))
+  const socialLabels = labelOf(facets.social)
+  const priceLabels = labelOf(facets.priceRanges)
+  const communeLabels = labelOf(facets.communes)
+  const hoodLabels = labelOf(facets.neighborhoods)
+  const metroLabels = labelOf(facets.metroLines)
+  const vibeLabels = labelOf(facets.vibe)
+  const accessLabels = labelOf(facets.access)
+
+  const activeCategory = categories.find((c) => c.slug === f.categorySlug)
+  // Subcategorías del rubro activo que tengan lugares (contador > 0).
+  const activeSubs = activeCategory
+    ? activeCategory.subcategories.filter((s) => (subCount.get(s.slug) ?? 0) > 0)
+    : []
+
+  // ── URLs (transporte: arman el query string preservando el resto) ──
+  const base = () => {
+    const p = new URLSearchParams()
+    for (const [k, v] of Object.entries(raw)) if (typeof v === 'string' && v) p.set(k, v)
+    return p
+  }
+  const hrefWith = (mut: (p: URLSearchParams) => void) => {
+    const p = base()
+    p.delete('pagina')
+    mut(p)
+    const qs = p.toString()
+    return qs ? `/explorar?${qs}` : '/explorar'
+  }
+  const categoryHref = (slug: string) =>
+    hrefWith((p) => {
+      if (p.get('categoria') === slug) { p.delete('categoria'); p.delete('subcategoria') }
+      else { p.set('categoria', slug); p.delete('subcategoria') }
+    })
+  const subcategoryHref = (slug: string) =>
+    hrefWith((p) => { if (p.get('subcategoria') === slug) p.delete('subcategoria'); else p.set('subcategoria', slug) })
+  const viewHref = (view: 'grid' | 'lista') => hrefWith((p) => p.set('view', view))
+  const pageHref = (n: number) => {
+    const p = base()
+    p.set('pagina', String(n))
+    return `/explorar?${p.toString()}`
+  }
+  const removeSingle = (key: string) => hrefWith((p) => p.delete(key))
+  const removeFromMulti = (key: string, value: string) =>
+    hrefWith((p) => {
+      const next = (p.get(key) ?? '').split(',').filter((v) => v && v !== value)
+      if (next.length) p.set(key, next.join(',')); else p.delete(key)
+    })
+
+  // ── Chips de filtros activos (4E §8.6: qué se está buscando, reversible) ──
+  const activeChips: { label: string; href: string }[] = []
+  if (f.query) activeChips.push({ label: `“${f.query}”`, href: removeSingle('q') })
+  if (activeCategory) activeChips.push({ label: activeCategory.name, href: removeSingle('categoria') })
+  if (f.subcategorySlug) {
+    const sub = activeCategory?.subcategories.find((s) => s.slug === f.subcategorySlug)
+    if (sub) activeChips.push({ label: sub.name, href: removeSingle('subcategoria') })
+  }
+  for (const slug of f.socialTagSlugs ?? [])
+    activeChips.push({ label: socialLabels.get(slug) ?? slug, href: removeFromMulti('con', slug) })
+  for (const pr of f.priceRanges ?? [])
+    activeChips.push({ label: priceLabels.get(pr) ?? pr, href: removeFromMulti('precio', pr) })
+  if (f.communeSlug) activeChips.push({ label: communeLabels.get(f.communeSlug) ?? f.communeSlug, href: removeSingle('comuna') })
+  if (f.neighborhoodSlug) activeChips.push({ label: hoodLabels.get(f.neighborhoodSlug) ?? f.neighborhoodSlug, href: removeSingle('barrio') })
+  if (f.metroLineCode) activeChips.push({ label: `Metro ${f.metroLineCode}${metroLabels.get(f.metroLineCode) ? ` · ${metroLabels.get(f.metroLineCode)}` : ''}`, href: removeSingle('metro') })
+  for (const slug of f.vibeTagSlugs ?? [])
+    activeChips.push({ label: vibeLabels.get(slug) ?? slug, href: removeFromMulti('ambiente', slug) })
+  for (const slug of f.accessTagSlugs ?? [])
+    activeChips.push({ label: accessLabels.get(slug) ?? slug, href: removeFromMulti('acceso', slug) })
+  if (f.walkInOnly) activeChips.push({ label: 'Sin reserva', href: removeSingle('sinreserva') })
 
   return (
-    <div className="page-enter">
-      <div className="search-shell container">
+    <div className="explorar page-enter">
+      <div className="explorar__head container">
+        <div className="hero__eyebrow" style={{ margin: 0 }}>
+          <span className="line" aria-hidden="true" />
+          <span className="eyebrow">Explorar · Lugares</span>
+        </div>
+        <h1 className="explorar__title">
+          Qué hacer en <em>Santiago</em>
+        </h1>
+        <SearchBar compact />
 
-        {/* ── Filter rail (Client Component) ── */}
-        <FilterRail totalResults={result.total} categoryCounts={categoryCounts} categories={categories} />
+        {/* Franja de categorías (protagonista, ambas vistas — §8.1/§8.3) */}
+        <nav className="cat-strip" aria-label="Categorías">
+          {categories.map((c) => {
+            const active = c.slug === f.categorySlug
+            const count = catCount.get(c.slug) ?? 0
+            return (
+              <Link
+                key={c.slug}
+                href={categoryHref(c.slug)}
+                className={`cat-chip${active ? ' is-active' : ''}`}
+                aria-pressed={active}
+              >
+                {c.name}
+                <span className="cat-chip__count">{count}</span>
+              </Link>
+            )
+          })}
+        </nav>
 
-        {/* ── Main ── */}
-        <div className="search-shell__main">
+        {/* Subcategorías del rubro elegido */}
+        {activeSubs.length > 0 && (
+          <nav className="sub-strip" aria-label="Subcategorías">
+            {activeSubs.map((s) => {
+              const active = s.slug === f.subcategorySlug
+              return (
+                <Link
+                  key={s.slug}
+                  href={subcategoryHref(s.slug)}
+                  className={`chip chip--count${active ? ' chip--accent' : ''}`}
+                  aria-pressed={active}
+                >
+                  {s.name}
+                  <span className="chip__count">{subCount.get(s.slug)}</span>
+                </Link>
+              )
+            })}
+          </nav>
+        )}
+      </div>
 
-          {/* Encabezado de búsqueda */}
-          <div className="search-head">
-            <div className="hero__eyebrow" style={{ margin: 0 }}>
-              <span className="line" aria-hidden="true" />
-              <span className="eyebrow">
-                {categoria ? `${headTitle} · Lugares` : query ? 'Búsqueda · Lugares' : 'Explorar · Lugares'}
-              </span>
+      <div className="explorar__shell container">
+        <Filters facets={facets} />
+
+        <div className="explorar__main">
+          {/* Pill de filtros activos */}
+          {activeChips.length > 0 && (
+            <div className="active-filters">
+              <span className="active-filters__label">Mostrando</span>
+              {activeChips.map((chip, i) => (
+                <Link key={i} href={chip.href} className="active-chip" aria-label={`Quitar ${chip.label}`}>
+                  {chip.label}
+                  <span className="active-chip__x" aria-hidden="true">×</span>
+                </Link>
+              ))}
+              <Link href="/explorar" className="active-filters__clear">limpiar</Link>
             </div>
-            <h1 className="search-head__title">
-              {headTitle === 'Todo Santiago' ? (
-                <>Todo <em style={{ color: 'var(--accent-60)' }}>Santiago</em></>
-              ) : (
-                <em style={{ color: 'var(--accent-60)' }}>{headTitle}</em>
-              )}
-            </h1>
-            <div className="search-head__bar">
-              <SearchBar compact />
-            </div>
-          </div>
+          )}
 
-          {/* Results bar */}
+          {/* Barra de resultados */}
           <div className="results-bar">
             <div className="results-bar__count">
-              <strong>{result.total}</strong>{' '}
-              {result.total === 1 ? 'lugar' : 'lugares'}
-              {activeFilters.length === 0 && (
-                <span style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', color: 'var(--fg-muted)', letterSpacing: '0.08em', textTransform: 'uppercase', marginLeft: 'var(--s-3)' }}>
-                  ordenado por relevancia
-                </span>
-              )}
+              <strong>{result.total}</strong> {result.total === 1 ? 'lugar' : 'lugares'}
+              {activeChips.length === 0 && <span className="results-bar__sort">ordenado por relevancia</span>}
             </div>
-            <div className="results-bar__tools">
-              <div className="toggle-group">
-                <Link href={buildUrl(raw, { view: 'grid' })} aria-pressed={view === 'grid'}>
-                  <GridIcon /> Grid
-                </Link>
-                <Link href={buildUrl(raw, { view: 'lista' })} aria-pressed={view === 'lista'}>
-                  <ListIcon /> Lista
-                </Link>
-              </div>
+            <div className="toggle-group" role="group" aria-label="Vista">
+              <Link href={viewHref('grid')} aria-pressed={f.view === 'grid'}><GridIcon /> Grid</Link>
+              <Link href={viewHref('lista')} aria-pressed={f.view === 'lista'}><ListIcon /> Lista</Link>
             </div>
           </div>
 
-          {/* Results */}
+          {/* Resultados */}
           {result.items.length > 0 ? (
             <>
-              {view === 'grid' ? (
-                <div className="results-grid">
-                  {result.items.map((item) => (
-                    <ListingCard
-                      key={item.listingId}
-                      listing={{
-                        slug: item.slug,
-                        name: item.name,
-                        neighborhood: item.neighborhood,
-                        categoryName: item.categoryName,
-                        coverUrl: item.coverUrl,
-                        averageRating: item.averageRating,
-                        reviewCount: item.reviewCount,
-                        isGoogleRating: item.isGoogleRating,
-                        isPremium: item.isPremium,
-                        priceRange: item.priceRange,
-                        tags: item.tags,
-                      }}
-                    />
-                  ))}
-                </div>
-              ) : (
-                <div className="results-list">
-                  {result.items.map((item) => (
-                    <Link key={item.listingId} href={`/lugar/${item.slug}`} className="place-row">
-                      <div className="place-row__media" style={{ position: 'relative', overflow: 'hidden' }}>
-                        {item.coverUrl ? (
-                          <Image src={item.coverUrl} alt={item.name} fill sizes="120px" style={{ objectFit: 'cover' }} />
-                        ) : (
-                          <div className="placeholder-stripe" style={{ width: '100%', height: '100%' }} />
-                        )}
-                        {item.isPremium && (
-                          <span className="premium-badge" style={{ position: 'absolute', top: '8px', left: '8px', zIndex: 3, background: 'var(--paper-00)', fontSize: '10px', padding: '2px 6px' }}>
-                            Premium
-                          </span>
-                        )}
-                      </div>
-                      <div className="place-row__body">
-                        <div className="place-card__meta">
-                          <span>{item.categoryName}</span>
-                          <span className="dot" aria-hidden="true" />
-                          <span>{item.neighborhood}</span>
-                        </div>
-                        <h3 className="place-row__title">{item.name}</h3>
-                        {item.description && (
-                          <p style={{ fontSize: 'var(--t-body-sm)', color: 'var(--fg-muted)', margin: '4px 0 0', lineHeight: 1.5, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' } as React.CSSProperties}>
-                            {item.description}
-                          </p>
-                        )}
-                        <div className="place-row__foot" style={{ display: 'flex', gap: 'var(--s-3)', alignItems: 'center', marginTop: 'var(--s-2)' }}>
-                          {item.averageRating !== undefined && (
-                            <span className="rating">
-                              <StarIcon />
-                              <span className="rating__num">{item.averageRating.toFixed(1)}</span>
-                              {item.reviewCount > 0 && <span className="rating__count">· {item.reviewCount}</span>}
-                            </span>
-                          )}
-                          {item.priceRange && (
-                            <span style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', color: 'var(--fg-muted)' }}>{'$'.repeat(item.priceRange)}</span>
-                          )}
-                        </div>
-                      </div>
-                      <span className="place-row__cta" aria-hidden="true"><ArrowIcon /></span>
-                    </Link>
-                  ))}
-                </div>
-              )}
+              <div className={f.view === 'lista' ? 'results-list' : 'results-grid'}>
+                {result.items.map((place) => (
+                  <PlaceCard key={place.id} place={place} save={save} variant={f.view === 'lista' ? 'list' : 'grid'} />
+                ))}
+              </div>
 
               {result.totalPages > 1 && (
-                <div style={{ display: 'flex', gap: 'var(--s-2)', justifyContent: 'center', marginTop: 'var(--s-12)' }}>
-                  {page > 1 && (
-                    <Link href={buildUrl(raw, { pagina: String(page - 1) })} className="btn btn--ghost btn--sm">← Anterior</Link>
-                  )}
-                  <span style={{ display: 'flex', alignItems: 'center', fontSize: 'var(--t-body-sm)', color: 'var(--fg-muted)', padding: '0 var(--s-3)' }}>
-                    {page} / {result.totalPages}
-                  </span>
-                  {page < result.totalPages && (
-                    <Link href={buildUrl(raw, { pagina: String(page + 1) })} className="btn btn--ghost btn--sm">Siguiente →</Link>
-                  )}
-                </div>
+                <nav className="pager" aria-label="Paginación">
+                  {f.page > 1 && <Link href={pageHref(f.page - 1)} className="btn btn--ghost btn--sm">← Anterior</Link>}
+                  <span className="pager__pos">{f.page} / {result.totalPages}</span>
+                  {f.page < result.totalPages && <Link href={pageHref(f.page + 1)} className="btn btn--ghost btn--sm">Siguiente →</Link>}
+                </nav>
               )}
             </>
           ) : (
-            <div style={{ textAlign: 'center', paddingTop: 'var(--s-16)', paddingBottom: 'var(--s-16)' }}>
-              <p style={{ fontFamily: 'var(--font-display)', fontSize: 'var(--t-h2)', marginBottom: 'var(--s-3)', color: 'var(--fg-muted)', fontStyle: 'italic' }}>
-                Sin resultados
-              </p>
-              <p style={{ color: 'var(--fg-muted)', fontSize: 'var(--t-body-sm)', marginBottom: 'var(--s-6)' }}>
-                No encontramos lugares con esa búsqueda. Probá con otros términos.
-              </p>
+            <div className="results-empty">
+              <p className="results-empty__title">Sin resultados</p>
+              <p className="results-empty__lead">No encontramos lugares con esos filtros. Probá quitando alguno.</p>
               <Link href="/explorar" className="btn btn--ghost">Ver todos los lugares</Link>
             </div>
           )}
@@ -184,44 +236,18 @@ export default async function ExplorarPage({ searchParams }: PageProps) {
   )
 }
 
-/* ── Icons ── */
-function ArrowIcon() {
-  return (
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-      <path d="M5 12h14" /><path d="m13 6 6 6-6 6" />
-    </svg>
-  )
-}
-function StarIcon() {
-  return (
-    <svg className="ico ico-sm" viewBox="0 0 24 24" fill="var(--accent-60)" stroke="var(--accent-60)" strokeWidth="1.5" aria-hidden="true">
-      <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
-    </svg>
-  )
-}
 function GridIcon() {
   return (
-    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-      <rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/>
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <rect x="3" y="3" width="7" height="7" /><rect x="14" y="3" width="7" height="7" /><rect x="3" y="14" width="7" height="7" /><rect x="14" y="14" width="7" height="7" />
     </svg>
   )
 }
 function ListIcon() {
   return (
-    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-      <line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/>
-      <line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/>
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <line x1="8" y1="6" x2="21" y2="6" /><line x1="8" y1="12" x2="21" y2="12" /><line x1="8" y1="18" x2="21" y2="18" />
+      <line x1="3" y1="6" x2="3.01" y2="6" /><line x1="3" y1="12" x2="3.01" y2="12" /><line x1="3" y1="18" x2="3.01" y2="18" />
     </svg>
   )
-}
-
-/* ── Helpers ── */
-function buildUrl(current: Record<string, string | undefined>, overrides: Record<string, string | undefined>): string {
-  const merged = { ...current, ...overrides }
-  const p = new URLSearchParams()
-  for (const [k, v] of Object.entries(merged)) {
-    if (v !== undefined) p.set(k, v)
-  }
-  if (!('pagina' in overrides)) p.delete('pagina')
-  return `/explorar?${p.toString()}`
 }

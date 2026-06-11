@@ -103,16 +103,19 @@ export class PostgresFTSSearchService implements SearchService {
 
   // ── Facetas estáticas con contadores (P3). La UI oculta las de count 0. ──
   async getFacets(): Promise<PlaceFacets> {
-    const [categories, communes, neighborhoods, priceRanges, metroLines, tags] = await Promise.all([
-      this.categoryFacets(),
-      this.communeFacets(),
-      this.neighborhoodFacets(),
-      this.priceRangeFacets(),
-      this.metroLineFacets(),
-      this.tagFacets(),
-    ])
+    const [categories, subcategories, communes, neighborhoods, priceRanges, metroLines, tags] =
+      await Promise.all([
+        this.categoryFacets(),
+        this.subcategoryFacets(),
+        this.communeFacets(),
+        this.neighborhoodFacets(),
+        this.priceRangeFacets(),
+        this.metroLineFacets(),
+        this.tagFacets(),
+      ])
     return {
       categories,
+      subcategories,
       communes,
       neighborhoods,
       priceRanges,
@@ -139,6 +142,27 @@ export class PostgresFTSSearchService implements SearchService {
       .map((g) => {
         const c = meta.get(g.categoryId)
         return { value: c?.slug ?? '', label: c?.name ?? '', count: g._count._all }
+      })
+      .filter((f) => f.value)
+      .sort(byCountThenLabel)
+  }
+
+  private async subcategoryFacets(): Promise<FacetCount[]> {
+    const groups = await this.prisma.place.groupBy({
+      by: ['subcategoryId'],
+      where: { status: PUBLISHED },
+      _count: { _all: true },
+    })
+    if (groups.length === 0) return []
+    const subs = await this.prisma.subcategory.findMany({
+      where: { id: { in: groups.map((g) => g.subcategoryId) } },
+      select: { id: true, slug: true, name: true },
+    })
+    const meta = new Map(subs.map((s) => [s.id, s]))
+    return groups
+      .map((g) => {
+        const s = meta.get(g.subcategoryId)
+        return { value: s?.slug ?? '', label: s?.name ?? '', count: g._count._all }
       })
       .filter((f) => f.value)
       .sort(byCountThenLabel)
