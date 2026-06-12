@@ -2,11 +2,13 @@ import { $Enums, Prisma, PrismaClient } from '@prisma/client'
 import {
   FacetCount,
   PlaceFacets,
+  PlaceSuggestion,
   SearchParams,
   SearchResult,
   SearchService,
 } from '@application/ports/SearchService'
 import { placeCardArgs, toPlaceCardView } from '../db/placeCardView'
+import { fuzzyScore, normalize, MATCH_THRESHOLD } from './fuzzy'
 
 const DEFAULT_LIMIT = 20
 const PUBLISHED = $Enums.PlaceStatus.PUBLISHED
@@ -39,7 +41,7 @@ export class PostgresFTSSearchService implements SearchService {
     const page = params.page ?? 1
     const limit = params.limit ?? DEFAULT_LIMIT
     const skip = (page - 1) * limit
-    const where = this.buildWhere(params)
+    const where = await this.buildWhere(params)
 
     const [rows, total] = await Promise.all([
       this.prisma.place.findMany({
@@ -60,7 +62,7 @@ export class PostgresFTSSearchService implements SearchService {
     }
   }
 
-  private buildWhere(params: SearchParams): Prisma.PlaceWhereInput {
+  private async buildWhere(params: SearchParams): Promise<Prisma.PlaceWhereInput> {
     const where: Prisma.PlaceWhereInput = { status: PUBLISHED }
 
     if (params.categorySlug) where.category = { slug: params.categorySlug }
@@ -78,13 +80,10 @@ export class PostgresFTSSearchService implements SearchService {
       }
     }
 
-    if (params.query) {
-      const q = params.query
-      where.OR = [
-        { name: { contains: q, mode: 'insensitive' } },
-        { description: { contains: q, mode: 'insensitive' } },
-        { tags: { some: { tag: { name: { contains: q, mode: 'insensitive' } } } } },
-      ]
+    // Texto: match tolerante en la app (parcial + sin acentos + typos) → IDs, que
+    // se intersectan con el resto de filtros. Así "cafi" no devuelve 0 resultados.
+    if (params.query?.trim()) {
+      where.id = { in: await this.fuzzyMatchIds(params.query) }
     }
 
     // Tags seleccionados: la ficha debe tener TODOS (cada filtro acota), por eso
@@ -289,5 +288,66 @@ export class PostgresFTSSearchService implements SearchService {
     access.sort(byCountThenLabel)
     vibe.sort(byCountThenLabel)
     return { social, access, vibe }
+  }
+
+  // ── Texto tolerante (MVP, ≤100 lugares → en la app, no en SQL) ──
+  // IDs de publicados cuyo nombre/rubro/tags/descripción matchean la consulta.
+  private async fuzzyMatchIds(query: string): Promise<string[]> {
+    const rows = await this.prisma.place.findMany({
+      where: { status: PUBLISHED },
+      select: {
+        id: true,
+        name: true,
+        description: true,
+        category: { select: { name: true } },
+        subcategory: { select: { name: true } },
+        tags: { select: { tag: { select: { name: true } } } },
+      },
+    })
+    const nq = normalize(query)
+    return rows
+      .filter((r) => {
+        const rubro = [r.category.name, r.subcategory.name, ...r.tags.map((t) => t.tag.name)].join(' ')
+        const score = Math.max(
+          fuzzyScore(r.name, query),
+          fuzzyScore(rubro, query) * 0.85,
+          // La descripción es texto largo: solo substring (el fuzzy daría ruido).
+          r.description && normalize(r.description).includes(nq) ? 0.6 : 0,
+        )
+        return score >= MATCH_THRESHOLD
+      })
+      .map((r) => r.id)
+  }
+
+  // ── Autocompletado: lugares por nombre (y rubro como respaldo), mejor primero ──
+  async suggest(query: string, limit: number): Promise<PlaceSuggestion[]> {
+    if (query.trim().length < 2) return []
+    const rows = await this.prisma.place.findMany({
+      where: { status: PUBLISHED },
+      select: {
+        slug: true,
+        name: true,
+        category: { select: { name: true } },
+        subcategory: { select: { name: true } },
+        commune: { select: { name: true } },
+        images: { orderBy: [{ isPrimary: 'desc' }, { sortOrder: 'asc' }], take: 1, select: { url: true } },
+      },
+    })
+    return rows
+      .map((r) => {
+        const rubro = Math.max(fuzzyScore(r.subcategory.name, query), fuzzyScore(r.category.name, query))
+        const score = Math.max(fuzzyScore(r.name, query), rubro * 0.85)
+        return { r, score }
+      })
+      .filter((x) => x.score >= MATCH_THRESHOLD)
+      .sort((a, b) => b.score - a.score || a.r.name.localeCompare(b.r.name, 'es'))
+      .slice(0, limit)
+      .map(({ r }) => ({
+        slug: r.slug,
+        name: r.name,
+        categoryName: r.category.name,
+        communeName: r.commune.name,
+        coverUrl: r.images[0]?.url,
+      }))
   }
 }

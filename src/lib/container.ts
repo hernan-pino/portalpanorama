@@ -14,6 +14,7 @@ import { ResendEmailService } from '@infrastructure/email/ResendEmailService'
 
 // ── Use cases ───────────────────────────────────────────────────────────
 import { SearchPlacesUseCase } from '@application/place/SearchPlacesUseCase'
+import { SuggestPlacesUseCase } from '@application/place/SuggestPlacesUseCase'
 import { GetPlaceFacetsUseCase } from '@application/place/GetPlaceFacetsUseCase'
 import { GetPlaceBySlugUseCase } from '@application/place/GetPlaceBySlugUseCase'
 import { CreatePlaceUseCase } from '@application/place/CreatePlaceUseCase'
@@ -50,6 +51,10 @@ export const container = {
   // ── Discovery (público) ─────────────────────────────────────────────
   getSearchPlacesUseCase() {
     return new SearchPlacesUseCase(searchService)
+  },
+
+  getSuggestPlacesUseCase() {
+    return new SuggestPlacesUseCase(searchService)
   },
 
   getGetPlaceFacetsUseCase() {

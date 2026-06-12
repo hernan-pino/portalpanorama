@@ -51,7 +51,20 @@ export interface PlaceFacets {
   vibe: FacetCount[]
 }
 
+// Sugerencia de autocompletado (la barra de búsqueda). Shape liviano: solo lo que
+// se muestra en el dropdown y el slug para ir directo a la ficha.
+export interface PlaceSuggestion {
+  slug: string
+  name: string
+  categoryName: string
+  communeName: string
+  coverUrl?: string
+}
+
 export interface SearchService {
   search(params: SearchParams): Promise<SearchResult>
   getFacets(): Promise<PlaceFacets>
+  // Autocompletado tolerante (parcial + sin acentos + typos). Devuelve hasta
+  // `limit` lugares cuyo nombre/rubro matchean `query`, mejor match primero.
+  suggest(query: string, limit: number): Promise<PlaceSuggestion[]>
 }

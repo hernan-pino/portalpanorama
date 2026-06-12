@@ -174,6 +174,19 @@ y el **estado de avance** de la Fase 9. Para el detalle de pasos de código, ver
     (decisión del usuario). **tsc + ESLint en 0 · runtime HTTP 200** con el seed de 7 lugares: hero + 6 chips sociales
     (grupo grande oculto = 0 lugares) + 4 categorías + 7 tarjetas en el carrusel (rating en 6/7, metro 6, precio 7).
     **Total fuente 4 → 0: la app compila completa.**
+  - **Búsqueda con sugerencias + matching tolerante (2026-06-11) ✅ — feature post-4E pedida por el usuario:** la barra
+    pasó a **combobox** con autocompletado. Matching **tolerante en la capa de app** (no SQL): substring ("caf"→"café") +
+    sin acentos ("cafe"="café") + typos por distancia de edición ("cafi"≈"café"), en [fuzzy.ts](src/infrastructure/search/fuzzy.ts).
+    Capas: `SearchService.suggest` (port) → [SuggestPlacesUseCase](src/application/place/SuggestPlacesUseCase.ts) → impl en
+    [PostgresFTSSearchService](src/infrastructure/search/PostgresFTSSearchService.ts) (el **mismo prefiltro fuzzy ahora alimenta
+    `search()`** → el Enter en explorar tampoco da 0 por typos) → ruta [/api/suggest](src/app/api/suggest/route.ts) (Zod) →
+    [SearchBar](src/components/search/SearchBar.tsx) combobox (dropdown con foto+nombre+rubro·comuna, teclado ↑↓/Enter/Esc,
+    click→ficha, Enter sin elegir→explorar). **Verificado:** `?q=cafi`→Café Forastero+Terraza Rosario (esta última por su
+    **rubro** café, no solo nombre); basura→"Sin resultados". **Decisión:** se pivoteó de `pg_trgm`/`unaccent` (se habilitaron
+    en la BD pero quedaron inertes) a fuzzy en app → más simple para ≤100 lugares y **sin dependencia de extensión en el push a
+    prod**; cuando crezca, lo reemplaza Meilisearch (Fase 2) sin tocar el port. tsc + ESLint limpios.
+  - **De paso, fix del SearchBar (mismo commit que la home):** `.searchbar`/`.searchbar__ico`/`.searchbar__btn` **no tenían
+    CSS** (el ícono se renderizaba gigante y tapaba la página, bloqueando la navegación) → estilado; afectaba a home y explorar.
   - **▶️ PRÓXIMO PASO (retomar acá):** **4E cerrada.** Toca el **push a prod (Neon)**: aplicar la migración de la Etapa 3
     en la BD de producción + seed de catálogos, y redeploy con la presentation nueva. Después **Etapa 5**: reconstruir el
     **admin CRUD de Place** (listar + crear/editar + publicar/archivar; necesita queries de catálogo tags/comunas/barrios/
@@ -181,7 +194,11 @@ y el **estado de avance** de la Fase 9. Para el detalle de pasos de código, ver
     muerto que sobrevivió a la poda de explorar (`.hero-search` 293-339 + `.search-shell`/`.place-row`/`.filter-rail`
     responsive — confirmados sin consumidores tsx); (b) revisar si `@domain/shared/Neighborhoods` quedó huérfano; (c)
     sumar **ícono** al read-model de categorías (hoy la home los hardcodea); (d) listas curadas de la home (read-model +
-    seed); (e) SEO de la ficha (JSON-LD `LocalBusiness` + metadata) pendiente de una pasada aparte.
+    seed); (e) SEO de la ficha (JSON-LD `LocalBusiness` + metadata) pendiente de una pasada aparte; (f) **flechas de
+    carruseles (próxima sesión):** la ficha **"También te puede gustar"** (`.ficha__relcard`) NO tiene flechas en desktop
+    → reusar el patrón de [PlaceRail](src/components/place/PlaceRail.tsx). La home **"Lo mejor valorado"** ya tiene PlaceRail
+    con flechas (confirmado en el HTML: "Siguiente" habilitada en ≥861px); el usuario reportó no verlas → verificar
+    visualmente (¿hard-refresh? ¿muy sutiles? quizá subir contraste/tamaño o moverlas).
   - **Decisión de tarjeta (2026-06-10, feedback del usuario):** la mini-ficha usa **toda la tarjeta**, no solo la
     franja bajo la foto: **rating de Google superpuesto en esquina de la foto** + cuerpo (categoría·comuna, nombre)
     + fila inferior con **precio compacto (`$`…`$$$$`, Gratis como texto)** + **badge de línea de metro**. Implica
