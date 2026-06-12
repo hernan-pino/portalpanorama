@@ -3,6 +3,7 @@ import { useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
 import type { PlaceFormOptions } from '@application/place/GetPlaceFormOptionsUseCase'
 import type { PlaceEditView } from '@application/place/GetPlaceForEditUseCase'
+import { ALLOWED_IMAGE_HOSTS } from '@lib/imageHosts'
 import { createPlaceAction, updatePlaceAction } from './actions'
 import {
   PlaceFormValues,
@@ -398,9 +399,10 @@ export function PlaceForm({ options, initial }: PlaceFormProps) {
       {/* ── Imágenes ── */}
       <section className="admin-form__section">
         <h3 className="admin-form__legend">Imágenes</h3>
-        {values.images.length === 0 && (
-          <p className="admin-form__hint">Sin imágenes. Pegá la URL de cada foto (storage propio).</p>
-        )}
+        <p className="admin-form__hint">
+          Solo URLs https de hosts permitidos: {ALLOWED_IMAGE_HOSTS.join(' · ')}. Otro host
+          rompe la ficha al renderizar.
+        </p>
         {values.images.map((img, i) => (
           <div key={i} className="admin-img-row">
             <div className="form-row" style={{ flex: 1 }}>

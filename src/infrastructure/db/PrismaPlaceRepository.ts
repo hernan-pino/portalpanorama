@@ -218,8 +218,13 @@ export class PrismaPlaceRepository implements PlaceRepository {
     ])
   }
 
+  // Read-model PÚBLICO: solo lugares publicados. Un PENDING_REVIEW/ARCHIVED por
+  // URL directa debe dar 404 (explorar ya los filtra; esto cierra la otra puerta).
   async getDetailBySlug(slug: string): Promise<PlaceDetailView | null> {
-    const row = await this.prisma.place.findUnique({ where: { slug }, ...detailArgs })
+    const row = await this.prisma.place.findFirst({
+      where: { slug, status: $Enums.PlaceStatus.PUBLISHED },
+      ...detailArgs,
+    })
     return row ? toPlaceDetailView(row) : null
   }
 

@@ -205,14 +205,23 @@ y el **estado de avance** de la Fase 9. Para el detalle de pasos de código, ver
     ([actions.ts](src/app/(main)/admin/lugares/actions.ts), categoría secundaria = par via refine, P2002→mensaje de slug
     duplicado). CSS `.admin-*` al final de globals.css. **Verificado:** `tsc` 0 · ESLint 0 · `next build` OK (4 rutas admin
     dinámicas) · read-models contra la BD local real (7 lugares en listForAdmin; formOptions = 4 cats con ids+subcats / 80 tags
-    / 52 comunas / 9 barrios / 125 estaciones, Baquedano resuelve L1+L5; getForEdit aplana FK ids + 7 tags + 2 imgs). **Falta:
-    e2e en browser** (login admin@portalpanorama.cl/admin1234 → crear→publicar→ver ficha) — la capa de datos ya está probada.
-  - **▶️ PRÓXIMO PASO (retomar acá):** **Admin CRUD construido (data layer ✅).** Toca: (1) **e2e en browser** del admin
-    (crear un lugar real, publicarlo, ver la ficha) para cerrar la verificación; (2) **cargar ~100 lugares a mano** por el form
-    (Etapa 5 contenido, densidad > cantidad en Providencia/Ñuñoa); (3) **push a prod (Neon)**: migración de la Etapa 3 en la BD
-    de producción + seed de catálogos + redeploy con la presentation nueva. **Pendientes menores anotados:** (a') **widget de
-    subida de imágenes (UploadThing)** — hoy el form pide la URL pegada (el `StorageService`/UploadThing ya existen, falta el
-    componente de upload); (a) barrer CSS
+    / 52 comunas / 9 barrios / 125 estaciones, Baquedano resuelve L1+L5; getForEdit aplana FK ids + 7 tags + 2 imgs).
+  - **Admin CRUD VERIFICADO e2e (2026-06-12) ✅ + 2 fixes de la verificación:** flujo completo por la superficie real
+    (login Auth.js como admin → lista → crear vía `createPlaceAction` con payload del form → editar → publicar → ficha
+    pública 200 + aparece en explorar → archivar). Probes que aguantaron: action sin sesión → "No autorizado" · rating 46
+    → error 1–5 · nombre duplicado → mensaje de slug. **Dos hallazgos del probe, ARREGLADOS en el momento:** (1) la ficha
+    pública de un lugar NO publicado renderizaba por URL directa (deuda de 4E recién alcanzable: antes todo era PUBLISHED)
+    → `getDetailBySlug` ahora filtra `status: PUBLISHED` (archivada → 404 verificado, publicada → 200); (2) una URL de
+    imagen de un host fuera de la allowlist de next/image pasaba al guardar pero **tumbaba la ficha con 500** al renderizar
+    → fuente única [imageHosts.ts](src/lib/imageHosts.ts) (next.config deriva `remotePatterns` de ahí + Zod del action
+    valida el host + hint en el form). Verificado en runtime: picsum.photos rechazado con mensaje claro.
+  - **▶️ PRÓXIMO PASO (retomar acá):** **Admin CRUD listo y verificado e2e.** Toca: (1) **cargar ~100 lugares a mano** por el
+    form (Etapa 5 contenido, densidad > cantidad en Providencia/Ñuñoa); (2) **push a prod (Neon)**: migración de la Etapa 3 en
+    la BD de producción + seed de catálogos + redeploy con la presentation nueva. **Pendientes menores anotados:** (a') **widget
+    de subida de imágenes (UploadThing)** — hoy el form pide la URL pegada (el `StorageService`/UploadThing ya existen, falta el
+    componente de upload) y la allowlist de hosts deberá sumar el host de UploadThing (`utfs.io`) cuando entre; (a'')
+    validar en el use case que la subcategoría pertenezca a su categoría (hoy solo el form lo previene con selects
+    dependientes); (a) barrer CSS
     muerto que sobrevivió a la poda de explorar (`.hero-search` 293-339 + `.search-shell`/`.place-row`/`.filter-rail`
     responsive — confirmados sin consumidores tsx); (b) revisar si `@domain/shared/Neighborhoods` quedó huérfano; (c)
     sumar **ícono** al read-model de categorías (hoy la home los hardcodea); (d) listas curadas de la home (read-model +
@@ -362,7 +371,7 @@ ETAPA 1 — Síntesis              ✅ COMPLETADA (2026-06-07)
 ETAPA 2 — Diseñar schema nuevo  ✅ COMPLETADA + APROBADA (2026-06-08)  (= Paso 9.2)
 ETAPA 3 — Migrar la BD + seed   🔄 local ✅, prod pendiente (va con 4E)  (= Paso 9.3)
 ETAPA 4 — Refactor dominio + UI 🔄 4A ✅ · 4B ✅ · 4C ✅ · 4D ✅ · 4E ✅ — falta solo push a prod  (= Paso 9.4)
-ETAPA 5 — Cargar lugares a mano 🔄 admin CRUD construido ✅ (data layer verificado) — falta e2e browser + cargar contenido  (= Paso 9.5)
+ETAPA 5 — Cargar lugares a mano 🔄 admin CRUD construido + verificado e2e ✅ — falta cargar el contenido  (= Paso 9.5)
 ```
 
 ---

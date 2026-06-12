@@ -3,6 +3,7 @@ import { z } from 'zod'
 import { revalidatePath } from 'next/cache'
 import { auth } from '@lib/auth'
 import { container } from '@lib/container'
+import { ALLOWED_IMAGE_HOSTS, isAllowedImageUrl } from '@lib/imageHosts'
 import { DomainError } from '@domain/shared/DomainError'
 import { PriceRange } from '@domain/place/PriceRange'
 import { ReservationPolicy } from '@domain/place/ReservationPolicy'
@@ -29,7 +30,15 @@ const optionalEnum = <const T extends [string, ...string[]]>(values: T) =>
   z.preprocess(emptyToUndef, z.enum(values).optional())
 
 const imageSchema = z.object({
-  url: z.string().trim().url('Cada imagen necesita una URL válida.'),
+  // El host tiene que estar en la allowlist de next/image: una URL de un host no
+  // permitido pasa al guardar pero tumba la ficha entera con 500 al renderizar.
+  url: z
+    .string()
+    .trim()
+    .url('Cada imagen necesita una URL válida.')
+    .refine(isAllowedImageUrl, {
+      message: `La imagen debe venir de un host permitido (${ALLOWED_IMAGE_HOSTS.join(', ')}).`,
+    }),
   alt: z.preprocess(emptyToUndef, z.string().trim().optional()),
   credit: z.preprocess(emptyToUndef, z.string().trim().optional()),
   isPrimary: z.boolean(),
