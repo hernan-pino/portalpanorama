@@ -12,4 +12,4 @@ datosNegoios/
 .claude/scheduled_tasks.lock
 
 # Refs de diseño (PNGs pesados, input de Claude design) — no al historial
-design_briefs/4E_01_ficha_ref/
+design_briefs/*_ref/

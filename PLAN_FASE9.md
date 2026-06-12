@@ -4,7 +4,7 @@ Documento vivo. Se actualiza cada vez que avanzamos. Aquí vive el **orden de tr
 y el **estado de avance** de la Fase 9. Para el detalle de pasos de código, ver
 [ROADMAP.md](ROADMAP.md). Para las preguntas de producto, ver [PRODUCTO.md](PRODUCTO.md).
 
-**Última actualización:** 2026-06-10
+**Última actualización:** 2026-06-11
 
 ---
 
@@ -12,8 +12,9 @@ y el **estado de avance** de la Fase 9. Para el detalle de pasos de código, ver
 
 - **Etapa:** 4 — Refactor dominio + UI 🔄 **EN CURSO.** Sub-etapas: **4A domain ✅ · 4B application ✅**
   (commit `750340c`, 2026-06-09) · **4C infrastructure ✅** (commit `e13f7fd`, 2026-06-09) ·
-  **4D composition root ✅** (2026-06-09) · **4E presentation 🔄 EN CURSO** (pasada 1 poda ✅; pasada 2
-  reescritura: ficha ✅ 2026-06-10 · explorar ✅ 2026-06-10 · home ⬜). Etapa 3 local ✅ (prod pendiente, va con 4E).
+  **4D composition root ✅** (2026-06-09) · **4E presentation ✅ COMPLETADA** (pasada 1 poda ✅; pasada 2
+  reescritura: ficha ✅ 2026-06-10 · explorar ✅ 2026-06-10 · home ✅ 2026-06-11). **Etapa 4 cerrada salvo
+  el push a prod.** Etapa 3 local ✅ (prod pendiente, va con el redeploy).
   - **4E en curso (2026-06-09):** **Pasada 1 — poda ✅** (commit `4144e7d`): borradas 50 rutas/componentes
     post-MVP cuyos use cases ya no existen (negocio self-service, suscripciones/Flow, claims, tags-moderación,
     eventos, feed, favoritos-único). Errores 126 → 64. **Superficie consumer que queda** (15 archivos): ficha
@@ -149,12 +150,38 @@ y el **estado de avance** de la Fase 9. Para el detalle de pasos de código, ver
     errores · ESLint limpio.** Runtime con el seed de 7 lugares: `/explorar` HTTP 200 (7 lugares, 4 categorías, 6 secciones
     de filtro, rating en 6/7 — Mirador pobre lo oculta, badges de metro, precio compacto, corazón); `?categoria=gastronomia`
     → 3 lugares + pill activo + franja de subcategorías. **Total fuente 14 → 4** (los 4 son SOLO home).
-  - **▶️ PRÓXIMO PASO (retomar acá):** **implementar home** (pantalla #3, design-gated). Brief listo
-    [4E_03_home.md](design_briefs/4E_03_home.md) ("por acción": search + fila social + categorías + recomendados; reusa
-    `PlaceCard` + chips de explorar). Reescribir [page.tsx](src/app/(main)/page.tsx) (los 4 errores fuente restantes:
-    importa `ListingCard` borrado + `getSearchListingsUseCase` inexistente). Cierra 4E → después push a **prod (Neon)** +
-    Etapa 5 (admin CRUD + carga de lugares). **Pendiente menor anotado:** la `ListingCard` vieja ya no existe; revisar si
-    `@domain/shared/Neighborhoods` quedó huérfano (lo usaban los componentes podados) y barrerlo si nadie lo importa.
+  - **Ref de home RECIBIDA + APROBADA + decisión de jerarquía cerrada (2026-06-11):** el usuario generó la ref con
+    Claude design (zip → [design_briefs/4E_03_home_ref/](design_briefs/4E_03_home_ref/), fuera de `src/`: capturas
+    móvil/desktop + `home-screens.jsx` + `tokens.md`). `tokens.md` honesto, sin paleta/tipografía/radios inventados,
+    reusa `PlaceCard` + chips de explorar. **Desviación del brief decidida por el usuario:** la ref **invirtió la
+    jerarquía** — **categorías = bloque protagonista** (banda + tarjetas grandes), **¿Con quién vas? = fila compacta
+    secundaria** (sigue arriba). El usuario confirmó que lo pidió así: *"prefiero filtrar por categoría/subcategoría
+    primero y después lo social"* → **ajusta el brief de la home** y queda **consistente con explorar §8.1** (category-first).
+    Listas curadas (§5) quedan **diferidas** (no hay read-model "listar curadas", solo `GetCuratedCollection` by slug, ni
+    data sembrada; fast-follow SEO).
+  - **Home IMPLEMENTADA + VERIFICADA (2026-06-11) ✅ — pasada 2 de 4E, pantalla #3 (última):** reescrita
+    [page.tsx](src/app/(main)/page.tsx) como server component contra `getSearchPlacesUseCase()` (recomendados, orden por
+    reputación, limit 12) + `getGetCategoriesUseCase()` (4 activas) + `getGetPlaceFacetsUseCase()` (chips sociales,
+    **ocultar vacíos** P3) + auth/`GetUserDashboard` (corazón de la tarjeta). Layout fiel a la ref: **hero** (título
+    editorial con `<em>hacer</em>` + `SearchBar`) → **¿Con quién vas?** (fila social secundaria, chips → `/explorar?con=`)
+    → **Explorá por categoría** (protagonista: banda `--bg-sunken` + tarjetas grandes con ícono, → `/explorar?categoria=`)
+    → **Lo mejor valorado** (carrusel horizontal reusando `PlaceCard`). Íconos de categoría propios (el catálogo aún no
+    trae ícono — pendiente sumarlo a `GetCategories`). CSS: borrados los bloques muertos del modelo viejo en
+    [globals.css](src/app/globals.css) (`.hero*` home / `.cat-grid`/`.cat-card*` / `.event-card*` / `.sec-head*` /
+    `.featured-*` / `.biz-cta*` / `.chip-row` + sus refs responsive), reconstruido el bloque `.home-*` con tokens reales
+    (preservado `.hero__eyebrow`/`.line` que usa explorar). Borrado [FeaturedSlider.tsx](src/components/home/) (sin
+    consumidores). **Footer:** se mantiene el **oscuro** del layout (`.footer` = `--ink-100`), NO el claro de la ref
+    (decisión del usuario). **tsc + ESLint en 0 · runtime HTTP 200** con el seed de 7 lugares: hero + 6 chips sociales
+    (grupo grande oculto = 0 lugares) + 4 categorías + 7 tarjetas en el carrusel (rating en 6/7, metro 6, precio 7).
+    **Total fuente 4 → 0: la app compila completa.**
+  - **▶️ PRÓXIMO PASO (retomar acá):** **4E cerrada.** Toca el **push a prod (Neon)**: aplicar la migración de la Etapa 3
+    en la BD de producción + seed de catálogos, y redeploy con la presentation nueva. Después **Etapa 5**: reconstruir el
+    **admin CRUD de Place** (listar + crear/editar + publicar/archivar; necesita queries de catálogo tags/comunas/barrios/
+    metro para los selectores) → habilita **cargar ~100 lugares a mano**. **Pendientes menores anotados:** (a) barrer CSS
+    muerto que sobrevivió a la poda de explorar (`.hero-search` 293-339 + `.search-shell`/`.place-row`/`.filter-rail`
+    responsive — confirmados sin consumidores tsx); (b) revisar si `@domain/shared/Neighborhoods` quedó huérfano; (c)
+    sumar **ícono** al read-model de categorías (hoy la home los hardcodea); (d) listas curadas de la home (read-model +
+    seed); (e) SEO de la ficha (JSON-LD `LocalBusiness` + metadata) pendiente de una pasada aparte.
   - **Decisión de tarjeta (2026-06-10, feedback del usuario):** la mini-ficha usa **toda la tarjeta**, no solo la
     franja bajo la foto: **rating de Google superpuesto en esquina de la foto** + cuerpo (categoría·comuna, nombre)
     + fila inferior con **precio compacto (`$`…`$$$$`, Gratis como texto)** + **badge de línea de metro**. Implica
@@ -295,7 +322,7 @@ ETAPA 0 — Definir el producto   ✅ COMPLETADA (2026-06-04)
 ETAPA 1 — Síntesis              ✅ COMPLETADA (2026-06-07)
 ETAPA 2 — Diseñar schema nuevo  ✅ COMPLETADA + APROBADA (2026-06-08)  (= Paso 9.2)
 ETAPA 3 — Migrar la BD + seed   🔄 local ✅, prod pendiente (va con 4E)  (= Paso 9.3)
-ETAPA 4 — Refactor dominio + UI 🔄 EN CURSO — 4A ✅ · 4B ✅ · 4C ✅ · 4D ✅ · 4E ⬜  (= Paso 9.4)
+ETAPA 4 — Refactor dominio + UI 🔄 4A ✅ · 4B ✅ · 4C ✅ · 4D ✅ · 4E ✅ — falta solo push a prod  (= Paso 9.4)
 ETAPA 5 — Cargar lugares a mano ⬜ pendiente  (= Paso 9.5)
 ```
 

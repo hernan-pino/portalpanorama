@@ -117,7 +117,7 @@ export default async function ExplorarPage({ searchParams }: PageProps) {
     activeChips.push({ label: priceLabels.get(pr) ?? pr, href: removeFromMulti('precio', pr) })
   if (f.communeSlug) activeChips.push({ label: communeLabels.get(f.communeSlug) ?? f.communeSlug, href: removeSingle('comuna') })
   if (f.neighborhoodSlug) activeChips.push({ label: hoodLabels.get(f.neighborhoodSlug) ?? f.neighborhoodSlug, href: removeSingle('barrio') })
-  if (f.metroLineCode) activeChips.push({ label: `Metro ${f.metroLineCode}${metroLabels.get(f.metroLineCode) ? ` · ${metroLabels.get(f.metroLineCode)}` : ''}`, href: removeSingle('metro') })
+  if (f.metroLineCode) activeChips.push({ label: metroLabels.get(f.metroLineCode) ?? f.metroLineCode, href: removeSingle('metro') })
   for (const slug of f.vibeTagSlugs ?? [])
     activeChips.push({ label: vibeLabels.get(slug) ?? slug, href: removeFromMulti('ambiente', slug) })
   for (const slug of f.accessTagSlugs ?? [])

@@ -98,7 +98,6 @@ function FiltersInner({ facets }: Props) {
               options={facets.metroLines}
               isActive={(v) => get('metro') === v}
               onToggle={(v) => toggleSingle('metro', v)}
-              renderLabel={(o) => `${o.value} · ${o.label}`}
             />
           </Subgroup>
         )}
