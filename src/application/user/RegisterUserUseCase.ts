@@ -43,7 +43,16 @@ export class RegisterUserUseCase {
     })
 
     await this.userRepo.create(user, passwordHash)
-    await this.emailService.sendWelcome(email.value, input.name)
+
+    // El correo de bienvenida es cortesía, no parte del registro: si falla
+    // (key ausente, proveedor caído), el usuario igual queda registrado y puede
+    // iniciar sesión. Antes este await tumbaba el registro DESPUÉS de crear la
+    // cuenta → 500 + "email ya registrado" al reintentar.
+    try {
+      await this.emailService.sendWelcome(email.value, input.name)
+    } catch (err) {
+      console.error('Registro OK pero falló el correo de bienvenida:', err)
+    }
 
     return { user }
   }

@@ -234,6 +234,13 @@ y el **estado de avance** de la Fase 9. Para el detalle de pasos de código, ver
     MVP (D.2, exigida por la instrumentación GA4/Pixel); decidir si se crean placeholders o se quita la columna hasta
     tenerlas; (h) **importador CSV** (Etapa 5): la plantilla existe ([PLANTILLA_CSV.md](PLANTILLA_CSV.md)); falta la
     página/script de admin que lea el CSV curado (Google Sheets → export) y cree lugares en lote vía CreatePlace.
+  - **Bug de registro encontrado y ARREGLADO (2026-06-12, verificado e2e):** el registro creaba el usuario y DESPUÉS
+    explotaba con 500 al enviar el correo de bienvenida (`RESEND_API_KEY` vacío en local) → la persona veía un error,
+    al reintentar "email ya registrado", pero su cuenta sí servía. Fix en
+    [RegisterUserUseCase](src/application/user/RegisterUserUseCase.ts): el correo de bienvenida es cortesía — si falla
+    se loguea y el registro completa igual. **Verificado:** registro → 303 `/login?registered=1` → login → dashboard
+    "Hola, Vecino · 0 listas · 0 visitados" con estado vacío y Editar perfil. **Checklist push a prod:** setear
+    `RESEND_API_KEY` real para que la bienvenida sí se envíe.
   - **Decisión de chrome (2026-06-12, pedido del usuario):** **fuera "Explorar" del menú del header** (desktop y móvil)
     mientras no haya contenido real — se llega igual desde la home (buscador/chips/categorías); se re-promociona al
     lanzar. De paso: **"Eventos" del header era un link muerto (404,** la ruta se podó en 4E) → quitado; el nav del
