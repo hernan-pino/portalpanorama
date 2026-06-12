@@ -4,17 +4,18 @@ Documento vivo. Se actualiza cada vez que avanzamos. Aquí vive el **orden de tr
 y el **estado de avance** de la Fase 9. Para el detalle de pasos de código, ver
 [ROADMAP.md](ROADMAP.md). Para las preguntas de producto, ver [PRODUCTO.md](PRODUCTO.md).
 
-**Última actualización:** 2026-06-11
+**Última actualización:** 2026-06-12
 
 ---
 
 ## 📍 EN QUÉ VAMOS AHORA MISMO
 
-- **Etapa:** 4 — Refactor dominio + UI 🔄 **EN CURSO.** Sub-etapas: **4A domain ✅ · 4B application ✅**
+- **Etapa:** 5 — Cargar lugares a mano 🔄 **EN CURSO** (admin CRUD construido 2026-06-12, ver bullet abajo).
+  Etapa 4 ✅ cerrada salvo el push a prod. Sub-etapas de la 4: **4A domain ✅ · 4B application ✅**
   (commit `750340c`, 2026-06-09) · **4C infrastructure ✅** (commit `e13f7fd`, 2026-06-09) ·
   **4D composition root ✅** (2026-06-09) · **4E presentation ✅ COMPLETADA** (pasada 1 poda ✅; pasada 2
-  reescritura: ficha ✅ 2026-06-10 · explorar ✅ 2026-06-10 · home ✅ 2026-06-11). **Etapa 4 cerrada salvo
-  el push a prod.** Etapa 3 local ✅ (prod pendiente, va con el redeploy).
+  reescritura: ficha ✅ 2026-06-10 · explorar ✅ 2026-06-10 · home ✅ 2026-06-11). Etapa 3 local ✅
+  (prod pendiente, va con el redeploy).
   - **4E en curso (2026-06-09):** **Pasada 1 — poda ✅** (commit `4144e7d`): borradas 50 rutas/componentes
     post-MVP cuyos use cases ya no existen (negocio self-service, suscripciones/Flow, claims, tags-moderación,
     eventos, feed, favoritos-único). Errores 126 → 64. **Superficie consumer que queda** (15 archivos): ficha
@@ -187,10 +188,31 @@ y el **estado de avance** de la Fase 9. Para el detalle de pasos de código, ver
     prod**; cuando crezca, lo reemplaza Meilisearch (Fase 2) sin tocar el port. tsc + ESLint limpios.
   - **De paso, fix del SearchBar (mismo commit que la home):** `.searchbar`/`.searchbar__ico`/`.searchbar__btn` **no tenían
     CSS** (el ícono se renderizaba gigante y tapaba la página, bloqueando la navegación) → estilado; afectaba a home y explorar.
-  - **▶️ PRÓXIMO PASO (retomar acá):** **4E cerrada.** Toca el **push a prod (Neon)**: aplicar la migración de la Etapa 3
-    en la BD de producción + seed de catálogos, y redeploy con la presentation nueva. Después **Etapa 5**: reconstruir el
-    **admin CRUD de Place** (listar + crear/editar + publicar/archivar; necesita queries de catálogo tags/comunas/barrios/
-    metro para los selectores) → habilita **cargar ~100 lugares a mano**. **Pendientes menores anotados:** (a) barrer CSS
+  - **Admin CRUD de Place CONSTRUIDO + VERIFICADO en data layer (2026-06-12) ✅ — Etapa 5, herramienta de carga:** el
+    `admin/` estaba muerto en runtime (redirigía a claims/tags borrados). Reconstruido como **CRUD de Place** sobre los 4
+    use cases que ya existían (`Create/Update/Publish/Archive`, ya cableados). **Lo que faltaba y se agregó, cruzando capas:**
+    (a) read-model **`PlaceAdminRow` + `PlaceRepository.listForAdmin()`** (todos los estados, no solo PUBLISHED; categoría/comuna
+    denormalizadas); (b) **`GetPlaceForEditUseCase` + `PlaceEditView`** (aplana el agregado de dominio a un DTO con FK ids +
+    tag ids + imágenes, sin filtrar el aggregate a presentation); (c) **opciones del form** = nuevo `GetPlaceFormOptionsUseCase`
+    que compone `CategoryRepository.listForForm()` (categorías **con ids**, no slugs) + `TagRepository.listAll()` (TagOption con
+    capa+categoryId) + **port nuevo `LocationRepository`** (comunas/barrios[+communeIds M2M]/estaciones[+líneas]) →
+    `PrismaLocationRepository`. UI (plomería sin ref, sobre el design system de Fase 6): `admin/layout` (sidebar → Lugares /
+    Nuevo) · `admin/page` redirige a `/admin/lugares` · **lista** con badges de estado + acciones publicar/archivar por fila
+    ([PlaceRowActions](src/app/(main)/admin/lugares/PlaceRowActions.tsx)) · **form** compartido crear/editar
+    ([PlaceForm](src/app/(main)/admin/lugares/PlaceForm.tsx): ~30 campos, subcats dependientes de la categoría, barrios
+    acotados por comuna, tags agrupados por capa con tope SOCIAL≤4/VIBE≤3 en cliente, **imágenes por URL** —widget de
+    UploadThing queda como follow-up—) · **actions** con guard ADMIN + Zod → `PlaceWriteInput`
+    ([actions.ts](src/app/(main)/admin/lugares/actions.ts), categoría secundaria = par via refine, P2002→mensaje de slug
+    duplicado). CSS `.admin-*` al final de globals.css. **Verificado:** `tsc` 0 · ESLint 0 · `next build` OK (4 rutas admin
+    dinámicas) · read-models contra la BD local real (7 lugares en listForAdmin; formOptions = 4 cats con ids+subcats / 80 tags
+    / 52 comunas / 9 barrios / 125 estaciones, Baquedano resuelve L1+L5; getForEdit aplana FK ids + 7 tags + 2 imgs). **Falta:
+    e2e en browser** (login admin@portalpanorama.cl/admin1234 → crear→publicar→ver ficha) — la capa de datos ya está probada.
+  - **▶️ PRÓXIMO PASO (retomar acá):** **Admin CRUD construido (data layer ✅).** Toca: (1) **e2e en browser** del admin
+    (crear un lugar real, publicarlo, ver la ficha) para cerrar la verificación; (2) **cargar ~100 lugares a mano** por el form
+    (Etapa 5 contenido, densidad > cantidad en Providencia/Ñuñoa); (3) **push a prod (Neon)**: migración de la Etapa 3 en la BD
+    de producción + seed de catálogos + redeploy con la presentation nueva. **Pendientes menores anotados:** (a') **widget de
+    subida de imágenes (UploadThing)** — hoy el form pide la URL pegada (el `StorageService`/UploadThing ya existen, falta el
+    componente de upload); (a) barrer CSS
     muerto que sobrevivió a la poda de explorar (`.hero-search` 293-339 + `.search-shell`/`.place-row`/`.filter-rail`
     responsive — confirmados sin consumidores tsx); (b) revisar si `@domain/shared/Neighborhoods` quedó huérfano; (c)
     sumar **ícono** al read-model de categorías (hoy la home los hardcodea); (d) listas curadas de la home (read-model +
@@ -340,7 +362,7 @@ ETAPA 1 — Síntesis              ✅ COMPLETADA (2026-06-07)
 ETAPA 2 — Diseñar schema nuevo  ✅ COMPLETADA + APROBADA (2026-06-08)  (= Paso 9.2)
 ETAPA 3 — Migrar la BD + seed   🔄 local ✅, prod pendiente (va con 4E)  (= Paso 9.3)
 ETAPA 4 — Refactor dominio + UI 🔄 4A ✅ · 4B ✅ · 4C ✅ · 4D ✅ · 4E ✅ — falta solo push a prod  (= Paso 9.4)
-ETAPA 5 — Cargar lugares a mano ⬜ pendiente  (= Paso 9.5)
+ETAPA 5 — Cargar lugares a mano 🔄 admin CRUD construido ✅ (data layer verificado) — falta e2e browser + cargar contenido  (= Paso 9.5)
 ```
 
 ---

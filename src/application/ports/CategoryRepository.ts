@@ -14,7 +14,18 @@ export interface CategoryView {
   subcategories: SubcategoryView[]
 }
 
+// Opción de categoría para el form de admin: lleva ids (las FK del Place se
+// guardan por id, no por slug) y sus subcategorías también con id.
+export interface CategoryOption {
+  id: string
+  name: string
+  subcategories: { id: string; name: string }[]
+}
+
 export interface CategoryRepository {
   // Categorías activas y no event-only, ordenadas por sortOrder.
   findActive(): Promise<CategoryView[]>
+  // Categorías asignables a un lugar (activas, no event-only) con ids, para los
+  // selectores del form de admin.
+  listForForm(): Promise<CategoryOption[]>
 }

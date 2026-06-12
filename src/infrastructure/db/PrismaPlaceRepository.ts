@@ -7,6 +7,7 @@ import { ReservationPolicy } from '@domain/place/ReservationPolicy'
 import { RainPolicy } from '@domain/place/RainPolicy'
 import { PlaceStatus } from '@domain/place/PlaceStatus'
 import {
+  PlaceAdminRow,
   PlaceCardView,
   PlaceDetailView,
   PlaceRatingRow,
@@ -220,6 +221,36 @@ export class PrismaPlaceRepository implements PlaceRepository {
   async getDetailBySlug(slug: string): Promise<PlaceDetailView | null> {
     const row = await this.prisma.place.findUnique({ where: { slug }, ...detailArgs })
     return row ? toPlaceDetailView(row) : null
+  }
+
+  // Tabla del admin: todos los estados, lo más editado arriba. Denormaliza nombre
+  // de categoría/comuna para no resolverlos en presentation.
+  async listForAdmin(): Promise<PlaceAdminRow[]> {
+    const rows = await this.prisma.place.findMany({
+      orderBy: { updatedAt: 'desc' },
+      select: {
+        id: true,
+        slug: true,
+        name: true,
+        status: true,
+        score: true,
+        googleRating: true,
+        updatedAt: true,
+        category: { select: { name: true } },
+        commune: { select: { name: true } },
+      },
+    })
+    return rows.map((r) => ({
+      id: r.id,
+      slug: r.slug,
+      name: r.name,
+      status: r.status,
+      categoryName: r.category.name,
+      communeName: r.commune.name,
+      googleRating: r.googleRating ?? undefined,
+      score: r.score,
+      updatedAt: r.updatedAt,
+    }))
   }
 
   // "Relacionados" sin IA (D.6): similitud por categoría + comuna + tags compartidos.

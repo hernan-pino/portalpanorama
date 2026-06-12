@@ -1717,3 +1717,85 @@ select.form-input { cursor: pointer; }
   .dash-user-header { padding: var(--s-4) var(--s-4); }
   .dash-header-meta { flex-direction: column; gap: var(--s-4); }
 }
+
+/* ═══════════ Admin — CRUD de lugares (plomería, sin ref de diseño) ═══════════ */
+.admin-page { padding: var(--s-6) var(--s-8); max-width: 920px; }
+.admin-page__head {
+  display: flex; align-items: flex-start; justify-content: space-between;
+  gap: var(--s-4); margin-bottom: var(--s-6);
+}
+.admin-page__title { font-family: var(--font-display); font-size: var(--t-h2); line-height: 1.1; }
+.admin-page__sub { font-size: var(--t-body-sm); color: var(--fg-muted); margin-top: var(--s-1); }
+.admin-page__back {
+  display: inline-block; font-size: var(--t-body-sm); color: var(--fg-muted);
+  margin-bottom: var(--s-2);
+}
+.admin-page__back:hover { color: var(--ink-100); }
+.admin-empty { color: var(--fg-muted); font-size: var(--t-body); }
+.admin-empty a { color: var(--accent-60); text-decoration: underline; }
+
+/* Tabla */
+.admin-table { border: 1px solid var(--surface-line); border-radius: var(--r-lg); overflow: hidden; }
+.admin-table table { width: 100%; border-collapse: collapse; }
+.admin-table th {
+  text-align: left; font-size: var(--t-mono); text-transform: uppercase; letter-spacing: 0.04em;
+  color: var(--fg-subtle); font-weight: 600; padding: var(--s-3) var(--s-4);
+  background: var(--bg-sunken); border-bottom: 1px solid var(--surface-line);
+}
+.admin-table td {
+  padding: var(--s-3) var(--s-4); font-size: var(--t-body-sm);
+  border-bottom: 1px solid var(--surface-line); vertical-align: middle;
+}
+.admin-table tr:last-child td { border-bottom: none; }
+.admin-table__name { font-weight: 600; color: var(--ink-100); }
+.admin-table__name:hover { color: var(--accent-60); }
+
+/* Badge de estado */
+.admin-badge {
+  display: inline-block; font-size: var(--t-mono); font-weight: 600;
+  padding: 2px 8px; border-radius: var(--r-pill); white-space: nowrap;
+}
+.admin-badge--published { background: color-mix(in oklab, var(--success) 16%, transparent); color: var(--success); }
+.admin-badge--pending_review { background: color-mix(in oklab, var(--warning) 18%, transparent); color: var(--warning); }
+.admin-badge--archived { background: var(--bg-sunken); color: var(--fg-muted); }
+
+/* Acciones de fila */
+.admin-row-actions { display: flex; align-items: center; gap: var(--s-2); flex-wrap: wrap; justify-content: flex-end; }
+.admin-row-actions__error { font-size: var(--t-mono); color: var(--error); }
+
+/* Form */
+.admin-form { display: flex; flex-direction: column; gap: var(--s-6); }
+.admin-form__section {
+  display: flex; flex-direction: column; gap: var(--s-4);
+  padding: var(--s-5); border: 1px solid var(--surface-line); border-radius: var(--r-lg);
+  background: var(--bg-raised);
+}
+.admin-form__legend {
+  font-family: var(--font-display); font-size: var(--t-h4); margin-bottom: var(--s-1);
+}
+.admin-form__hint { font-size: var(--t-mono); color: var(--fg-subtle); }
+.admin-form__check, .admin-img-row__primary {
+  display: flex; align-items: center; gap: var(--s-2);
+  font-size: var(--t-body-sm); color: var(--fg); cursor: pointer;
+}
+.admin-form__success {
+  background: color-mix(in oklab, var(--success) 8%, transparent);
+  color: var(--success); padding: var(--s-3) var(--s-4); border-radius: var(--r-md);
+  font-size: var(--t-body-sm);
+}
+.admin-form__actions { display: flex; gap: var(--s-3); }
+
+/* Fila de imagen */
+.admin-img-row {
+  display: flex; gap: var(--s-3); align-items: flex-end; flex-wrap: wrap;
+  padding-bottom: var(--s-4); border-bottom: 1px dashed var(--surface-line);
+}
+.admin-img-row__primary { white-space: nowrap; padding-bottom: var(--s-2); }
+
+@media (max-width: 760px) {
+  .admin-page { padding: var(--s-4); }
+  .admin-page__head { flex-direction: column; }
+  .admin-img-row { flex-direction: column; align-items: stretch; }
+  /* Tabla → scroll horizontal en móvil */
+  .admin-table { overflow-x: auto; }
+}

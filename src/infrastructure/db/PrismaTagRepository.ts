@@ -1,7 +1,7 @@
 import { PrismaClient } from '@prisma/client'
 import { PlaceTagRef } from '@domain/place/Place'
 import { TagLayer } from '@domain/catalog/TagLayer'
-import { TagRepository } from '@application/ports/TagRepository'
+import { TagOption, TagRepository } from '@application/ports/TagRepository'
 
 export class PrismaTagRepository implements TagRepository {
   constructor(private readonly prisma: PrismaClient) {}
@@ -16,6 +16,19 @@ export class PrismaTagRepository implements TagRepository {
       slug: r.slug,
       name: r.name,
       layer: r.layer as TagLayer,
+    }))
+  }
+
+  // Catálogo completo para el form de admin. Ordenado por capa y nombre para que
+  // presentation los agrupe (social / específico / acceso / ambiente).
+  async listAll(): Promise<TagOption[]> {
+    const rows = await this.prisma.tag.findMany({ orderBy: [{ layer: 'asc' }, { name: 'asc' }] })
+    return rows.map((r) => ({
+      id: r.id,
+      slug: r.slug,
+      name: r.name,
+      layer: r.layer as TagLayer,
+      categoryId: r.categoryId ?? undefined,
     }))
   }
 }

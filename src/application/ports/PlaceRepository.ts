@@ -60,6 +60,20 @@ export interface PlaceRatingRow {
   googleReviewCount: number | null
 }
 
+// Fila de la tabla del admin (todos los estados, no solo PUBLISHED). Denormalizada
+// para listar sin tocar el agregado. Ordenada por updatedAt desc en el repo.
+export interface PlaceAdminRow {
+  id: string
+  slug: string
+  name: string
+  status: string
+  categoryName: string
+  communeName: string
+  googleRating?: number
+  score: number
+  updatedAt: Date
+}
+
 export interface PlaceRepository {
   // ── Agregado de dominio (CRUD admin + scoring) ──
   findById(id: string): Promise<Place | null>
@@ -69,6 +83,10 @@ export interface PlaceRepository {
   // ── Read-models para la UI ──
   getDetailBySlug(slug: string): Promise<PlaceDetailView | null>
   findRelated(placeId: string, limit: number): Promise<PlaceCardView[]>
+
+  // ── Admin ──
+  // Todos los lugares (cualquier estado) para la tabla del panel.
+  listForAdmin(): Promise<PlaceAdminRow[]>
 
   // ── Reputación (decisión 2.5) ──
   // Promedio global publicado (prior `C` del bayesiano).
