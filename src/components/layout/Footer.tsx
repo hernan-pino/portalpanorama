@@ -16,10 +16,11 @@ export function Footer() {
             <h4>Explorar</h4>
             <ul>
               <li><Link href="/explorar">Todos los lugares</Link></li>
-              <li><Link href="/explorar?barrio=Lastarria">Lastarria</Link></li>
-              <li><Link href="/explorar?barrio=Bellavista">Bellavista</Link></li>
-              <li><Link href="/explorar?barrio=Providencia">Providencia</Link></li>
-              <li><Link href="/explorar?barrio=Italia">Italia</Link></li>
+              {/* Slugs reales del catálogo (Providencia es comuna, no barrio) */}
+              <li><Link href="/explorar?barrio=barrio-lastarria">Lastarria</Link></li>
+              <li><Link href="/explorar?barrio=bellavista">Bellavista</Link></li>
+              <li><Link href="/explorar?comuna=providencia">Providencia</Link></li>
+              <li><Link href="/explorar?barrio=barrio-italia">Barrio Italia</Link></li>
             </ul>
           </div>
 

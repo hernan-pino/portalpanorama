@@ -229,7 +229,17 @@ y el **estado de avance** de la Fase 9. Para el detalle de pasos de código, ver
     carruseles (próxima sesión):** la ficha **"También te puede gustar"** (`.ficha__relcard`) NO tiene flechas en desktop
     → reusar el patrón de [PlaceRail](src/components/place/PlaceRail.tsx). La home **"Lo mejor valorado"** ya tiene PlaceRail
     con flechas (confirmado en el HTML: "Siguiente" habilitada en ≥861px); el usuario reportó no verlas → verificar
-    visualmente (¿hard-refresh? ¿muy sutiles? quizá subir contraste/tamaño o moverlas).
+    visualmente (¿hard-refresh? ¿muy sutiles? quizá subir contraste/tamaño o moverlas); (g) **footer Legal apunta a
+    `/terminos` y `/privacidad` que NO existen (404)** — la página legal de privacidad/cookies ya era ítem abierto del
+    MVP (D.2, exigida por la instrumentación GA4/Pixel); decidir si se crean placeholders o se quita la columna hasta
+    tenerlas; (h) **importador CSV** (Etapa 5): la plantilla existe ([PLANTILLA_CSV.md](PLANTILLA_CSV.md)); falta la
+    página/script de admin que lea el CSV curado (Google Sheets → export) y cree lugares en lote vía CreatePlace.
+  - **Decisión de chrome (2026-06-12, pedido del usuario):** **fuera "Explorar" del menú del header** (desktop y móvil)
+    mientras no haya contenido real — se llega igual desde la home (buscador/chips/categorías); se re-promociona al
+    lanzar. De paso: **"Eventos" del header era un link muerto (404,** la ruta se podó en 4E) → quitado; el nav del
+    topbar queda vacío por ahora. **Footer arreglado:** 3 de 4 filtros de barrio usaban slugs viejos/equivocados
+    (`Lastarria`→`barrio-lastarria`, `Italia`→`barrio-italia`, y Providencia es comuna → `?comuna=providencia`);
+    verificado en runtime con el pill activo.
   - **Decisión de tarjeta (2026-06-10, feedback del usuario):** la mini-ficha usa **toda la tarjeta**, no solo la
     franja bajo la foto: **rating de Google superpuesto en esquina de la foto** + cuerpo (categoría·comuna, nombre)
     + fila inferior con **precio compacto (`$`…`$$$$`, Gratis como texto)** + **badge de línea de metro**. Implica

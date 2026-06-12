@@ -19,14 +19,10 @@ export async function Header() {
             Portal<em>Panorama</em>
           </Link>
 
-          {/* Nav */}
-          <nav className="topbar__nav" aria-label="Navegación principal">
-            <Link href="/explorar">Explorar</Link>
-            <Link href="/eventos">Eventos</Link>
-            {/* FASE 9: descomentar cuando el flow de negocios esté activo
-            <Link href="/planes">Planes</Link>
-            */}
-          </nav>
+          {/* Nav — vacío por ahora (decisión 2026-06-12): Explorar se promociona
+              cuando haya contenido real (se llega desde la home igual); Eventos
+              vuelve cuando se enciendan los eventos. */}
+          <nav className="topbar__nav" aria-label="Navegación principal" />
 
           {/* Actions */}
           <div className="topbar__actions">

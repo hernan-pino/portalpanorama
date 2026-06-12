@@ -36,12 +36,8 @@ export function MobileNav({ isAuthenticated, role }: MobileNavProps) {
         <>
           <div className="mobile-nav-backdrop" onClick={close} aria-hidden="true" />
           <div className="mobile-nav-panel">
-            <nav className="mobile-nav-links" aria-label="Menú principal">
-              <Link href="/explorar" onClick={close}>Explorar</Link>
-            </nav>
-
-            <div className="mobile-nav-divider" />
-
+            {/* Links de navegación quitados por ahora (2026-06-12): Explorar se
+                promociona cuando haya contenido; se llega desde la home igual. */}
             <div className="mobile-nav-auth">
               {isAuthenticated ? (
                 <>
