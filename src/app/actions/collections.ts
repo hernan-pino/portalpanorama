@@ -28,6 +28,22 @@ export async function saveToCollectionAction(
   return { success: true }
 }
 
+// ── Guardar en la lista por defecto ("Favoritos"), creándola si no existe ──
+export async function saveToDefaultCollectionAction(
+  placeId: string,
+): Promise<{ error: string } | { success: true; collectionId: string }> {
+  const session = await auth()
+  if (!session?.user?.id) return { error: 'Tenés que iniciar sesión para guardar lugares.' }
+
+  const { collectionId } = await container.getSaveToDefaultCollectionUseCase().execute({
+    userId: session.user.id,
+    placeId,
+  })
+
+  revalidatePath('/mi-cuenta')
+  return { success: true, collectionId }
+}
+
 // ── Crear una lista nueva y guardar el lugar en ella ──
 const createListSchema = z.object({
   name: z.string().trim().min(1, 'Ponle un nombre a la lista.').max(60, 'Máximo 60 caracteres.'),

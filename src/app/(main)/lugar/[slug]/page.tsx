@@ -6,6 +6,7 @@ import { auth } from '@lib/auth'
 import { container } from '@lib/container'
 import type { PlaceDetailView, PlaceCardView } from '@application/ports/PlaceRepository'
 import { PlaceNotFoundError } from '@domain/place/errors/PlaceNotFoundError'
+import { Collection } from '@domain/collection/Collection'
 import { Gallery } from './Gallery'
 import { SaveButton } from './SaveButton'
 import { ShareButton } from './ShareButton'
@@ -72,11 +73,15 @@ export default async function LugarPage({ params }: PageProps) {
   }
 
   // Combustible IA (post-MVP): registrar visita del usuario logueado. Las listas
-  // del usuario alimentan el selector de "Guardar".
+  // del usuario + qué ya guardó alimentan el botón "Guardar".
   let collections: { id: string; name: string; itemCount: number }[] = []
+  let defaultCollectionId: string | null = null
+  let isSaved = false
   if (userId) {
-    const dashboard = await container.getGetUserDashboardUseCase().execute(userId)
-    collections = dashboard.collections.map((c) => ({ id: c.id, name: c.name, itemCount: c.itemCount }))
+    const ctx = await container.getGetSaveContextUseCase().execute(userId)
+    collections = ctx.collections.map((c) => ({ id: c.id, name: c.name, itemCount: c.itemCount }))
+    defaultCollectionId = ctx.defaultCollectionId
+    isSaved = ctx.savedPlaceIds.includes(place.id)
     await container.getRecordVisitUseCase().execute({ userId, placeId: place.id })
   }
 
@@ -92,7 +97,14 @@ export default async function LugarPage({ params }: PageProps) {
     : undefined
 
   const saveButton = (
-    <SaveButton placeId={place.id} isLoggedIn={!!userId} collections={collections} />
+    <SaveButton
+      placeId={place.id}
+      isLoggedIn={!!userId}
+      isSaved={isSaved}
+      collections={collections}
+      defaultCollectionId={defaultCollectionId}
+      defaultName={Collection.DEFAULT_NAME}
+    />
   )
 
   return (

@@ -26,6 +26,10 @@ export interface CollectionRepository {
   // Listas privadas del usuario
   findByOwnerId(ownerId: string): Promise<CollectionSummary[]>
 
+  // Ids de los lugares que el usuario tiene guardados en CUALQUIERA de sus listas.
+  // Alimenta el estado "ya guardado" del corazón en ficha/explorar/home.
+  findSavedPlaceIds(ownerId: string): Promise<string[]>
+
   // Landing SEO de una lista curada (ownerId null)
   findCuratedBySlug(slug: string): Promise<CuratedCollectionView | null>
 }

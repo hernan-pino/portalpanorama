@@ -4,7 +4,7 @@ Documento vivo. Se actualiza cada vez que avanzamos. Aquí vive el **orden de tr
 y el **estado de avance** de la Fase 9. Para el detalle de pasos de código, ver
 [ROADMAP.md](ROADMAP.md). Para las preguntas de producto, ver [PRODUCTO.md](PRODUCTO.md).
 
-**Última actualización:** 2026-06-12
+**Última actualización:** 2026-06-13
 
 ---
 
@@ -247,23 +247,27 @@ y el **estado de avance** de la Fase 9. Para el detalle de pasos de código, ver
     **Footer arreglado (sigue válido):** 3 de 4 filtros de barrio usaban slugs viejos/equivocados
     (`Lastarria`→`barrio-lastarria`, `Italia`→`barrio-italia`, y Providencia es comuna → `?comuna=providencia`);
     verificado en runtime con el pill activo.
-  - **▶️ PEDIDOS DE UX DE GUARDADO (2026-06-12, anotados para retomar — NO implementados aún):** dos cosas sobre el flujo
-    de "guardar" que hoy no funcionan como el usuario espera:
-    1. **Lista "Favoritos" por defecto en el selector (NO guardado en 1 toque).** Aclaración del usuario (2026-06-12):
-       **el flujo se queda igual que ahora** — apretar el corazón ([SaveHeart](src/components/place/SaveHeart.tsx)) /
-       Guardar de la ficha ([SaveButton](src/app/(main)/lugar/[slug]/SaveButton.tsx)) **sigue abriendo el selector de
-       listas**; lo que cambia es que **siempre exista una lista "Favoritos" y salga preseleccionada por defecto** ahí
-       (hoy si no tienes ninguna lista te obliga a crear una). Implementación probable: sembrar una colección "Favoritos"
-       por usuario (lazy al primer guardado, o al registrarse en
-       [RegisterUserUseCase](src/application/user/RegisterUserUseCase.ts)); el selector la muestra marcada por defecto, el
-       usuario confirma o elige otra. Anónimo sigue con el pop-up de login (decisión §8.5 de explorar).
-    2. **El corazón debe salir MARCADO en todos lados si el lugar ya está guardado** (ficha, explorar, home). Hoy el corazón
-       de la tarjeta no refleja el estado real → siempre se ve "sin guardar". Falta un **read-model "qué placeIds tiene
-       guardados el usuario"** (ej. `CollectionRepository.savedPlaceIds(userId)` o por-página
-       `savedStatusFor(userId, placeIds[])`), que la home/explorar/ficha consulten y pasen `isSaved` a cada
-       [PlaceCard](src/components/place/PlaceCard.tsx)/SaveHeart. Cruza capas (port + impl + las 3 páginas).
-    Ambos van juntos (mismo flujo de colecciones); el #2 es el que más se nota como "bug". Prioridad alta para la próxima
-    sesión, antes o junto con cargar contenido.
+  - **✅ PEDIDOS DE UX DE GUARDADO IMPLEMENTADOS + VERIFICADOS (2026-06-13):** los dos pedidos del flujo de "guardar",
+    cerrados juntos (mismo flujo de colecciones, cruzan todas las capas). Enfoque elegido: **lazy + self-healing** (sin tocar
+    registro ni seed → cubre usuarios nuevos y existentes solo, robusto si se borra la lista).
+    1. **Lista "Favoritos" por defecto ✅.** El flujo se quedó igual (el corazón/Guardar sigue abriendo el selector); ahora
+       "Favoritos" **sale siempre fijada arriba y marcada "por defecto"**, y se crea al vuelo la primera vez que se guarda
+       (ya no obliga a nombrar una lista). Constante de dominio `Collection.DEFAULT_NAME = 'Favoritos'`; nuevo
+       [SaveToDefaultCollectionUseCase](src/application/collection/SaveToDefaultCollectionUseCase.ts) (ensure-or-create +
+       addPlace, idempotente) + `saveToDefaultCollectionAction` en [collections.ts](src/app/actions/collections.ts). El
+       selector ([SaveHeart](src/components/place/SaveHeart.tsx) + [SaveButton](src/app/(main)/lugar/[slug]/SaveButton.tsx))
+       fija la default arriba con badge `por defecto`, dedup del resto. Anónimo sigue con el pop-up de login (§8.5).
+    2. **Corazón MARCADO donde ya está guardado ✅** (ficha, explorar, home). Nuevo read-model
+       `CollectionRepository.findSavedPlaceIds(ownerId)` (distinct placeId en cualquier lista del usuario) + impl Prisma.
+       Nuevo [GetSaveContextUseCase](src/application/collection/GetSaveContextUseCase.ts) que devuelve
+       `{ collections, savedPlaceIds, defaultCollectionId }` — **reemplaza la llamada a `GetUserDashboard`** en home/explorar/
+       ficha (de paso mata el smell de performance anotado: ya no arrastra el historial solo para el selector). El
+       [SaveContext](src/components/place/PlaceCard.tsx) lleva `savedPlaceIds` + `defaultCollectionId` + `defaultName`; cada
+       tarjeta saca su `isSaved` de ahí. La ficha computa `isSaved` para su lugar y el botón arranca "Guardado".
+    - **Verificación:** `tsc` 0 · ESLint 0 (12 archivos) · **lógica de datos e2e contra la BD local** (script efímero con el
+      repo Prisma real: sin lista → crea "Favoritos" + guarda → `savedPlaceIds` lo incluye → idempotente al re-guardar → limpieza
+      OK) · render **anónimo** 200 (home/explorar/ficha, corazón presente, badge no se filtra) · render **autenticado** 200
+      (login Auth.js como `usuario@`, las 3 superficies con el camino `GetSaveContext` sin romper en SSR). **Sin commit aún.**
   - **Decisión de tarjeta (2026-06-10, feedback del usuario):** la mini-ficha usa **toda la tarjeta**, no solo la
     franja bajo la foto: **rating de Google superpuesto en esquina de la foto** + cuerpo (categoría·comuna, nombre)
     + fila inferior con **precio compacto (`$`…`$$$$`, Gratis como texto)** + **badge de línea de metro**. Implica

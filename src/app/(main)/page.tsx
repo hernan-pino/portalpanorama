@@ -6,6 +6,7 @@ import { container } from '@lib/container'
 import { SearchBar } from '@components/search/SearchBar'
 import { PlaceCard, type SaveContext } from '@components/place/PlaceCard'
 import { PlaceRail } from '@components/place/PlaceRail'
+import { Collection } from '@domain/collection/Collection'
 
 export const metadata: Metadata = {
   title: 'Portal Panorama — Qué hacer hoy en Santiago',
@@ -56,12 +57,18 @@ export default async function HomePage() {
     container.getGetPlaceFacetsUseCase().execute(),
   ])
 
-  let save: SaveContext = { isLoggedIn: !!userId, collections: [] }
+  let save: SaveContext = {
+    isLoggedIn: !!userId, collections: [], savedPlaceIds: [],
+    defaultCollectionId: null, defaultName: Collection.DEFAULT_NAME,
+  }
   if (userId) {
-    const dashboard = await container.getGetUserDashboardUseCase().execute(userId)
+    const ctx = await container.getGetSaveContextUseCase().execute(userId)
     save = {
       isLoggedIn: true,
-      collections: dashboard.collections.map((c) => ({ id: c.id, name: c.name, itemCount: c.itemCount })),
+      collections: ctx.collections.map((c) => ({ id: c.id, name: c.name, itemCount: c.itemCount })),
+      savedPlaceIds: ctx.savedPlaceIds,
+      defaultCollectionId: ctx.defaultCollectionId,
+      defaultName: Collection.DEFAULT_NAME,
     }
   }
 

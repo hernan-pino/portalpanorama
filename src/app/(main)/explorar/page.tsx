@@ -5,6 +5,7 @@ import { container } from '@lib/container'
 import { SearchBar } from '@components/search/SearchBar'
 import { Filters } from '@components/search/Filters'
 import { PlaceCard, type SaveContext } from '@components/place/PlaceCard'
+import { Collection } from '@domain/collection/Collection'
 import { parseSearchParams, type RawSearchParams } from '@lib/parseSearchParams'
 
 export const metadata: Metadata = { title: 'Explorar lugares — Portal Panorama' }
@@ -41,13 +42,20 @@ export default async function ExplorarPage({ searchParams }: PageProps) {
     container.getGetCategoriesUseCase().execute(),
   ])
 
-  // Contexto de guardado (corazón de la tarjeta). Las colecciones se traen una vez.
-  let save: SaveContext = { isLoggedIn: !!userId, collections: [] }
+  // Contexto de guardado (corazón de la tarjeta): listas + lugares ya guardados +
+  // lista por defecto. Se trae una vez para todas las tarjetas.
+  let save: SaveContext = {
+    isLoggedIn: !!userId, collections: [], savedPlaceIds: [],
+    defaultCollectionId: null, defaultName: Collection.DEFAULT_NAME,
+  }
   if (userId) {
-    const dashboard = await container.getGetUserDashboardUseCase().execute(userId)
+    const ctx = await container.getGetSaveContextUseCase().execute(userId)
     save = {
       isLoggedIn: true,
-      collections: dashboard.collections.map((c) => ({ id: c.id, name: c.name, itemCount: c.itemCount })),
+      collections: ctx.collections.map((c) => ({ id: c.id, name: c.name, itemCount: c.itemCount })),
+      savedPlaceIds: ctx.savedPlaceIds,
+      defaultCollectionId: ctx.defaultCollectionId,
+      defaultName: Collection.DEFAULT_NAME,
     }
   }
 

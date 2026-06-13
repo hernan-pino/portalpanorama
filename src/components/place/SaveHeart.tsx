@@ -1,7 +1,11 @@
 'use client'
 import { useState, useTransition } from 'react'
 import Link from 'next/link'
-import { saveToCollectionAction, createListAndSaveAction } from '@/app/actions/collections'
+import {
+  saveToCollectionAction,
+  saveToDefaultCollectionAction,
+  createListAndSaveAction,
+} from '@/app/actions/collections'
 
 interface Collection {
   id: string
@@ -13,19 +17,30 @@ interface Props {
   placeId: string
   placeName: string
   isLoggedIn: boolean
+  isSaved: boolean
   collections: Collection[]
+  defaultCollectionId: string | null
+  defaultName: string
 }
 
 // Corazón de guardar sobre la tarjeta. Visitante anónimo → pop-up que invita a
 // entrar/registrarse (no redirección seca, decisión 4E §8.5). Usuario → modal con
-// sus listas + crear una nueva. El modal es fijo/centrado para no recortarse dentro
-// de la grilla. Reusa las acciones compartidas con la ficha.
-export function SaveHeart({ placeId, placeName, isLoggedIn, collections }: Props) {
+// sus listas + crear una nueva. "Favoritos" sale siempre fijada arriba y marcada
+// como predeterminada (se crea al vuelo la primera vez). El corazón arranca relleno
+// si el lugar ya está guardado en alguna lista (isSaved). El modal es fijo/centrado
+// para no recortarse dentro de la grilla. Reusa las acciones compartidas con la ficha.
+export function SaveHeart({
+  placeId, placeName, isLoggedIn, isSaved, collections, defaultCollectionId, defaultName,
+}: Props) {
   const [open, setOpen] = useState(false)
-  const [saved, setSaved] = useState(false)
+  const [saved, setSaved] = useState(isSaved)
   const [newName, setNewName] = useState('')
   const [error, setError] = useState<string | null>(null)
   const [isPending, startTransition] = useTransition()
+
+  // "Favoritos" va primero y marcada; el resto de listas abajo, sin duplicarla.
+  const defaultRow = collections.find((c) => c.id === defaultCollectionId)
+  const others = collections.filter((c) => c.id !== defaultCollectionId)
 
   function onHeartClick(e: React.MouseEvent) {
     e.preventDefault()
@@ -40,25 +55,21 @@ export function SaveHeart({ placeId, placeName, isLoggedIn, collections }: Props
     setError(null)
   }
 
-  function saveTo(collectionId: string) {
+  function run(action: () => Promise<{ error: string } | { success: true } | { success: true; collectionId: string }>) {
     setError(null)
     startTransition(async () => {
-      const res = await saveToCollectionAction(placeId, collectionId)
+      const res = await action()
       if ('error' in res) { setError(res.error); return }
       setSaved(true)
       close()
     })
   }
 
+  function saveDefault() { run(() => saveToDefaultCollectionAction(placeId)) }
+  function saveTo(collectionId: string) { run(() => saveToCollectionAction(placeId, collectionId)) }
   function createAndSave() {
     if (!newName.trim()) return
-    setError(null)
-    startTransition(async () => {
-      const res = await createListAndSaveAction(placeId, newName)
-      if ('error' in res) { setError(res.error); return }
-      setSaved(true)
-      close()
-    })
+    run(() => createListAndSaveAction(placeId, newName))
   }
 
   return (
@@ -105,22 +116,31 @@ export function SaveHeart({ placeId, placeName, isLoggedIn, collections }: Props
               <>
                 <h4 className="save-modal__title">Guardar en una lista</h4>
 
-                {collections.length > 0 && (
-                  <div className="save-modal__list">
-                    {collections.map((c) => (
-                      <button
-                        key={c.id}
-                        type="button"
-                        className="save-modal__item"
-                        disabled={isPending}
-                        onClick={() => saveTo(c.id)}
-                      >
-                        <span>{c.name}</span>
-                        <span className="count">{c.itemCount}</span>
-                      </button>
-                    ))}
-                  </div>
-                )}
+                <div className="save-modal__list">
+                  {/* Lista por defecto (siempre presente, marcada) */}
+                  <button
+                    type="button"
+                    className="save-modal__item save-modal__item--default"
+                    disabled={isPending}
+                    onClick={saveDefault}
+                  >
+                    <span>{defaultRow?.name ?? defaultName}<span className="save-modal__badge">por defecto</span></span>
+                    <span className="count">{defaultRow?.itemCount ?? 0}</span>
+                  </button>
+
+                  {others.map((c) => (
+                    <button
+                      key={c.id}
+                      type="button"
+                      className="save-modal__item"
+                      disabled={isPending}
+                      onClick={() => saveTo(c.id)}
+                    >
+                      <span>{c.name}</span>
+                      <span className="count">{c.itemCount}</span>
+                    </button>
+                  ))}
+                </div>
 
                 <div className="save-modal__new">
                   <input

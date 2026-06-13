@@ -33,7 +33,9 @@ import { CreateCollectionUseCase } from '@application/collection/CreateCollectio
 import { RenameCollectionUseCase } from '@application/collection/RenameCollectionUseCase'
 import { DeleteCollectionUseCase } from '@application/collection/DeleteCollectionUseCase'
 import { AddPlaceToCollectionUseCase } from '@application/collection/AddPlaceToCollectionUseCase'
+import { SaveToDefaultCollectionUseCase } from '@application/collection/SaveToDefaultCollectionUseCase'
 import { RemovePlaceFromCollectionUseCase } from '@application/collection/RemovePlaceFromCollectionUseCase'
+import { GetSaveContextUseCase } from '@application/collection/GetSaveContextUseCase'
 import { RegisterUserUseCase } from '@application/user/RegisterUserUseCase'
 import { UpdateUserProfileUseCase } from '@application/user/UpdateUserProfileUseCase'
 import { GetUserDashboardUseCase } from '@application/user/GetUserDashboardUseCase'
@@ -112,8 +114,16 @@ export const container = {
     return new AddPlaceToCollectionUseCase(collectionRepo)
   },
 
+  getSaveToDefaultCollectionUseCase() {
+    return new SaveToDefaultCollectionUseCase(collectionRepo)
+  },
+
   getRemovePlaceFromCollectionUseCase() {
     return new RemovePlaceFromCollectionUseCase(collectionRepo)
+  },
+
+  getGetSaveContextUseCase() {
+    return new GetSaveContextUseCase(collectionRepo)
   },
 
   // ── Reportes ────────────────────────────────────────────────────────

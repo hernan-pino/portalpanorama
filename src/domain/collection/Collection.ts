@@ -28,6 +28,12 @@ export interface CollectionProps {
 }
 
 export class Collection {
+  // Lista por defecto que toda persona tiene para guardar en un toque. Se crea
+  // perezosamente al primer guardado (ver SaveToDefaultCollectionUseCase) y el
+  // selector la muestra preseleccionada. No es un tipo aparte: es una colección
+  // normal con este nombre.
+  static readonly DEFAULT_NAME = 'Favoritos'
+
   readonly id: string
   readonly name: string
   readonly ownerId?: string

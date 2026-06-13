@@ -103,6 +103,15 @@ export class PrismaCollectionRepository implements CollectionRepository {
     }))
   }
 
+  async findSavedPlaceIds(ownerId: string): Promise<string[]> {
+    const rows = await this.prisma.collectionItem.findMany({
+      where: { collection: { ownerId } },
+      distinct: ['placeId'],
+      select: { placeId: true },
+    })
+    return rows.map((r) => r.placeId)
+  }
+
   async findCuratedBySlug(slug: string): Promise<CuratedCollectionView | null> {
     const row = await this.prisma.collection.findUnique({
       where: { slug },

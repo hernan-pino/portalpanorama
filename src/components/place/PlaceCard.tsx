@@ -4,11 +4,14 @@ import type { PlaceCardView } from '@application/ports/PlaceRepository'
 import { SaveHeart } from './SaveHeart'
 
 // Contexto de guardado: si viene, la tarjeta muestra el corazón cableado al flujo
-// de listas. Se resuelve una vez por página (sesión + colecciones del usuario) y se
-// pasa a todas las tarjetas.
+// de listas. Se resuelve una vez por página (sesión + listas + lugares guardados) y
+// se pasa a todas las tarjetas; cada una saca su estado "guardado" de savedPlaceIds.
 export interface SaveContext {
   isLoggedIn: boolean
   collections: { id: string; name: string; itemCount: number }[]
+  savedPlaceIds: string[]
+  defaultCollectionId: string | null
+  defaultName: string
 }
 
 interface Props {
@@ -98,7 +101,10 @@ export function PlaceCard({ place, save, variant = 'grid' }: Props) {
           placeId={place.id}
           placeName={place.name}
           isLoggedIn={save.isLoggedIn}
+          isSaved={save.savedPlaceIds.includes(place.id)}
           collections={save.collections}
+          defaultCollectionId={save.defaultCollectionId}
+          defaultName={save.defaultName}
         />
       )}
     </article>

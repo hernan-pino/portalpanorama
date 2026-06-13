@@ -1,7 +1,11 @@
 'use client'
 import { useState, useRef, useEffect, useTransition } from 'react'
 import { BookmarkIcon } from './icons'
-import { saveToCollectionAction, createListAndSaveAction } from '@/app/actions/collections'
+import {
+  saveToCollectionAction,
+  saveToDefaultCollectionAction,
+  createListAndSaveAction,
+} from '@/app/actions/collections'
 
 interface Collection {
   id: string
@@ -12,11 +16,17 @@ interface Collection {
 interface Props {
   placeId: string
   isLoggedIn: boolean
+  isSaved: boolean
   collections: Collection[]
+  defaultCollectionId: string | null
+  defaultName: string
 }
 
-export function SaveButton({ placeId, isLoggedIn, collections }: Props) {
+export function SaveButton({
+  placeId, isLoggedIn, isSaved, collections, defaultCollectionId, defaultName,
+}: Props) {
   const [open, setOpen] = useState(false)
+  const [saved, setSaved] = useState(isSaved)
   const [savedIn, setSavedIn] = useState<string | null>(null)
   const [newName, setNewName] = useState('')
   const [error, setError] = useState<string | null>(null)
@@ -40,26 +50,37 @@ export function SaveButton({ placeId, isLoggedIn, collections }: Props) {
     )
   }
 
-  function saveTo(collectionId: string, label: string) {
-    setError(null)
-    startTransition(async () => {
-      const res = await saveToCollectionAction(placeId, collectionId)
-      if ('error' in res) { setError(res.error); return }
-      setSavedIn(label)
-      setOpen(false)
-    })
-  }
+  // "Favoritos" primero y marcada; el resto abajo, sin duplicarla.
+  const defaultRow = collections.find((c) => c.id === defaultCollectionId)
+  const others = collections.filter((c) => c.id !== defaultCollectionId)
 
-  function createAndSave() {
+  function run(
+    action: () => Promise<{ error: string } | { success: true } | { success: true; collectionId: string }>,
+    label: string,
+  ) {
     setError(null)
     startTransition(async () => {
-      const res = await createListAndSaveAction(placeId, newName)
+      const res = await action()
       if ('error' in res) { setError(res.error); return }
-      setSavedIn(newName.trim())
+      setSaved(true)
+      setSavedIn(label)
       setNewName('')
       setOpen(false)
     })
   }
+
+  function saveDefault() {
+    run(() => saveToDefaultCollectionAction(placeId), defaultRow?.name ?? defaultName)
+  }
+  function saveTo(collectionId: string, label: string) {
+    run(() => saveToCollectionAction(placeId, collectionId), label)
+  }
+  function createAndSave() {
+    if (!newName.trim()) return
+    run(() => createListAndSaveAction(placeId, newName), newName.trim())
+  }
+
+  const label = savedIn ? `Guardado en ${savedIn}` : saved ? 'Guardado' : 'Guardar'
 
   return (
     <div ref={wrapRef} style={{ position: 'relative', flex: 1 }}>
@@ -71,29 +92,37 @@ export function SaveButton({ placeId, isLoggedIn, collections }: Props) {
         aria-expanded={open}
         onClick={() => setOpen((v) => !v)}
       >
-        <BookmarkIcon /> {savedIn ? `Guardado en ${savedIn}` : 'Guardar'}
+        <BookmarkIcon /> {label}
       </button>
 
       {open && (
         <div className="ficha__pop" role="menu">
           <h4>Guardar en una lista</h4>
 
-          {collections.length > 0 && (
-            <div className="ficha__pop-list">
-              {collections.map((c) => (
-                <button
-                  key={c.id}
-                  type="button"
-                  className="ficha__pop-item"
-                  disabled={isPending}
-                  onClick={() => saveTo(c.id, c.name)}
-                >
-                  <span>{c.name}</span>
-                  <span className="count">{c.itemCount}</span>
-                </button>
-              ))}
-            </div>
-          )}
+          <div className="ficha__pop-list">
+            <button
+              type="button"
+              className="ficha__pop-item ficha__pop-item--default"
+              disabled={isPending}
+              onClick={saveDefault}
+            >
+              <span>{defaultRow?.name ?? defaultName}<span className="ficha__pop-badge">por defecto</span></span>
+              <span className="count">{defaultRow?.itemCount ?? 0}</span>
+            </button>
+
+            {others.map((c) => (
+              <button
+                key={c.id}
+                type="button"
+                className="ficha__pop-item"
+                disabled={isPending}
+                onClick={() => saveTo(c.id, c.name)}
+              >
+                <span>{c.name}</span>
+                <span className="count">{c.itemCount}</span>
+              </button>
+            ))}
+          </div>
 
           <div style={{ display: 'flex', gap: 'var(--s-2)' }}>
             <input
