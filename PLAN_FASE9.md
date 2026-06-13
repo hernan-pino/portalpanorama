@@ -241,12 +241,29 @@ y el **estado de avance** de la Fase 9. Para el detalle de pasos de código, ver
     se loguea y el registro completa igual. **Verificado:** registro → 303 `/login?registered=1` → login → dashboard
     "Hola, Vecino · 0 listas · 0 visitados" con estado vacío y Editar perfil. **Checklist push a prod:** setear
     `RESEND_API_KEY` real para que la bienvenida sí se envíe.
-  - **Decisión de chrome (2026-06-12, pedido del usuario):** **fuera "Explorar" del menú del header** (desktop y móvil)
-    mientras no haya contenido real — se llega igual desde la home (buscador/chips/categorías); se re-promociona al
-    lanzar. De paso: **"Eventos" del header era un link muerto (404,** la ruta se podó en 4E) → quitado; el nav del
-    topbar queda vacío por ahora. **Footer arreglado:** 3 de 4 filtros de barrio usaban slugs viejos/equivocados
+  - **Decisión de chrome (2026-06-12, pedido del usuario) — CORREGIDA:** el usuario solo quería sacar **"Eventos"** del
+    header, NO "Explorar". En la primera pasada saqué los dos por error → **revertido el mismo día: "Explorar" vuelve al
+    header y al menú móvil**; **"Eventos" queda fuera** (era link muerto 404, ruta podada en 4E; vuelve al encender eventos).
+    **Footer arreglado (sigue válido):** 3 de 4 filtros de barrio usaban slugs viejos/equivocados
     (`Lastarria`→`barrio-lastarria`, `Italia`→`barrio-italia`, y Providencia es comuna → `?comuna=providencia`);
     verificado en runtime con el pill activo.
+  - **▶️ PEDIDOS DE UX DE GUARDADO (2026-06-12, anotados para retomar — NO implementados aún):** dos cosas sobre el flujo
+    de "guardar" que hoy no funcionan como el usuario espera:
+    1. **Guardado en 1 toque a una lista por defecto "Favoritos".** Hoy el corazón ([SaveHeart](src/components/place/SaveHeart.tsx))
+       y el botón Guardar de la ficha ([SaveButton](src/app/(main)/lugar/[slug]/SaveButton.tsx)) abren un selector de
+       colecciones / crear lista — fricción. El usuario quiere que **apretar el corazón guarde de inmediato** en una lista
+       **"Favoritos" que siempre exista y salga preseleccionada** (sin obligar a elegir/crear). Implementación probable:
+       lista "Favoritos" por defecto por usuario (crear lazy al primer guardado, o sembrarla al registrarse en
+       [RegisterUserUseCase](src/application/user/RegisterUserUseCase.ts)); el corazón hace `saveToCollection(favoritos)`
+       directo; el selector de listas queda como acción secundaria ("mover a otra lista"). Anónimo sigue con el pop-up de
+       login (decisión §8.5 de explorar).
+    2. **El corazón debe salir MARCADO en todos lados si el lugar ya está guardado** (ficha, explorar, home). Hoy el corazón
+       de la tarjeta no refleja el estado real → siempre se ve "sin guardar". Falta un **read-model "qué placeIds tiene
+       guardados el usuario"** (ej. `CollectionRepository.savedPlaceIds(userId)` o por-página
+       `savedStatusFor(userId, placeIds[])`), que la home/explorar/ficha consulten y pasen `isSaved` a cada
+       [PlaceCard](src/components/place/PlaceCard.tsx)/SaveHeart. Cruza capas (port + impl + las 3 páginas).
+    Ambos van juntos (mismo flujo de colecciones); el #2 es el que más se nota como "bug". Prioridad alta para la próxima
+    sesión, antes o junto con cargar contenido.
   - **Decisión de tarjeta (2026-06-10, feedback del usuario):** la mini-ficha usa **toda la tarjeta**, no solo la
     franja bajo la foto: **rating de Google superpuesto en esquina de la foto** + cuerpo (categoría·comuna, nombre)
     + fila inferior con **precio compacto (`$`…`$$$$`, Gratis como texto)** + **badge de línea de metro**. Implica
