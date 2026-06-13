@@ -1,6 +1,8 @@
 'use server'
+import { AuthError } from 'next-auth'
 import { redirect } from 'next/navigation'
 import { z } from 'zod'
+import { signIn } from '@lib/auth'
 import { container } from '@lib/container'
 import { EmailAlreadyInUseError } from '@domain/user/errors/EmailAlreadyInUseError'
 
@@ -33,5 +35,18 @@ export async function registerAction(
     throw error
   }
 
-  redirect('/login?registered=1')
+  // Auto-login: la persona recién creada entra directo, sin pasar por /login.
+  try {
+    await signIn('credentials', {
+      email: parsed.data.email,
+      password: parsed.data.password,
+      redirect: false,
+    })
+  } catch (error) {
+    // La cuenta sí quedó creada; si el auto-login fallara, la mandamos a login a mano.
+    if (error instanceof AuthError) redirect('/login?registered=1')
+    throw error
+  }
+
+  redirect('/mi-cuenta?bienvenida=1')
 }
