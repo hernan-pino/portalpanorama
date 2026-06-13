@@ -249,14 +249,14 @@ y el **estado de avance** de la Fase 9. Para el detalle de pasos de código, ver
     verificado en runtime con el pill activo.
   - **▶️ PEDIDOS DE UX DE GUARDADO (2026-06-12, anotados para retomar — NO implementados aún):** dos cosas sobre el flujo
     de "guardar" que hoy no funcionan como el usuario espera:
-    1. **Guardado en 1 toque a una lista por defecto "Favoritos".** Hoy el corazón ([SaveHeart](src/components/place/SaveHeart.tsx))
-       y el botón Guardar de la ficha ([SaveButton](src/app/(main)/lugar/[slug]/SaveButton.tsx)) abren un selector de
-       colecciones / crear lista — fricción. El usuario quiere que **apretar el corazón guarde de inmediato** en una lista
-       **"Favoritos" que siempre exista y salga preseleccionada** (sin obligar a elegir/crear). Implementación probable:
-       lista "Favoritos" por defecto por usuario (crear lazy al primer guardado, o sembrarla al registrarse en
-       [RegisterUserUseCase](src/application/user/RegisterUserUseCase.ts)); el corazón hace `saveToCollection(favoritos)`
-       directo; el selector de listas queda como acción secundaria ("mover a otra lista"). Anónimo sigue con el pop-up de
-       login (decisión §8.5 de explorar).
+    1. **Lista "Favoritos" por defecto en el selector (NO guardado en 1 toque).** Aclaración del usuario (2026-06-12):
+       **el flujo se queda igual que ahora** — apretar el corazón ([SaveHeart](src/components/place/SaveHeart.tsx)) /
+       Guardar de la ficha ([SaveButton](src/app/(main)/lugar/[slug]/SaveButton.tsx)) **sigue abriendo el selector de
+       listas**; lo que cambia es que **siempre exista una lista "Favoritos" y salga preseleccionada por defecto** ahí
+       (hoy si no tienes ninguna lista te obliga a crear una). Implementación probable: sembrar una colección "Favoritos"
+       por usuario (lazy al primer guardado, o al registrarse en
+       [RegisterUserUseCase](src/application/user/RegisterUserUseCase.ts)); el selector la muestra marcada por defecto, el
+       usuario confirma o elige otra. Anónimo sigue con el pop-up de login (decisión §8.5 de explorar).
     2. **El corazón debe salir MARCADO en todos lados si el lugar ya está guardado** (ficha, explorar, home). Hoy el corazón
        de la tarjeta no refleja el estado real → siempre se ve "sin guardar". Falta un **read-model "qué placeIds tiene
        guardados el usuario"** (ej. `CollectionRepository.savedPlaceIds(userId)` o por-página
