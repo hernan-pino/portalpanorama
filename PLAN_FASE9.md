@@ -215,9 +215,13 @@ y el **estado de avance** de la Fase 9. Para el detalle de pasos de código, ver
     imagen de un host fuera de la allowlist de next/image pasaba al guardar pero **tumbaba la ficha con 500** al renderizar
     → fuente única [imageHosts.ts](src/lib/imageHosts.ts) (next.config deriva `remotePatterns` de ahí + Zod del action
     valida el host + hint en el form). Verificado en runtime: picsum.photos rechazado con mensaje claro.
-  - **▶️ PRÓXIMO PASO (retomar acá):** **Admin CRUD listo y verificado e2e.** Toca: (1) **cargar ~100 lugares a mano** por el
-    form (Etapa 5 contenido, densidad > cantidad en Providencia/Ñuñoa); (2) **push a prod (Neon)**: migración de la Etapa 3 en
-    la BD de producción + seed de catálogos + redeploy con la presentation nueva. **Pendientes menores anotados:** (a') **widget
+  - **▶️ PRÓXIMO PASO (retomar acá):** **Admin CRUD listo y verificado e2e.** Toca: (1) **cargar ~5 lugares a mano** por el
+    form para validar el flujo end-to-end con contenido real (NO 100 a mano — eso fue un error de redacción de este bullet,
+    corregido 2026-06-13; la decisión real es **P2 — Carga inicial y ritmo**: un puñado a mano para validar y el **grueso por
+    plantilla/CSV a ~20/semana hasta ~100**, densidad > cantidad en Providencia/Ñuñoa); (2) **push a prod (Neon)**: migración de
+    la Etapa 3 en la BD de producción + seed de catálogos + redeploy con la presentation nueva. El **importador CSV** (ítem (h)
+    abajo) es la pieza que habilita el ritmo de ~20/semana → pasa de "pendiente menor" a **camino principal de carga** una vez
+    validados los ~5 a mano. **Pendientes menores anotados:** (a') **widget
     de subida de imágenes (UploadThing)** — hoy el form pide la URL pegada (el `StorageService`/UploadThing ya existen, falta el
     componente de upload) y la allowlist de hosts deberá sumar el host de UploadThing (`utfs.io`) cuando entre; (a'')
     validar en el use case que la subcategoría pertenezca a su categoría (hoy solo el form lo previene con selects
@@ -267,7 +271,8 @@ y el **estado de avance** de la Fase 9. Para el detalle de pasos de código, ver
     - **Verificación:** `tsc` 0 · ESLint 0 (12 archivos) · **lógica de datos e2e contra la BD local** (script efímero con el
       repo Prisma real: sin lista → crea "Favoritos" + guarda → `savedPlaceIds` lo incluye → idempotente al re-guardar → limpieza
       OK) · render **anónimo** 200 (home/explorar/ficha, corazón presente, badge no se filtra) · render **autenticado** 200
-      (login Auth.js como `usuario@`, las 3 superficies con el camino `GetSaveContext` sin romper en SSR). **Sin commit aún.**
+      (login Auth.js como `usuario@`, las 3 superficies con el camino `GetSaveContext` sin romper en SSR). **Commiteado en
+      `5a82164` (feat guardado).** De paso, `f60da97` (fix header: acciones de sesión lado a lado en desktop).
   - **Decisión de tarjeta (2026-06-10, feedback del usuario):** la mini-ficha usa **toda la tarjeta**, no solo la
     franja bajo la foto: **rating de Google superpuesto en esquina de la foto** + cuerpo (categoría·comuna, nombre)
     + fila inferior con **precio compacto (`$`…`$$$$`, Gratis como texto)** + **badge de línea de metro**. Implica
