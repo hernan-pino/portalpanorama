@@ -34,6 +34,7 @@ export class PrismaCategoryRepository implements CategoryRepository {
     })
     return rows.map((r) => ({
       id: r.id,
+      slug: r.slug,
       name: r.name,
       subcategories: r.subcategories.map((s) => ({ id: s.id, name: s.name })),
     }))

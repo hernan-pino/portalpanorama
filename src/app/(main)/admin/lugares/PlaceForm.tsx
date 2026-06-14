@@ -1,5 +1,5 @@
 'use client'
-import { useState, useTransition } from 'react'
+import { useMemo, useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
 import type { PlaceFormOptions } from '@application/place/GetPlaceFormOptionsUseCase'
 import type { PlaceEditView } from '@application/place/GetPlaceForEditUseCase'
@@ -7,6 +7,7 @@ import { ALLOWED_IMAGE_HOSTS } from '@lib/imageHosts'
 import { createPlaceAction, updatePlaceAction } from './actions'
 import {
   PlaceFormValues,
+  PAYMENT_OPTIONS,
   PRICE_OPTIONS,
   RESERVATION_OPTIONS,
   RAIN_OPTIONS,
@@ -19,7 +20,7 @@ const BLANK: PlaceFormValues = {
   categoryId: '', subcategoryId: '', secondaryCategoryId: '', secondarySubcategoryId: '',
   address: '', communeId: '', neighborhoodId: '', lat: '', lng: '', metroStationId: '',
   accessDetail: '', reference: '', rainPolicy: '',
-  priceRange: '', reservation: '', paymentMethods: '', schedule: '',
+  priceRange: '', reservation: '', paymentMethods: [], schedule: '',
   phone: '', website: '', instagram: '',
   googlePlaceId: '', googleRating: '', googleReviewCount: '',
   isPremium: false, tagIds: [], images: [],
@@ -46,7 +47,7 @@ function fromInitial(p: PlaceEditView): PlaceFormValues {
     rainPolicy: p.rainPolicy ?? '',
     priceRange: p.priceRange ?? '',
     reservation: p.reservation ?? '',
-    paymentMethods: p.paymentMethods.join(', '),
+    paymentMethods: [...p.paymentMethods],
     schedule: p.schedule ?? '',
     phone: p.phone ?? '',
     website: p.website ?? '',
@@ -85,11 +86,37 @@ export function PlaceForm({ options, initial }: PlaceFormProps) {
   // ── Opciones derivadas ──
   const primaryCat = options.categories.find((c) => c.id === values.categoryId)
   const subOptions = primaryCat?.subcategories ?? []
+  // El menú/carta solo aplica a Gastronomía (un museo o parque no tiene carta).
+  const isGastronomia = primaryCat?.slug === 'gastronomia'
   const secCat = options.categories.find((c) => c.id === values.secondaryCategoryId)
   const secSubOptions = secCat?.subcategories ?? []
   const neighborhoodOptions = values.communeId
     ? options.neighborhoods.filter((n) => n.communeIds.includes(values.communeId))
     : options.neighborhoods
+
+  // Metro en 2 pasos: primero la línea, después la estación filtrada por esa línea.
+  // La línea es solo ayuda de UI (no se guarda; la estación ya conoce sus líneas).
+  const metroLines = useMemo(() => {
+    const byCode = new Map<string, { code: string; color: string }>()
+    for (const s of options.metroStations) for (const l of s.lines) byCode.set(l.code, l)
+    return [...byCode.values()].sort((a, b) => a.code.localeCompare(b.code))
+  }, [options.metroStations])
+  const [metroLineCode, setMetroLineCode] = useState<string>(() => {
+    const st = options.metroStations.find((s) => s.id === values.metroStationId)
+    return st?.lines[0]?.code ?? ''
+  })
+  const stationsForLine = metroLineCode
+    ? options.metroStations.filter((s) => s.lines.some((l) => l.code === metroLineCode))
+    : []
+
+  // Métodos de pago: chips multi-selección. Une las opciones base con cualquier
+  // valor antiguo ya guardado, para no perderlo al editar.
+  const paymentOptions = [...new Set<string>([...PAYMENT_OPTIONS, ...values.paymentMethods])]
+  function togglePayment(method: string) {
+    set('paymentMethods', values.paymentMethods.includes(method)
+      ? values.paymentMethods.filter((m) => m !== method)
+      : [...values.paymentMethods, method])
+  }
 
   // Tags condicionales (ej. tipo de cocina) solo si su categoría = la principal.
   const visibleTags = options.tags.filter((t) => !t.categoryId || t.categoryId === values.categoryId)
@@ -171,11 +198,6 @@ export function PlaceForm({ options, initial }: PlaceFormProps) {
           <textarea id="description" className="form-input" rows={4} value={values.description}
             onChange={(e) => set('description', e.target.value)} />
         </div>
-        <div className="form-row">
-          <label className="form-label" htmlFor="menuUrl">URL del menú / carta</label>
-          <input id="menuUrl" className="form-input" type="url" placeholder="https://…"
-            value={values.menuUrl} onChange={(e) => set('menuUrl', e.target.value)} />
-        </div>
       </section>
 
       {/* ── Categorización ── */}
@@ -185,7 +207,12 @@ export function PlaceForm({ options, initial }: PlaceFormProps) {
           <div className="form-row">
             <label className="form-label" htmlFor="categoryId">Categoría *</label>
             <select id="categoryId" className="form-input" value={values.categoryId} required
-              onChange={(e) => setValues((v) => ({ ...v, categoryId: e.target.value, subcategoryId: '' }))}>
+              onChange={(e) => {
+                const categoryId = e.target.value
+                const gastro = options.categories.find((c) => c.id === categoryId)?.slug === 'gastronomia'
+                // Al salir de Gastronomía, descartamos el menú (no aplica a museos/parques).
+                setValues((v) => ({ ...v, categoryId, subcategoryId: '', menuUrl: gastro ? v.menuUrl : '' }))
+              }}>
               <option value="">— Elegí —</option>
               {options.categories.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
             </select>
@@ -249,25 +276,40 @@ export function PlaceForm({ options, initial }: PlaceFormProps) {
         </div>
         <div className="form-grid-2">
           <div className="form-row">
-            <label className="form-label" htmlFor="metroStationId">Estación de metro</label>
-            <select id="metroStationId" className="form-input" value={values.metroStationId}
-              onChange={(e) => set('metroStationId', e.target.value)}>
+            <label className="form-label" htmlFor="metroLine">Línea de metro</label>
+            <select id="metroLine" className="form-input" value={metroLineCode}
+              onChange={(e) => {
+                const code = e.target.value
+                setMetroLineCode(code)
+                // Si la estación ya elegida no está en la nueva línea, se limpia.
+                const stillValid = options.metroStations.some(
+                  (s) => s.id === values.metroStationId && s.lines.some((l) => l.code === code),
+                )
+                if (!stillValid) set('metroStationId', '')
+              }}>
               <option value="">— Ninguna —</option>
-              {options.metroStations.map((m) => (
-                <option key={m.id} value={m.id}>
-                  {m.name}{m.lines.length ? ` (${m.lines.map((l) => l.code).join(', ')})` : ''}
-                </option>
+              {metroLines.map((l) => (
+                <option key={l.code} value={l.code}>Línea {l.code.slice(1)}</option>
               ))}
             </select>
           </div>
           <div className="form-row">
-            <label className="form-label" htmlFor="rainPolicy">Si llueve (aire libre)</label>
-            <select id="rainPolicy" className="form-input" value={values.rainPolicy}
-              onChange={(e) => set('rainPolicy', e.target.value)}>
-              <option value="">— No aplica —</option>
-              {RAIN_OPTIONS.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
+            <label className="form-label" htmlFor="metroStationId">Estación</label>
+            <select id="metroStationId" className="form-input" value={values.metroStationId}
+              disabled={!metroLineCode}
+              onChange={(e) => set('metroStationId', e.target.value)}>
+              <option value="">{metroLineCode ? '— Elegí la estación —' : '— Elegí la línea primero —'}</option>
+              {stationsForLine.map((m) => <option key={m.id} value={m.id}>{m.name}</option>)}
             </select>
           </div>
+        </div>
+        <div className="form-row">
+          <label className="form-label" htmlFor="rainPolicy">Si llueve (aire libre)</label>
+          <select id="rainPolicy" className="form-input" value={values.rainPolicy}
+            onChange={(e) => set('rainPolicy', e.target.value)}>
+            <option value="">— No aplica —</option>
+            {RAIN_OPTIONS.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
+          </select>
         </div>
         <div className="form-grid-2">
           <div className="form-row">
@@ -298,6 +340,13 @@ export function PlaceForm({ options, initial }: PlaceFormProps) {
       {/* ── Operacional ── */}
       <section className="admin-form__section">
         <h3 className="admin-form__legend">Presupuesto y operación</h3>
+        {isGastronomia && (
+          <div className="form-row">
+            <label className="form-label" htmlFor="menuUrl">URL del menú / carta</label>
+            <input id="menuUrl" className="form-input" type="url" placeholder="https://…"
+              value={values.menuUrl} onChange={(e) => set('menuUrl', e.target.value)} />
+          </div>
+        )}
         <div className="form-grid-2">
           <div className="form-row">
             <label className="form-label" htmlFor="priceRange">Rango de precio</label>
@@ -317,10 +366,18 @@ export function PlaceForm({ options, initial }: PlaceFormProps) {
           </div>
         </div>
         <div className="form-row">
-          <label className="form-label" htmlFor="paymentMethods">Métodos de pago</label>
-          <input id="paymentMethods" className="form-input" value={values.paymentMethods}
-            onChange={(e) => set('paymentMethods', e.target.value)} placeholder="Efectivo, Débito, Crédito" />
-          <p className="admin-form__hint">Separados por coma.</p>
+          <span className="form-label">Métodos de pago</span>
+          <div className="chip-set">
+            {paymentOptions.map((opt) => {
+              const on = values.paymentMethods.includes(opt)
+              return (
+                <button key={opt} type="button" className="chip" aria-pressed={on}
+                  onClick={() => togglePayment(opt)}>
+                  {opt}
+                </button>
+              )
+            })}
+          </div>
         </div>
         <div className="form-row">
           <label className="form-label" htmlFor="schedule">Horario</label>
@@ -405,29 +462,33 @@ export function PlaceForm({ options, initial }: PlaceFormProps) {
         </p>
         {values.images.map((img, i) => (
           <div key={i} className="admin-img-row">
-            <div className="form-row" style={{ flex: 1 }}>
-              <label className="form-label" htmlFor={`img-url-${i}`}>URL *</label>
+            <div className="form-row">
+              <label className="form-label" htmlFor={`img-url-${i}`}>URL de la imagen *</label>
               <input id={`img-url-${i}`} className="form-input" type="url" value={img.url}
                 onChange={(e) => updateImage(i, 'url', e.target.value)} placeholder="https://…" />
             </div>
-            <div className="form-row">
-              <label className="form-label" htmlFor={`img-alt-${i}`}>Alt</label>
-              <input id={`img-alt-${i}`} className="form-input" value={img.alt}
-                onChange={(e) => updateImage(i, 'alt', e.target.value)} />
+            <div className="admin-img-row__meta">
+              <div className="form-row">
+                <label className="form-label" htmlFor={`img-alt-${i}`}>Texto alternativo</label>
+                <input id={`img-alt-${i}`} className="form-input" value={img.alt}
+                  onChange={(e) => updateImage(i, 'alt', e.target.value)} />
+              </div>
+              <div className="form-row">
+                <label className="form-label" htmlFor={`img-credit-${i}`}>Crédito</label>
+                <input id={`img-credit-${i}`} className="form-input" value={img.credit}
+                  onChange={(e) => updateImage(i, 'credit', e.target.value)} />
+              </div>
             </div>
-            <div className="form-row">
-              <label className="form-label" htmlFor={`img-credit-${i}`}>Crédito</label>
-              <input id={`img-credit-${i}`} className="form-input" value={img.credit}
-                onChange={(e) => updateImage(i, 'credit', e.target.value)} />
+            <div className="admin-img-row__foot">
+              <label className="admin-img-row__primary">
+                <input type="radio" name="primaryImage" checked={img.isPrimary}
+                  onChange={() => setPrimaryImage(i)} />
+                Portada
+              </label>
+              <button type="button" className="btn btn--ghost btn--sm" onClick={() => removeImage(i)}>
+                Quitar
+              </button>
             </div>
-            <label className="admin-img-row__primary">
-              <input type="radio" name="primaryImage" checked={img.isPrimary}
-                onChange={() => setPrimaryImage(i)} />
-              Portada
-            </label>
-            <button type="button" className="btn btn--ghost btn--sm" onClick={() => removeImage(i)}>
-              Quitar
-            </button>
           </div>
         ))}
         <div>

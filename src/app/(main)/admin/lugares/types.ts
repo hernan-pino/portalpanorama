@@ -31,7 +31,7 @@ export interface PlaceFormValues {
 
   priceRange: string
   reservation: string
-  paymentMethods: string // separados por coma
+  paymentMethods: string[] // multi-selección
   schedule: string
 
   phone: string
@@ -62,6 +62,16 @@ export const RESERVATION_OPTIONS: { value: string; label: string }[] = [
   { value: 'RECOMMENDED', label: 'Reserva recomendada' },
   { value: 'WALK_IN', label: 'Sin reserva (llega no más)' },
 ]
+
+// Métodos de pago para la multi-selección del form (chips). Lista base; al editar
+// se preservan también valores antiguos que no estén acá (ver PlaceForm).
+export const PAYMENT_OPTIONS = [
+  'Efectivo',
+  'Débito',
+  'Crédito',
+  'Transferencia',
+  'Mercado Pago',
+] as const
 
 export const RAIN_OPTIONS: { value: string; label: string }[] = [
   { value: 'SUSPENDED', label: 'Si llueve se suspende' },

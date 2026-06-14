@@ -73,7 +73,7 @@ const placeSchema = z
       'OVER_30000',
     ]),
     reservation: optionalEnum(['REQUIRED', 'WALK_IN', 'RECOMMENDED']),
-    paymentMethods: z.string().optional().default(''),
+    paymentMethods: z.array(z.string()).optional().default([]),
     schedule: optionalText,
 
     phone: optionalText,
@@ -109,10 +109,7 @@ type ParsedPlace = z.infer<typeof placeSchema>
 // Mapea el input validado al PlaceWriteInput del use case. Los enums del dominio
 // son string-enums con los mismos valores, así que el cast es seguro tras Zod.
 function toWriteInput(d: ParsedPlace): PlaceWriteInput {
-  const paymentMethods = d.paymentMethods
-    .split(',')
-    .map((s) => s.trim())
-    .filter(Boolean)
+  const paymentMethods = d.paymentMethods.map((s) => s.trim()).filter(Boolean)
 
   // Garantiza exactamente una imagen primaria si hay imágenes.
   const hasPrimary = d.images.some((img) => img.isPrimary)

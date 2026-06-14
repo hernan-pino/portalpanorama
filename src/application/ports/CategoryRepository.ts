@@ -15,9 +15,12 @@ export interface CategoryView {
 }
 
 // Opción de categoría para el form de admin: lleva ids (las FK del Place se
-// guardan por id, no por slug) y sus subcategorías también con id.
+// guardan por id, no por slug) y sus subcategorías también con id. El slug
+// permite condicionar campos del form por categoría (ej. menú solo en Gastronomía)
+// sin amarrarse al nombre visible.
 export interface CategoryOption {
   id: string
+  slug: string
   name: string
   subcategories: { id: string; name: string }[]
 }
