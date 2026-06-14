@@ -237,7 +237,40 @@ y el **estado de avance** de la Fase 9. Para el detalle de pasos de código, ver
     `/terminos` y `/privacidad` que NO existen (404)** — la página legal de privacidad/cookies ya era ítem abierto del
     MVP (D.2, exigida por la instrumentación GA4/Pixel); decidir si se crean placeholders o se quita la columna hasta
     tenerlas; (h) **importador CSV** (Etapa 5): la plantilla existe ([PLANTILLA_CSV.md](PLANTILLA_CSV.md)); falta la
-    página/script de admin que lea el CSV curado (Google Sheets → export) y cree lugares en lote vía CreatePlace.
+    página/script de admin que lea el CSV curado (Google Sheets → export) y cree lugares en lote vía CreatePlace;
+    (i) **endurecer la seguridad del registro (pedido del usuario 2026-06-13):** (i.1) el **formato de email YA se
+    valida** (`z.string().email()` en [registro/actions.ts](src/app/(auth)/registro/actions.ts)) — nada que hacer ahí;
+    (i.2) **fuerza de contraseña** — hoy solo exige `min(8)`; sumar reglas (mayúscula/número/símbolo o medidor de
+    fortaleza) en el schema Zod + feedback en el form; (i.3) **correo de confirmación de cuenta** (verificación de
+    email con token + estado `emailVerified`) — más adelante; el correo de **bienvenida** ya existe en
+    [RegisterUserUseCase](src/application/user/RegisterUserUseCase.ts) (best-effort), pero la **verificación** es otra
+    cosa (token de un solo uso, link, gateo de acciones hasta verificar) y requiere `RESEND_API_KEY` real en prod.
+    Considerar también rate-limit del endpoint de registro (anti-bots) cuando entre la verificación.
+    (j) **revisitar/redefinir los límites de tags (pedido del usuario 2026-06-13):** hoy SOCIAL ≤ 4 y VIBE ≤ 3 (invariante
+    de dominio en `Place` + tope en el form); repensar si esas cantidades son las correctas y si conviene ajustarlas por capa.
+    (k) **borrador del form de admin / no perder lo escrito (pedido del usuario 2026-06-13):** el estado del `PlaceForm`
+    vive en `useState` (cliente) → una **recarga lo borra** (al usuario se le perdió una ficha a medio llenar por un HMR).
+    Implementar autosave a `localStorage` (por borrador) + restaurar al volver, o al menos `beforeunload` con aviso.
+    (l) **redes sociales múltiples (pedido del usuario 2026-06-13):** hoy la ficha/form solo tiene **Instagram** (+ website,
+    teléfono). Quiere poder **"agregar otra red"** con un dropdown (TikTok, X, Facebook, etc.). Requiere modelar `socialLinks`
+    (campo JSON `{ network, url/handle }[]` en `Place`, o tabla aparte) → **cambio de schema**; decidir forma antes de construir.
+    (m) **mejor forma de capturar lat/lng (pedido del usuario 2026-06-13):** hoy son dos inputs de texto a mano. Opciones:
+    (m.1) pegar el **link de Google Maps** y extraer las coords del URL; (m.2) **mini-mapa con pin** (Leaflet/Mapbox) para
+    clickear la ubicación; (m.3) **geocodificar desde la dirección** ya escrita. Decidir cuál (costo vs. fricción) antes de construir.
+    (n) **botón "Preview" en el form de crear (pedido del usuario 2026-06-13):** antes de enviar, mostrar cómo se vería la ficha
+    con la info actual (render de la vista de detalle con los valores del form, sin guardar). Útil para validar la carga.
+    (o) **SESIÓN DEDICADA A TAGS (pedido del usuario 2026-06-13) — revisar TODO el sistema de tags:** (o.1) renombrar
+    `Ideal ir solo/a` → **`Solo/a`**; (o.2) **Acceso y logística**: faltan varios, revisar/expandir la lista; (o.3)
+    **Ambiente (VIBE)**: al usuario **no le gustan** los actuales, redefinirlos; (o.4) explicar/repensar cómo funcionan los
+    **atributos específicos** (capa SPECIFIC: condicionales por categoría, ej. tipo de cocina en Gastronomía) y si la taxonomía
+    es la correcta; (o.5) cierra junto con (j) los **límites** por capa. **Ojo al renombrar:** el seed hace upsert por slug →
+    cambiar el nombre cambia el slug y crea un tag nuevo dejando huérfano el viejo + sus `PlaceTag`; hay que migrar, no solo renombrar.
+    (p) **DEFINIR el flujo de imágenes antes de lanzar (pedido del usuario 2026-06-13, importante):** decidir **link pegado vs.
+    subida**, y **dónde se guardan**. Estado real hoy: existe `UploadThingStorageService` (adapter de subida) PERO el form solo
+    pide **URL pegada**; la allowlist ([imageHosts.ts](src/lib/imageHosts.ts)) permite `images.unsplash.com` + Vercel Blob
+    (`*.public.blob.vercel-storage.com`), NO `utfs.io` de UploadThing. El plan previo (ítem a' arriba) era: **construir el widget
+    de subida con UploadThing + sumar `utfs.io` a la allowlist**. Falta cerrar la decisión (¿UploadThing? ¿Vercel Blob? ¿solo links?)
+    e implementarla — es bloqueante de calidad para el lanzamiento (fotos reales del local, no solo Unsplash).
   - **Bug de registro encontrado y ARREGLADO (2026-06-12, verificado e2e):** el registro creaba el usuario y DESPUÉS
     explotaba con 500 al enviar el correo de bienvenida (`RESEND_API_KEY` vacío en local) → la persona veía un error,
     al reintentar "email ya registrado", pero su cuenta sí servía. Fix en
