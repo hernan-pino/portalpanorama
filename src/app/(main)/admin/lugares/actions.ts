@@ -35,6 +35,11 @@ const pointSchema = z.object({
   kind: z.preprocess(emptyToUndef, z.string().trim().optional()),
 })
 
+const socialLinkSchema = z.object({
+  network: z.string().trim().min(1, 'Elegí la red social.'),
+  url: z.string().trim().url('Cada red necesita una URL válida.'),
+})
+
 const imageSchema = z.object({
   // El host tiene que estar en la allowlist de next/image: una URL de un host no
   // permitido pasa al guardar pero tumba la ficha entera con 500 al renderizar.
@@ -85,6 +90,7 @@ const placeSchema = z
     phone: optionalText,
     website: optionalUrl,
     instagram: optionalText,
+    socialLinks: z.array(socialLinkSchema).optional().default([]),
 
     googlePlaceId: optionalText,
     googleRating: z.preprocess(
@@ -153,6 +159,7 @@ function toWriteInput(d: ParsedPlace): PlaceWriteInput {
     phone: d.phone,
     website: d.website,
     instagram: d.instagram,
+    socialLinks: d.socialLinks,
     googlePlaceId: d.googlePlaceId,
     googleRating: d.googleRating,
     googleReviewCount: d.googleReviewCount,

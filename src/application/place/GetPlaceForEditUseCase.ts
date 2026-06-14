@@ -36,6 +36,7 @@ export interface PlaceEditView {
   phone?: string
   website?: string
   instagram?: string
+  socialLinks: { network: string; url: string }[]
 
   googlePlaceId?: string
   googleRating?: number
@@ -86,6 +87,7 @@ export class GetPlaceForEditUseCase {
       phone: place.phone,
       website: place.website,
       instagram: place.instagram,
+      socialLinks: place.socialLinks.map((s) => ({ network: s.network, url: s.url })),
       googlePlaceId: place.googlePlaceId,
       googleRating: place.googleRating,
       googleReviewCount: place.googleReviewCount,

@@ -43,6 +43,7 @@ export function assemblePlace(params: {
     phone: input.phone,
     website: input.website,
     instagram: input.instagram,
+    socialLinks: input.socialLinks,
     googlePlaceId: input.googlePlaceId,
     googleRating: input.googleRating,
     googleReviewCount: input.googleReviewCount,

@@ -11,6 +11,7 @@ import {
   PRICE_OPTIONS,
   RESERVATION_OPTIONS,
   RAIN_OPTIONS,
+  SOCIAL_NETWORK_OPTIONS,
   TAG_LAYER_LABELS,
   TAG_LAYER_ORDER,
 } from './types'
@@ -21,7 +22,7 @@ const BLANK: PlaceFormValues = {
   address: '', communeId: '', neighborhoodId: '', lat: '', lng: '', metroStationId: '',
   accessDetail: '', reference: '', rainPolicy: '',
   priceRange: '', reservation: '', paymentMethods: [], schedule: '',
-  phone: '', website: '', instagram: '',
+  phone: '', website: '', instagram: '', socialLinks: [],
   googlePlaceId: '', googleRating: '', googleReviewCount: '',
   isPremium: false, parentId: '', tagIds: [], images: [], points: [],
 }
@@ -52,6 +53,7 @@ function fromInitial(p: PlaceEditView): PlaceFormValues {
     phone: p.phone ?? '',
     website: p.website ?? '',
     instagram: p.instagram ?? '',
+    socialLinks: p.socialLinks.map((s) => ({ network: s.network, url: s.url })),
     googlePlaceId: p.googlePlaceId ?? '',
     googleRating: num(p.googleRating),
     googleReviewCount: num(p.googleReviewCount),
@@ -160,6 +162,20 @@ export function PlaceForm({ options, initial }: PlaceFormProps) {
   }
   function removePoint(i: number) {
     setValues((v) => ({ ...v, points: v.points.filter((_, idx) => idx !== i) }))
+  }
+
+  // ── Redes sociales extra ──
+  function addSocialLink() {
+    setValues((v) => ({ ...v, socialLinks: [...v.socialLinks, { network: SOCIAL_NETWORK_OPTIONS[0], url: '' }] }))
+  }
+  function updateSocialLink(i: number, field: 'network' | 'url', value: string) {
+    setValues((v) => ({
+      ...v,
+      socialLinks: v.socialLinks.map((s, idx) => (idx === i ? { ...s, [field]: value } : s)),
+    }))
+  }
+  function removeSocialLink(i: number) {
+    setValues((v) => ({ ...v, socialLinks: v.socialLinks.filter((_, idx) => idx !== i) }))
   }
 
   // ── Imágenes ──
@@ -429,6 +445,41 @@ export function PlaceForm({ options, initial }: PlaceFormProps) {
           <label className="form-label" htmlFor="instagram">Instagram</label>
           <input id="instagram" className="form-input" value={values.instagram}
             onChange={(e) => set('instagram', e.target.value)} placeholder="@cuenta" />
+        </div>
+
+        <div className="form-row">
+          <span className="form-label">Otras redes</span>
+          <p className="admin-form__hint">
+            WhatsApp, Facebook, TikTok, etc. Instagram va en su campo de arriba.
+          </p>
+          {values.socialLinks.map((s, i) => (
+            <div key={i} className="admin-img-row">
+              <div className="admin-img-row__meta">
+                <div className="form-row">
+                  <label className="form-label" htmlFor={`social-net-${i}`}>Red</label>
+                  <select id={`social-net-${i}`} className="form-input" value={s.network}
+                    onChange={(e) => updateSocialLink(i, 'network', e.target.value)}>
+                    {SOCIAL_NETWORK_OPTIONS.map((n) => <option key={n} value={n}>{n}</option>)}
+                  </select>
+                </div>
+                <div className="form-row">
+                  <label className="form-label" htmlFor={`social-url-${i}`}>URL</label>
+                  <input id={`social-url-${i}`} className="form-input" type="url" value={s.url}
+                    onChange={(e) => updateSocialLink(i, 'url', e.target.value)} placeholder="https://…" />
+                </div>
+              </div>
+              <div className="admin-img-row__foot">
+                <button type="button" className="btn btn--ghost btn--sm" onClick={() => removeSocialLink(i)}>
+                  Quitar
+                </button>
+              </div>
+            </div>
+          ))}
+          <div>
+            <button type="button" className="btn btn--ghost btn--sm" onClick={addSocialLink}>
+              + Agregar red
+            </button>
+          </div>
         </div>
       </section>
 

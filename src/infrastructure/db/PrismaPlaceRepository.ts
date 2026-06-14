@@ -16,6 +16,21 @@ import {
 } from '@application/ports/PlaceRepository'
 import { placeCardArgs, toPlaceCardView } from './placeCardView'
 
+// El JSON de socialLinks viene como `Prisma.JsonValue`: lo validamos a [{network,url}]
+// y descartamos lo malformado (es informativo; nunca debe tumbar la ficha).
+function parseSocialLinks(value: Prisma.JsonValue | null | undefined): { network: string; url: string }[] {
+  if (!Array.isArray(value)) return []
+  const links: { network: string; url: string }[] = []
+  for (const item of value) {
+    if (item && typeof item === 'object' && !Array.isArray(item)) {
+      const network = (item as Record<string, unknown>).network
+      const url = (item as Record<string, unknown>).url
+      if (typeof network === 'string' && typeof url === 'string') links.push({ network, url })
+    }
+  }
+  return links
+}
+
 // ── Agregado: Place + imágenes + tags (con su capa, para validar invariantes) ──
 const aggregateArgs = Prisma.validator<Prisma.PlaceDefaultArgs>()({
   include: {
@@ -53,6 +68,7 @@ function toPlaceDomain(row: PlaceAggregateRow): Place {
     phone: row.phone ?? undefined,
     website: row.website ?? undefined,
     instagram: row.instagram ?? undefined,
+    socialLinks: parseSocialLinks(row.socialLinks),
     googlePlaceId: row.googlePlaceId ?? undefined,
     googleRating: row.googleRating ?? undefined,
     googleReviewCount: row.googleReviewCount ?? undefined,
@@ -115,6 +131,10 @@ function toWriteData(place: Place) {
     phone: place.phone ?? null,
     website: place.website ?? null,
     instagram: place.instagram ?? null,
+    // Json? : array si hay redes, DB NULL si no (Prisma exige DbNull, no `null`).
+    socialLinks: place.socialLinks.length
+      ? place.socialLinks.map((s) => ({ network: s.network, url: s.url }))
+      : Prisma.DbNull,
     googlePlaceId: place.googlePlaceId ?? null,
     googleRating: place.googleRating ?? null,
     googleReviewCount: place.googleReviewCount ?? null,
@@ -181,6 +201,7 @@ function toPlaceDetailView(row: PlaceDetailRow): PlaceDetailView {
     phone: row.phone ?? undefined,
     website: row.website ?? undefined,
     instagram: row.instagram ?? undefined,
+    socialLinks: parseSocialLinks(row.socialLinks),
     googleRating: row.googleRating ?? undefined,
     googleReviewCount: row.googleReviewCount ?? undefined,
     score: row.score,
@@ -268,6 +289,16 @@ export class PrismaPlaceRepository implements PlaceRepository {
       ...detailArgs,
     })
     return row ? toPlaceDetailView(row) : null
+  }
+
+  // Sitemap: solo publicados (lo mismo que ve el público), con su fecha de edición
+  // para `lastModified`. Lo más reciente arriba.
+  async listPublishedForSitemap(): Promise<{ slug: string; updatedAt: Date }[]> {
+    return this.prisma.place.findMany({
+      where: { status: $Enums.PlaceStatus.PUBLISHED },
+      select: { slug: true, updatedAt: true },
+      orderBy: { updatedAt: 'desc' },
+    })
   }
 
   // Tabla del admin: todos los estados, lo más editado arriba. Denormaliza nombre

@@ -50,6 +50,7 @@ export interface PlaceWriteInput {
   phone?: string
   website?: string
   instagram?: string
+  socialLinks: { network: string; url: string }[]
 
   googlePlaceId?: string
   googleRating?: number

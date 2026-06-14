@@ -28,6 +28,13 @@ export interface PlaceImage {
   readonly sortOrder: number
 }
 
+// Red social extra (WhatsApp/Facebook/TikTok…). Instagram va aparte como campo
+// propio (red principal). Informativo, sin invariantes de dominio (como paymentMethods).
+export interface PlaceSocialLink {
+  readonly network: string
+  readonly url: string
+}
+
 // Tag ya resuelto (con su capa) para poder validar límites en el dominio.
 export interface PlaceTagRef {
   readonly id: string
@@ -70,6 +77,7 @@ export interface PlaceProps {
   readonly phone?: string
   readonly website?: string
   readonly instagram?: string
+  readonly socialLinks: ReadonlyArray<PlaceSocialLink>
 
   // Reputación Google + score calculado (2.5)
   readonly googlePlaceId?: string
@@ -120,6 +128,7 @@ export class Place {
   readonly phone?: string
   readonly website?: string
   readonly instagram?: string
+  readonly socialLinks: ReadonlyArray<PlaceSocialLink>
   readonly googlePlaceId?: string
   readonly googleRating?: number
   readonly googleReviewCount?: number
@@ -166,6 +175,7 @@ export class Place {
     this.phone = props.phone
     this.website = props.website
     this.instagram = props.instagram
+    this.socialLinks = props.socialLinks
     this.googlePlaceId = props.googlePlaceId
     this.googleRating = props.googleRating
     this.googleReviewCount = props.googleReviewCount
@@ -278,6 +288,7 @@ export class Place {
       phone: this.phone,
       website: this.website,
       instagram: this.instagram,
+      socialLinks: this.socialLinks,
       googlePlaceId: this.googlePlaceId,
       googleRating: this.googleRating,
       googleReviewCount: this.googleReviewCount,

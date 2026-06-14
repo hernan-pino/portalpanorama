@@ -12,7 +12,7 @@ datasource db {
 // Decisiones de diseño en PLAN_FASE9.md → "Etapa 2 — decisiones de diseño":
 //   2.1 limpio + puertas baratas (sin Flow/Claim/Feed/Analytics)
 //   2.2 categoría secundaria = 4 FKs en Place
-//   2.3 tags 4 capas = una tabla Tag + layer (límites/exclusiones en dominio)
+//   2.3 tags 6 capas (rediseño 2026-06-14) = una tabla Tag + layer (límites/exclusiones en dominio)
 //   2.4 Review polimórfico (targetType+targetId), escala 1–5, apagado en MVP
 //   2.5 score = promedio bayesiano (m=50), recalculado al cargar/editar
 //   2.6 colores del Metro corregidos (L3 café / L6 morada)
@@ -59,7 +59,7 @@ enum PlaceStatus {
   ARCHIVED
 }
 
-// Sistema de 4 capas (2.3). Universal si Tag.categoryId == null;
+// Sistema de 6 capas (2.3, rediseño 2026-06-14). Universal si Tag.categoryId == null;
 // condicional a una categoría si está seteado (ej. "tipo de cocina" → Gastronomía).
 enum TagLayer {
   AUDIENCE // ¿con quién? (máx 4 por ficha, en dominio)
@@ -216,7 +216,7 @@ model MetroStation {
 }
 
 // ─── Categorías ───────────────────────────────────────────────────────────────
-// 7 categorías (B.4). `eventOnly` = Shows/Ferias/Talleres: registradas pero
+// 8 categorías (rediseño 2026-06-14). `eventOnly` = Shows/Ferias/Talleres: registradas pero
 // apagadas hasta encender eventos. `isActive` = se muestra en la UI.
 
 model Category {
@@ -249,7 +249,7 @@ model Subcategory {
   @@index([categoryId])
 }
 
-// ─── Tags (4 capas) ───────────────────────────────────────────────────────────
+// ─── Tags (6 capas) ───────────────────────────────────────────────────────────
 
 model Tag {
   id         String   @id
@@ -310,9 +310,10 @@ model Place {
   schedule       String?            @db.Text // horario en texto libre (estructurado = puerta abierta)
 
   // Contacto / redes
-  phone     String?
-  website   String?
-  instagram String?
+  phone       String?
+  website     String?
+  instagram   String? // red principal (pilar de crecimiento); va aparte por su trato especial en la ficha
+  socialLinks Json? // redes extra: [{ network, url }] (WhatsApp/Facebook/TikTok…). Informativo, no filtrable.
 
   // Reputación Google (B.7) + score calculado (2.5, promedio bayesiano)
   googlePlaceId     String? @unique

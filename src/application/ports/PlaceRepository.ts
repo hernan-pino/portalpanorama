@@ -46,6 +46,7 @@ export interface PlaceDetailView {
   phone?: string
   website?: string
   instagram?: string
+  socialLinks: { network: string; url: string }[]
   googleRating?: number
   googleReviewCount?: number
   score: number
@@ -95,6 +96,9 @@ export interface PlaceRepository {
   // ── Read-models para la UI ──
   getDetailBySlug(slug: string): Promise<PlaceDetailView | null>
   findRelated(placeId: string, limit: number): Promise<PlaceCardView[]>
+
+  // Slugs publicados + fecha de edición, para armar el sitemap.xml.
+  listPublishedForSitemap(): Promise<{ slug: string; updatedAt: Date }[]>
 
   // ── Admin ──
   // Todos los lugares (cualquier estado) para la tabla del panel.

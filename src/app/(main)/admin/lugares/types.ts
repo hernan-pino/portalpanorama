@@ -16,6 +16,12 @@ export interface PlacePointValues {
   kind: string
 }
 
+// Red social extra (Instagram va aparte como campo propio).
+export interface SocialLinkValues {
+  network: string
+  url: string
+}
+
 export interface PlaceFormValues {
   name: string
   description: string
@@ -44,6 +50,7 @@ export interface PlaceFormValues {
   phone: string
   website: string
   instagram: string
+  socialLinks: SocialLinkValues[]
 
   googlePlaceId: string
   googleRating: string
@@ -81,6 +88,19 @@ export const PAYMENT_OPTIONS = [
   'Crédito',
   'Transferencia',
   'Mercado Pago',
+] as const
+
+// Redes para el <select> de socialLinks (Instagram no está: es campo propio).
+export const SOCIAL_NETWORK_OPTIONS = [
+  'WhatsApp',
+  'Facebook',
+  'TikTok',
+  'YouTube',
+  'X',
+  'Threads',
+  'Spotify',
+  'LinkedIn',
+  'Otra',
 ] as const
 
 export const RAIN_OPTIONS: { value: string; label: string }[] = [
