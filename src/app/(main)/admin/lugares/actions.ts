@@ -5,6 +5,7 @@ import { auth } from '@lib/auth'
 import { container } from '@lib/container'
 import { ALLOWED_IMAGE_HOSTS, isAllowedImageUrl } from '@lib/imageHosts'
 import { DomainError } from '@domain/shared/DomainError'
+import { ImageFetchError } from '@application/ports/ImageFetcher'
 import { PriceRange } from '@domain/place/PriceRange'
 import { ReservationPolicy } from '@domain/place/ReservationPolicy'
 import { RainPolicy } from '@domain/place/RainPolicy'
@@ -213,6 +214,28 @@ export async function uploadPlaceImageAction(
     return { url }
   } catch {
     return { error: 'No se pudo subir la imagen. Intentá de nuevo.' }
+  }
+}
+
+// ── Traer imagen desde una URL externa ──
+// Descarga (con guardas anti-SSRF), comprime y rehospeda en el Blob propio, para
+// no hotlinkear contra terceros (que se pueden romper) ni guardar hosts no permitidos.
+export async function importPlaceImageAction(
+  rawUrl: string,
+): Promise<{ error: string } | { url: string }> {
+  if (!(await isAdmin())) return { error: 'No autorizado.' }
+
+  const parsed = z.string().trim().url('Pegá una URL válida.').safeParse(rawUrl)
+  if (!parsed.success) return { error: parsed.error.issues[0]?.message ?? 'URL inválida.' }
+
+  try {
+    const { url } = await container
+      .getImportImageFromUrlUseCase()
+      .execute({ url: parsed.data })
+    return { url }
+  } catch (err) {
+    if (err instanceof ImageFetchError) return { error: err.message }
+    return { error: 'No se pudo traer la imagen de esa URL.' }
   }
 }
 

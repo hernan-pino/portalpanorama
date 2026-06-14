@@ -5,7 +5,12 @@ import type { PlaceFormOptions } from '@application/place/GetPlaceFormOptionsUse
 import type { PlaceEditView } from '@application/place/GetPlaceForEditUseCase'
 import { ALLOWED_IMAGE_HOSTS } from '@lib/imageHosts'
 import { PlacePreview } from './PlacePreview'
-import { createPlaceAction, updatePlaceAction, uploadPlaceImageAction } from './actions'
+import {
+  createPlaceAction,
+  updatePlaceAction,
+  uploadPlaceImageAction,
+  importPlaceImageAction,
+} from './actions'
 import {
   PlaceFormValues,
   PAYMENT_OPTIONS,
@@ -89,6 +94,7 @@ export function PlaceForm({ options, initial }: PlaceFormProps) {
   const [success, setSuccess] = useState(false)
   const [showPreview, setShowPreview] = useState(false)
   const [uploadingIdx, setUploadingIdx] = useState<number | null>(null)
+  const [importingIdx, setImportingIdx] = useState<number | null>(null)
 
   function set<K extends keyof PlaceFormValues>(key: K, value: PlaceFormValues[K]) {
     setValues((v) => ({ ...v, [key]: value }))
@@ -207,6 +213,24 @@ export function PlaceForm({ options, initial }: PlaceFormProps) {
       else updateImage(i, 'url', res.url)
     } finally {
       setUploadingIdx(null)
+    }
+  }
+  // Trae una URL externa: la descarga, comprime y rehospeda en el Blob propio,
+  // reemplazando el campo por la URL final (de un host permitido).
+  async function importFromUrl(i: number) {
+    const src = values.images[i]?.url.trim()
+    if (!src) {
+      setError('Pegá primero una URL en el campo de abajo.')
+      return
+    }
+    setError(null)
+    setImportingIdx(i)
+    try {
+      const res = await importPlaceImageAction(src)
+      if ('error' in res) setError(res.error)
+      else updateImage(i, 'url', res.url)
+    } finally {
+      setImportingIdx(null)
     }
   }
   function setPrimaryImage(i: number) {
@@ -550,8 +574,9 @@ export function PlaceForm({ options, initial }: PlaceFormProps) {
       <section className="admin-form__section">
         <h3 className="admin-form__legend">Imágenes</h3>
         <p className="admin-form__hint">
-          Subí la foto (se comprime sola) o pegá una URL https de un host permitido:{' '}
-          {ALLOWED_IMAGE_HOSTS.join(' · ')}.
+          Subí la foto (se comprime sola), o pegá una URL de cualquier sitio y tocá
+          <strong> Traer</strong> para copiarla a tu almacenamiento. Solo se guardan URLs
+          de hosts permitidos ({ALLOWED_IMAGE_HOSTS.join(' · ')}).
         </p>
         {values.images.map((img, i) => (
           <div key={i} className="admin-img-row">
@@ -574,8 +599,15 @@ export function PlaceForm({ options, initial }: PlaceFormProps) {
             </div>
             <div className="form-row">
               <label className="form-label" htmlFor={`img-url-${i}`}>o pegá una URL</label>
-              <input id={`img-url-${i}`} className="form-input" type="url" value={img.url}
-                onChange={(e) => updateImage(i, 'url', e.target.value)} placeholder="https://…" />
+              <div className="admin-img-row__url">
+                <input id={`img-url-${i}`} className="form-input" type="url" value={img.url}
+                  onChange={(e) => updateImage(i, 'url', e.target.value)} placeholder="https://…" />
+                <button type="button" className="btn btn--ghost btn--sm"
+                  disabled={importingIdx !== null || !img.url.trim()}
+                  onClick={() => void importFromUrl(i)}>
+                  {importingIdx === i ? 'Trayendo…' : 'Traer'}
+                </button>
+              </div>
             </div>
             <div className="admin-img-row__meta">
               <div className="form-row">

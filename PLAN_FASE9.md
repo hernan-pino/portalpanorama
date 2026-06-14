@@ -299,6 +299,17 @@
     action `uploadPlaceImageAction` (guard ADMIN + valida tipo JPG/PNG/WebP/GIF y ≤15MB crudos) · `serverActions.bodySizeLimit` a 16mb ·
     `PlaceForm`: botón "Subir foto"/"Cambiar foto" + miniatura por fila, **se conserva** el campo "pegar URL" (Unsplash/stock).
     La compresión corre **una vez al subir** (no afecta la carga de la ficha; la mejora). typecheck/build/tests verdes (64).
+
+    **Extensión (2026-06-14) — "Traer desde URL":** a pedido del usuario (poder pegar la URL de una foto de un blog/web sin
+    tener que descargarla y resubirla). En vez de hotlinkear contra terceros (frágil + host no permitido + copyright), se
+    **descarga, comprime y rehospeda** en el Blob propio. Hexagonal: port `ImageFetcher` + adapter `SafeHttpImageFetcher`
+    (infra) + use case `ImportImageFromUrlUseCase` (fetch → compress → store) + action `importPlaceImageAction` (guard ADMIN +
+    Zod url) + botón "Traer" en el form junto al campo URL. **Guardas anti-SSRF** (clave porque corre en serverless con acceso
+    a metadata): solo http/https, resuelve DNS y rechaza IPs privadas/loopback/CGNAT/link-local (incl. metadata
+    `169.254.169.254`)/multicast/reservadas, **revalida en cada redirect** (máx 3), límite 15MB con corte por streaming,
+    timeout 10s, exige content-type `image/*`. Verificado e2e (5 casos SSRF bloqueados + descarga real con redirect OK).
+    **Caveat registrado:** rehospedar fotos de terceros (blogs, Google Maps — esto último contra los ToS de Google) es
+    responsabilidad de copyright del usuario; lo ideal son fotos propias o con permiso.
   - **✅ DECISIÓN CERRADA — Lugares contenedores (padre-hijo) + spots sin ficha (2026-06-13):** caso real surgido al
     cargar las primeras fichas (Parquemet contiene Cerro San Cristóbal / Zoológico / Jardín Botánico; el MUT contiene
     locales; GAM/malls/mercados igual). Se modela en **dos niveles**, SIN reintroducir un "tipo" de Place (respeta B.2:

@@ -62,15 +62,13 @@ volcados al backlog y al checklist de abajo. Los principales:
 
 ## ▶️ Próximos pasos (en orden)
 
-0. **✅ HECHO (2026-06-14) — flujo de imágenes (ítem p).** Subida directa desde el form a **Vercel Blob**
-   (nativo del deploy, ya aprovisionado): botón "Subir foto" → se comprime server-side a `.webp`
-   (`sharp`, máx 2000px, q80) → URL pública se vuelca en la fila + miniatura. Se conserva el campo
-   "pegar URL" (Unsplash/stock). Arquitectura hexagonal: port `ImageProcessor` + `StorageService`,
-   use case `UploadPlaceImageUseCase`, action `uploadPlaceImageAction` (guard ADMIN, valida tipo/15MB).
-   UploadThing queda como **alternativa no cableada** (comentado en su archivo). Detalle en PLAN_FASE9.
+0. **✅ HECHO (2026-06-14) — flujo de imágenes (ítem p).** Tres caminos (subir archivo · pegar URL
+   permitida · "Traer" desde URL externa con guardas anti-SSRF), todos rehospedan en **Vercel Blob** y
+   comprimen a `.webp`. Token de Blob arreglado en `.env.local` (store `portal-panorama-images`).
+   Verificado e2e. Detalle en el backlog (p) y PLAN_FASE9.
 1. **Cargar ~5 lugares reales a mano** por el form de admin, para validar el flujo end-to-end con
    contenido de verdad (incl. un caso contenedor real: Parquemet → Cerro/Zoo). (NO 100 a mano — el
-   grueso va por CSV.) — en curso por el usuario; depende del paso 0.
+   grueso va por CSV.) — **desbloqueado**: ya se puede cargar con fotos.
 2. **Push a prod (Neon):** migración + seed de catálogos en la BD de producción + redeploy con la
    presentation nueva. Setear `RESEND_API_KEY` real (si no, la bienvenida no se envía).
 3. **Importador CSV** (ítem h) — habilita el ritmo de ~20/semana hasta ~100.
@@ -103,11 +101,15 @@ Los hijos del padre se muestran solo si están PUBLISHED.
 ## 📋 Backlog (pendientes, no bloquean el lanzamiento salvo lo marcado)
 
 **Calidad / bloqueante de lanzamiento:**
-- **(p) Flujo de imágenes ✅ HECHO (2026-06-14)** — subida directa desde el form a **Vercel Blob** con
-  compresión server-side a `.webp` (`sharp`); se conserva pegar-URL. Hexagonal: ports `ImageProcessor` +
-  `StorageService`, use case `UploadPlaceImageUseCase`, action con guard ADMIN + validación tipo/15MB,
-  `bodySizeLimit` 16mb. **UploadThing** queda como alternativa no cableada (documentada en su archivo).
-  **Decisión y comparativa de opciones (Blob vs UploadThing, costos) en PLAN_FASE9.md.**
+- **(p) Flujo de imágenes ✅ HECHO (2026-06-14)** — tres caminos para poner una foto, todos terminan
+  rehospedados en **Vercel Blob** y comprimidos a `.webp` (`sharp`, ≤2000px, q80): (1) **subir archivo**
+  desde el form; (2) **pegar URL** de un host permitido; (3) **"Traer" desde una URL externa** (blog/web):
+  el server la descarga con **guardas anti-SSRF** (bloquea IPs privadas/metadata, redirect revalidado,
+  límite 15MB, timeout, valida content-type), comprime y rehospeda. Verificado e2e contra el Blob real.
+  Hexagonal: ports `ImageProcessor`/`StorageService`/`ImageFetcher`, use cases `UploadPlaceImageUseCase`
+  + `ImportImageFromUrlUseCase`, actions con guard ADMIN. **UploadThing** queda como alternativa no
+  cableada. **Caveat anotado:** rehospedar fotos de terceros (blogs, Google Maps) es responsabilidad
+  de copyright/ToS del usuario. Decisión + comparativa de costos en PLAN_FASE9.md.
 - **(g) Páginas legales ✅ HECHO (2026-06-15)** — `/terminos` y `/privacidad` creadas con contenido
   real (Ley 19.628: datos, cookies, derechos ARCO, contacto). **Pendiente: revisión por abogado**
   antes de lanzar (hoy es un borrador sólido, no texto legal validado).
