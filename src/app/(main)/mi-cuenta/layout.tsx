@@ -5,6 +5,7 @@ import { auth } from '@lib/auth'
 import { redirect } from 'next/navigation'
 import { getUserDashboard } from '@lib/userDashboardCache'
 import { SidebarNav } from './SidebarNav'
+import { WelcomeModal } from './WelcomeModal'
 
 export const metadata: Metadata = { title: 'Mi cuenta' }
 
@@ -23,6 +24,10 @@ export default async function MiCuentaLayout({ children }: { children: React.Rea
 
   return (
     <div>
+      <Suspense fallback={null}>
+        <WelcomeModal />
+      </Suspense>
+
       {/* User header */}
       <div className="dash-user-header">
         <p className="eyebrow" style={{ marginBottom: 'var(--s-4)', fontSize: 'var(--t-mono-sm)' }}>
