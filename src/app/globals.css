@@ -289,55 +289,6 @@ a { color: inherit; text-decoration: none; }
   display: inline-block;
 }
 
-/* ---------- Hero search ---------- */
-.hero-search {
-  display: flex; align-items: center; gap: 0;
-  background: var(--bg-raised);
-  border: 1px solid var(--surface-line);
-  border-radius: var(--r-pill);
-  padding: 6px;
-  width: 100%;
-}
-.hero-search__field {
-  flex: 1 1 120px;
-  min-width: 0;
-  display: flex; align-items: center; gap: var(--s-3);
-  padding: 0 var(--s-5);
-  position: relative;
-}
-.hero-search__field + .hero-search__field {
-  border-left: 1px solid var(--surface-line-soft);
-}
-.hero-search__field input,
-.hero-search__field select {
-  height: 44px;
-  padding-top: 14px;
-  background: transparent;
-  border: 0; outline: 0;
-  width: 100%;
-  font-size: var(--t-body);
-}
-.hero-search__field label {
-  position: absolute;
-  top: 6px; left: 20px;
-  font-family: var(--font-mono);
-  font-size: var(--t-mono-sm);
-  letter-spacing: var(--tr-wider);
-  text-transform: uppercase;
-  color: var(--fg-subtle);
-  pointer-events: none;
-}
-.hero-search__btn {
-  height: 56px; width: 56px;
-  border-radius: var(--r-pill);
-  background: var(--ink-100);
-  color: var(--paper-00);
-  display: inline-flex; align-items: center; justify-content: center;
-  transition: background var(--d-fast);
-  flex: 0 0 auto;
-}
-.hero-search__btn:hover { background: var(--accent-70); }
-
 /* ---------- Listing card hover ---------- */
 .listing-card:hover {
   box-shadow: var(--shadow-3);
@@ -733,6 +684,9 @@ a { color: inherit; text-decoration: none; }
   letter-spacing: var(--tr-wide); color: var(--fg-muted); white-space: nowrap;
 }
 .home-cat-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: var(--s-3); }
+/* Si el total es impar (ej. 5 categorías), el último queda solo: que ocupe la
+   fila completa para que no se vea huérfano en mobile (se resetea en desktop). */
+.home-cat-grid > :last-child:nth-child(odd) { grid-column: 1 / -1; }
 .home-cat {
   position: relative;
   display: flex; flex-direction: column; align-items: flex-start; gap: var(--s-4);
@@ -805,11 +759,15 @@ a { color: inherit; text-decoration: none; }
   .rail-arrow--next { right: -14px; }
   .rail-arrow:hover { background: var(--bg-sunken); }
   .rail-arrow:disabled { opacity: 0; visibility: hidden; pointer-events: none; }
+  /* En la ficha las tarjetas relacionadas son más bajas: centra la flecha sobre
+     la altura real del carrusel en vez del offset fijo pensado para la home. */
+  .rail-wrap--ficha .rail-arrow { top: 50%; transform: translateY(-50%); }
 }
 
 /* home — desktop: categorías a 4 columnas, social envuelve, tarjetas más anchas */
 @media (min-width: 861px) {
-  .home-cat-grid { grid-template-columns: repeat(4, 1fr); }
+  .home-cat-grid { grid-template-columns: repeat(5, 1fr); }
+  .home-cat-grid > :last-child:nth-child(odd) { grid-column: auto; }
   .home-social__chips { flex-wrap: wrap; overflow-x: visible; }
   .home-rail__item { flex-basis: 280px; width: 280px; }
 }
@@ -1629,23 +1587,6 @@ select.form-input { cursor: pointer; }
   padding: 0 var(--s-4);
 }
 
-/* ---------- Filter rail ---------- */
-.filter-rail__header {
-  padding-bottom: var(--s-4);
-  border-bottom: 1px solid var(--surface-line);
-  margin-bottom: var(--s-4);
-}
-.filter-rail__total {
-  margin: var(--s-1) 0 0;
-  font-family: var(--font-mono);
-  font-size: var(--t-mono-sm);
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: var(--fg-muted);
-}
-.filter-rail__toggle { display: none; }
-.filter-rail__body { }
-
 /* ---------- Dashboard layout ---------- */
 .dash-shell {
   display: flex;
@@ -1731,20 +1672,6 @@ select.form-input { cursor: pointer; }
   .footer__top { grid-template-columns: 1fr 1fr; }
   /* Hamburger: aparece en tablet/móvil */
   .mobile-nav-btn { display: flex; }
-  /* Filter rail: oculta header de desktop, muestra toggle */
-  .filter-rail__header { display: none; }
-  .filter-rail__toggle {
-    display: flex; align-items: center; justify-content: space-between;
-    padding: var(--s-3) 0; margin-bottom: var(--s-2);
-    font-size: var(--t-body-sm); font-weight: 500;
-    cursor: pointer; color: var(--fg);
-    border-bottom: 1px solid var(--surface-line);
-    background: none; border-top: none; border-left: none; border-right: none;
-    width: 100%;
-  }
-  .filter-rail__toggle:hover { color: var(--accent-60); }
-  .filter-rail__body { display: none; }
-  .filter-rail__body.is-open { display: block; padding-top: var(--s-4); }
   /* Admin: la barra de nav envuelve si no caben las opciones */
   .admin-nav { flex-wrap: wrap; }
   /* Dashboard sidebar: colapsa a tab bar horizontal en tablet */
@@ -1890,7 +1817,39 @@ select.form-input { cursor: pointer; }
   color: var(--success); padding: var(--s-3) var(--s-4); border-radius: var(--r-md);
   font-size: var(--t-body-sm);
 }
-.admin-form__actions { display: flex; gap: var(--s-3); }
+.admin-form__actions { display: flex; gap: var(--s-3); flex-wrap: wrap; }
+
+/* ---------- Vista previa de la ficha (admin) ---------- */
+/* Overlay a pantalla completa con la ficha real adentro (reusa las clases .ficha). */
+.preview-scrim {
+  position: fixed; inset: 0; z-index: 120;
+  background: rgba(28, 25, 23, 0.5);
+  -webkit-backdrop-filter: blur(2px); backdrop-filter: blur(2px);
+  display: flex; justify-content: center;
+  overflow-y: auto; padding: var(--s-6) var(--s-4);
+  animation: fadeIn var(--d-fast) var(--ease-out);
+}
+.preview-panel {
+  width: 100%; max-width: 520px; align-self: flex-start;
+  background: var(--paper-05); border-radius: var(--r-lg); overflow: hidden;
+  box-shadow: var(--shadow-pop);
+}
+.preview-bar {
+  position: sticky; top: 0; z-index: 2;
+  display: flex; align-items: center; justify-content: space-between; gap: var(--s-3);
+  padding: var(--s-3) var(--s-4);
+  background: var(--paper-00); border-bottom: 1px solid var(--surface-line);
+}
+.preview-bar__tag {
+  font-family: var(--font-mono); font-size: var(--t-mono-sm);
+  letter-spacing: var(--tr-wide); color: var(--fg-muted);
+}
+.preview-bar__close {
+  font-size: 26px; line-height: 1; color: var(--fg-muted);
+  background: transparent; cursor: pointer; width: 32px; height: 32px;
+}
+/* Dentro del panel la ficha no necesita el aire de la barra fija móvil. */
+.preview-panel .ficha { min-height: 0; padding-bottom: var(--s-8); }
 
 /* Fila de imagen: a lo ancho. URL arriba, alt+crédito en sub-fila, pie con portada+quitar. */
 .admin-img-row {

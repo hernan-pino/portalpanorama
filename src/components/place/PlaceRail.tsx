@@ -4,7 +4,18 @@ import { useRef, useState, useEffect, type ReactNode } from 'react'
 // Carrusel horizontal con controles de flecha (desktop). En móvil se navega con
 // swipe → las flechas se ocultan por CSS. Las tarjetas se renderizan en el server
 // (PlaceCard usa next/image) y entran como children; acá solo va el scroll + flechas.
-export function PlaceRail({ children }: { children: ReactNode }) {
+// `scrollClassName` permite reusarlo con otro contenedor de scroll (la home usa
+// `home-rail`; la ficha reusa su `ficha__rel`); `className` se suma al wrapper para
+// ajustar la posición de las flechas por contexto.
+export function PlaceRail({
+  children,
+  scrollClassName = 'home-rail',
+  className,
+}: {
+  children: ReactNode
+  scrollClassName?: string
+  className?: string
+}) {
   const ref = useRef<HTMLDivElement>(null)
   const [atStart, setAtStart] = useState(true)
   const [atEnd, setAtEnd] = useState(false)
@@ -35,11 +46,11 @@ export function PlaceRail({ children }: { children: ReactNode }) {
   }
 
   return (
-    <div className="rail-wrap">
+    <div className={className ? `rail-wrap ${className}` : 'rail-wrap'}>
       <button type="button" className="rail-arrow rail-arrow--prev" onClick={() => scroll(-1)} aria-label="Anterior" disabled={atStart}>
         <Chevron dir="left" />
       </button>
-      <div className="home-rail" ref={ref}>
+      <div className={scrollClassName} ref={ref}>
         {children}
       </div>
       <button type="button" className="rail-arrow rail-arrow--next" onClick={() => scroll(1)} aria-label="Siguiente" disabled={atEnd}>

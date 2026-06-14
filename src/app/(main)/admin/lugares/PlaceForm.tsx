@@ -4,6 +4,7 @@ import { useRouter } from 'next/navigation'
 import type { PlaceFormOptions } from '@application/place/GetPlaceFormOptionsUseCase'
 import type { PlaceEditView } from '@application/place/GetPlaceForEditUseCase'
 import { ALLOWED_IMAGE_HOSTS } from '@lib/imageHosts'
+import { PlacePreview } from './PlacePreview'
 import { createPlaceAction, updatePlaceAction } from './actions'
 import {
   PlaceFormValues,
@@ -86,6 +87,7 @@ export function PlaceForm({ options, initial }: PlaceFormProps) {
   const [isPending, startTransition] = useTransition()
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState(false)
+  const [showPreview, setShowPreview] = useState(false)
 
   function set<K extends keyof PlaceFormValues>(key: K, value: PlaceFormValues[K]) {
     setValues((v) => ({ ...v, [key]: value }))
@@ -647,10 +649,17 @@ export function PlaceForm({ options, initial }: PlaceFormProps) {
         <button type="submit" className="btn btn--primary" disabled={isPending}>
           {isPending ? 'Guardando…' : mode === 'edit' ? 'Guardar cambios' : 'Crear lugar'}
         </button>
+        <button type="button" className="btn btn--ghost" onClick={() => setShowPreview(true)}>
+          Vista previa
+        </button>
         <button type="button" className="btn btn--ghost" onClick={() => router.push('/admin/lugares')}>
           Cancelar
         </button>
       </div>
+
+      {showPreview && (
+        <PlacePreview values={values} options={options} onClose={() => setShowPreview(false)} />
+      )}
     </form>
   )
 }

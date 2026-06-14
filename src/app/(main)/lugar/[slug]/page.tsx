@@ -8,6 +8,7 @@ import type { PlaceDetailView, PlaceCardView } from '@application/ports/PlaceRep
 import { PlaceNotFoundError } from '@domain/place/errors/PlaceNotFoundError'
 import { Collection } from '@domain/collection/Collection'
 import { PlaceCard } from '@components/place/PlaceCard'
+import { PlaceRail } from '@components/place/PlaceRail'
 import { Gallery } from './Gallery'
 import { SaveButton } from './SaveButton'
 import { ShareButton } from './ShareButton'
@@ -315,9 +316,9 @@ export default async function LugarPage({ params }: PageProps) {
         {related.length > 0 && (
           <div className="ficha__section">
             <h2 className="ficha__sec-h">También te puede gustar</h2>
-            <div className="ficha__rel">
+            <PlaceRail scrollClassName="ficha__rel" className="rail-wrap--ficha">
               {related.map((r) => <RelCard key={r.id} place={r} />)}
-            </div>
+            </PlaceRail>
           </div>
         )}
 
