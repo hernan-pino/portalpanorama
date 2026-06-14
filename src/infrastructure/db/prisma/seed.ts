@@ -75,6 +75,7 @@ const COMMUNES = [
 // se filtra independiente por barrio o por comuna.
 const NEIGHBORHOODS: { name: string; communeNames: string[] }[] = [
   { name: 'Barrio Lastarria', communeNames: ['Santiago'] },
+  { name: 'Bellas Artes', communeNames: ['Santiago'] },
   { name: 'Bellavista', communeNames: ['Recoleta', 'Providencia'] },
   { name: 'Barrio Italia', communeNames: ['Providencia', 'Ñuñoa'] },
   { name: 'Barrio París-Londres', communeNames: ['Santiago'] },
