@@ -12,6 +12,7 @@ import { Gallery } from './Gallery'
 import { SaveButton } from './SaveButton'
 import { ShareButton } from './ShareButton'
 import { ReportButton } from './ReportButton'
+import { placeJsonLd } from './jsonLd'
 import {
   PinIcon, NavIcon, WalletIcon, ClockIcon, TicketIcon, CardIcon, MetroIcon,
   AccessIcon, UmbrellaIcon, PhoneIcon, GlobeIcon, InstagramIcon, MenuIcon, StarIcon,
@@ -46,14 +47,37 @@ const fmtCount = (n: number) => n.toLocaleString('es-CL')
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { slug } = await params
+  let place: PlaceDetailView
   try {
-    const { place } = await container.getGetPlaceBySlugUseCase().execute(slug)
-    return {
-      title: `${place.name} · ${place.commune.name}`,
-      description: place.description?.slice(0, 160),
-    }
+    place = (await container.getGetPlaceBySlugUseCase().execute(slug)).place
   } catch {
     return { title: 'Lugar no encontrado' }
+  }
+
+  const title = `${place.name} · ${place.commune.name}`
+  const description =
+    place.description?.slice(0, 160) ??
+    `${place.category.name} en ${place.neighborhood?.name ?? place.commune.name}, Santiago.`
+  const path = `/lugar/${place.slug}`
+  const cover = place.images.find((i) => i.isPrimary)?.url ?? place.images[0]?.url
+
+  return {
+    title,
+    description,
+    alternates: { canonical: path },
+    openGraph: {
+      type: 'website',
+      title,
+      description,
+      url: path,
+      images: cover ? [{ url: cover, alt: place.name }] : undefined,
+    },
+    twitter: {
+      card: cover ? 'summary_large_image' : 'summary',
+      title,
+      description,
+      images: cover ? [cover] : undefined,
+    },
   }
 }
 
@@ -93,7 +117,9 @@ export default async function LugarPage({ params }: PageProps) {
   const specific = place.tags.filter((t) => t.layer === 'SPECIFIC')
   const service = place.tags.filter((t) => t.layer === 'SERVICE')
 
-  const hasContact = !!(place.phone || place.website || place.instagram || place.menuUrl)
+  const hasContact = !!(
+    place.phone || place.website || place.instagram || place.menuUrl || place.socialLinks.length
+  )
   const hasAccess = !!(place.accessDetail || service.length)
   const directionsHref = place.address
     ? `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(place.address)}`
@@ -112,6 +138,12 @@ export default async function LugarPage({ params }: PageProps) {
 
   return (
     <div className="ficha page-enter">
+
+      {/* JSON-LD LocalBusiness: rich results de Google + lectura por LLMs (GEO/AEO). */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(placeJsonLd(place)) }}
+      />
 
       {/* ── Hero + galería navegable (lightbox) ── */}
       <Gallery
@@ -248,6 +280,9 @@ export default async function LugarPage({ params }: PageProps) {
               {place.menuUrl && (
                 <ContactRow icon={<MenuIcon />} k="Menú" v="Ver la carta" href={place.menuUrl} />
               )}
+              {place.socialLinks.map((s) => (
+                <ContactRow key={s.url} icon={<GlobeIcon />} k={s.network} v="Ver perfil" href={withProtocol(s.url)} />
+              ))}
             </div>
           </div>
         )}

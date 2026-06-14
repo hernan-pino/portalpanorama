@@ -23,6 +23,7 @@ import { UpdatePlaceUseCase } from '@application/place/UpdatePlaceUseCase'
 import { PublishPlaceUseCase } from '@application/place/PublishPlaceUseCase'
 import { ArchivePlaceUseCase } from '@application/place/ArchivePlaceUseCase'
 import { RecalculateScoresUseCase } from '@application/place/RecalculateScoresUseCase'
+import { GetSitemapEntriesUseCase } from '@application/place/GetSitemapEntriesUseCase'
 import { ListPlacesForAdminUseCase } from '@application/place/ListPlacesForAdminUseCase'
 import { GetPlaceForEditUseCase } from '@application/place/GetPlaceForEditUseCase'
 import { GetPlaceFormOptionsUseCase } from '@application/place/GetPlaceFormOptionsUseCase'
@@ -78,6 +79,10 @@ export const container = {
 
   getGetCuratedCollectionUseCase() {
     return new GetCuratedCollectionUseCase(collectionRepo)
+  },
+
+  getGetSitemapEntriesUseCase() {
+    return new GetSitemapEntriesUseCase(placeRepo)
   },
 
   // ── Usuario ─────────────────────────────────────────────────────────
