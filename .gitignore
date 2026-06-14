@@ -11,5 +11,8 @@ datosNegoios/
 .vercel
 .claude/scheduled_tasks.lock
 
+# Fichas investigadas por el agente (transitorias, se ingestan y se descartan)
+tmp/
+
 # Refs de diseño (PNGs pesados, input de Claude design) — no al historial
 design_briefs/*_ref/

@@ -71,7 +71,31 @@ volcados al backlog y al checklist de abajo. Los principales:
    grueso va por CSV.) — **desbloqueado**: ya se puede cargar con fotos.
 2. **Push a prod (Neon):** migración + seed de catálogos en la BD de producción + redeploy con la
    presentation nueva. Setear `RESEND_API_KEY` real (si no, la bienvenida no se envía).
-3. **Importador CSV** (ítem h) — habilita el ritmo de ~20/semana hasta ~100.
+3. **Importador CSV** (ítem h) — ⤳ **cubierto por otra vía (2026-06-14):** se construyó la
+   **ingesta por agente** (ver abajo), que habilita el ritmo sin armar el CSV. El CSV queda como
+   alternativa si se prefiere edición en planilla.
+
+---
+
+## 🤖 Carga asistida por agente — ✅ CONSTRUIDA (2026-06-14)
+
+Flujo para cargar lugares en lote con investigación automática + revisión humana:
+
+1. **Skill `ficha-lugar`** (`.claude/skills/`) — investiga un lugar chileno (Google Maps, sitio,
+   redes, blogs) y arma la ficha respetando el catálogo actual (5 cats activas, 6 capas de tags,
+   enums). Por defecto entrega Markdown; JSON solo si se pide. Incluye la **regla de cuál ficha de
+   Google usar** (padre-hijo): Parquemet usa el rating del parque, el Cerro el suyo, el funicular = spot.
+2. **Agente `investigador-lugares`** (`.claude/agents/`) — corre la skill para una lista de nombres y
+   escribe un JSON por lugar en `tmp/fichas/`. No toca la BD.
+3. **Script `scripts/ingest-fichas.ts`** — lee los JSON, resuelve nombres→IDs del catálogo (reusa
+   `GetPlaceFormOptionsUseCase`), **rehospeda las imágenes** con el pipeline de "Traer", crea cada
+   lugar como **PENDING_REVIEW** (borrador, nunca publica) y **reporta lo que no calza**. Tiene `--dry`
+   (valida sin crear ni rehospedar). Maneja contenedores (ordena padres primero).
+4. **Control humano:** se revisa y publica a mano en `/admin/lugares` (con el Preview). El gate vive
+   en el admin, no en el JSON.
+
+**Verificado e2e (2026-06-14):** dry-run resolvió todo el catálogo de una ficha; corrida real creó el
+borrador con imagen rehospedada; limpieza OK. `tmp/` quedó en `.gitignore`.
 
 ---
 
