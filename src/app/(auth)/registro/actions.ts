@@ -4,6 +4,7 @@ import { redirect } from 'next/navigation'
 import { z } from 'zod'
 import { signIn } from '@lib/auth'
 import { container } from '@lib/container'
+import { rateLimit, clientIp } from '@lib/rateLimit'
 import { EmailAlreadyInUseError } from '@domain/user/errors/EmailAlreadyInUseError'
 
 const schema = z.object({
@@ -16,6 +17,12 @@ export async function registerAction(
   _prev: { error?: string; fieldErrors?: Record<string, string[]> } | null,
   formData: FormData,
 ): Promise<{ error?: string; fieldErrors?: Record<string, string[]> }> {
+  // Anti-bots: tope de altas por IP. Best-effort (ver lib/rateLimit).
+  const ip = await clientIp()
+  if (!rateLimit(`register:${ip}`, 5, 60 * 60_000).ok) {
+    return { error: 'Demasiados intentos de registro desde aquí. Probá de nuevo más tarde.' }
+  }
+
   const parsed = schema.safeParse({
     name: formData.get('name'),
     email: formData.get('email'),
