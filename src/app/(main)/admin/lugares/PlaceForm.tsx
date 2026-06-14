@@ -5,7 +5,7 @@ import type { PlaceFormOptions } from '@application/place/GetPlaceFormOptionsUse
 import type { PlaceEditView } from '@application/place/GetPlaceForEditUseCase'
 import { ALLOWED_IMAGE_HOSTS } from '@lib/imageHosts'
 import { PlacePreview } from './PlacePreview'
-import { createPlaceAction, updatePlaceAction } from './actions'
+import { createPlaceAction, updatePlaceAction, uploadPlaceImageAction } from './actions'
 import {
   PlaceFormValues,
   PAYMENT_OPTIONS,
@@ -88,6 +88,7 @@ export function PlaceForm({ options, initial }: PlaceFormProps) {
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState(false)
   const [showPreview, setShowPreview] = useState(false)
+  const [uploadingIdx, setUploadingIdx] = useState<number | null>(null)
 
   function set<K extends keyof PlaceFormValues>(key: K, value: PlaceFormValues[K]) {
     setValues((v) => ({ ...v, [key]: value }))
@@ -192,6 +193,21 @@ export function PlaceForm({ options, initial }: PlaceFormProps) {
       ...v,
       images: v.images.map((img, idx) => (idx === i ? { ...img, [field]: value } : img)),
     }))
+  }
+  // Sube el archivo elegido: la action lo comprime y lo guarda en Blob; la URL
+  // resultante (ya de un host permitido) se vuelca en la fila.
+  async function uploadImage(i: number, file: File) {
+    setError(null)
+    setUploadingIdx(i)
+    try {
+      const fd = new FormData()
+      fd.append('file', file)
+      const res = await uploadPlaceImageAction(fd)
+      if ('error' in res) setError(res.error)
+      else updateImage(i, 'url', res.url)
+    } finally {
+      setUploadingIdx(null)
+    }
   }
   function setPrimaryImage(i: number) {
     setValues((v) => ({ ...v, images: v.images.map((img, idx) => ({ ...img, isPrimary: idx === i })) }))
@@ -534,13 +550,30 @@ export function PlaceForm({ options, initial }: PlaceFormProps) {
       <section className="admin-form__section">
         <h3 className="admin-form__legend">Imágenes</h3>
         <p className="admin-form__hint">
-          Solo URLs https de hosts permitidos: {ALLOWED_IMAGE_HOSTS.join(' · ')}. Otro host
-          rompe la ficha al renderizar.
+          Subí la foto (se comprime sola) o pegá una URL https de un host permitido:{' '}
+          {ALLOWED_IMAGE_HOSTS.join(' · ')}.
         </p>
         {values.images.map((img, i) => (
           <div key={i} className="admin-img-row">
+            {img.url && (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img className="admin-img-row__thumb" src={img.url} alt="" />
+            )}
             <div className="form-row">
-              <label className="form-label" htmlFor={`img-url-${i}`}>URL de la imagen *</label>
+              <label className="form-label" htmlFor={`img-file-${i}`}>Foto</label>
+              <label className="btn btn--ghost btn--sm admin-img-row__upload">
+                <input id={`img-file-${i}`} type="file" accept="image/*" hidden
+                  disabled={uploadingIdx !== null}
+                  onChange={(e) => {
+                    const f = e.target.files?.[0]
+                    if (f) void uploadImage(i, f)
+                    e.target.value = '' // permite re-subir el mismo archivo
+                  }} />
+                {uploadingIdx === i ? 'Subiendo…' : img.url ? 'Cambiar foto' : 'Subir foto'}
+              </label>
+            </div>
+            <div className="form-row">
+              <label className="form-label" htmlFor={`img-url-${i}`}>o pegá una URL</label>
               <input id={`img-url-${i}`} className="form-input" type="url" value={img.url}
                 onChange={(e) => updateImage(i, 'url', e.target.value)} placeholder="https://…" />
             </div>

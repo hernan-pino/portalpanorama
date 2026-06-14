@@ -8,7 +8,7 @@ priorizado. Se actualiza cada vez que avanzamos. Liviano a propósito — para r
 - **Modelo de datos:** [SCHEMA.md](SCHEMA.md) · **Capas:** [ARCHITECTURE.md](ARCHITECTURE.md) · **Carga:** [PLANTILLA_CSV.md](PLANTILLA_CSV.md)
 - **Bitácora del rediseño (historia + razonamiento de las decisiones):** [PLAN_FASE9.md](PLAN_FASE9.md)
 
-**Última actualización:** 2026-06-15
+**Última actualización:** 2026-06-14 (flujo de imágenes: Vercel Blob + compresión)
 
 ---
 
@@ -62,12 +62,12 @@ volcados al backlog y al checklist de abajo. Los principales:
 
 ## ▶️ Próximos pasos (en orden)
 
-0. **⚠️ PRÓXIMA SESIÓN — definir el flujo de imágenes (ítem p) ANTES de seguir cargando.** El usuario
-   empezó a cargar fichas a mano (2026-06-15, server local arriba) pero frenó acá: hay que decidir
-   **dónde se almacenan las fotos y cómo se llaman** (recordaba un plan de "guardarlas en otro lado y
-   llamarlas" — probablemente Vercel Blob / UploadThing) para que las fichas que cree no queden sin
-   fotos. Hoy el form pide URL pegada y la allowlist solo acepta `images.unsplash.com` + Vercel Blob
-   (`*.public.blob.vercel-storage.com`), NO `utfs.io`. **Bloqueante antes de cargar en serio.**
+0. **✅ HECHO (2026-06-14) — flujo de imágenes (ítem p).** Subida directa desde el form a **Vercel Blob**
+   (nativo del deploy, ya aprovisionado): botón "Subir foto" → se comprime server-side a `.webp`
+   (`sharp`, máx 2000px, q80) → URL pública se vuelca en la fila + miniatura. Se conserva el campo
+   "pegar URL" (Unsplash/stock). Arquitectura hexagonal: port `ImageProcessor` + `StorageService`,
+   use case `UploadPlaceImageUseCase`, action `uploadPlaceImageAction` (guard ADMIN, valida tipo/15MB).
+   UploadThing queda como **alternativa no cableada** (comentado en su archivo). Detalle en PLAN_FASE9.
 1. **Cargar ~5 lugares reales a mano** por el form de admin, para validar el flujo end-to-end con
    contenido de verdad (incl. un caso contenedor real: Parquemet → Cerro/Zoo). (NO 100 a mano — el
    grueso va por CSV.) — en curso por el usuario; depende del paso 0.
@@ -103,9 +103,11 @@ Los hijos del padre se muestran solo si están PUBLISHED.
 ## 📋 Backlog (pendientes, no bloquean el lanzamiento salvo lo marcado)
 
 **Calidad / bloqueante de lanzamiento:**
-- **(p) Definir el flujo de imágenes** (¿link pegado vs. subida? ¿dónde se guardan?). Hoy el form pide
-  URL pegada; existe `UploadThingStorageService` sin widget; la allowlist permite Unsplash + Vercel
-  Blob, NO `utfs.io`. **Bloqueante de calidad** (fotos reales del local, no solo Unsplash). Incluye (a').
+- **(p) Flujo de imágenes ✅ HECHO (2026-06-14)** — subida directa desde el form a **Vercel Blob** con
+  compresión server-side a `.webp` (`sharp`); se conserva pegar-URL. Hexagonal: ports `ImageProcessor` +
+  `StorageService`, use case `UploadPlaceImageUseCase`, action con guard ADMIN + validación tipo/15MB,
+  `bodySizeLimit` 16mb. **UploadThing** queda como alternativa no cableada (documentada en su archivo).
+  **Decisión y comparativa de opciones (Blob vs UploadThing, costos) en PLAN_FASE9.md.**
 - **(g) Páginas legales ✅ HECHO (2026-06-15)** — `/terminos` y `/privacidad` creadas con contenido
   real (Ley 19.628: datos, cookies, derechos ARCO, contacto). **Pendiente: revisión por abogado**
   antes de lanzar (hoy es un borrador sólido, no texto legal validado).
@@ -187,7 +189,7 @@ más adelante; requiere `RESEND_API_KEY` real + considerar rate-limit anti-bots.
   migraciones. Antes del push a prod hay que decidir si seguimos con `db push` o introducimos migraciones
   reales (no se puede `db push --force-reset` contra prod con datos).
 - [ ] Push a prod: schema + seed catálogos en Neon prod + `RESEND_API_KEY` real + redeploy.
-- [ ] Decidir + implementar flujo de imágenes (p).
+- [x] Decidir + implementar flujo de imágenes (p) — Vercel Blob + compresión, 2026-06-14.
 - [x] Páginas legales privacidad/términos (g) — 2026-06-15. Falta revisión por abogado.
 - [ ] Instrumentación GA4 + Meta Pixel + eventos custom (del scope MVP, aún no construida).
 - [x] SEO de ficha: JSON-LD + metadata + sitemap + robots — 2026-06-15. Falta revisar ISR (e.2).

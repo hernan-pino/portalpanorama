@@ -12,6 +12,7 @@
 import { prisma } from '../src/lib/db'
 import { container } from '../src/lib/container'
 import type { PlaceWriteInput } from '../src/application/place/PlaceWriteInput'
+import { PriceRange } from '../src/domain/place/PriceRange'
 
 const COMMUNE_SLUG = 'providencia'
 const IMG = (id: string) => `https://images.unsplash.com/${id}?w=1200&q=80`
@@ -35,28 +36,28 @@ const SPECS: Spec[] = [
     name: 'Café Volta (prueba)',
     description: 'Cafetería de especialidad con tostado propio, pan de masa madre y mesas al sol. Ideal para trabajar de día o juntarse a la tarde.',
     category: 'gastronomia', subcategory: 'cafe-cafeteria',
-    priceRange: 'FROM_5000_TO_15000', googleRating: 4.7, googleReviewCount: 1280,
+    priceRange: PriceRange.FROM_5000_TO_15000, googleRating: 4.7, googleReviewCount: 1280,
     audience: 2, occasion: 2, vibe: 2, image: 'photo-1501339847302-ac426a4a7cbb',
   },
   {
     name: 'Parque de los Reyes (prueba)',
     description: 'Gran parque urbano con ciclovías, áreas verdes y juegos. Perfecto para ir en familia un fin de semana.',
     category: 'naturaleza', subcategory: 'parque-urbano',
-    priceRange: 'FREE', googleRating: 4.5, googleReviewCount: 4300,
+    priceRange: PriceRange.FREE, googleRating: 4.5, googleReviewCount: 4300,
     audience: 2, occasion: 2, vibe: 1, image: 'photo-1441974231531-c6227db76b6e',
   },
   {
     name: 'Galería Norte (prueba)',
     description: 'Galería de arte contemporáneo con muestras rotativas de artistas chilenos emergentes. Entrada liberada.',
     category: 'arte-cultura', subcategory: 'galeria-de-arte',
-    priceRange: 'FREE', googleRating: 4.6, googleReviewCount: 320,
+    priceRange: PriceRange.FREE, googleRating: 4.6, googleReviewCount: 320,
     audience: 1, occasion: 2, vibe: 2, image: 'photo-1545989253-02cc26577f88',
   },
   {
     name: 'Bar Lumen (prueba)',
     description: 'Bar de coctelería de autor y vinilos en vivo los jueves. Ambiente íntimo, ideal para after office o una cita.',
     category: 'entretenimiento', subcategory: 'club-de-jazz-blues',
-    priceRange: 'FROM_15000_TO_30000', googleRating: 4.4, googleReviewCount: 540,
+    priceRange: PriceRange.FROM_15000_TO_30000, googleRating: 4.4, googleReviewCount: 540,
     audience: 2, occasion: 1, vibe: 2, image: 'photo-1514933651103-005eec06c04b',
   },
 ]

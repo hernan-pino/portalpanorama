@@ -1859,6 +1859,12 @@ select.form-input { cursor: pointer; }
 .admin-img-row__meta { display: grid; grid-template-columns: 1fr 1fr; gap: var(--s-3); }
 .admin-img-row__foot { display: flex; align-items: center; justify-content: space-between; gap: var(--s-3); }
 .admin-img-row__primary { white-space: nowrap; }
+.admin-img-row__thumb {
+  width: 140px; height: 100px; object-fit: cover;
+  border-radius: var(--r-md); border: 1px solid var(--surface-line);
+}
+.admin-img-row__upload { width: fit-content; cursor: pointer; }
+.admin-img-row__upload input:disabled { cursor: progress; }
 
 @media (max-width: 760px) {
   .admin-page { padding: var(--s-4); }

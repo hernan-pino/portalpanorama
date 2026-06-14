@@ -12,6 +12,8 @@ import { PrismaLocationRepository } from '@infrastructure/db/PrismaLocationRepos
 import { PostgresFTSSearchService } from '@infrastructure/search/PostgresFTSSearchService'
 import { BcryptPasswordHasher } from '@infrastructure/auth/BcryptPasswordHasher'
 import { ResendEmailService } from '@infrastructure/email/ResendEmailService'
+import { VercelBlobStorageService } from '@infrastructure/storage/VercelBlobStorageService'
+import { SharpImageProcessor } from '@infrastructure/storage/SharpImageProcessor'
 
 // ── Use cases ───────────────────────────────────────────────────────────
 import { SearchPlacesUseCase } from '@application/place/SearchPlacesUseCase'
@@ -27,6 +29,7 @@ import { GetSitemapEntriesUseCase } from '@application/place/GetSitemapEntriesUs
 import { ListPlacesForAdminUseCase } from '@application/place/ListPlacesForAdminUseCase'
 import { GetPlaceForEditUseCase } from '@application/place/GetPlaceForEditUseCase'
 import { GetPlaceFormOptionsUseCase } from '@application/place/GetPlaceFormOptionsUseCase'
+import { UploadPlaceImageUseCase } from '@application/place/UploadPlaceImageUseCase'
 import { CreateReportUseCase } from '@application/place/CreateReportUseCase'
 import { GetCategoriesUseCase } from '@application/catalog/GetCategoriesUseCase'
 import { GetCuratedCollectionUseCase } from '@application/collection/GetCuratedCollectionUseCase'
@@ -147,6 +150,11 @@ export const container = {
 
   getGetPlaceFormOptionsUseCase() {
     return new GetPlaceFormOptionsUseCase(categoryRepo, tagRepo, locationRepo, placeRepo)
+  },
+
+  // Lazy: el adapter de Blob exige BLOB_READ_WRITE_TOKEN; se instancia recién al subir.
+  getUploadPlaceImageUseCase() {
+    return new UploadPlaceImageUseCase(new SharpImageProcessor(), new VercelBlobStorageService())
   },
 
   getCreatePlaceUseCase() {

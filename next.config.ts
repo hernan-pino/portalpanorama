@@ -10,6 +10,11 @@ const nextConfig: NextConfig = {
       hostname,
     })),
   },
+  experimental: {
+    // Las server actions cortan el body en 1MB por defecto; la subida de imágenes
+    // (foto cruda de teléfono) necesita más holgura que eso (ver uploadPlaceImageAction).
+    serverActions: { bodySizeLimit: '16mb' },
+  },
 }
 
 export default nextConfig

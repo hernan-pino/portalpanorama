@@ -1,3 +1,10 @@
+// ALTERNATIVA NO CABLEADA — camino a futuro, tal vez.
+// El storage en uso es VercelBlobStorageService (nativo del deploy, ya aprovisionado;
+// ver container.ts y la decisión en PLAN_FASE9.md). Esta implementación de StorageService
+// con UploadThing se conserva como opción de respaldo. Para activarla habría que:
+//   1) agregar su host (utfs.io) a ALLOWED_IMAGE_HOSTS en src/lib/imageHosts.ts,
+//   2) apuntar getUploadPlaceImageUseCase() a esta clase en container.ts,
+//   3) tener UPLOADTHING_TOKEN seteado.
 import { UTApi } from 'uploadthing/server'
 import { StorageService } from '@application/ports/StorageService'
 

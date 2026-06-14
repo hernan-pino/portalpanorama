@@ -185,6 +185,37 @@ function toErrorMessage(err: unknown): string {
   return 'No se pudo guardar el lugar. Revisá los datos e intentá de nuevo.'
 }
 
+// ── Subir imagen ──
+// El form manda el archivo crudo; acá se valida (sesión, tipo, tamaño) y el use
+// case comprime + almacena, devolviendo la URL pública para guardar en el Place.
+const UPLOAD_ALLOWED_MIME = new Set(['image/jpeg', 'image/png', 'image/webp', 'image/gif'])
+const UPLOAD_MAX_BYTES = 15 * 1024 * 1024 // 15 MB crudos (la foto de teléfono entra holgada)
+
+export async function uploadPlaceImageAction(
+  formData: FormData,
+): Promise<{ error: string } | { url: string }> {
+  if (!(await isAdmin())) return { error: 'No autorizado.' }
+
+  const file = formData.get('file')
+  if (!(file instanceof File) || file.size === 0) return { error: 'No llegó ningún archivo.' }
+  if (!UPLOAD_ALLOWED_MIME.has(file.type)) {
+    return { error: 'Formato no permitido. Usá JPG, PNG, WebP o GIF.' }
+  }
+  if (file.size > UPLOAD_MAX_BYTES) {
+    return { error: `La imagen supera el límite de ${UPLOAD_MAX_BYTES / 1024 / 1024} MB.` }
+  }
+
+  try {
+    const buffer = Buffer.from(await file.arrayBuffer())
+    const { url } = await container
+      .getUploadPlaceImageUseCase()
+      .execute({ buffer, filename: file.name })
+    return { url }
+  } catch {
+    return { error: 'No se pudo subir la imagen. Intentá de nuevo.' }
+  }
+}
+
 // ── Crear ──
 export async function createPlaceAction(
   values: PlaceFormValues,

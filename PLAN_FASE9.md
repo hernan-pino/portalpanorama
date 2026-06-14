@@ -282,12 +282,23 @@
     **atributos específicos** (capa SPECIFIC: condicionales por categoría, ej. tipo de cocina en Gastronomía) y si la taxonomía
     es la correcta; (o.5) cierra junto con (j) los **límites** por capa. **Ojo al renombrar:** el seed hace upsert por slug →
     cambiar el nombre cambia el slug y crea un tag nuevo dejando huérfano el viejo + sus `PlaceTag`; hay que migrar, no solo renombrar.
-    (p) **DEFINIR el flujo de imágenes antes de lanzar (pedido del usuario 2026-06-13, importante):** decidir **link pegado vs.
-    subida**, y **dónde se guardan**. Estado real hoy: existe `UploadThingStorageService` (adapter de subida) PERO el form solo
-    pide **URL pegada**; la allowlist ([imageHosts.ts](src/lib/imageHosts.ts)) permite `images.unsplash.com` + Vercel Blob
-    (`*.public.blob.vercel-storage.com`), NO `utfs.io` de UploadThing. El plan previo (ítem a' arriba) era: **construir el widget
-    de subida con UploadThing + sumar `utfs.io` a la allowlist**. Falta cerrar la decisión (¿UploadThing? ¿Vercel Blob? ¿solo links?)
-    e implementarla — es bloqueante de calidad para el lanzamiento (fotos reales del local, no solo Unsplash).
+    (p) **✅ DECISIÓN CERRADA — flujo de imágenes (2026-06-14).** El usuario pidió que crear la ficha sea **lo más simple
+    posible**: que el negocio NO tenga que ir a otro lado, subir, y pegar el link. Subida directa desde el form, con compresión
+    interna para que las fichas carguen livianas.
+
+    **Opciones evaluadas (ambas ya semi-aprovisionadas en el proyecto):**
+    - **Vercel Blob (ELEGIDA).** Nativo del deploy (mismo proveedor → un servicio/factura menos), token `BLOB_READ_WRITE_TOKEN`
+      ya seteado, host `*.public.blob.vercel-storage.com` ya en la allowlist, encaja en el port `StorageService` existente.
+      Costo: gratis a la escala del MVP (~100 lugares × ~5 fotos × ~1MB ≈ 0,5 GB, dentro del tramo incluido; overage por GB son centavos).
+    - **UploadThing (descartada, conservada como camino futuro).** Tiene `UploadThingStorageService` escrito + `UPLOADTHING_TOKEN`,
+      pero es un 2º proveedor, está a medio cablear (faltaba `utfs.io` en la allowlist + widget + ruta) y es redundante teniendo Blob.
+      Tramo gratis 2 GB. **No se borró:** queda marcada como alternativa no cableada (header comentado en su archivo) por pedido del usuario.
+
+    **Implementación (hexagonal):** port `ImageProcessor` + adapter `SharpImageProcessor` (resize ≤2000px → `.webp` q80, respeta EXIF) ·
+    adapter `VercelBlobStorageService` (implementa `StorageService`) · use case `UploadPlaceImageUseCase` (comprime → almacena → URL) ·
+    action `uploadPlaceImageAction` (guard ADMIN + valida tipo JPG/PNG/WebP/GIF y ≤15MB crudos) · `serverActions.bodySizeLimit` a 16mb ·
+    `PlaceForm`: botón "Subir foto"/"Cambiar foto" + miniatura por fila, **se conserva** el campo "pegar URL" (Unsplash/stock).
+    La compresión corre **una vez al subir** (no afecta la carga de la ficha; la mejora). typecheck/build/tests verdes (64).
   - **✅ DECISIÓN CERRADA — Lugares contenedores (padre-hijo) + spots sin ficha (2026-06-13):** caso real surgido al
     cargar las primeras fichas (Parquemet contiene Cerro San Cristóbal / Zoológico / Jardín Botánico; el MUT contiene
     locales; GAM/malls/mercados igual). Se modela en **dos niveles**, SIN reintroducir un "tipo" de Place (respeta B.2:
