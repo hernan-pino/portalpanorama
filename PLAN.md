@@ -62,9 +62,15 @@ volcados al backlog y al checklist de abajo. Los principales:
 
 ## ▶️ Próximos pasos (en orden)
 
+0. **⚠️ PRÓXIMA SESIÓN — definir el flujo de imágenes (ítem p) ANTES de seguir cargando.** El usuario
+   empezó a cargar fichas a mano (2026-06-15, server local arriba) pero frenó acá: hay que decidir
+   **dónde se almacenan las fotos y cómo se llaman** (recordaba un plan de "guardarlas en otro lado y
+   llamarlas" — probablemente Vercel Blob / UploadThing) para que las fichas que cree no queden sin
+   fotos. Hoy el form pide URL pegada y la allowlist solo acepta `images.unsplash.com` + Vercel Blob
+   (`*.public.blob.vercel-storage.com`), NO `utfs.io`. **Bloqueante antes de cargar en serio.**
 1. **Cargar ~5 lugares reales a mano** por el form de admin, para validar el flujo end-to-end con
    contenido de verdad (incl. un caso contenedor real: Parquemet → Cerro/Zoo). (NO 100 a mano — el
-   grueso va por CSV.)
+   grueso va por CSV.) — en curso por el usuario; depende del paso 0.
 2. **Push a prod (Neon):** migración + seed de catálogos en la BD de producción + redeploy con la
    presentation nueva. Setear `RESEND_API_KEY` real (si no, la bienvenida no se envía).
 3. **Importador CSV** (ítem h) — habilita el ritmo de ~20/semana hasta ~100.
@@ -123,10 +129,15 @@ solo `min(8)`; sumar reglas + medidor) · (i.3) **verificación de email** (toke
 más adelante; requiere `RESEND_API_KEY` real + considerar rate-limit anti-bots.
 
 **Mejoras del form de admin:**
-- **(k) Autosave del borrador** — el estado vive en `useState`, una recarga lo borra. localStorage + restaurar, o `beforeunload`.
-- **(n) Botón "Preview"** — render de la ficha con los valores del form antes de guardar.
+- **(k) Autosave del borrador** — ⏸️ descartado por el usuario (problema raro; no vale la pena).
+- **(n) Botón "Preview" ✅ HECHO (2026-06-15)** — `PlacePreview` cliente que abre un overlay con la
+  ficha real (reusa las clases `.ficha`), resuelve ids→nombres desde las `options` del form y usa
+  `<img>` plano (la URL en preview puede ser de un host fuera de la allowlist). No toca BD ni guarda.
 - **(m) Mejor captura de lat/lng** — link de Google Maps / mini-mapa con pin / geocoding desde dirección. Decidir costo vs. fricción.
-- **(a'') Validar en el use case** que la subcategoría pertenezca a su categoría (hoy solo el form lo previene).
+- **(a'') Validar en el use case ✅ HECHO (2026-06-15)** — `assertCategoryConsistency` (compartido por
+  create/update) verifica contra el catálogo asignable que la subcategoría (principal y secundaria)
+  pertenezca a su categoría; lanza `PlaceCategoryMismatchError` (DomainError, surface en la action).
+  Se inyectó `CategoryRepository` en ambos use cases. +5 tests.
 
 **Sistema de tags — sesión dedicada (o) + (j): ✅ HECHA (2026-06-14).** Se rediseñó a 6 capas (ver
 "Estado actual"). Quedan 3 colas:
@@ -143,11 +154,29 @@ más adelante; requiere `RESEND_API_KEY` real + considerar rate-limit anti-bots.
   schema MVP está **completo** vs. PRD; horario estructurado sigue siendo post-MVP por decisión.
 
 **Pulido visual / deuda:**
-- **(f) Flechas de carrusel** — la ficha "También te puede gustar" no tiene flechas en desktop (reusar `PlaceRail`). La home ya las tiene; verificar por qué el usuario no las veía.
-- **(c) Ícono en el read-model de categorías** — hoy la home los hardcodea.
+- **(f) Flechas de carrusel ✅ HECHO (2026-06-15)** — `PlaceRail` se generalizó (props `scrollClassName`
+  + `className`, sin tocar la home) y la ficha "También te puede gustar" ahora lo reusa con flechas en
+  desktop. Por qué no se veían en la home: solo aparecen ≥861px y se autoocultan cuando no hay más
+  scroll (`:disabled{visibility:hidden}`) — con pocas tarjetas que caben, no se muestran (correcto).
+- **(c) Ícono en el read-model de categorías** — hoy la home los hardcodea. (2026-06-15: se sumó el
+  ícono de **Entretenimiento**, que faltaba y caía al fallback de Gastronomía; sigue hardcodeado, el
+  fix de fondo es moverlos al read-model.)
+- **(t) Rediseño del home (pre-lanzamiento, vía Claude Design) ⏳ DIFERIDO por decisión del usuario** —
+  lo verá cerca del MVP. Objetivos a capturar en el brief: (1) categorías/subcategorías primero, para
+  que al entrar se sepa "de un vistazo por qué se puede filtrar"; (2) bajar "¿Con quién vas?" (queda en
+  el home pero menos protagonista — el usuario se inclina por ponerlo **antes de "Lo mejor valorado"**,
+  pero seguía pensándolo); (3) aprovechar el ancho en **desktop** (hoy el hero de 1 columna angosta deja
+  medio viewport en blanco); (4) layout de la banda de categorías que escale a 5+ bloques. Flujo: yo
+  preparo el prompt/paquete por pantalla, el usuario genera la ref, recién ahí se implementa.
+  **2026-06-15: arreglado el defecto inmediato** (5 categorías rompían la grilla de 4 + ícono faltante)
+  para que no se vea roto mientras tanto; el rediseño completo es aparte.
 - **(d) Listas curadas de la home** — read-model "listar curadas" + seed (hoy diferido).
-- **(a) Barrer CSS muerto** que sobrevivió a la poda (`.hero-search`, `.search-shell`, `.place-row`, `.filter-rail` responsive — confirmados sin consumidores).
-- **(b) Revisar** si `@domain/shared/Neighborhoods` quedó huérfano.
+- **(a) Barrer CSS muerto ✅ HECHO (2026-06-15)** — borrados `.hero-search*` y `.filter-rail*` (desktop
+  + responsive), confirmados sin consumidores tsx (los filtros usan `.filters__*`). `.search-shell`/
+  `.place-row` ya no existían (poda previa). Queda `.listing-card*` (suena al modelo viejo, sin uso
+  tsx) sin tocar por no estar en la lista original; candidato para la próxima pasada.
+- **(b) Neighborhoods huérfano ✅ HECHO (2026-06-15)** — `@domain/shared/Neighborhoods` era un stopgap
+  declarado para el explorar viejo (ya reescrito en Etapa 4) y nadie lo importaba; eliminado.
 
 ---
 
