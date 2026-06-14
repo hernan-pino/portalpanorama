@@ -291,6 +291,7 @@ async function main() {
         continue
       }
       if (dry) {
+        nameToId.set(norm(input.name), 'dry') // así un hijo del mismo lote resuelve a su padre
         created++
         console.log(`✓ ${label} — OK (resolvería; ${input.tagIds.length} tags, ${input.images.length} imgs)`)
       } else {
