@@ -219,14 +219,16 @@ Fase 9 — Rediseño del producto             🔄 EN CURSO
   Etapa 0 — Definir el producto            ✅ COMPLETADA
   Etapa 1 — Síntesis (PRD)                 ✅ COMPLETADA
   Etapa 2 — Diseñar schema nuevo           ✅ COMPLETADA (schema + plantilla CSV + arquitectura)
-  Etapa 3 — Migrar la BD + seed            ⬜ próxima
-  Etapa 4 — Refactor dominio + UI          ⬜ pendiente (Listing → Place; aquí se reescribe el código)
-  Etapa 5 — Cargar lugares a mano          ⬜ pendiente
+  Etapa 3 — Migrar la BD + seed            🔄 local ✅, prod pendiente (va con el redeploy)
+  Etapa 4 — Refactor dominio + UI          ✅ COMPLETADA (4A-4E; la app compila sobre Place) — falta push a prod
+  Etapa 5 — Cargar lugares a mano          🔄 EN CURSO (admin CRUD ✅ verificado e2e; falta cargar contenido + push a prod)
 ```
 
 **Fase 9 = rediseño profundo.** El modelo nuevo es **`Place` (lugar permanente, sin tipo) + `Event`
-separado** (apagado en MVP), monetización/self-service parqueados. El código actual sigue sobre el
-modelo viejo `Listing` hasta la Etapa 4. Fuente de verdad del avance: `PLAN_FASE9.md`. Modelo de
-datos: `SCHEMA.md`. Capas/contextos: `ARCHITECTURE.md`.
+separado** (apagado en MVP), monetización/self-service parqueados. El código ya está **migrado a
+`Place`** (Etapa 4 ✅, la app compila completa); el modelo viejo `Listing` quedó atrás. Falta cargar
+contenido (Etapa 5) y el push a prod. **Plan vivo (fuente de verdad del avance): `PLAN.md`.** Norte
+del producto (visión/entidades/permisos/scope): `PRD.md`. Modelo de datos: `SCHEMA.md`.
+Capas/contextos: `ARCHITECTURE.md`. Bitácora congelada del rediseño: `PLAN_FASE9.md`.
 
 No avanzar a la siguiente fase/etapa sin OK explícito del usuario.

@@ -1,14 +1,31 @@
-# PLAN FASE 9 — Rediseño del producto
+# PLAN FASE 9 — Rediseño del producto (BITÁCORA — congelado)
 
-Documento vivo. Se actualiza cada vez que avanzamos. Aquí vive el **orden de trabajo**
-y el **estado de avance** de la Fase 9. Para el detalle de pasos de código, ver
-[ROADMAP.md](ROADMAP.md). Para las preguntas de producto, ver [PRODUCTO.md](PRODUCTO.md).
+> ⚠️ **Este documento se CONGELÓ el 2026-06-13.** Cumplió su misión: el rediseño del producto
+> (Fase 9, Etapas 0-4) está hecho. Ya **no es el plan vivo** ni se sigue engordando — quedó como
+> **bitácora y referencia del rediseño**: el razonamiento de las sub-sesiones A-D, las decisiones de
+> schema y el changelog de implementación. El contenido se repartió así:
+> - **Qué es el producto / visión / entidades / permisos / scope** → [PRD.md](PRD.md)
+> - **Estado actual + backlog + próximos pasos + checklist de lanzamiento** → [PLAN.md](PLAN.md) (el plan vivo)
+> - **Seguimiento de pasos** → [ROADMAP.md](ROADMAP.md) · **Modelo de datos** → [SCHEMA.md](SCHEMA.md)
+>
+> Aquí abajo se conserva todo el detalle histórico (no hace falta leerlo para retomar; sirve para
+> entender **por qué** se decidió algo). La sección "EN QUÉ VAMOS AHORA MISMO" de abajo es el
+> changelog de la Fase 9 — el estado vigente está en [PLAN.md](PLAN.md).
 
-**Última actualización:** 2026-06-13
+**Última actualización:** 2026-06-13 (congelado)
 
 ---
 
 ## 📍 EN QUÉ VAMOS AHORA MISMO
+
+> **TL;DR para retomar (2026-06-13):** la app **compila completa** sobre el modelo `Place` (Etapa 4
+> ✅: 4A→4E). Estamos en la **Etapa 5 — cargar lugares**: el **admin CRUD** está listo y verificado
+> e2e, el **flujo de guardado** está cerrado, y se subió la **primera ficha real**. **Próximo paso:**
+> cargar ~5 lugares a mano para validar + **push a prod**. **Decisión nueva por construir** (Etapa 5):
+> lugares **contenedores (padre-hijo `Place.parentId`) + spots sin ficha (`PlacePoint`)** — ver su
+> bullet más abajo. El **detalle inmediato y el backlog** están en el bullet **"▶️ PRÓXIMO PASO"**.
+> Todo lo que sigue en esta sección es el **historial de implementación** de la Etapa 4/5 (ya hecho;
+> se conserva como registro, no hace falta leerlo para retomar).
 
 - **Etapa:** 5 — Cargar lugares a mano 🔄 **EN CURSO** (admin CRUD construido 2026-06-12, ver bullet abajo).
   Etapa 4 ✅ cerrada salvo el push a prod. Sub-etapas de la 4: **4A domain ✅ · 4B application ✅**
@@ -271,6 +288,31 @@ y el **estado de avance** de la Fase 9. Para el detalle de pasos de código, ver
     (`*.public.blob.vercel-storage.com`), NO `utfs.io` de UploadThing. El plan previo (ítem a' arriba) era: **construir el widget
     de subida con UploadThing + sumar `utfs.io` a la allowlist**. Falta cerrar la decisión (¿UploadThing? ¿Vercel Blob? ¿solo links?)
     e implementarla — es bloqueante de calidad para el lanzamiento (fotos reales del local, no solo Unsplash).
+  - **✅ DECISIÓN CERRADA — Lugares contenedores (padre-hijo) + spots sin ficha (2026-06-13):** caso real surgido al
+    cargar las primeras fichas (Parquemet contiene Cerro San Cristóbal / Zoológico / Jardín Botánico; el MUT contiene
+    locales; GAM/malls/mercados igual). Se modela en **dos niveles**, SIN reintroducir un "tipo" de Place (respeta B.2:
+    el padre es un Place normal — Parquemet = Naturaleza, MUT = Locales y tiendas — que además agrupa):
+    1. **Hijos CON ficha** (Zoo, Cerro San Cristóbal: tienen rating/horario/reseñas y filtran solos) → `Place.parentId
+       String?` self-relation (`parent`/`children`), **cardinalidad 1** (un lugar tiene a lo más un padre; no se halló
+       caso de doble contenedor), `onDelete: SetNull` (archivar el padre NO borra los hijos), invariante de dominio
+       **anti-ciclo** (un lugar no puede ser su propio ancestro). En UI: **un solo nivel** (cada ficha muestra su padre
+       directo + sus hijos directos; el schema soporta árbol pero no se anida en pantalla). En la ficha del padre van
+       como `PlaceCard` **variante lista** (sección propia, explícitamente distinta de "También te puede gustar", que es
+       algorítmica y va al fondo con tarjetas grandes). En la ficha del hijo: badge/breadcrumb "Parte de [X] ↗" al padre.
+    2. **Spots SIN ficha** (miradores, kioscos, "el local donde venden X": no ameritan ficha pero hay que mostrarlos) →
+       tabla ligera nueva `PlacePoint { id, placeId(FK), name, description?, kind?, sortOrder }` (mismo patrón que
+       `PlaceImage`; **tabla, NO JSON**, para editarlos como filas en el form). **Cuelgan de CUALQUIER Place, incluido un
+       hijo** (un hijo-con-ficha puede tener sus propios spots — Cerro San Cristóbal con su mirador). Sin filtro, sin
+       reseña, sin link: contenido editorial. En la ficha: lista de texto (nombre + descripción corta), agrupada con los
+       hijos bajo un encabezado tipo "Qué hay en [X]".
+    - **Schema a tocar (acotado):** `Place.parentId` + relación self + índice + tabla `PlacePoint`.
+    - **Secuenciación decidida:** NO se mezcla con la revisión de tags (ítems (j)/(o)). El trabajo de tags es casi todo
+      **data/seed + dominio** (no schema: las capas ya existen), tiene su propio riesgo (renombrar = migrar slugs +
+      `PlaceTag` huérfanos) y es "sesión dedicada". Contenedor+spots es estructural, acotado, y **desbloquea cargar
+      Parquemet/MUT ahora** → va primero, como ítem de la **Etapa 5**.
+    - **Plan de implementación:** schema → dominio (anti-ciclo) → form admin (selector de padre + editor de puntos) →
+      ficha del padre (2 secciones) → ficha del hijo (badge). **Estado: definido y aprobado; aún NO construido (falta OK
+      para arrancar el código).**
   - **Bug de registro encontrado y ARREGLADO (2026-06-12, verificado e2e):** el registro creaba el usuario y DESPUÉS
     explotaba con 500 al enviar el correo de bienvenida (`RESEND_API_KEY` vacío en local) → la persona veía un error,
     al reintentar "email ya registrado", pero su cuenta sí servía. Fix en

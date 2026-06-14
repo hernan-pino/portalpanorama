@@ -4,18 +4,23 @@ Documento central de seguimiento del proyecto.
 
 ---
 
-## 📍 ESTADO HOY (2026-06-08)
+## 📍 ESTADO HOY (2026-06-13)
 
 ### Dónde estamos
 
-- **El sitio en `portal-panorama.vercel.app`** sigue sobre el código viejo (`Listing`); la BD local
-  ya está en el modelo nuevo, así que el código actual **no compila** contra ella hasta la Etapa 4.
-- La BD local (Neon) fue **reseteada al schema nuevo** (`db push --force-reset`, 2026-06-08) y
-  **seedeada con catálogos** (Metro, comunas, barrios M2M, categorías, subcategorías, tags + admin).
-  **Sin lugares** todavía (entran por CSV en la Etapa 5). **No hay datos reales.**
-- **Fase 9 en curso.** Etapas 0, 1 ✅. **Etapa 2 ✅ APROBADA (2026-06-08).** **Etapa 3 🔄** —
-  migración + seed de catálogos **local hechos**; falta replicar a **prod** (se hace junto al
-  redeploy de la Etapa 4). Próximo: **Etapa 4 (refactor dominio/UI)**.
+- **La app compila completa sobre el modelo `Place`.** Toda la Etapa 4 (refactor dominio→UI) está
+  cerrada: 4A domain · 4B application · 4C infrastructure · 4D composition root · 4E presentation
+  (ficha · explorar · home, las 3 con sus refs aprobadas) ✅. De yapa: búsqueda con autocompletado +
+  matching tolerante a typos/acentos ✅.
+- **BD local (Neon)** en el schema nuevo, seedeada con catálogos (Metro, 52 comunas, barrios M2M,
+  categorías/subcategorías, ~80 tags + admin) + un seed de demo con 7 lugares para verificar. **Prod
+  sigue sobre el código viejo** — el redeploy con la presentation nueva va junto con el push de prod.
+- **Etapa 5 (cargar lugares) 🔄 en curso:** el **admin CRUD de Place** está construido y verificado
+  e2e (lista, form crear/editar ~30 campos, publicar/archivar, guard ADMIN + Zod). Flujo de guardado
+  completo (lista "Favoritos" por defecto + corazón marcado donde ya guardaste) ✅. Falta: cargar el
+  contenido real + push a prod.
+- **Fase 9:** Etapas 0, 1, 2 ✅ · Etapa 3 local ✅ (prod pendiente) · Etapa 4 ✅ (falta push a prod) ·
+  **Etapa 5 🔄**.
 
 ### Decisión actual (importante)
 
@@ -26,12 +31,16 @@ monetización/self-service parqueados. El detalle vivo de la Fase 9 vive en
 
 ### Próximo paso inmediato
 
-1. ~~Escribir el `schema.prisma` nuevo~~ ✅ (Paso 9.2 — schema + plantilla CSV + arquitectura).
-2. **Migrar / resetear la BD al modelo nuevo + seed coherente** (Paso 9.3). El seed debe poblar los
-   **catálogos** (categorías, tags, comunas, barrios, estaciones de metro) **antes** de cargar
-   lugares — ver huecos H2/H3/H4 en `PLAN_FASE9.md`.
-3. Refactor de dominio, use cases y UI (Paso 9.4).
-4. Cargar lugares **a mano** (sin import masivo) hasta validar el concepto (Paso 9.5).
+1. ~~schema nuevo~~ ✅ (9.2) · ~~migración + seed local~~ ✅ (9.3) · ~~refactor dominio/UI~~ ✅ (9.4) ·
+   ~~admin CRUD~~ ✅ (9.5, herramienta de carga).
+2. **Cargar ~5 lugares reales a mano** por el form de admin para validar el flujo end-to-end con
+   contenido de verdad (NO 100 a mano; el grueso va por plantilla/CSV a ~20/semana hasta ~100).
+3. **Push a prod (Neon):** migración + seed de catálogos en la BD de producción + redeploy con la
+   presentation nueva (setear `RESEND_API_KEY` real para la bienvenida).
+4. **Feature nueva decidida (va en Etapa 5):** lugares contenedores (padre-hijo, `Place.parentId`) +
+   spots sin ficha (`PlacePoint`). Detalle y plan en `PLAN_FASE9.md`. Aún no construida.
+
+**Backlog + detalle vivo:** `PLAN_FASE9.md` (sección "EN QUÉ VAMOS AHORA MISMO" + bitácora).
 
 ### Qué se descartó del Paso 8
 
@@ -435,8 +444,10 @@ sigue siendo el viejo hasta correr la migración (Paso 9.3); el código de domin
 ---
 
 ### Paso 9.4 — Refactorizar dominio, use cases y UI al modelo nuevo
-**Estado:** ⬜ PENDIENTE (depende de 9.2)
-**Qué hay que hacer:**
+**Estado:** ✅ COMPLETADO (2026-06-09 → 2026-06-11) — falta solo el push a prod (va con 9.3-prod).
+Detalle 4A-4E en `PLAN_FASE9.md`. La app compila completa sobre `Place`; las 3 pantallas-cara
+(ficha/explorar/home) reescritas con sus refs aprobadas + búsqueda con autocompletado.
+**Qué había que hacer:**
 - Adaptar entidades en `src/domain/` al modelo nuevo
 - Adaptar use cases en `src/application/`
 - Adaptar páginas y componentes en `src/app/` y `src/components/`
@@ -448,7 +459,10 @@ sigue siendo el viejo hasta correr la migración (Paso 9.3); el código de domin
 ---
 
 ### Paso 9.5 — Cargar lugares a mano + validar
-**Estado:** ⬜ PENDIENTE (depende de 9.3 y 9.4)
+**Estado:** 🔄 EN CURSO — **admin CRUD de Place construido + verificado e2e** ✅ (2026-06-12; la
+herramienta de carga). Primera ficha real subida. Falta: cargar ~5 a mano para validar + el grueso
+por CSV. **Feature decidida por construir aquí:** lugares contenedores (`Place.parentId`) + spots
+(`PlacePoint`) — ver PLAN_FASE9.md.
 **Qué hay que hacer:**
 - Crear formulario admin para cargar lugares uno por uno (o usar `prisma studio` al principio)
 - Cargar 10-30 lugares reales bien curados
@@ -479,9 +493,15 @@ sigue siendo el viejo hasta correr la migración (Paso 9.3); el código de domin
 - **Seed:** `npx prisma db seed` (idempotente)
 - **Migrations:** `npx prisma migrate dev`
 - **Tests:** `npm test`
-- **Seed actual:** 6 categorías, 1 admin (admin@portalpanorama.cl / admin1234), 6 listings publicados
+- **Seed actual (Fase 9):** catálogos completos (7 líneas Metro + 125 estaciones, 52 comunas, barrios
+  M2M, 7 categorías + subcategorías, ~80 tags) + admin + usuario de prueba. **Sin lugares** (entran a
+  mano por el admin / CSV). Seed de demo opcional con 7 lugares para verificar (`seed-demo.ts`, con `--clean`).
 
 ## Preguntas abiertas / decisiones pendientes
+
+> ⚠️ **Histórico del modelo viejo (Fases 7-8).** Varios ítems de abajo hablan de `Listing`/Flow/
+> reseñas del modelo anterior y ya no aplican. **El backlog vivo de la Fase 9 está en
+> [PLAN_FASE9.md](PLAN_FASE9.md)** (bullet "▶️ PRÓXIMO PASO", ítems a-p + la decisión de contenedores).
 
 - ~~`UserList` en schema~~ — no existe. Tab "Listas" en `/mi-cuenta` queda como placeholder hasta diseñar la feature (requiere migración + use case).
 - ~~Credenciales Flow sandbox~~ — deploy con vars placeholder, activar cuando estén disponibles.
@@ -497,6 +517,11 @@ sigue siendo el viejo hasta correr la migración (Paso 9.3); el código de domin
 ---
 
 ### Pendientes visuales ficha de lugar — requieren data o features nuevas
+
+> ⚠️ **Histórico del modelo viejo (Fase 7-8).** Esta lista se relevó sobre la ficha vieja (`Listing` +
+> `GoogleReview` importadas). Buena parte ya se resolvió o quedó superada en la ficha nueva de la Fase 9
+> (ver el bullet "Ficha IMPLEMENTADA/VERIFICADA" en [PLAN_FASE9.md](PLAN_FASE9.md)). Se conserva como
+> referencia; lo vivo de SEO/JSON-LD está anotado en el backlog de PLAN_FASE9 (ítem e).
 
 Relevados al comparar con el diseño de referencia. Se resuelven en pasos posteriores:
 - **Imágenes con captions** (FACHADA, INTERIOR, DETALLE) — campo `alt` existe pero no se renderiza como label. Fácil de agregar con data real (Paso 7.7).

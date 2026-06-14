@@ -11,14 +11,18 @@ ni a rediseñar nada — esta skill es solo para **reorientarse y proponer el pr
 
 ## Pasos
 
-1. **Lee los 3 documentos de estado, en este orden:**
-   - `PLAN_FASE9.md` — el plan vivo de la fase actual. Aquí está la sección
-     "📍 EN QUÉ VAMOS AHORA MISMO", el estado de cada etapa/sub-sesión, las respuestas
-     capturadas y la bitácora de decisiones. **Esta es la fuente de verdad del avance.**
-   - `ROADMAP.md` — el seguimiento general del proyecto. Mira sobre todo "ESTADO HOY",
-     las fases completadas y los pasos de la fase en curso con su estado (⬜🔄✅⚠️🔁❌⏸️).
-   - `PRODUCTO.md` — las preguntas de definición del producto. Mira qué bloques ya
-     tienen respuesta (capturadas en PLAN_FASE9.md) y cuáles faltan.
+1. **Lee los documentos de estado, en este orden:**
+   - `PLAN.md` — **el plan vivo. La fuente de verdad del avance.** Estado actual, próximos
+     pasos en orden, la feature decidida por construir, el backlog priorizado y el checklist
+     de lanzamiento. Casi todo lo que necesitas para retomar está acá.
+   - `PRD.md` — el norte permanente: qué es el producto, para quién, entidades, permisos,
+     scope MVP. Léelo si necesitas el "qué/por qué", no para el estado del día a día.
+   - `ROADMAP.md` — el seguimiento general por pasos. Mira "ESTADO HOY" y los pasos de la
+     fase en curso con su estado (⬜🔄✅⚠️🔁❌⏸️).
+   - **Histórico (solo si hace falta entender por qué se decidió algo):** `PLAN_FASE9.md`
+     es la **bitácora congelada del rediseño** (sub-sesiones A-D, decisiones de schema,
+     changelog de la Fase 9). `PRODUCTO.md` es el cuestionario original. No los necesitas
+     para retomar el día a día.
 
 2. **Revisa los últimos commits** para detectar avances no anotados todavía:
    `git log --oneline -8`. Si ves trabajo en commits que el plan no refleja, dilo.
@@ -53,9 +57,8 @@ ni a rediseñar nada — esta skill es solo para **reorientarse y proponer el pr
   si seguir.
 - **No inventes estado.** Si un documento no dice algo, dilo como "no está anotado",
   no lo deduzcas a la fuerza.
-- Respeta el ritmo del proyecto: las preguntas de producto van **antes** que el código
-  (ver el principio que ordena las etapas en `PLAN_FASE9.md`).
+- Respeta el ritmo del proyecto: las preguntas de producto van **antes** que el código.
 - Mantén el resumen **breve**. El usuario quiere reorientarse rápido, no releer todo.
-- Después de cada avance real en una sesión, recuerda que `PLAN_FASE9.md` debe quedar
-  actualizado (respuestas capturadas, estados de etapa, bitácora). Si notas que quedó
-  desactualizado, ofrécete a ponerlo al día.
+- Después de cada avance real en una sesión, recuerda que `PLAN.md` debe quedar actualizado
+  (estado, próximos pasos, backlog). Si una decisión de producto se cierra, anótala también
+  en la bitácora `PLAN_FASE9.md`. Si notas que quedó desactualizado, ofrécete a ponerlo al día.
