@@ -8,7 +8,7 @@ priorizado. Se actualiza cada vez que avanzamos. Liviano a propósito — para r
 - **Modelo de datos:** [SCHEMA.md](SCHEMA.md) · **Capas:** [ARCHITECTURE.md](ARCHITECTURE.md) · **Carga:** [PLANTILLA_CSV.md](PLANTILLA_CSV.md)
 - **Bitácora del rediseño (historia + razonamiento de las decisiones):** [PLAN_FASE9.md](PLAN_FASE9.md)
 
-**Última actualización:** 2026-06-13
+**Última actualización:** 2026-06-14
 
 ---
 
@@ -24,6 +24,13 @@ priorizado. Se actualiza cada vez que avanzamos. Liviano a propósito — para r
 - **Primera ficha real subida** por el form (2026-06-13).
 - **BD local** en el schema nuevo con catálogos completos. **Prod sigue sobre el código viejo** —
   el redeploy va junto con el push de prod.
+- **Sesión taxonomía (2026-06-14) ✅:** se rediseñó el catálogo. **Regla de clasificación** ("la
+  categoría = por qué vas, no lo incidental"). **8 categorías** (nueva **Entretenimiento** activa para
+  venues nocturnos/actividad; la event-only pasó a *Shows y espectáculos*). **6 capas de tags** (antes
+  4): `AUDIENCE` (¿con quién?, máx 4) · `OCCASION` (Ideal para, máx 3) · `VIBE` (máx 3) · `EXPERIENCE`
+  (incl. `vida nocturna`) · `SERVICE` · `SPECIFIC`. Topes solo en las subjetivas. Decisión registrada:
+  cuando se enciendan Eventos, un Place podrá tener su cartelera en su propia ficha (como las fichas
+  hijo). Código migrado (12 archivos, compila) + BD local reseedeada. Detalle en [PRD.md](PRD.md).
 
 ---
 
@@ -78,10 +85,13 @@ más adelante; requiere `RESEND_API_KEY` real + considerar rate-limit anti-bots.
 - **(m) Mejor captura de lat/lng** — link de Google Maps / mini-mapa con pin / geocoding desde dirección. Decidir costo vs. fricción.
 - **(a'') Validar en el use case** que la subcategoría pertenezca a su categoría (hoy solo el form lo previene).
 
-**Sistema de tags — sesión dedicada (o) + (j):** revisar TODO el sistema. (o.1) "Ideal ir solo/a" →
-"Solo/a" · (o.2) expandir Acceso y logística · (o.3) redefinir VIBE (no gustan los actuales) · (o.4)
-repensar atributos SPECIFIC condicionales por categoría · (j/o.5) revisar los **límites** por capa
-(hoy SOCIAL≤4, VIBE≤3). **Ojo:** renombrar cambia el slug → migrar tags + `PlaceTag`, no solo renombrar.
+**Sistema de tags — sesión dedicada (o) + (j): ✅ HECHA (2026-06-14).** Se rediseñó a 6 capas (ver
+"Estado actual"). Quedan 3 colas:
+- **(o.4) Podar SPECIFIC** — se quitaron los que se duplicaban con capas universales; falta la poda fina
+  de "atributos que no hacen sentido", lista por categoría para vetar.
+- **(o.6) Sumar "Ideal para" (OCCASION) y "Experiencia" como filtros** — hoy viven en la ficha pero el
+  FilterRail solo filtra ¿con quién?/servicios/vibe. Pasada de UI aparte (toca FilterRail + parseSearchParams).
+- **(o.7) Tags pendientes de pulir:** revisar exclusiones mutuas; `LGBT+ friendly` recién agregado.
 
 **Schema / modelo:**
 - **(l) Redes sociales múltiples** — hoy solo Instagram. Modelar `socialLinks` (JSON `{network,url}[]` o tabla). **Cambio de schema** — decidir forma.
@@ -98,7 +108,10 @@ repensar atributos SPECIFIC condicionales por categoría · (j/o.5) revisar los 
 ## 🚀 Checklist de lanzamiento (consolidado)
 
 - [ ] Cargar masa mínima densa de lugares (Providencia + Ñuñoa primero).
-- [ ] Push a prod: migración + seed catálogos en Neon prod + `RESEND_API_KEY` real + redeploy.
+- [ ] **Decidir workflow de BD para prod:** el proyecto usa `prisma db push` sin historial de
+  migraciones. Antes del push a prod hay que decidir si seguimos con `db push` o introducimos migraciones
+  reales (no se puede `db push --force-reset` contra prod con datos).
+- [ ] Push a prod: schema + seed catálogos en Neon prod + `RESEND_API_KEY` real + redeploy.
 - [ ] Decidir + implementar flujo de imágenes (p).
 - [ ] Páginas legales privacidad/cookies (g).
 - [ ] Instrumentación GA4 + Meta Pixel + eventos custom (del scope MVP, aún no construida).

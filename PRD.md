@@ -53,9 +53,18 @@ queda como puerta abierta sin tabla.
   crédito · tags (4 capas) · puertas baratas (`isPremium`, `ownerId?`, `status`).
 - **🎫 `Event`** — en el schema desde ya, **apagado en MVP**. Tabla separada, FK `placeId` nullable
   (eventos sin local fijo), categoría propia, dimensión temporal, `isRecurring`. Se enciende post-MVP.
-- **🗂️ `Category` + `Subcategory`** — 7 categorías. Al lanzar solo se muestran las con lugares
-  (**Gastronomía, Naturaleza y aire libre, Arte y cultura, Locales y tiendas**); las event-only
-  (Shows, Ferias, Talleres) quedan registradas pero apagadas.
+  **Decisión (2026-06-14):** al encenderse, un Place podrá tener eventos asociados que aparecen **en su
+  propia ficha** (su cartelera) — mismo patrón de presentación que los lugares hijo. Resuelve los venues
+  cuyo valor son los shows (sala de conciertos, club de jazz): la ficha hoy queda fina y se llena con su
+  agenda al activar Eventos.
+- **🗂️ `Category` + `Subcategory`** — 8 categorías. **Regla de clasificación (2026-06-14):** la
+  categoría principal = **por qué vas (la experiencia), no lo que el lugar incidentalmente tiene** — un
+  club de jazz sirve comida pero vas por la experiencia → es **Entretenimiento**, no Gastronomía; un
+  bar/pub se queda en Gastronomía + tag `vida nocturna`. La frontera la resuelven la categoría secundaria
+  y los tags, no la duplicación. Al lanzar se muestran las **5 con lugares** (**Gastronomía, Naturaleza y
+  aire libre, Arte y cultura, Locales y tiendas, Entretenimiento** — venues a los que vas por una
+  actividad: discoteca, karaoke, escape room, bowling, club de jazz, sala de conciertos); las event-only
+  (Shows y espectáculos, Ferias, Talleres) quedan registradas pero apagadas.
 - **🏷️ `Tag`** — tabla relacional, **4 capas** (`TagLayer`): contexto **SOCIAL** (máx 4) · atributos
   **SPECIFIC** condicionales por categoría (ej. tipo de cocina en Gastronomía) · logística **ACCESS** ·
   **VIBE** (máx 3). Límites y exclusiones mutuas = en dominio. Reserva NO es tag (campo `reservation`).
@@ -110,7 +119,7 @@ Restricción transversal: **lean, barato, por capas, densidad > cantidad.**
 **✅ SÍ entra:**
 - **Contenido:** ~100 lugares permanentes (techo), carga paulatina (puñado a mano → soft-launch →
   masa mínima densa → ~20/semana). Concentrados en pocas zonas conectadas (Providencia + Ñuñoa
-  primero). Solo 4 categorías con lugares.
+  primero). Solo 5 categorías con lugares (Gastronomía, Naturaleza, Arte y cultura, Locales y tiendas, Entretenimiento).
 - **Ficha:** completa y estructurada · estrellas + nº reseñas de Google · tags 4 capas · CTA "Cómo
   llegar" · compartir · "relacionados" (sin IA: tags + categoría + comuna).
 - **Búsqueda/filtros (el pilar):** facetas con contadores + ocultar vacíos (estáticos). Filtros

@@ -62,10 +62,12 @@ enum PlaceStatus {
 // Sistema de 4 capas (2.3). Universal si Tag.categoryId == null;
 // condicional a una categoría si está seteado (ej. "tipo de cocina" → Gastronomía).
 enum TagLayer {
-  SOCIAL // contexto social: ¿con quién voy? (máx 4 por ficha, en dominio)
-  SPECIFIC // atributos específicos condicionales por categoría
-  ACCESS // logística de acceso (estacionamiento, bicicletero, accesible en micro…)
-  VIBE // ambiente (máx 3 por ficha, en dominio)
+  AUDIENCE // ¿con quién? (máx 4 por ficha, en dominio)
+  OCCASION // ideal para / ocasión (máx 3 por ficha, en dominio)
+  VIBE // vibe / ambiente (máx 3 por ficha, en dominio)
+  EXPERIENCE // qué ofrece de destacable: rooftop, vista, vida nocturna… (sin tope)
+  SERVICE // servicios y acceso: estacionamiento, wifi, accesible, pet friendly… (sin tope)
+  SPECIFIC // atributos específicos condicionales por categoría (sin tope)
 }
 
 // Objetivo reseñado extensible (2.4): hoy PLACE; DISH/EVENT entran sin tocar el schema.

@@ -116,8 +116,10 @@ export class Place {
   readonly createdAt: Date
   readonly updatedAt: Date
 
-  // Límites por capa (decisión 2.3). Las capas SPECIFIC/ACCESS no tienen tope duro.
-  static readonly MAX_SOCIAL_TAGS = 4
+  // Topes por capa (decisión 2026-06-14). Solo las capas subjetivas topean; las
+  // objetivas (EXPERIENCE/SERVICE/SPECIFIC) no tienen tope duro ("más info = mejor").
+  static readonly MAX_AUDIENCE_TAGS = 4
+  static readonly MAX_OCCASION_TAGS = 3
   static readonly MAX_VIBE_TAGS = 3
 
   private constructor(props: PlaceProps) {
@@ -167,9 +169,13 @@ export class Place {
   }
 
   private static assertTagLimits(tags: ReadonlyArray<PlaceTagRef>): void {
-    const social = tags.filter((t) => t.layer === TagLayer.SOCIAL).length
-    if (social > Place.MAX_SOCIAL_TAGS) {
-      throw new TagLimitExceededError(TagLayer.SOCIAL, Place.MAX_SOCIAL_TAGS)
+    const audience = tags.filter((t) => t.layer === TagLayer.AUDIENCE).length
+    if (audience > Place.MAX_AUDIENCE_TAGS) {
+      throw new TagLimitExceededError(TagLayer.AUDIENCE, Place.MAX_AUDIENCE_TAGS)
+    }
+    const occasion = tags.filter((t) => t.layer === TagLayer.OCCASION).length
+    if (occasion > Place.MAX_OCCASION_TAGS) {
+      throw new TagLimitExceededError(TagLayer.OCCASION, Place.MAX_OCCASION_TAGS)
     }
     const vibe = tags.filter((t) => t.layer === TagLayer.VIBE).length
     if (vibe > Place.MAX_VIBE_TAGS) {

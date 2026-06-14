@@ -279,10 +279,12 @@ export class PostgresFTSSearchService implements SearchService {
       const t = meta.get(g.tagId)
       if (!t) continue
       const fc: FacetCount = { value: t.slug, label: t.name, count: g._count._all }
-      if (t.layer === $Enums.TagLayer.SOCIAL) social.push(fc)
-      else if (t.layer === $Enums.TagLayer.ACCESS) access.push(fc)
+      if (t.layer === $Enums.TagLayer.AUDIENCE) social.push(fc)
+      else if (t.layer === $Enums.TagLayer.SERVICE) access.push(fc)
       else if (t.layer === $Enums.TagLayer.VIBE) vibe.push(fc)
-      // SPECIFIC = atributos condicionales por categoría, no son faceta universal.
+      // OCCASION/EXPERIENCE viven en la ficha pero aún no son faceta de filtro
+      // (pendiente: sumar "Ideal para" y "Experiencia" al FilterRail). SPECIFIC =
+      // condicional por categoría, tampoco es faceta universal.
     }
     social.sort(byCountThenLabel)
     access.sort(byCountThenLabel)

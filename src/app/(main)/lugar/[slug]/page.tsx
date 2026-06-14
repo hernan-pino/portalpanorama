@@ -85,13 +85,15 @@ export default async function LugarPage({ params }: PageProps) {
     await container.getRecordVisitUseCase().execute({ userId, placeId: place.id })
   }
 
-  const social = place.tags.filter((t) => t.layer === 'SOCIAL')
+  const audience = place.tags.filter((t) => t.layer === 'AUDIENCE')
+  const occasion = place.tags.filter((t) => t.layer === 'OCCASION')
   const vibe = place.tags.filter((t) => t.layer === 'VIBE')
-  const attribute = place.tags.filter((t) => t.layer === 'ATTRIBUTE')
-  const access = place.tags.filter((t) => t.layer === 'ACCESS')
+  const experience = place.tags.filter((t) => t.layer === 'EXPERIENCE')
+  const specific = place.tags.filter((t) => t.layer === 'SPECIFIC')
+  const service = place.tags.filter((t) => t.layer === 'SERVICE')
 
   const hasContact = !!(place.phone || place.website || place.instagram || place.menuUrl)
-  const hasAccess = !!(place.accessDetail || access.length)
+  const hasAccess = !!(place.accessDetail || service.length)
   const directionsHref = place.address
     ? `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(place.address)}`
     : undefined
@@ -157,12 +159,15 @@ export default async function LugarPage({ params }: PageProps) {
         </div>
 
         {/* descripción + tags */}
-        {(place.description || social.length > 0 || vibe.length > 0 || attribute.length > 0) && (
+        {(place.description || audience.length > 0 || occasion.length > 0
+          || vibe.length > 0 || experience.length > 0 || specific.length > 0) && (
           <div className="ficha__section">
             {place.description && <p className="ficha__lead">{place.description}</p>}
-            <TagGroup label="Con quién" tags={social} />
-            <TagGroup label="Ambiente" tags={vibe} />
-            <TagGroup label="Lo que ofrece" tags={attribute} />
+            <TagGroup label="Con quién" tags={audience} />
+            <TagGroup label="Ideal para" tags={occasion} />
+            <TagGroup label="Vibe" tags={vibe} />
+            <TagGroup label="Experiencia" tags={experience} />
+            <TagGroup label="Lo que ofrece" tags={specific} />
           </div>
         )}
 
@@ -201,11 +206,11 @@ export default async function LugarPage({ params }: PageProps) {
               </DataRow>
             )}
             {hasAccess && (
-              <DataRow icon={<AccessIcon />} k="Accesibilidad">
+              <DataRow icon={<AccessIcon />} k="Servicios y acceso">
                 {place.accessDetail}
-                {access.length > 0 && (
+                {service.length > 0 && (
                   <div className="ficha__tags" style={{ marginTop: place.accessDetail ? 8 : 2 }}>
-                    {access.map((t) => <span key={t.slug} className="chip">{t.name}</span>)}
+                    {service.map((t) => <span key={t.slug} className="chip">{t.name}</span>)}
                   </div>
                 )}
               </DataRow>

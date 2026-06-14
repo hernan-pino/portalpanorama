@@ -85,12 +85,14 @@ export const STATUS_LABELS: Record<string, string> = {
   ARCHIVED: 'Archivado',
 }
 
-// Etiquetas de las 4 capas de tags (para agrupar los checkboxes en el form).
+// Etiquetas de las 6 capas de tags (para agrupar los checkboxes en el form).
 export const TAG_LAYER_LABELS: Record<string, string> = {
-  SOCIAL: '¿Con quién vas? (máx. 4)',
+  AUDIENCE: '¿Con quién? (máx. 4)',
+  OCCASION: 'Ideal para (máx. 3)',
+  VIBE: 'Vibe (máx. 3)',
+  EXPERIENCE: 'Experiencia',
+  SERVICE: 'Servicios y acceso',
   SPECIFIC: 'Atributos específicos',
-  ACCESS: 'Acceso y logística',
-  VIBE: 'Ambiente (máx. 3)',
 }
 
-export const TAG_LAYER_ORDER = ['SOCIAL', 'SPECIFIC', 'ACCESS', 'VIBE']
+export const TAG_LAYER_ORDER = ['AUDIENCE', 'OCCASION', 'VIBE', 'EXPERIENCE', 'SERVICE', 'SPECIFIC']

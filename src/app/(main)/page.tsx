@@ -72,7 +72,7 @@ export default async function HomePage() {
     }
   }
 
-  // Chips sociales (capa SOCIAL) → explorar ya filtrado por contexto. Se ocultan los
+  // Chips de "¿con quién?" (capa AUDIENCE) → explorar ya filtrado por contexto. Se ocultan los
   // vacíos (principio P3: disimular la baja densidad del arranque).
   const social = facets.social.filter((s) => s.count > 0)
   const places = recommended.items

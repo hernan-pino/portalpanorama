@@ -108,8 +108,17 @@ const CATEGORIES: {
     subcategories: ['Librería', 'Disquería / Vinilería', 'Tienda de diseño', 'Vintage / Segunda mano', 'Vinoteca / Botillería premium', 'Chocolatería', 'Florería', 'Tienda de plantas', 'Juguetería', 'Tienda de mascotas'],
   },
   {
-    name: 'Shows y entretenimiento', isActive: false, eventOnly: true,
-    subcategories: ['Concierto', 'Comedia / Stand-up', 'Teatro', 'Danza / Ballet', 'Ópera / Clásica', 'Festival', 'Fiesta / Club', 'Karaoke', 'Cine al aire libre', 'Escape room', 'Trivia / Pub quiz', 'Magia / Circo'],
+    // Venues permanentes a los que vas por una actividad/experiencia (Places, no eventos).
+    // Regla: la categoría = por qué vas. Un bar/pub se queda en Gastronomía + tag "vida nocturna";
+    // acá van los lugares cuyo centro es la actividad nocturna o el panorama.
+    name: 'Entretenimiento', isActive: true, eventOnly: false,
+    subcategories: ['Discoteca / Club', 'Karaoke', 'Escape room', 'Bowling', 'Club de jazz / blues', 'Sala de conciertos', 'Salón de juegos / Arcade'],
+  },
+  {
+    // event-only: tipos de SHOW (ocurren en una fecha). Se encienden con Eventos.
+    // Karaoke/Escape room salieron de acá: son venues, viven en "Entretenimiento".
+    name: 'Shows y espectáculos', isActive: false, eventOnly: true,
+    subcategories: ['Concierto', 'Comedia / Stand-up', 'Teatro', 'Danza / Ballet', 'Ópera / Clásica', 'Festival', 'Fiesta / Club', 'Cine al aire libre', 'Trivia / Pub quiz', 'Magia / Circo'],
   },
   {
     name: 'Talleres y actividades', isActive: false, eventOnly: true,
@@ -121,19 +130,24 @@ const CATEGORIES: {
   },
 ]
 
-// ─── Tags — 4 capas (doc 04) ─────────────────────────────────────────────────────
-// Universales (categoryId = null): SOCIAL, ACCESS, VIBE. Las reglas de límite/
-// exclusión viven en el dominio, no en el schema.
+// ─── Tags — 6 capas (decisión 2026-06-14) ────────────────────────────────────────
+// Universales (categoryId = null): AUDIENCE, OCCASION, VIBE, EXPERIENCE, SERVICE.
+// Topes (solo subjetivas) y exclusiones viven en el dominio, no en el schema.
 // Reserva NO es tag (enum ReservationPolicy). Precio NO es tag (enum PriceRange).
 // Métodos de pago NO son tag (Place.paymentMethods String[]). Lluvia = enum RainPolicy.
-const TAGS_SOCIAL = ['En pareja', 'Con familia', 'Con niños pequeños', 'Pet friendly', 'Con amigos', 'Ideal ir solo/a', 'Apto adultos mayores', 'Acceso universal', 'Para cumpleaños', 'Evento corporativo', 'Ideal como regalo']
-const TAGS_ACCESS = ['Cerca del metro', 'Accesible en micro', 'Requiere auto', 'Estacionamiento propio', 'Estacionamiento cercano', 'Bicicletero', 'Acceso silla de ruedas', 'Baño disponible', 'Cambiador de pañales', 'Zona de lactancia', 'Al aire libre']
-const TAGS_VIBE = ['Tranquilo', 'Animado', 'Íntimo / Romántico', 'Fotogénico', 'Fiestero', 'Relajado', 'Cultureta', 'Casual', 'Especial / Único', 'De barrio', 'Trendy', 'Familiar', 'Creativo', 'Aventurero']
+// Horario NO es tag (se deriva del horario cargado). Presupuesto = PriceRange.
+const TAGS_AUDIENCE = ['En pareja', 'Con familia', 'Con niños pequeños', 'Con amigos', 'Solo/a', 'Adultos mayores', 'Todo público', 'LGBT+ friendly']
+const TAGS_OCCASION = ['Cita', 'Cumpleaños', 'Celebración', 'Junta de amigos', 'Reunión de trabajo', 'Trabajo remoto / Estudiar', 'Carrete / Salida nocturna', 'Panorama familiar', 'Afteroffice']
+const TAGS_VIBE = ['Tranquilo', 'Animado', 'Íntimo / Romántico', 'Relajado', 'Casual', 'Elegante', 'Bohemio', 'Acogedor', 'De barrio', 'Trendy', 'Especial / Único', 'Cultural', 'Aventurero', 'Fiestero']
+const TAGS_EXPERIENCE = ['Al aire libre', 'Terraza', 'Rooftop', 'Vista panorámica', 'Música en vivo', 'Vida nocturna', 'Fotogénico / Instagrameable', 'Atardecer', 'Interactivo', 'Degustaciones']
+const TAGS_SERVICE = ['Cerca del metro', 'Accesible en micro', 'Requiere auto', 'Estacionamiento propio', 'Estacionamiento cercano', 'Bicicletero', 'Acceso silla de ruedas', 'Baño disponible', 'Cambiador de pañales', 'Zona de lactancia', 'Pet friendly', 'WiFi', 'Aire acondicionado', 'Para llevar', 'Delivery']
 
 // Específicos (condicionales por categoría). Primer paso, refinable. Solo las 4
 // categorías activas; los específicos de las event-only se seedearán al encender eventos.
+// Los que se promovieron a capas universales (Terraza, Música en vivo, Vista panorámica,
+// Para llevar, Delivery) salieron de acá para no duplicar slug.
 const TAGS_SPECIFIC: Record<string, string[]> = {
-  'Gastronomía': ['Terraza', 'Terraza cubierta', 'Happy hour', 'Menú del día', 'Menú infantil', 'Opciones veganas', 'Vegetariano', 'Sin gluten', 'Música en vivo', 'Pantalla deportes', 'Para llevar', 'Delivery propio', 'Vista panorámica', 'Sillas para bebés', 'Cocina chilena', 'Cocina peruana', 'Cocina italiana', 'Cocina japonesa', 'Cocina china', 'Cocina árabe', 'Cocina mexicana'],
+  'Gastronomía': ['Happy hour', 'Menú del día', 'Menú infantil', 'Opciones veganas', 'Vegetariano', 'Sin gluten', 'Pantalla deportes', 'Sillas para bebés', 'Cocina chilena', 'Cocina peruana', 'Cocina italiana', 'Cocina japonesa', 'Cocina china', 'Cocina árabe', 'Cocina mexicana'],
   'Naturaleza y aire libre': ['Dificultad baja', 'Dificultad media', 'Dificultad alta', 'Con zona de picnic', 'Con sombra', 'Señal de celular', 'Apto coche guagua', 'Solo verano', 'Abierto todo el año'],
   'Arte y cultura': ['Visita guiada disponible', 'Audioguía', 'Fotografía permitida', 'Cafetería interna', 'Tienda interna', 'Exposición permanente', 'Exposición temporal', 'Talleres asociados'],
   'Locales y tiendas': ['Solo para llevar', 'Con zona de estar', 'Productos nacionales', 'Productos importados', 'Artesanal / Local', 'Envío disponible'],
@@ -209,7 +223,7 @@ async function main() {
     const slug = slugify(cat.name === 'Naturaleza y aire libre' ? 'naturaleza'
       : cat.name === 'Arte y cultura' ? 'arte-cultura'
       : cat.name === 'Locales y tiendas' ? 'locales-tiendas'
-      : cat.name === 'Shows y entretenimiento' ? 'shows'
+      : cat.name === 'Shows y espectáculos' ? 'shows'
       : cat.name === 'Talleres y actividades' ? 'talleres'
       : cat.name === 'Ferias y mercados' ? 'ferias'
       : cat.name) // Gastronomía → gastronomia
@@ -233,7 +247,8 @@ async function main() {
   console.log(`  ✓ ${CATEGORIES.length} categorías + subcategorías`)
 
   // ── Tags ──
-  async function upsertTag(name: string, layer: 'SOCIAL' | 'SPECIFIC' | 'ACCESS' | 'VIBE', categoryId: string | null) {
+  type Layer = 'AUDIENCE' | 'OCCASION' | 'VIBE' | 'EXPERIENCE' | 'SERVICE' | 'SPECIFIC'
+  async function upsertTag(name: string, layer: Layer, categoryId: string | null) {
     const slug = slugify(name)
     await prisma.tag.upsert({
       where: { slug },
@@ -241,15 +256,17 @@ async function main() {
       create: { id: createId(), slug, name, layer, categoryId },
     })
   }
-  for (const name of TAGS_SOCIAL) await upsertTag(name, 'SOCIAL', null)
-  for (const name of TAGS_ACCESS) await upsertTag(name, 'ACCESS', null)
+  for (const name of TAGS_AUDIENCE) await upsertTag(name, 'AUDIENCE', null)
+  for (const name of TAGS_OCCASION) await upsertTag(name, 'OCCASION', null)
   for (const name of TAGS_VIBE) await upsertTag(name, 'VIBE', null)
+  for (const name of TAGS_EXPERIENCE) await upsertTag(name, 'EXPERIENCE', null)
+  for (const name of TAGS_SERVICE) await upsertTag(name, 'SERVICE', null)
   let specificCount = 0
   for (const [catName, tags] of Object.entries(TAGS_SPECIFIC)) {
     const categoryId = categoryIdByName[catName]
     for (const name of tags) { await upsertTag(name, 'SPECIFIC', categoryId); specificCount++ }
   }
-  console.log(`  ✓ tags: ${TAGS_SOCIAL.length} social · ${TAGS_ACCESS.length} access · ${TAGS_VIBE.length} vibe · ${specificCount} específicos`)
+  console.log(`  ✓ tags: ${TAGS_AUDIENCE.length} audience · ${TAGS_OCCASION.length} occasion · ${TAGS_VIBE.length} vibe · ${TAGS_EXPERIENCE.length} experience · ${TAGS_SERVICE.length} service · ${specificCount} específicos`)
 
   // ── Admin ──
   const passwordHash = await bcrypt.hash('admin1234', 10)
