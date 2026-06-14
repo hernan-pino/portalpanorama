@@ -10,6 +10,7 @@ import {
   PlaceAdminRow,
   PlaceCardView,
   PlaceDetailView,
+  PlaceParentOption,
   PlaceRatingRow,
   PlaceRepository,
 } from '@application/ports/PlaceRepository'
@@ -19,6 +20,7 @@ import { placeCardArgs, toPlaceCardView } from './placeCardView'
 const aggregateArgs = Prisma.validator<Prisma.PlaceDefaultArgs>()({
   include: {
     images: { orderBy: [{ isPrimary: 'desc' }, { sortOrder: 'asc' }] },
+    points: { orderBy: { sortOrder: 'asc' } },
     tags: { include: { tag: true } },
   },
 })
@@ -58,6 +60,7 @@ function toPlaceDomain(row: PlaceAggregateRow): Place {
     isPremium: row.isPremium,
     ownerId: row.ownerId ?? undefined,
     status: row.status as PlaceStatus,
+    parentId: row.parentId ?? undefined,
     images: row.images.map((img) => ({
       id: img.id,
       url: img.url,
@@ -65,6 +68,13 @@ function toPlaceDomain(row: PlaceAggregateRow): Place {
       credit: img.credit ?? undefined,
       isPrimary: img.isPrimary,
       sortOrder: img.sortOrder,
+    })),
+    points: row.points.map((pt) => ({
+      id: pt.id,
+      name: pt.name,
+      description: pt.description ?? undefined,
+      kind: pt.kind ?? undefined,
+      sortOrder: pt.sortOrder,
     })),
     tags: row.tags.map((pt) => ({
       id: pt.tag.id,
@@ -112,6 +122,7 @@ function toWriteData(place: Place) {
     isPremium: place.isPremium,
     ownerId: place.ownerId ?? null,
     status: place.status as $Enums.PlaceStatus,
+    parentId: place.parentId ?? null,
     updatedAt: place.updatedAt,
   }
 }
@@ -129,6 +140,15 @@ const detailArgs = Prisma.validator<Prisma.PlaceDefaultArgs>()({
     },
     images: { orderBy: [{ isPrimary: 'desc' }, { sortOrder: 'asc' }] },
     tags: { include: { tag: { select: { slug: true, name: true, layer: true } } } },
+    // Contenedor: el padre (para el badge del hijo) y los hijos-con-ficha
+    // publicados (tarjetas en la ficha del padre). Un solo nivel en pantalla.
+    parent: { select: { slug: true, name: true, status: true } },
+    children: {
+      where: { status: $Enums.PlaceStatus.PUBLISHED },
+      orderBy: { score: 'desc' },
+      select: placeCardArgs.select,
+    },
+    points: { orderBy: { sortOrder: 'asc' } },
   },
 })
 type PlaceDetailRow = Prisma.PlaceGetPayload<typeof detailArgs>
@@ -171,6 +191,17 @@ function toPlaceDetailView(row: PlaceDetailRow): PlaceDetailView {
       isPrimary: img.isPrimary,
     })),
     tags: row.tags.map((pt) => ({ slug: pt.tag.slug, name: pt.tag.name, layer: pt.tag.layer })),
+    // Badge del hijo solo si el padre está publicado (su ficha es navegable).
+    parent:
+      row.parent && row.parent.status === $Enums.PlaceStatus.PUBLISHED
+        ? { slug: row.parent.slug, name: row.parent.name }
+        : undefined,
+    children: row.children.map(toPlaceCardView),
+    points: row.points.map((pt) => ({
+      name: pt.name,
+      description: pt.description ?? undefined,
+      kind: pt.kind ?? undefined,
+    })),
   }
 }
 
@@ -209,6 +240,17 @@ export class PrismaPlaceRepository implements PlaceRepository {
           credit: img.credit ?? null,
           isPrimary: img.isPrimary,
           sortOrder: img.sortOrder,
+        })),
+      }),
+      this.prisma.placePoint.deleteMany({ where: { placeId: place.id } }),
+      this.prisma.placePoint.createMany({
+        data: place.points.map((pt) => ({
+          id: pt.id,
+          placeId: place.id,
+          name: pt.name,
+          description: pt.description ?? null,
+          kind: pt.kind ?? null,
+          sortOrder: pt.sortOrder,
         })),
       }),
       this.prisma.placeTag.deleteMany({ where: { placeId: place.id } }),
@@ -256,6 +298,34 @@ export class PrismaPlaceRepository implements PlaceRepository {
       score: r.score,
       updatedAt: r.updatedAt,
     }))
+  }
+
+  // Opciones de "lugar padre" para el form: todos los lugares, ordenados por nombre.
+  // El form excluye el propio lugar (edición); el use case rechaza ciclos.
+  async listForParentOptions(): Promise<PlaceParentOption[]> {
+    return this.prisma.place.findMany({
+      orderBy: { name: 'asc' },
+      select: { id: true, name: true },
+    })
+  }
+
+  // Cadena de ancestros (padre, abuelo, …) recorriendo parentId hacia arriba. Tope
+  // defensivo por si quedara un ciclo en datos (no debería: el dominio lo impide).
+  async findAncestorIds(placeId: string): Promise<string[]> {
+    const ancestors: string[] = []
+    let currentId: string | null = placeId
+    const MAX_DEPTH = 50
+    for (let i = 0; i < MAX_DEPTH && currentId; i++) {
+      const row: { parentId: string | null } | null = await this.prisma.place.findUnique({
+        where: { id: currentId },
+        select: { parentId: true },
+      })
+      const nextParentId: string | null = row?.parentId ?? null
+      if (!nextParentId || ancestors.includes(nextParentId)) break
+      ancestors.push(nextParentId)
+      currentId = nextParentId
+    }
+    return ancestors
   }
 
   // "Relacionados" sin IA (D.6): similitud por categoría + comuna + tags compartidos.

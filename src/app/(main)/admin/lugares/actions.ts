@@ -29,6 +29,12 @@ const optionalNumber = z.preprocess(emptyToUndef, z.coerce.number().optional())
 const optionalEnum = <const T extends [string, ...string[]]>(values: T) =>
   z.preprocess(emptyToUndef, z.enum(values).optional())
 
+const pointSchema = z.object({
+  name: z.string().trim().min(1, 'Cada punto necesita un nombre.'),
+  description: z.preprocess(emptyToUndef, z.string().trim().optional()),
+  kind: z.preprocess(emptyToUndef, z.string().trim().optional()),
+})
+
 const imageSchema = z.object({
   // El host tiene que estar en la allowlist de next/image: una URL de un host no
   // permitido pasa al guardar pero tumba la ficha entera con 500 al renderizar.
@@ -95,8 +101,10 @@ const placeSchema = z
     ),
 
     isPremium: z.boolean().optional().default(false),
+    parentId: optionalText,
     tagIds: z.array(z.string()).optional().default([]),
     images: z.array(imageSchema).optional().default([]),
+    points: z.array(pointSchema).optional().default([]),
   })
   // Categoría secundaria = par (B.5): si va una, va su subcategoría.
   .refine((d) => !d.secondaryCategoryId || Boolean(d.secondarySubcategoryId), {
@@ -149,8 +157,15 @@ function toWriteInput(d: ParsedPlace): PlaceWriteInput {
     googleRating: d.googleRating,
     googleReviewCount: d.googleReviewCount,
     isPremium: d.isPremium,
+    parentId: d.parentId,
     tagIds: d.tagIds,
     images,
+    points: d.points.map((pt, i) => ({
+      name: pt.name,
+      description: pt.description,
+      kind: pt.kind,
+      sortOrder: i,
+    })),
   }
 }
 

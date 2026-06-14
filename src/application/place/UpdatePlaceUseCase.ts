@@ -1,5 +1,6 @@
 import { Score } from '@domain/place/Score'
 import { PlaceNotFoundError } from '@domain/place/errors/PlaceNotFoundError'
+import { PlaceCycleError } from '@domain/place/errors/PlaceCycleError'
 import { PlaceRepository } from '../ports/PlaceRepository'
 import { TagRepository } from '../ports/TagRepository'
 import { PlaceWriteInput } from './PlaceWriteInput'
@@ -16,6 +17,15 @@ export class UpdatePlaceUseCase {
   async execute(placeId: string, input: PlaceWriteInput): Promise<void> {
     const existing = await this.placeRepo.findById(placeId)
     if (!existing) throw new PlaceNotFoundError(placeId)
+
+    // Anti-ciclo transitivo: el padre elegido no puede ser este lugar ni uno de
+    // sus descendientes (sería un ciclo en el árbol de contenedores). El caso
+    // trivial (ser su propio padre) lo cuida el dominio; aquí el transitivo.
+    if (input.parentId) {
+      if (input.parentId === placeId) throw new PlaceCycleError()
+      const ancestors = await this.placeRepo.findAncestorIds(input.parentId)
+      if (ancestors.includes(placeId)) throw new PlaceCycleError()
+    }
 
     const [tags, globalAverage] = await Promise.all([
       this.tagRepo.findByIds(input.tagIds),

@@ -6,6 +6,17 @@ import { ReservationPolicy } from './ReservationPolicy'
 import { RainPolicy } from './RainPolicy'
 import { InvalidPlaceTransitionError } from './errors/InvalidPlaceTransitionError'
 import { TagLimitExceededError } from './errors/TagLimitExceededError'
+import { PlaceCycleError } from './errors/PlaceCycleError'
+
+// Spot sin ficha (mirador, kiosco): contenido editorial que cuelga del Place. Solo
+// se lista bajo "Qué hay en [X]"; no filtra, no tiene reseña ni link propio.
+export interface PlacePoint {
+  readonly id: string
+  readonly name: string
+  readonly description?: string
+  readonly kind?: string
+  readonly sortOrder: number
+}
 
 // Imagen de la galería. Storage propio (nunca base64/hotlink). `credit` = origen.
 export interface PlaceImage {
@@ -71,7 +82,12 @@ export interface PlaceProps {
   readonly ownerId?: string
   readonly status: PlaceStatus
 
+  // Contenedor padre-hijo (un solo padre). El anti-ciclo transitivo lo valida el
+  // use case con el repo; aquí solo se prohíbe ser su propio padre.
+  readonly parentId?: string
+
   readonly images: ReadonlyArray<PlaceImage>
+  readonly points: ReadonlyArray<PlacePoint>
   readonly tags: ReadonlyArray<PlaceTagRef>
 
   readonly createdAt: Date
@@ -111,7 +127,9 @@ export class Place {
   readonly isPremium: boolean
   readonly ownerId?: string
   readonly status: PlaceStatus
+  readonly parentId?: string
   readonly images: ReadonlyArray<PlaceImage>
+  readonly points: ReadonlyArray<PlacePoint>
   readonly tags: ReadonlyArray<PlaceTagRef>
   readonly createdAt: Date
   readonly updatedAt: Date
@@ -155,7 +173,9 @@ export class Place {
     this.isPremium = props.isPremium
     this.ownerId = props.ownerId
     this.status = props.status
+    this.parentId = props.parentId
     this.images = props.images
+    this.points = props.points
     this.tags = props.tags
     this.createdAt = props.createdAt
     this.updatedAt = props.updatedAt
@@ -165,7 +185,16 @@ export class Place {
   // como la creación: una ficha mal formada nunca existe como objeto de dominio.
   static create(props: PlaceProps): Place {
     Place.assertTagLimits(props.tags)
+    Place.assertNotSelfParent(props)
     return new Place(props)
+  }
+
+  // Caso trivial del anti-ciclo: un lugar no puede ser su propio padre. El ciclo
+  // transitivo (A→B→A) lo valida el use case, que sí puede recorrer ancestros.
+  private static assertNotSelfParent(props: PlaceProps): void {
+    if (props.parentId && props.parentId === props.id) {
+      throw new PlaceCycleError()
+    }
   }
 
   private static assertTagLimits(tags: ReadonlyArray<PlaceTagRef>): void {
@@ -256,7 +285,9 @@ export class Place {
       isPremium: this.isPremium,
       ownerId: this.ownerId,
       status: this.status,
+      parentId: this.parentId,
       images: this.images,
+      points: this.points,
       tags: this.tags,
       createdAt: this.createdAt,
       updatedAt: this.updatedAt,

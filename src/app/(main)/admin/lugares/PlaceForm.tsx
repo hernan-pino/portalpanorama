@@ -23,7 +23,7 @@ const BLANK: PlaceFormValues = {
   priceRange: '', reservation: '', paymentMethods: [], schedule: '',
   phone: '', website: '', instagram: '',
   googlePlaceId: '', googleRating: '', googleReviewCount: '',
-  isPremium: false, tagIds: [], images: [],
+  isPremium: false, parentId: '', tagIds: [], images: [], points: [],
 }
 
 function fromInitial(p: PlaceEditView): PlaceFormValues {
@@ -56,12 +56,18 @@ function fromInitial(p: PlaceEditView): PlaceFormValues {
     googleRating: num(p.googleRating),
     googleReviewCount: num(p.googleReviewCount),
     isPremium: p.isPremium,
+    parentId: p.parentId ?? '',
     tagIds: [...p.tagIds],
     images: p.images.map((img) => ({
       url: img.url,
       alt: img.alt ?? '',
       credit: img.credit ?? '',
       isPrimary: img.isPrimary,
+    })),
+    points: p.points.map((pt) => ({
+      name: pt.name,
+      description: pt.description ?? '',
+      kind: pt.kind ?? '',
     })),
   }
 }
@@ -136,6 +142,24 @@ export function PlaceForm({ options, initial }: PlaceFormProps) {
     const cap = LAYER_CAPS[layer]
     if (!selected && cap !== undefined && layerCount(layer) >= cap) return
     set('tagIds', selected ? values.tagIds.filter((t) => t !== id) : [...values.tagIds, id])
+  }
+
+  // ── Contenedor (padre) ──
+  // Un lugar no puede ser su propio padre: en edición se excluye de la lista.
+  const parentOptions = options.parents.filter((p) => p.id !== initial?.id)
+
+  // ── Puntos (spots sin ficha) ──
+  function addPoint() {
+    setValues((v) => ({ ...v, points: [...v.points, { name: '', description: '', kind: '' }] }))
+  }
+  function updatePoint(i: number, field: 'name' | 'description' | 'kind', value: string) {
+    setValues((v) => ({
+      ...v,
+      points: v.points.map((pt, idx) => (idx === i ? { ...pt, [field]: value } : pt)),
+    }))
+  }
+  function removePoint(i: number) {
+    setValues((v) => ({ ...v, points: v.points.filter((_, idx) => idx !== i) }))
   }
 
   // ── Imágenes ──
@@ -495,6 +519,62 @@ export function PlaceForm({ options, initial }: PlaceFormProps) {
           <button type="button" className="btn btn--ghost btn--sm" onClick={addImage}>
             + Agregar imagen
           </button>
+        </div>
+      </section>
+
+      {/* ── Contenedor: padre + spots sin ficha ── */}
+      <section className="admin-form__section">
+        <h3 className="admin-form__legend">Lugar contenedor</h3>
+        <div className="form-row">
+          <label className="form-label" htmlFor="parentId">Pertenece a un lugar mayor</label>
+          <select id="parentId" className="form-input" value={values.parentId}
+            onChange={(e) => set('parentId', e.target.value)}>
+            <option value="">— Ninguno (es un lugar independiente) —</option>
+            {parentOptions.map((p) => <option key={p.id} value={p.id}>{p.name}</option>)}
+          </select>
+          <p className="admin-form__hint">
+            Ej.: el Zoológico pertenece a Parquemet. Solo un nivel; no podés elegir un lugar que ya
+            cuelga de este.
+          </p>
+        </div>
+
+        <div className="form-row">
+          <span className="form-label">Qué hay acá (puntos sin ficha)</span>
+          <p className="admin-form__hint">
+            Miradores, kioscos, “el local donde venden X”: se listan como texto en la ficha, sin
+            ficha propia ni filtro.
+          </p>
+          {values.points.map((pt, i) => (
+            <div key={i} className="admin-img-row">
+              <div className="form-row">
+                <label className="form-label" htmlFor={`pt-name-${i}`}>Nombre *</label>
+                <input id={`pt-name-${i}`} className="form-input" value={pt.name}
+                  onChange={(e) => updatePoint(i, 'name', e.target.value)} placeholder="Mirador Pío Nono" />
+              </div>
+              <div className="admin-img-row__meta">
+                <div className="form-row">
+                  <label className="form-label" htmlFor={`pt-desc-${i}`}>Descripción</label>
+                  <input id={`pt-desc-${i}`} className="form-input" value={pt.description}
+                    onChange={(e) => updatePoint(i, 'description', e.target.value)} />
+                </div>
+                <div className="form-row">
+                  <label className="form-label" htmlFor={`pt-kind-${i}`}>Tipo (opcional)</label>
+                  <input id={`pt-kind-${i}`} className="form-input" value={pt.kind}
+                    onChange={(e) => updatePoint(i, 'kind', e.target.value)} placeholder="mirador" />
+                </div>
+              </div>
+              <div className="admin-img-row__foot">
+                <button type="button" className="btn btn--ghost btn--sm" onClick={() => removePoint(i)}>
+                  Quitar
+                </button>
+              </div>
+            </div>
+          ))}
+          <div>
+            <button type="button" className="btn btn--ghost btn--sm" onClick={addPoint}>
+              + Agregar punto
+            </button>
+          </div>
         </div>
       </section>
 

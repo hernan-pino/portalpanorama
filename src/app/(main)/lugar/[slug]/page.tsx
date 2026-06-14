@@ -7,6 +7,7 @@ import { container } from '@lib/container'
 import type { PlaceDetailView, PlaceCardView } from '@application/ports/PlaceRepository'
 import { PlaceNotFoundError } from '@domain/place/errors/PlaceNotFoundError'
 import { Collection } from '@domain/collection/Collection'
+import { PlaceCard } from '@components/place/PlaceCard'
 import { Gallery } from './Gallery'
 import { SaveButton } from './SaveButton'
 import { ShareButton } from './ShareButton'
@@ -138,6 +139,12 @@ export default async function LugarPage({ params }: PageProps) {
             <span>{place.neighborhood ? `${place.neighborhood.name} · ` : ''}{place.commune.name}</span>
           </div>
 
+          {place.parent && (
+            <Link href={`/lugar/${place.parent.slug}`} className="ficha__parent">
+              Parte de {place.parent.name} ↗
+            </Link>
+          )}
+
           {place.googleRating != null && (
             <div className="ficha__rating">
               <Stars value={place.googleRating} />
@@ -242,6 +249,30 @@ export default async function LugarPage({ params }: PageProps) {
                 <ContactRow icon={<MenuIcon />} k="Menú" v="Ver la carta" href={place.menuUrl} />
               )}
             </div>
+          </div>
+        )}
+
+        {/* qué hay en este lugar (contenedor): hijos-con-ficha + spots sin ficha */}
+        {(place.children.length > 0 || place.points.length > 0) && (
+          <div className="ficha__section">
+            <h2 className="ficha__sec-h">Qué hay en {place.name}</h2>
+            {place.children.length > 0 && (
+              <div className="ficha__children">
+                {place.children.map((c) => (
+                  <PlaceCard key={c.id} place={c} variant="list" />
+                ))}
+              </div>
+            )}
+            {place.points.length > 0 && (
+              <ul className="ficha__points">
+                {place.points.map((pt, i) => (
+                  <li key={i} className="ficha__point">
+                    <span className="ficha__point-name">{pt.name}</span>
+                    {pt.description && <span className="ficha__point-desc">{pt.description}</span>}
+                  </li>
+                ))}
+              </ul>
+            )}
           </div>
         )}
 

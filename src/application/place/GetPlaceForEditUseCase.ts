@@ -43,8 +43,11 @@ export interface PlaceEditView {
 
   isPremium: boolean
 
+  parentId?: string
+
   tagIds: string[]
   images: { url: string; alt?: string; credit?: string; isPrimary: boolean; sortOrder: number }[]
+  points: { name: string; description?: string; kind?: string; sortOrder: number }[]
 }
 
 // Carga el agregado y lo aplana al DTO del form. Lanza si no existe (la ruta
@@ -87,6 +90,7 @@ export class GetPlaceForEditUseCase {
       googleRating: place.googleRating,
       googleReviewCount: place.googleReviewCount,
       isPremium: place.isPremium,
+      parentId: place.parentId,
       tagIds: place.tags.map((t) => t.id),
       images: place.images.map((img) => ({
         url: img.url,
@@ -94,6 +98,12 @@ export class GetPlaceForEditUseCase {
         credit: img.credit,
         isPrimary: img.isPrimary,
         sortOrder: img.sortOrder,
+      })),
+      points: place.points.map((pt) => ({
+        name: pt.name,
+        description: pt.description,
+        kind: pt.kind,
+        sortOrder: pt.sortOrder,
       })),
     }
   }

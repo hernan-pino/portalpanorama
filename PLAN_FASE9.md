@@ -311,8 +311,16 @@
       `PlaceTag` huérfanos) y es "sesión dedicada". Contenedor+spots es estructural, acotado, y **desbloquea cargar
       Parquemet/MUT ahora** → va primero, como ítem de la **Etapa 5**.
     - **Plan de implementación:** schema → dominio (anti-ciclo) → form admin (selector de padre + editor de puntos) →
-      ficha del padre (2 secciones) → ficha del hijo (badge). **Estado: definido y aprobado; aún NO construido (falta OK
-      para arrancar el código).**
+      ficha del padre (2 secciones) → ficha del hijo (badge).
+    - **✅ CONSTRUIDA (2026-06-14).** Schema: `Place.parentId` self-relation (`PlaceContainer`, `onDelete: SetNull`,
+      `@@index`) + tabla `PlacePoint`. Dominio: `PlaceCycleError` + `assertNotSelfParent` en `Place.create`; el ciclo
+      transitivo lo valida `UpdatePlaceUseCase` con `PlaceRepository.findAncestorIds`. Read-model `getDetailBySlug` ahora
+      trae `parent` (badge solo si el padre está PUBLISHED), `children` (hijos PUBLISHED como `PlaceCardView`) y `points`;
+      `GetPlaceFormOptions` suma `listForParentOptions` (recibe `placeRepo` por DI). Form: sección "Lugar contenedor"
+      (select de padre, excluye el propio en edición) + editor de puntos repetible; Zod valida `parentId`/`points`. Ficha:
+      badge "Parte de [X] ↗" en el head del hijo + sección "Qué hay en [X]" (PlaceCard lista + lista de spots) con CSS
+      nuevo (`.ficha__parent/__children/__points`). `tsc` limpio, `db push` no destructivo, seed idempotente OK. Pendiente:
+      probar un caso real (Parquemet) por el form y el push a prod.
   - **Bug de registro encontrado y ARREGLADO (2026-06-12, verificado e2e):** el registro creaba el usuario y DESPUÉS
     explotaba con 500 al enviar el correo de bienvenida (`RESEND_API_KEY` vacío en local) → la persona veía un error,
     al reintentar "email ya registrado", pero su cuenta sí servía. Fix en

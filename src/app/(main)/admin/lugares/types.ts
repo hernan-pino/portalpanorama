@@ -9,6 +9,13 @@ export interface PlaceImageValues {
   isPrimary: boolean
 }
 
+// Spot sin ficha (mirador/kiosco). sortOrder se deriva del índice en el array.
+export interface PlacePointValues {
+  name: string
+  description: string
+  kind: string
+}
+
 export interface PlaceFormValues {
   name: string
   description: string
@@ -44,8 +51,11 @@ export interface PlaceFormValues {
 
   isPremium: boolean
 
+  parentId: string
+
   tagIds: string[]
   images: PlaceImageValues[]
+  points: PlacePointValues[]
 }
 
 // ── Etiquetas de enums (presentación) para los <select> del form ──

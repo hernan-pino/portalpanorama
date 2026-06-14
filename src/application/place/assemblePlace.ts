@@ -50,6 +50,7 @@ export function assemblePlace(params: {
     isPremium: input.isPremium ?? false,
     ownerId: input.ownerId,
     status: params.status,
+    parentId: input.parentId,
     images: input.images.map((img) => ({
       id: createId(),
       url: img.url,
@@ -57,6 +58,13 @@ export function assemblePlace(params: {
       credit: img.credit,
       isPrimary: img.isPrimary,
       sortOrder: img.sortOrder,
+    })),
+    points: input.points.map((pt) => ({
+      id: createId(),
+      name: pt.name,
+      description: pt.description,
+      kind: pt.kind,
+      sortOrder: pt.sortOrder,
     })),
     tags: params.tags,
     createdAt: params.createdAt,

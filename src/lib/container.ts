@@ -141,7 +141,7 @@ export const container = {
   },
 
   getGetPlaceFormOptionsUseCase() {
-    return new GetPlaceFormOptionsUseCase(categoryRepo, tagRepo, locationRepo)
+    return new GetPlaceFormOptionsUseCase(categoryRepo, tagRepo, locationRepo, placeRepo)
   },
 
   getCreatePlaceUseCase() {

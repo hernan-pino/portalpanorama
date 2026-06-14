@@ -37,31 +37,34 @@ priorizado. Se actualiza cada vez que avanzamos. Liviano a propósito — para r
 ## ▶️ Próximos pasos (en orden)
 
 1. **Cargar ~5 lugares reales a mano** por el form de admin, para validar el flujo end-to-end con
-   contenido de verdad. (NO 100 a mano — el grueso va por CSV.)
+   contenido de verdad (incl. un caso contenedor real: Parquemet → Cerro/Zoo). (NO 100 a mano — el
+   grueso va por CSV.)
 2. **Push a prod (Neon):** migración + seed de catálogos en la BD de producción + redeploy con la
    presentation nueva. Setear `RESEND_API_KEY` real (si no, la bienvenida no se envía).
-3. **Construir la feature de contenedores** (ver abajo) — desbloquea cargar Parquemet/MUT bien.
-4. **Importador CSV** (ítem h) — habilita el ritmo de ~20/semana hasta ~100.
+3. **Importador CSV** (ítem h) — habilita el ritmo de ~20/semana hasta ~100.
 
 ---
 
-## 🧩 Feature decidida por construir — Lugares contenedores + spots (2026-06-13)
+## 🧩 Feature lugares contenedores + spots — ✅ CONSTRUIDA (2026-06-14)
 
 Caso real al cargar fichas: Parquemet contiene Cerro San Cristóbal / Zoológico; el MUT contiene
-locales. Se modela en **dos niveles**, sin reintroducir "tipo" de Place (el padre es un Place normal
-que además agrupa). Detalle y razonamiento completo en [PLAN_FASE9.md](PLAN_FASE9.md) (bullet "DECISIÓN
-CERRADA — Lugares contenedores").
+locales. Se modeló en **dos niveles**, sin reintroducir "tipo" de Place (el padre es un Place normal
+que además agrupa). Razonamiento en [PLAN_FASE9.md](PLAN_FASE9.md) (bullet "DECISIÓN CERRADA — Lugares
+contenedores"). **Compila y reseed local OK; falta probarla cargando un caso real (Parquemet) por el
+form, y va a prod con el push.**
 
 1. **Hijos CON ficha** (Zoo, Cerro: tienen rating/horario y filtran solos) → `Place.parentId String?`
-   self-relation, **cardinalidad 1**, `onDelete: SetNull`, invariante anti-ciclo. UI: **1 nivel** (padre
-   directo + hijos directos). En la ficha del padre van como `PlaceCard` **variante lista** (sección
-   propia, distinta de "También te puede gustar"). En la ficha del hijo: badge "Parte de [X] ↗".
+   self-relation, **cardinalidad 1**, `onDelete: SetNull`. Anti-ciclo: self-parent en el dominio +
+   chequeo transitivo de ancestros en `UpdatePlaceUseCase` (`findAncestorIds`). UI: **1 nivel**. En la
+   ficha del padre van como `PlaceCard` **variante lista** bajo "Qué hay en [X]" (distinta de "También
+   te puede gustar"). En la ficha del hijo: badge "Parte de [X] ↗" (solo si el padre está publicado).
 2. **Spots SIN ficha** (miradores, kioscos) → tabla `PlacePoint { id, placeId, name, description?,
-   kind?, sortOrder }` (tabla, no JSON). **Cuelgan de cualquier Place, incluido un hijo.** Lista de
-   texto, sin filtro/reseña/link, agrupada con los hijos bajo "Qué hay en [X]".
+   kind?, sortOrder }`. **Cuelgan de cualquier Place, incluido un hijo.** Lista de texto, sin
+   filtro/reseña/link, agrupada con los hijos bajo "Qué hay en [X]".
 
-**Plan de implementación:** schema (`parentId` + `PlacePoint`) → dominio (anti-ciclo) → form admin
-(selector de padre + editor de puntos) → ficha padre (2 secciones) → ficha hijo (badge).
+**Qué quedó pendiente / cómo afinarlo:** el selector de padre del form lista todos los lugares y solo
+excluye el propio (en edición); los ciclos transitivos los rechaza el servidor con mensaje, no la UI.
+Los hijos del padre se muestran solo si están PUBLISHED.
 
 ---
 

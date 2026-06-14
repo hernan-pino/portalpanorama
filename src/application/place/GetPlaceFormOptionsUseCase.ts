@@ -1,5 +1,6 @@
 import { CategoryOption, CategoryRepository } from '../ports/CategoryRepository'
 import { TagOption, TagRepository } from '../ports/TagRepository'
+import { PlaceParentOption, PlaceRepository } from '../ports/PlaceRepository'
 import {
   CommuneOption,
   LocationRepository,
@@ -16,6 +17,9 @@ export interface PlaceFormOptions {
   communes: CommuneOption[]
   neighborhoods: NeighborhoodOption[]
   metroStations: MetroStationOption[]
+  // Lugares candidatos a "padre" (selector de contenedor). Incluye todos; el form
+  // excluye el propio lugar en edición y el servidor rechaza ciclos transitivos.
+  parents: PlaceParentOption[]
 }
 
 export class GetPlaceFormOptionsUseCase {
@@ -23,16 +27,18 @@ export class GetPlaceFormOptionsUseCase {
     private readonly categoryRepo: CategoryRepository,
     private readonly tagRepo: TagRepository,
     private readonly locationRepo: LocationRepository,
+    private readonly placeRepo: PlaceRepository,
   ) {}
 
   async execute(): Promise<PlaceFormOptions> {
-    const [categories, tags, communes, neighborhoods, metroStations] = await Promise.all([
+    const [categories, tags, communes, neighborhoods, metroStations, parents] = await Promise.all([
       this.categoryRepo.listForForm(),
       this.tagRepo.listAll(),
       this.locationRepo.listCommunes(),
       this.locationRepo.listNeighborhoods(),
       this.locationRepo.listMetroStations(),
+      this.placeRepo.listForParentOptions(),
     ])
-    return { categories, tags, communes, neighborhoods, metroStations }
+    return { categories, tags, communes, neighborhoods, metroStations, parents }
   }
 }

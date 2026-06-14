@@ -325,6 +325,11 @@ model Place {
   ownerId   String?
   status    PlaceStatus @default(PENDING_REVIEW)
 
+  // Lugar contenedor (padre-hijo): un Place puede agrupar a otros Places-con-ficha
+  // (Parquemet → Cerro/Zoo). Self-relation cardinalidad 1; archivar el padre NO
+  // borra los hijos (SetNull). El anti-ciclo lo cuida el dominio + use case.
+  parentId String?
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -336,8 +341,11 @@ model Place {
   neighborhood         Neighborhood? @relation(fields: [neighborhoodId], references: [id])
   metroStation         MetroStation? @relation(fields: [metroStationId], references: [id])
   owner                User?         @relation("PlaceOwner", fields: [ownerId], references: [id])
+  parent               Place?        @relation("PlaceContainer", fields: [parentId], references: [id], onDelete: SetNull)
+  children             Place[]       @relation("PlaceContainer")
 
   images          PlaceImage[]
+  points          PlacePoint[]
   tags            PlaceTag[]
   events          Event[]
   collectionItems CollectionItem[]
@@ -352,6 +360,23 @@ model Place {
   @@index([priceRange, status])
   @@index([score(sort: Desc)])
   @@index([ownerId])
+  @@index([parentId])
+}
+
+// Spot SIN ficha (mirador, kiosco, "el local donde venden X"): contenido editorial
+// que cuelga de CUALQUIER Place (incluido un hijo). Sin filtro/reseña/link — solo
+// se lista bajo "Qué hay en [X]". Tabla (no JSON) para editarlos como filas.
+model PlacePoint {
+  id          String  @id
+  placeId     String
+  name        String
+  description String? @db.Text
+  kind        String? // etiqueta libre opcional ("mirador", "kiosco")
+  sortOrder   Int     @default(0)
+
+  place Place @relation(fields: [placeId], references: [id], onDelete: Cascade)
+
+  @@index([placeId, sortOrder])
 }
 
 model PlaceImage {

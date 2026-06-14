@@ -12,6 +12,14 @@ export interface PlaceImageInput {
   sortOrder: number
 }
 
+// Spot sin ficha entrante (sin id; el use case lo genera).
+export interface PlacePointInput {
+  name: string
+  description?: string
+  kind?: string
+  sortOrder: number
+}
+
 // Forma de escritura de un Place (admin). Comparte create y update; el form de
 // presentation valida con Zod antes de llegar acá.
 export interface PlaceWriteInput {
@@ -50,6 +58,10 @@ export interface PlaceWriteInput {
   isPremium?: boolean
   ownerId?: string
 
+  // Contenedor: id del Place padre (Parquemet) si este lugar cuelga de otro.
+  parentId?: string
+
   tagIds: string[]
   images: PlaceImageInput[]
+  points: PlacePointInput[]
 }

@@ -51,6 +51,18 @@ export interface PlaceDetailView {
   score: number
   images: { url: string; alt?: string; credit?: string; isPrimary: boolean }[]
   tags: { slug: string; name: string; layer: string }[]
+  // Contenedor padre-hijo (un solo nivel en pantalla). `parent` solo si está
+  // publicado (su ficha es navegable). `children` = hijos-con-ficha publicados.
+  // `points` = spots sin ficha (mirador/kiosco) listados bajo "Qué hay en [X]".
+  parent?: { slug: string; name: string }
+  children: PlaceCardView[]
+  points: { name: string; description?: string; kind?: string }[]
+}
+
+// Opción de "lugar padre" para el selector del form de admin.
+export interface PlaceParentOption {
+  id: string
+  name: string
 }
 
 // Fila mínima para el recálculo batch del score bayesiano.
@@ -87,6 +99,12 @@ export interface PlaceRepository {
   // ── Admin ──
   // Todos los lugares (cualquier estado) para la tabla del panel.
   listForAdmin(): Promise<PlaceAdminRow[]>
+
+  // Lugares candidatos a ser "padre" en el selector del form (id + nombre).
+  listForParentOptions(): Promise<PlaceParentOption[]>
+
+  // Cadena de ids ancestros de un lugar (padre, abuelo, …), para el anti-ciclo.
+  findAncestorIds(placeId: string): Promise<string[]>
 
   // ── Reputación (decisión 2.5) ──
   // Promedio global publicado (prior `C` del bayesiano).
