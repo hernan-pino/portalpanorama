@@ -5,9 +5,9 @@ Referencia arquitectónica del proyecto. Para reglas de estilo y antipatrones ve
 [`SCHEMA.md`](SCHEMA.md). Este documento cubre **capas, bounded contexts, puertas, eventos y
 reglas de dominio**.
 
-> **Estado (Fase 9):** el `schema.prisma` ya es el modelo nuevo (`Place` + `Event`). El código de
-> `domain/`, `application/`, `app/` y `components/` **todavía está sobre el modelo viejo `Listing`**;
-> su migración es la **Etapa 4**. La estructura de abajo es el **objetivo** de esa etapa.
+> **Estado (Fase 9):** migración a `Place` + `Event` **completa** (Etapa 4 ✅). `domain/`,
+> `application/`, `app/` y `components/` ya operan sobre el modelo nuevo y la app compila. La
+> estructura de abajo refleja el estado actual del código, no un objetivo pendiente.
 
 ---
 
@@ -83,7 +83,7 @@ La ficha (`Place`) y todo lo que la clasifica y la hace filtrable/buscable.
 **Entidades:** `Place`, `PlaceImage`, `Category`, `Subcategory`, `Tag`, `Commune`, `Neighborhood`,
 `MetroLine`, `MetroStation`.
 **Value Objects / lógica:** `Slug`, `PriceRange`, `ReservationPolicy`, `RainPolicy`, **cálculo de
-`score`** (promedio bayesiano, ver `SCHEMA.md`), límites/exclusiones de tags (social máx 4, vibe máx 3).
+`score`** (promedio bayesiano, ver `SCHEMA.md`), límites de tags por capa (AUDIENCE máx 4, OCCASION máx 3, VIBE máx 3).
 **Eventos:** `PlacePublished`, `PlaceUpdated`.
 **Use Cases:** CreatePlace, UpdatePlace, PublishPlace, GetPlaceBySlug, SearchPlaces (facetas con
 contadores + orden por `score`), GetRelatedPlaces (tags+categoría+comuna, sin IA), RecalculateScores,
@@ -147,7 +147,7 @@ se enciende con la estrategia de eventos (ver `PLAN_FASE9.md`).
 |-------|-------------------|
 | `score` = promedio bayesiano (m=50), recalculado al cargar/editar | `domain/place` (cálculo) + columna `Place.score` |
 | Categoría + subcategoría principal obligatorias; secundaria opcional | Invariante de `Place` (4 FKs, ver `SCHEMA.md` 2.2) |
-| Tags: contexto social máx 4 · vibe máx 3 · exclusiones mutuas | `Place.addTag()` valida límites por `TagLayer` |
+| Tags: AUDIENCE máx 4 · OCCASION máx 3 · VIBE máx 3 (objetivas sin tope) · exclusiones mutuas | `Place.create()` valida límites por `TagLayer` |
 | Reserva = campo estructurado, NO tag ("Sin reserva" = `WALK_IN`) | `Place.reservation` (`ReservationPolicy`) |
 | `rainPolicy` solo aplica a categorías al aire libre | Validación en CreatePlace/UpdatePlace |
 | Una reseña por (target, usuario) | `@@unique([targetType, targetId, userId])` + error de dominio |
@@ -182,6 +182,7 @@ tabla `Account` sin tocar el schema).
 - Email/password (credentials provider, hash bcrypt en `User.passwordHash`).
 - Sesión en BD (`@auth/prisma-adapter`); `session.user` incluye `id`, `email`, `role`, disponible
   en RSC vía `auth()`.
-- **Verificación de email:** pendiente de decidir si se exige en MVP o se difiere (flujo, Etapa 4).
-- Protección de rutas: `/mi-cuenta/*` y `/admin/*` → middleware de Auth.js que redirige a `/login`;
-  `/admin/*` además exige `role === ADMIN`.
+- **Verificación de email:** diferida (puerta abierta; el campo `emailVerified` existe sin gatear).
+- Protección de rutas: se hace en el **layout** del grupo (`auth()` en el Server Component que
+  redirige a `/login`; `/admin/*` además exige `role === ADMIN`) **y se re-chequea en cada Server
+  Action** (`isAdmin()` / sesión). No hay `middleware.ts`: el layout + la action son la defensa.

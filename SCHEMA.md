@@ -5,8 +5,8 @@ Documentación legible del `schema.prisma` nuevo. Fuente de verdad del código:
 Las decisiones de diseño detrás de cada elección están en
 [`PLAN_FASE9.md`](PLAN_FASE9.md) → "Etapa 2 — decisiones de diseño".
 
-**Última actualización:** 2026-06-07 · **Estado:** escrito y validado (`prisma format` + `validate` ✅),
-**aún no migrado a la BD** (eso es la Etapa 3).
+**Última actualización:** 2026-06-15 · **Estado:** migrado a la BD local (`prisma db push`) y en uso
+por toda la app (dominio + UI). Pendiente solo el push a la BD de producción.
 
 ---
 
@@ -33,7 +33,7 @@ Las decisiones de diseño detrás de cada elección están en
 | `ReservationPolicy` | `REQUIRED` · `WALK_IN` · `RECOMMENDED` | **Única fuente de verdad de la reserva** (no hay tag). "Sin reserva" = `WALK_IN`. |
 | `RainPolicy` | `SUSPENDED` · `RELOCATED` · `CONTINUES` | Solo categorías al aire libre. |
 | `PlaceStatus` | `PENDING_REVIEW` · `PUBLISHED` · `ARCHIVED` | |
-| `TagLayer` | `SOCIAL` · `SPECIFIC` · `ACCESS` · `VIBE` | Las 4 capas del sistema de tags. |
+| `TagLayer` | `AUDIENCE` · `OCCASION` · `VIBE` · `EXPERIENCE` · `SERVICE` · `SPECIFIC` | **6 capas** (rediseño 2026-06-14). Topes solo en las subjetivas: AUDIENCE máx 4 · OCCASION máx 3 · VIBE máx 3. Las objetivas (EXPERIENCE/SERVICE/SPECIFIC) sin tope. |
 | `ReviewTarget` | `PLACE` · `DISH` · `EVENT` | Objetivo reseñado extensible (hoy solo PLACE). |
 | `ReportReason` | `WRONG_INFO` · `CLOSED` · `DUPLICATE` · `OTHER` | |
 | `ReportStatus` | `OPEN` · `RESOLVED` · `DISMISSED` | |
@@ -76,7 +76,8 @@ El MVP usa email + contraseña (`User.passwordHash`); Google/Apple post-MVP entr
 | Categorización | `categoryId` + `subcategoryId` **(obligatorias)** · `secondaryCategoryId?` + `secondarySubcategoryId?` **(opcionales)** — 4 FKs |
 | Ubicación | `address?` · `communeId` · `neighborhoodId?` · `lat?` · `lng?` · `metroStationId?` · `accessDetail?` · `reference?` · `rainPolicy?` |
 | Presupuesto / operacional | `priceRange?` · `reservation?` · `paymentMethods String[]` · `schedule?` (texto libre) |
-| Contacto | `phone?` · `website?` · `instagram?` |
+| Contacto / redes | `phone?` · `website?` · `instagram?` (red principal) · `socialLinks?` (JSON `[{network,url}]` — WhatsApp/Facebook/TikTok…, informativo, no filtrable) |
+| Contenedor | `parentId?` (self-relation 1 nivel; Parquemet → Cerro/Zoo). Hijos-con-ficha vía relación; spots sin ficha vía `PlacePoint` |
 | Reputación Google | `googlePlaceId? @unique` · `googleRating?` · `googleReviewCount?` |
 | Reputación calculada | `score Float` (promedio bayesiano, ver abajo) |
 | Propiedad / estado | `isPremium` (default false) · `ownerId?` · `status PlaceStatus` |
@@ -111,13 +112,14 @@ fijo). Categoría **propia** (puede diferir de la del local).
 
 ### Catálogos
 
-- **`Category`** (7) — `slug` · `name` · `sortOrder` · `isActive` (se muestra en UI) · `eventOnly`
-  (Shows/Ferias/Talleres: registradas pero apagadas hasta encender eventos).
+- **`Category`** (8, rediseño 2026-06-14) — `slug` · `name` · `sortOrder` · `isActive` (se muestra en
+  UI) · `eventOnly` (Shows/Ferias/Talleres: registradas pero apagadas hasta encender eventos). Activas
+  al lanzar: Gastronomía, Naturaleza y aire libre, Arte y cultura, Locales y tiendas, Entretenimiento.
 - **`Subcategory`** — `slug` · `name` · `categoryId`. Unique `(categoryId, slug)`.
 - **`Tag`** — `slug @unique` · `name` · `layer TagLayer` · `categoryId?` (**null = universal**,
   seteado = condicional a esa categoría, ej. "tipo de cocina" → Gastronomía). Join **`PlaceTag`**.
-  Límites (social máx 4, vibe máx 3) y exclusiones (recurrente↔único, +18↔todas las edades) viven
-  en **dominio**, no en el schema.
+  Límites por capa (AUDIENCE máx 4, OCCASION máx 3, VIBE máx 3) y exclusiones mutuas viven en
+  **dominio** (`Place.create`), no en el schema.
 - **`MetroLine`** — `code @unique` (L1…L6) · `name` · `color` (hex). **`MetroStation`** —
   `slug @unique` · `name` · `lat?` · `lng?`. Relación **many-to-many** (Baquedano = L1+L5).
 - **`Commune`** — `slug @unique` · `name`. **`Neighborhood`** — `slug @unique` · `name` ·
@@ -152,6 +154,6 @@ L4 Azul `#004F9F` · L4A Celeste `#009CDE` · L5 Verde `#00A651` · L6 Morada `#
 `ListingStatus`, `ClaimStatus`, `SubscriptionStatus`, `TagStatus`, `FeedItemType`; roles
 `CONSUMER`/`BUSINESS_OWNER`. Todo vuelve con el self-service de negocios post-MVP.
 
-> ⚠️ El schema **rompe** `domain/`, `application/`, `app/`, `components/`, el seed y el container
-> (todos referencian `Listing`/`prisma.listing`). Adaptarlos es la **Etapa 4**. El cliente Prisma
-> generado sigue siendo el viejo hasta correr la migración (Etapa 3).
+> ✅ La migración a `Place` (Etapa 4) está **hecha**: `domain/`, `application/`, `app/`, `components/`,
+> el seed y el container ya operan sobre el modelo nuevo y la app compila. El cliente Prisma generado
+> es el nuevo. Queda solo el push a la BD de producción.

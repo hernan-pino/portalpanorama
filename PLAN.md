@@ -8,7 +8,7 @@ priorizado. Se actualiza cada vez que avanzamos. Liviano a propósito — para r
 - **Modelo de datos:** [SCHEMA.md](SCHEMA.md) · **Capas:** [ARCHITECTURE.md](ARCHITECTURE.md) · **Carga:** [PLANTILLA_CSV.md](PLANTILLA_CSV.md)
 - **Bitácora del rediseño (historia + razonamiento de las decisiones):** [PLAN_FASE9.md](PLAN_FASE9.md)
 
-**Última actualización:** 2026-06-14
+**Última actualización:** 2026-06-15
 
 ---
 
@@ -31,6 +31,32 @@ priorizado. Se actualiza cada vez que avanzamos. Liviano a propósito — para r
   (incl. `vida nocturna`) · `SERVICE` · `SPECIFIC`. Topes solo en las subjetivas. Decisión registrada:
   cuando se enciendan Eventos, un Place podrá tener su cartelera en su propia ficha (como las fichas
   hijo). Código migrado (12 archivos, compila) + BD local reseedeada. Detalle en [PRD.md](PRD.md).
+- **Tests de dominio (2026-06-15) ✅:** primera suite real — **59 tests Vitest** (puros, sin BD,
+  <1s) sobre las invariantes críticas: `Score.bayesian` (orden por defecto de la búsqueda), topes de
+  tags por capa, anti-ciclo de contenedores, transiciones de estado de `Place`, ownership de
+  colecciones (anti-IDOR), VOs `Slug`/`Email` y matching fuzzy. Colocados como `*.test.ts` junto al
+  código. Corre con `npm test` o la skill **`/tests`**. Typecheck y `next build` siguen limpios.
+
+---
+
+## 🔎 Auditoría de código (2026-06-15)
+
+Revisión objetiva completa (arquitectura, BD, flujo, seguridad). **Veredicto: el código está bien** —
+capas hexagonales respetadas de punta a punta, typecheck limpio, build OK, auth y ownership sólidos
+(sin IDOR). Lo que falta no son bugs sino **infra de lanzamiento** + **drift de docs**. Hallazgos
+volcados al backlog y al checklist de abajo. Los principales:
+
+- **SEO de ficha inexistente** (era diferenciador del producto): sin JSON-LD, sin `sitemap.ts`/
+  `robots.ts`, sin canonical/OG, y **todo renderiza dinámico** (no hay ISR pese a lo que dice
+  ARCHITECTURE.md → "SEO"). Ítem (e), ahora bloqueante.
+- **Drift de documentación** (corregir; confunde a quien retome con la skill `retomar`):
+  `SCHEMA.md` aún describe 4 capas de tags y 7 categorías (real: **6 capas, 8 categorías**);
+  el comentario header de `schema.prisma:15` dice "4 capas"; `ARCHITECTURE.md` afirma que el código
+  "todavía está sobre `Listing`" (falso, ya migrado) y que las rutas se protegen por `middleware`
+  (no existe `middleware.ts`; se hace por layout + re-chequeo en cada action). `lib/config.ts` es
+  **código muerto** (nadie lo importa; expone `flowPlanId` de Flow, parqueado) → borrar.
+- **Sin rate-limiting** en `reportPlaceAction` (anónimo puede spamear) ni en registro (bots).
+- **Faltan `error.tsx` / `loading.tsx` / `not-found.tsx` custom** (solo el default de Next).
 
 ---
 
@@ -74,9 +100,23 @@ Los hijos del padre se muestran solo si están PUBLISHED.
 - **(p) Definir el flujo de imágenes** (¿link pegado vs. subida? ¿dónde se guardan?). Hoy el form pide
   URL pegada; existe `UploadThingStorageService` sin widget; la allowlist permite Unsplash + Vercel
   Blob, NO `utfs.io`. **Bloqueante de calidad** (fotos reales del local, no solo Unsplash). Incluye (a').
-- **(g) Footer Legal → `/terminos` y `/privacidad` dan 404.** La página de privacidad/cookies es
-  obligatoria (Ley 19.628 + instrumentación GA4/Pixel). Crear placeholders o quitar la columna.
-- **(e) SEO de la ficha:** JSON-LD `LocalBusiness` + metadata rica (canonical, og). Pasada aparte.
+- **(g) Páginas legales ✅ HECHO (2026-06-15)** — `/terminos` y `/privacidad` creadas con contenido
+  real (Ley 19.628: datos, cookies, derechos ARCO, contacto). **Pendiente: revisión por abogado**
+  antes de lanzar (hoy es un borrador sólido, no texto legal validado).
+- **(e) SEO de la ficha:** ✅ **HECHO (2026-06-15)** — JSON-LD `LocalBusiness` (con address/geo/
+  aggregateRating/sameAs), metadata rica (canonical + OpenGraph + Twitter), `metadataBase` global,
+  `sitemap.ts` (rutas estáticas + un `<url>` por lugar publicado, vía use case nuevo) y `robots.ts`
+  (bloquea admin/cuenta/api/auth). Verificado en runtime. **Falta solo (e.2): revisar ISR** — hoy
+  `/lugar/[slug]` renderiza dinámico porque `auth()` en la ficha fuerza dynamic; para cachear habría
+  que separar la parte pública (cacheable) de la personalizada (botón Guardar / registrar visita).
+- **(q) Docs desincronizados ✅ HECHO (2026-06-15)** — `SCHEMA.md` (6 capas / 8 cats + socialLinks +
+  contenedores + ya migrado), header y comentarios de `schema.prisma`, `ARCHITECTURE.md` (código
+  migrado + protección por layout/action). `lib/config.ts` borrado.
+- **(r) Páginas de error/estado ✅ HECHO (2026-06-15)** — `error.tsx`, `loading.tsx`, `not-found.tsx`
+  custom con el estilo del sitio (`.status-screen`).
+- **(s) Rate-limiting ✅ HECHO (2026-06-15)** — `lib/rateLimit.ts` (ventana fija en memoria,
+  best-effort) en reportes (5/10min por IP) y registro (5/h por IP). Para algo robusto, mover el store
+  a Redis/Upstash detrás de la misma firma.
 
 **Seguridad del registro (i):** (i.1) formato email ✅ ya valida · (i.2) **fuerza de contraseña** (hoy
 solo `min(8)`; sumar reglas + medidor) · (i.3) **verificación de email** (token de un uso + gateo) —
@@ -97,7 +137,10 @@ más adelante; requiere `RESEND_API_KEY` real + considerar rate-limit anti-bots.
 - **(o.7) Tags pendientes de pulir:** revisar exclusiones mutuas; `LGBT+ friendly` recién agregado.
 
 **Schema / modelo:**
-- **(l) Redes sociales múltiples** — hoy solo Instagram. Modelar `socialLinks` (JSON `{network,url}[]` o tabla). **Cambio de schema** — decidir forma.
+- **(l) Redes sociales múltiples ✅ HECHO (2026-06-15)** — `socialLinks Json?` `[{network,url}]` en
+  Place (WhatsApp/Facebook/TikTok…); Instagram queda como campo principal aparte. Cableado de punta a
+  punta (dominio → form admin → ficha → JSON-LD `sameAs`), BD local migrada. Auditoría: el resto del
+  schema MVP está **completo** vs. PRD; horario estructurado sigue siendo post-MVP por decisión.
 
 **Pulido visual / deuda:**
 - **(f) Flechas de carrusel** — la ficha "También te puede gustar" no tiene flechas en desktop (reusar `PlaceRail`). La home ya las tiene; verificar por qué el usuario no las veía.
@@ -116,10 +159,13 @@ más adelante; requiere `RESEND_API_KEY` real + considerar rate-limit anti-bots.
   reales (no se puede `db push --force-reset` contra prod con datos).
 - [ ] Push a prod: schema + seed catálogos en Neon prod + `RESEND_API_KEY` real + redeploy.
 - [ ] Decidir + implementar flujo de imágenes (p).
-- [ ] Páginas legales privacidad/cookies (g).
+- [x] Páginas legales privacidad/términos (g) — 2026-06-15. Falta revisión por abogado.
 - [ ] Instrumentación GA4 + Meta Pixel + eventos custom (del scope MVP, aún no construida).
-- [ ] SEO de ficha: JSON-LD + metadata + sitemap (e).
+- [x] SEO de ficha: JSON-LD + metadata + sitemap + robots — 2026-06-15. Falta revisar ISR (e.2).
 - [ ] 3-5 listas curadas como landing SEO (d).
+- [x] Suite de tests de dominio (59 tests Vitest) + skill `/tests` — 2026-06-15.
+- [ ] Sincronizar docs con la realidad: SCHEMA.md / ARCHITECTURE.md / header schema.prisma (q).
+- [ ] Rate-limiting en reportes + registro (s).
 
 ---
 
