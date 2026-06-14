@@ -3,8 +3,10 @@ import { PlaceNotFoundError } from '@domain/place/errors/PlaceNotFoundError'
 import { PlaceCycleError } from '@domain/place/errors/PlaceCycleError'
 import { PlaceRepository } from '../ports/PlaceRepository'
 import { TagRepository } from '../ports/TagRepository'
+import { CategoryRepository } from '../ports/CategoryRepository'
 import { PlaceWriteInput } from './PlaceWriteInput'
 import { assemblePlace } from './assemblePlace'
+import { assertCategoryConsistency } from './assertCategoryConsistency'
 
 // Edición de una ficha por el admin. Preserva id/slug/estado/fecha de creación;
 // recalcula el score con los nuevos valores de Google y el promedio global actual.
@@ -12,6 +14,7 @@ export class UpdatePlaceUseCase {
   constructor(
     private readonly placeRepo: PlaceRepository,
     private readonly tagRepo: TagRepository,
+    private readonly categoryRepo: CategoryRepository,
   ) {}
 
   async execute(placeId: string, input: PlaceWriteInput): Promise<void> {
@@ -27,10 +30,13 @@ export class UpdatePlaceUseCase {
       if (ancestors.includes(placeId)) throw new PlaceCycleError()
     }
 
-    const [tags, globalAverage] = await Promise.all([
+    const [tags, globalAverage, categories] = await Promise.all([
       this.tagRepo.findByIds(input.tagIds),
       this.placeRepo.globalAverageRating(),
+      this.categoryRepo.listForForm(),
     ])
+
+    assertCategoryConsistency(input, categories)
 
     const score = Score.bayesian(input.googleRating, input.googleReviewCount, globalAverage)
 

@@ -150,11 +150,11 @@ export const container = {
   },
 
   getCreatePlaceUseCase() {
-    return new CreatePlaceUseCase(placeRepo, tagRepo)
+    return new CreatePlaceUseCase(placeRepo, tagRepo, categoryRepo)
   },
 
   getUpdatePlaceUseCase() {
-    return new UpdatePlaceUseCase(placeRepo, tagRepo)
+    return new UpdatePlaceUseCase(placeRepo, tagRepo, categoryRepo)
   },
 
   getPublishPlaceUseCase() {

@@ -4,8 +4,10 @@ import { Score } from '@domain/place/Score'
 import { PlaceStatus } from '@domain/place/PlaceStatus'
 import { PlaceRepository } from '../ports/PlaceRepository'
 import { TagRepository } from '../ports/TagRepository'
+import { CategoryRepository } from '../ports/CategoryRepository'
 import { PlaceWriteInput } from './PlaceWriteInput'
 import { assemblePlace } from './assemblePlace'
+import { assertCategoryConsistency } from './assertCategoryConsistency'
 
 // Carga de una ficha por el admin. Nace PENDING_REVIEW. El score se computa con
 // el promedio global actual (2.5); RecalculateScores lo re-bate al entrar carga.
@@ -13,13 +15,17 @@ export class CreatePlaceUseCase {
   constructor(
     private readonly placeRepo: PlaceRepository,
     private readonly tagRepo: TagRepository,
+    private readonly categoryRepo: CategoryRepository,
   ) {}
 
   async execute(input: PlaceWriteInput): Promise<{ placeId: string }> {
-    const [tags, globalAverage] = await Promise.all([
+    const [tags, globalAverage, categories] = await Promise.all([
       this.tagRepo.findByIds(input.tagIds),
       this.placeRepo.globalAverageRating(),
+      this.categoryRepo.listForForm(),
     ])
+
+    assertCategoryConsistency(input, categories)
 
     const score = Score.bayesian(input.googleRating, input.googleReviewCount, globalAverage)
 
