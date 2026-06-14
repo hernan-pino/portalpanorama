@@ -44,7 +44,7 @@ export default function RegistroPage() {
         <h1
           style={{
             fontFamily: 'var(--font-display)',
-            fontSize: '40px',
+            fontSize: 'clamp(30px, 8vw, 40px)',
             fontWeight: 400,
             letterSpacing: 'var(--tr-tight)',
             lineHeight: 1,

@@ -570,6 +570,39 @@ a { color: inherit; text-decoration: none; }
 .save-modal__new { display: flex; gap: var(--s-2); }
 .save-modal__error { color: var(--error); font-size: var(--t-body-sm); }
 
+/* modal de bienvenida (tras registrarse) — descartable, solo explica la idea */
+.welcome-modal__scrim {
+  position: fixed; inset: 0; z-index: 100;
+  background: rgba(28, 25, 23, 0.45);
+  display: flex; align-items: center; justify-content: center; padding: var(--s-5);
+}
+.welcome-modal {
+  width: 100%; max-width: 440px;
+  background: var(--paper-00); border: 1px solid var(--surface-line);
+  border-radius: var(--r-lg); padding: var(--s-6); box-shadow: var(--shadow-pop);
+  display: flex; flex-direction: column; gap: var(--s-3);
+}
+.welcome-modal__eyebrow {
+  font-family: var(--font-mono); font-size: var(--t-mono-sm);
+  letter-spacing: var(--tr-wider); text-transform: uppercase; color: var(--accent-70);
+}
+.welcome-modal__title {
+  font-family: var(--font-display); font-size: clamp(24px, 6vw, 30px);
+  font-weight: 400; line-height: 1.1; letter-spacing: var(--tr-tight);
+}
+.welcome-modal__lead { font-size: var(--t-body-sm); color: var(--fg-muted); line-height: 1.55; }
+.welcome-modal__list {
+  list-style: none; padding: 0; margin: var(--s-1) 0;
+  display: flex; flex-direction: column; gap: var(--s-2);
+  font-size: var(--t-body-sm); line-height: 1.4;
+}
+.welcome-modal__list li { position: relative; padding-left: var(--s-5); }
+.welcome-modal__list li::before {
+  content: ''; position: absolute; left: 0; top: 8px;
+  width: 6px; height: 6px; border-radius: 50%; background: var(--accent-60);
+}
+.welcome-modal__actions { display: flex; gap: var(--s-2); margin-top: var(--s-2); }
+
 /* ---------- Footer (dark) ---------- */
 .footer {
   background: var(--ink-100);
@@ -1659,13 +1692,16 @@ select.form-input { cursor: pointer; }
 
 /* ---------- Responsive ---------- */
 @media (max-width: 960px) {
-  .topbar__inner { grid-template-columns: auto auto; }
+  /* Logo a la izquierda, hamburguesa a la derecha: el 1fr empuja las acciones
+     al borde (con auto auto quedaba pegada al logo, "al medio"). */
+  .topbar__inner { grid-template-columns: 1fr auto; }
   .topbar__nav { display: none; }
   .topbar__auth { display: none; }
   .results-grid, .grid-cards { grid-template-columns: repeat(2, 1fr); }
   .plans-grid { grid-template-columns: 1fr; }
-  .auth-shell { grid-template-columns: 1fr; min-height: auto; }
+  .auth-shell { grid-template-columns: 1fr; min-height: auto; height: auto; }
   .auth-shell__art { min-height: 200px; padding: var(--s-8); }
+  .auth-shell__form { padding: var(--s-8); max-width: none; }
   .footer__top { grid-template-columns: 1fr 1fr; }
   /* Hamburger: aparece en tablet/móvil */
   .mobile-nav-btn { display: flex; }
@@ -1683,6 +1719,8 @@ select.form-input { cursor: pointer; }
   .filter-rail__toggle:hover { color: var(--accent-60); }
   .filter-rail__body { display: none; }
   .filter-rail__body.is-open { display: block; padding-top: var(--s-4); }
+  /* Admin: la barra de nav envuelve si no caben las opciones */
+  .admin-nav { flex-wrap: wrap; }
   /* Dashboard sidebar: colapsa a tab bar horizontal en tablet */
   .dash-shell { flex-direction: column; min-height: auto; }
   .dash-sidebar {
@@ -1728,10 +1766,41 @@ select.form-input { cursor: pointer; }
   /* Dashboard: ajustes adicionales en móvil */
   .dash-user-header { padding: var(--s-4) var(--s-4); }
   .dash-header-meta { flex-direction: column; gap: var(--s-4); }
+  /* Auth: en teléfono el panel editorial se oculta (la marca ya está sobre el form),
+     el form toma la pantalla y la cajita dev de credenciales se esconde. */
+  .auth-shell__art { display: none; }
+  .auth-shell__form {
+    padding: var(--s-10) var(--s-5) var(--s-8);
+    min-height: calc(100dvh - 72px);
+    justify-content: flex-start;
+  }
+  .dev-creds { display: none; }
 }
 
 /* ═══════════ Admin — CRUD de lugares (plomería, sin ref de diseño) ═══════════ */
-.admin-page { padding: var(--s-6) var(--s-8); max-width: 920px; }
+/* Nav horizontal arriba (opciones lado a lado) + contenido. Responsive por
+   defecto: la barra envuelve/scrollea en pantallas chicas. */
+.admin-shell { display: flex; flex-direction: column; min-height: calc(100dvh - 72px); }
+.admin-nav {
+  display: flex; align-items: center; gap: var(--s-5);
+  padding: var(--s-3) var(--s-6);
+  border-bottom: 1px solid var(--surface-line);
+  background: var(--bg-raised);
+}
+.admin-nav__brand { color: var(--fg-subtle); }
+.admin-nav__links { display: flex; gap: var(--s-2); }
+.admin-nav__link {
+  padding: var(--s-2) var(--s-4); border-radius: var(--r-pill);
+  font-size: var(--t-body-sm); color: var(--fg-muted);
+  transition: color var(--d-fast), background var(--d-fast);
+}
+.admin-nav__link:hover { color: var(--ink-100); background: var(--bg-sunken); }
+/* min-width:0 deja que la tabla con overflow-x scrollee dentro del flex child. */
+.admin-content { flex: 1; overflow: auto; min-width: 0; }
+
+/* margin-inline:auto centra el contenido ahora que el nav es barra superior
+   (antes lo alineaba el sidebar de la izquierda). */
+.admin-page { padding: var(--s-6) var(--s-8); max-width: 920px; margin-inline: auto; }
 .admin-page__head {
   display: flex; align-items: flex-start; justify-content: space-between;
   gap: var(--s-4); margin-bottom: var(--s-6);
@@ -1797,17 +1866,19 @@ select.form-input { cursor: pointer; }
 }
 .admin-form__actions { display: flex; gap: var(--s-3); }
 
-/* Fila de imagen */
+/* Fila de imagen: a lo ancho. URL arriba, alt+crédito en sub-fila, pie con portada+quitar. */
 .admin-img-row {
-  display: flex; gap: var(--s-3); align-items: flex-end; flex-wrap: wrap;
+  display: flex; flex-direction: column; gap: var(--s-3);
   padding-bottom: var(--s-4); border-bottom: 1px dashed var(--surface-line);
 }
-.admin-img-row__primary { white-space: nowrap; padding-bottom: var(--s-2); }
+.admin-img-row__meta { display: grid; grid-template-columns: 1fr 1fr; gap: var(--s-3); }
+.admin-img-row__foot { display: flex; align-items: center; justify-content: space-between; gap: var(--s-3); }
+.admin-img-row__primary { white-space: nowrap; }
 
 @media (max-width: 760px) {
   .admin-page { padding: var(--s-4); }
   .admin-page__head { flex-direction: column; }
-  .admin-img-row { flex-direction: column; align-items: stretch; }
+  .admin-img-row__meta { grid-template-columns: 1fr; }
   /* Tabla → scroll horizontal en móvil */
   .admin-table { overflow-x: auto; }
 }

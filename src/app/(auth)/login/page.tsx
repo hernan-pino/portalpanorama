@@ -30,7 +30,7 @@ export default function LoginPage() {
       </div>
 
       {/* ── DEV credentials (borrar antes de deploy) ── */}
-      <div style={{
+      <div className="dev-creds" style={{
         position: 'fixed', bottom: 'var(--s-4)', right: 'var(--s-4)',
         background: 'var(--bg-raised)', border: '1px solid var(--surface-line)',
         borderRadius: 'var(--r-lg)', padding: 'var(--s-4) var(--s-5)',
@@ -62,7 +62,7 @@ export default function LoginPage() {
         <h1
           style={{
             fontFamily: 'var(--font-display)',
-            fontSize: '40px',
+            fontSize: 'clamp(30px, 8vw, 40px)',
             fontWeight: 400,
             letterSpacing: 'var(--tr-tight)',
             lineHeight: 1,
