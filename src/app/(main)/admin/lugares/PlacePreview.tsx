@@ -7,6 +7,7 @@ import {
   PinIcon, WalletIcon, ClockIcon, TicketIcon, CardIcon, MetroIcon,
   AccessIcon, UmbrellaIcon, PhoneIcon, GlobeIcon, InstagramIcon, MenuIcon, Stars,
 } from '@/app/(main)/lugar/[slug]/icons'
+import { PointsList } from '@/app/(main)/lugar/[slug]/PointsList'
 
 // Vista previa de la ficha con los valores actuales del form, antes de guardar.
 // Reusa las clases `.ficha` reales para verse igual que la página pública, pero
@@ -228,14 +229,7 @@ export function PlacePreview({ values, options, onClose }: PlacePreviewProps) {
             {values.points.length > 0 && (
               <div className="ficha__section">
                 <h2 className="ficha__sec-h">Qué hay en {values.name || 'este lugar'}</h2>
-                <ul className="ficha__points">
-                  {values.points.map((pt, i) => (
-                    <li key={i} className="ficha__point">
-                      <span className="ficha__point-name">{pt.name}</span>
-                      {pt.description && <span className="ficha__point-desc">{pt.description}</span>}
-                    </li>
-                  ))}
-                </ul>
+                <PointsList points={values.points} />
               </div>
             )}
 

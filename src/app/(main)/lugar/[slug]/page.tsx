@@ -10,6 +10,7 @@ import { Collection } from '@domain/collection/Collection'
 import { PlaceCard } from '@components/place/PlaceCard'
 import { PlaceRail } from '@components/place/PlaceRail'
 import { Gallery } from './Gallery'
+import { PointsList } from './PointsList'
 import { SaveButton } from './SaveButton'
 import { ShareButton } from './ShareButton'
 import { ReportButton } from './ReportButton'
@@ -305,16 +306,7 @@ export default async function LugarPage({ params }: PageProps) {
                 ))}
               </div>
             )}
-            {place.points.length > 0 && (
-              <ul className="ficha__points">
-                {place.points.map((pt, i) => (
-                  <li key={i} className="ficha__point">
-                    <span className="ficha__point-name">{pt.name}</span>
-                    {pt.description && <span className="ficha__point-desc">{pt.description}</span>}
-                  </li>
-                ))}
-              </ul>
-            )}
+            {place.points.length > 0 && <PointsList points={place.points} />}
           </div>
         )}
 

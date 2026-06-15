@@ -1255,6 +1255,12 @@ button.ficha__hero-img { cursor: zoom-in; }
   display: block; margin-top: 2px;
   font-size: var(--t-body-sm); line-height: var(--lh-normal); color: var(--fg-muted);
 }
+.ficha__points-toggle {
+  margin-top: var(--s-3); padding: 0; background: none; border: none;
+  font: inherit; font-size: var(--t-body-sm); font-weight: 500;
+  color: var(--accent-60); cursor: pointer;
+}
+.ficha__points-toggle:hover { text-decoration: underline; }
 
 /* — Relacionados (carrusel horizontal con scroll-snap) — */
 .ficha__rel {
