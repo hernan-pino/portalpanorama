@@ -8,7 +8,7 @@ priorizado. Se actualiza cada vez que avanzamos. Liviano a propósito — para r
 - **Modelo de datos:** [SCHEMA.md](SCHEMA.md) · **Capas:** [ARCHITECTURE.md](ARCHITECTURE.md) · **Carga:** [PLANTILLA_CSV.md](PLANTILLA_CSV.md)
 - **Bitácora del rediseño (historia + razonamiento de las decisiones):** [PLAN_FASE9.md](PLAN_FASE9.md)
 
-**Última actualización:** 2026-06-14 (flujo de imágenes: Vercel Blob + compresión)
+**Última actualización:** 2026-06-14 (auditoría pre-lanzamiento: plan priorizado P0/P1/P2)
 
 ---
 
@@ -203,6 +203,11 @@ más adelante; requiere `RESEND_API_KEY` real + considerar rate-limit anti-bots.
   **2026-06-15: arreglado el defecto inmediato** (5 categorías rompían la grilla de 4 + ícono faltante)
   para que no se vea roto mientras tanto; el rediseño completo es aparte.
 - **(d) Listas curadas de la home** — read-model "listar curadas" + seed (hoy diferido).
+- **(v) Abierto/Cerrado en la tarjeta (post-MVP, ANOTADO 2026-06-14)** — mostrar en la `PlaceCard` un
+  indicador "Abierto ahora / Cerrado" al explorar (info muy útil para decidir). **Depende de horario
+  estructurado:** hoy `Place.schedule` es **texto libre**, no se puede calcular abierto/cerrado. Requiere
+  primero modelar horario estructurado (días + tramos), que es **post-MVP por decisión** (ver SCHEMA).
+  Entonces: esto entra recién cuando exista el horario estructurado.
 - **(a) Barrer CSS muerto ✅ HECHO (2026-06-15)** — borrados `.hero-search*` y `.filter-rail*` (desktop
   + responsive), confirmados sin consumidores tsx (los filtros usan `.filters__*`). `.search-shell`/
   `.place-row` ya no existían (poda previa). Queda `.listing-card*` (suena al modelo viejo, sin uso
@@ -212,21 +217,57 @@ más adelante; requiere `RESEND_API_KEY` real + considerar rate-limit anti-bots.
 
 ---
 
-## 🚀 Checklist de lanzamiento (consolidado)
+## 🚀 Plan de lanzamiento priorizado (auditoría 2026-06-14)
 
-- [ ] Cargar masa mínima densa de lugares (Providencia + Ñuñoa primero).
-- [ ] **Decidir workflow de BD para prod:** el proyecto usa `prisma db push` sin historial de
-  migraciones. Antes del push a prod hay que decidir si seguimos con `db push` o introducimos migraciones
-  reales (no se puede `db push --force-reset` contra prod con datos).
-- [ ] Push a prod: schema + seed catálogos en Neon prod + `RESEND_API_KEY` real + redeploy.
-- [x] Decidir + implementar flujo de imágenes (p) — Vercel Blob + compresión, 2026-06-14.
-- [x] Páginas legales privacidad/términos (g) — 2026-06-15. Falta revisión por abogado.
-- [ ] Instrumentación GA4 + Meta Pixel + eventos custom (del scope MVP, aún no construida).
-- [x] SEO de ficha: JSON-LD + metadata + sitemap + robots — 2026-06-15. Falta revisar ISR (e.2).
-- [ ] 3-5 listas curadas como landing SEO (d).
-- [x] Suite de tests de dominio (59 tests Vitest) + skill `/tests` — 2026-06-15.
-- [ ] Sincronizar docs con la realidad: SCHEMA.md / ARCHITECTURE.md / header schema.prisma (q).
-- [ ] Rate-limiting en reportes + registro (s).
+Foto de "qué falta para lanzar live". Lo ✅ ya está. Lo demás, ordenado por prioridad.
+
+### P0 — sin esto no hay lanzamiento
+- [ ] **Contenido: cargar panoramas.** Los más populares de Santiago + ~10 por subcategoría en las
+  comunas núcleo (Providencia, Santiago, Ñuñoa, Las Condes). No 20 en todas — ~100-150 fichas es un MVP
+  sólido; el resto se expande post-launch. **Vía: el agente `investigador-lugares` + `ingest-fichas`**
+  (este lote también valida el flujo del agente end-to-end).
+- [ ] **Push a prod.** (a) Decidir workflow de BD: hoy `prisma db push` sin migraciones; antes de prod
+  decidir si seguimos con `db push` o introducimos migraciones reales (no se puede `--force-reset`
+  contra prod con datos). (b) Schema + seed de catálogos en Neon prod. (c) `RESEND_API_KEY` real
+  (si no, no sale la bienvenida). (d) Confirmar `BLOB_READ_WRITE_TOKEN` en env de prod. (e) Redeploy.
+- [ ] **Registro seguro.** Rate-limit ✅ ya. Falta: (i.2) **fuerza de contraseña** (hoy solo `min(8)`;
+  sumar reglas + medidor) — S; (i.3) **verificación de email** (token de un uso + gateo) — M, requiere
+  `RESEND_API_KEY` real.
+
+### P1 — muy importante para un lanzamiento decente
+- [ ] **Listas guardadas visibles.** Hoy en Guardados ves las tarjetas de tus listas con conteo, pero
+  al hacer clic caen en `tab=listas` = placeholder **"Próximamente"**: no se puede abrir una lista ni
+  ver sus lugares. El backend (use cases de colección) ya existe; falta la **vista de detalle** (lugares
+  de una colección, con PlaceCards) + crear/renombrar/eliminar lista. — M.
+- [ ] **Analytics.** GA4 + Meta Pixel + eventos custom (del scope MVP, no construido). Conviene tenerlo
+  desde el día 1 para medir el lanzamiento. — M.
+- [ ] **Limpiar el dashboard de usuario.** Hoy 5 de 7 tabs son stubs "Próximamente" (Config, Eventos,
+  Historial, Listas, Reseñas); solo Guardados y Perfil son reales. Decidir por tab: **terminar**
+  (Historial tiene backend; Listas = ítem de arriba) u **ocultar** lo no-MVP (Eventos = off; Reseñas
+  si reviews no van en MVP). — M.
+
+### P2 — pulido / captura de valor
+- [ ] **Botón compartir.** Hoy usa `navigator.share` + fallback a copiar al portapapeles. El usuario
+  reporta que "no está bien" → falta diagnosticar qué falla puntual (¿toast? ¿feedback en desktop?
+  ¿posición?). — S.
+- [ ] **Sugerencias / feedback.** No existe mecanismo (solo `reportPlaceAction` para reportar datos
+  malos). Sumar un form simple "sugerir lugar / mejora" → email o tabla. — S/M.
+- [ ] **3-5 listas curadas como landing SEO** (ítem d). — M.
+
+### Fuente de rating automática (decidido, post-validación)
+- [ ] **Apify** para traer rating + nº reseñas (y algún dato) al cargar fichas. Decidido vs. Google
+  Places (miedo a cobro sorpresa) y scraper propio. Se integra **cuando arranque el lote grande (20+)**;
+  para los pocos de ahora, a mano / screenshot. Modelo prepago = sin sorpresas. Ojo ToS: cachear ratings
+  de Google permanentemente es zona gris (aplica a cualquier fuente).
+
+### Ya hecho ✅
+- [x] Flujo de imágenes (Vercel Blob + compresión + "Traer" desde URL) — 2026-06-14.
+- [x] Carga asistida por agente (skill `ficha-lugar` + `investigador-lugares` + `ingest-fichas`) — 2026-06-14.
+- [x] Páginas legales privacidad/términos — 2026-06-15 (falta revisión por abogado).
+- [x] SEO de ficha: JSON-LD + metadata + sitemap + robots — 2026-06-15 (falta revisar ISR, e.2).
+- [x] Suite de tests de dominio (64 Vitest) + skill `/tests` — 2026-06-15.
+- [x] Docs sincronizados (SCHEMA/ARCHITECTURE/schema.prisma) — 2026-06-15.
+- [x] Rate-limiting en reportes + registro — 2026-06-15.
 
 ---
 
