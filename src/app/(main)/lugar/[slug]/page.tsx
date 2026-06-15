@@ -16,7 +16,7 @@ import { ReportButton } from './ReportButton'
 import { placeJsonLd } from './jsonLd'
 import {
   PinIcon, NavIcon, WalletIcon, ClockIcon, TicketIcon, CardIcon, MetroIcon,
-  AccessIcon, UmbrellaIcon, PhoneIcon, GlobeIcon, InstagramIcon, MenuIcon, StarIcon,
+  AccessIcon, UmbrellaIcon, PhoneIcon, GlobeIcon, InstagramIcon, MenuIcon, StarIcon, Stars,
 } from './icons'
 
 interface PageProps {
@@ -421,22 +421,6 @@ function RelCard({ place }: { place: PlaceCardView }) {
   )
 }
 
-// Estrellas de Google: relleno parcial por clip de ancho (4.6 → 92%).
-function Stars({ value }: { value: number }) {
-  const pct = Math.max(0, Math.min(100, (value / 5) * 100))
-  return (
-    <span className="ficha__stars" aria-label={`${value} de 5 en Google`}>
-      <span className="row row--empty">
-        {[0, 1, 2, 3, 4].map((i) => <StarIcon key={i} outline />)}
-      </span>
-      <span className="fill" style={{ width: `${pct}%` }}>
-        <span className="row row--full">
-          {[0, 1, 2, 3, 4].map((i) => <StarIcon key={i} />)}
-        </span>
-      </span>
-    </span>
-  )
-}
 
 function withProtocol(url: string): string {
   return /^https?:\/\//.test(url) ? url : `https://${url}`

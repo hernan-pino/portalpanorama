@@ -5,7 +5,7 @@ import type { PlaceFormValues } from './types'
 import { PRICE_OPTIONS, RESERVATION_OPTIONS, RAIN_OPTIONS } from './types'
 import {
   PinIcon, WalletIcon, ClockIcon, TicketIcon, CardIcon, MetroIcon,
-  AccessIcon, UmbrellaIcon, PhoneIcon, GlobeIcon, InstagramIcon, MenuIcon, StarIcon,
+  AccessIcon, UmbrellaIcon, PhoneIcon, GlobeIcon, InstagramIcon, MenuIcon, Stars,
 } from '@/app/(main)/lugar/[slug]/icons'
 
 // Vista previa de la ficha con los valores actuales del form, antes de guardar.
@@ -135,7 +135,7 @@ export function PlacePreview({ values, options, onClose }: PlacePreviewProps) {
 
               {v.rating != null && (
                 <div className="ficha__rating">
-                  <StarIcon />
+                  <Stars value={v.rating} />
                   <span className="num">{v.rating.toFixed(1)}</span>
                   {v.reviews != null && <span>({fmtCount(v.reviews)}) · Google</span>}
                 </div>

@@ -1131,16 +1131,8 @@ button.ficha__hero-img { cursor: zoom-in; }
 }
 .ficha__rating .num { font-family: var(--font-mono); font-weight: 600; color: var(--fg); font-size: var(--t-body-sm); }
 
-/* — Estrellas Google (relleno parcial por clip de ancho) — */
-.ficha__stars { position: relative; display: inline-block; line-height: 0; }
-/* Sin gap entre estrellas: el relleno parcial (.fill por ancho %) solo cae exacto
-   en el centro de la estrella si las celdas son iguales. El espaciado lo da el
-   margen propio del glyph dentro de su caja (viewBox 20 con la estrella centrada). */
-.ficha__stars .row { display: inline-flex; gap: 0; }
-.ficha__stars svg { width: 16px; height: 16px; display: block; }
-.ficha__stars .fill { position: absolute; inset: 0; overflow: hidden; white-space: nowrap; }
-.ficha__stars .row--empty { color: var(--surface-line); }
-.ficha__stars .row--full { color: var(--star); }
+/* — Estrellas Google (relleno parcial en un solo SVG por gradiente, ver <Stars/>) — */
+.rating-stars { display: block; flex: none; }
 
 /* — Chip de categoría destacada — */
 .chip--accent {

@@ -87,3 +87,34 @@ export function StarIcon({ outline }: { outline?: boolean }) {
     </svg>
   )
 }
+
+// Rating de Google: 5 estrellas con relleno parcial en UN solo SVG. Dos capas con
+// el MISMO set de paths (gris de base + dorada encima) y la dorada recortada por un
+// clipPath de ancho = % del puntaje (4.6 → 92 de 100). El clip vive en el espacio
+// del SVG (no se desplaza con los transforms de cada estrella) → el relleno nunca
+// queda corrido. El id se deriva del % (mismo % = clip idéntico, sin colisiones reales).
+export function Stars({ value, size = 16 }: { value: number; size?: number }) {
+  const pct = Math.max(0, Math.min(100, (value / 5) * 100))
+  const clipId = `starclip-${Math.round(pct)}`
+  const stars = [0, 1, 2, 3, 4].map((i) => (
+    <path key={i} d={STAR_PATH} transform={`translate(${i * 20}, 0)`} />
+  ))
+  return (
+    <svg
+      className="rating-stars"
+      viewBox="0 0 100 20"
+      width={size * 5}
+      height={size}
+      role="img"
+      aria-label={`${value.toFixed(1)} de 5 en Google`}
+    >
+      <defs>
+        <clipPath id={clipId}>
+          <rect x="0" y="0" width={pct} height="20" />
+        </clipPath>
+      </defs>
+      <g style={{ fill: 'var(--surface-line)' }}>{stars}</g>
+      <g style={{ fill: 'var(--star)' }} clipPath={`url(#${clipId})`}>{stars}</g>
+    </svg>
+  )
+}
