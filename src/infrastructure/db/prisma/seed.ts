@@ -84,6 +84,9 @@ const NEIGHBORHOODS: { name: string; communeNames: string[] }[] = [
   { name: 'Patronato', communeNames: ['Recoleta'] },
   { name: 'Barrio Yungay', communeNames: ['Santiago'] },
   { name: 'Barrio Brasil', communeNames: ['Santiago'] },
+  { name: 'Parque Forestal', communeNames: ['Santiago'] },
+  { name: 'Centro Histórico', communeNames: ['Santiago'] },
+  { name: 'Barrio Mapocho', communeNames: ['Santiago'] },
 ]
 
 // ─── Categorías (7) + subcategorías (B.4 / doc 04) ───────────────────────────────

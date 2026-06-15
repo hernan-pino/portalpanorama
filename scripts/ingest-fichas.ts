@@ -133,7 +133,10 @@ async function resolveFicha(
   // Barrio + metro (opcionales)
   let neighborhoodId: string | undefined
   if (f.ubicacion?.barrio) {
-    const nb = opts.neighborhoods.find((n) => norm(n.name) === norm(f.ubicacion!.barrio!))
+    // Tolerante al prefijo "Barrio " (catálogo "Barrio Lastarria" ↔ ficha "Lastarria").
+    const stripBarrio = (s: string) => norm(s).replace(/^barrio /, '')
+    const target = stripBarrio(f.ubicacion.barrio)
+    const nb = opts.neighborhoods.find((n) => stripBarrio(n.name) === target)
     if (nb && nb.communeIds.includes(commune.id)) neighborhoodId = nb.id
     else warn.push(`barrio omitido (no encontrado o no pertenece a ${commune.name}): "${f.ubicacion.barrio}"`)
   }

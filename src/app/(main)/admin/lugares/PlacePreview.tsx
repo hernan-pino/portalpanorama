@@ -8,6 +8,7 @@ import {
   AccessIcon, UmbrellaIcon, PhoneIcon, GlobeIcon, InstagramIcon, MenuIcon, Stars,
 } from '@/app/(main)/lugar/[slug]/icons'
 import { PointsList } from '@/app/(main)/lugar/[slug]/PointsList'
+import { RichText } from '@/app/(main)/lugar/[slug]/RichText'
 
 // Vista previa de la ficha con los valores actuales del form, antes de guardar.
 // Reusa las clases `.ficha` reales para verse igual que la página pública, pero
@@ -142,7 +143,7 @@ export function PlacePreview({ values, options, onClose }: PlacePreviewProps) {
             {/* descripción + tags clave (con quién / ocasión) */}
             {(values.description || v.audience.length || v.occasion.length) ? (
               <div className="ficha__section">
-                {values.description && <p className="ficha__lead">{values.description}</p>}
+                {values.description && <RichText text={values.description} className="ficha__lead" />}
                 <TagGroup label="Con quién" tags={v.audience} />
                 <TagGroup label="Ideal para" tags={v.occasion} />
               </div>

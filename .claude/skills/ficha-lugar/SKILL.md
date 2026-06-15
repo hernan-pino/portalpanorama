@@ -253,15 +253,17 @@ Es la parte que más se nota. No es un campo de "datos": es la **voz del directo
 conoce el lugar y te lo recomienda. Nada de tono institucional ("Espacio cultural que alberga una vasta
 colección…"). Escribe como hablarías.
 
-**Largo y formato (importante — la ficha respeta los saltos de línea):**
-- **Corta y escaneable.** Apunta a **un párrafo de 2–4 frases**, no un bloque denso. Si te pasas, corta.
-- **Usa saltos de línea** (`\n` en el JSON / Enter en el texto) para separar ideas: por ejemplo, un primer
-  párrafo de "qué es / qué se hace" y, si hace falta, una línea aparte para el "ojo" honesto.
+**Largo y formato (importante — la ficha respeta saltos de línea, negrita y bullets):**
+- **Corta y escaneable.** Nada de un bloque denso de 6 líneas. Apunta a **2 párrafos cortos** (2–3 frases
+  cada uno) **separados por una línea en blanco**, no todo pegado.
+- **Separa con saltos de línea** (`\n` reales en el JSON): un primer párrafo de "qué es / qué se hace",
+  línea en blanco, y un segundo bloque con el "para quién / cuándo" o el "ojo" honesto.
+- **Resalta 2–4 frases o palabras clave con negrita** usando `**así**` (la ficha lo renderiza en negrita).
+  Sirve para escanear: la idea central, el diferenciador, el "pero". No abuses (no negrites media frase).
 - **Usa bullets cuando ayuden** — una lista corta se lee mejor que enumerar en prosa. Escríbelos con `• `
-  al inicio de cada línea (la ficha los muestra tal cual; no uses markdown `-`/`*`). Buen uso típico:
-  un mini "Ideal para: …" o 2–3 datos sueltos ("• Entrada liberada  • Mejor llegar temprano").
-- No abuses: si en 2 frases queda redondo, déjalo en prosa. El bullet es para cuando hay varios ítems
-  parejos. Nunca todo en bullets ni todo en un bloque sin aire.
+  al inicio de cada línea (no markdown `-`/`*`). Típico: un mini "Ideal para: …" o 2–3 datos sueltos.
+- Regla de oro del formato: **que se pueda escanear en 2 segundos.** Aire entre bloques, negrita en lo
+  clave, bullets para lo enumerable. Si queda un párrafo denso, córtalo.
 
 Funde estos ángulos (no todos aplican a todo lugar; en prosa breve + bullets donde calce):
 - **Qué es, en una frase honesta** — qué tipo, qué onda, qué escala (un café chico de barrio ≠ una cafetería grande de paso).
@@ -279,10 +281,12 @@ Funde estos ángulos (no todos aplican a todo lugar; en prosa breve + bullets do
 
 **Débil (tono folleto, denso):** "Museo ubicado en el centro que alberga una vasta colección. Un panorama imperdible para toda la familia."
 
-**Mejor (humano, compacto, con aire):** así se vería el campo `descripcion` (con sus saltos de línea):
+**Mejor (humano, compacto, escaneable):** así se vería el campo `descripcion` (con saltos de línea y negrita):
 
 ```
-El museo de arte más grande y antiguo del país, en pleno Parque Forestal. Pasas una o dos horas entre pintura y escultura chilena, con muestras temporales que rotan seguido (conviene mirar su IG antes de ir). El edificio neoclásico con cúpula de vidrio ya vale la visita.
+El **museo de arte más grande y antiguo del país**, en pleno Parque Forestal. Pasas una o dos horas entre pintura y escultura chilena, con muestras temporales que **rotan seguido** (mira su IG antes de ir).
+
+El edificio neoclásico con cúpula de vidrio **ya vale la visita por sí solo**.
 
 • Ideal para: día de lluvia, una cita tranquila o combinar con un café por Lastarria
 • Entrada liberada

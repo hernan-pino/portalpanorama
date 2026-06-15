@@ -11,6 +11,7 @@ import { PlaceCard } from '@components/place/PlaceCard'
 import { PlaceRail } from '@components/place/PlaceRail'
 import { Gallery } from './Gallery'
 import { PointsList } from './PointsList'
+import { RichText } from './RichText'
 import { SaveButton } from './SaveButton'
 import { ShareButton } from './ShareButton'
 import { ReportButton } from './ReportButton'
@@ -202,7 +203,7 @@ export default async function LugarPage({ params }: PageProps) {
         {/* descripción + tags clave (los más útiles para decidir: con quién / ocasión) */}
         {(place.description || audience.length > 0 || occasion.length > 0) && (
           <div className="ficha__section">
-            {place.description && <p className="ficha__lead">{place.description}</p>}
+            {place.description && <RichText text={place.description} className="ficha__lead" />}
             <TagGroup label="Con quién" tags={audience} />
             <TagGroup label="Ideal para" tags={occasion} />
           </div>
