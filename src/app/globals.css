@@ -1154,6 +1154,9 @@ button.ficha__hero-img { cursor: zoom-in; }
 .ficha__lead {
   font-size: var(--t-body); line-height: var(--lh-loose);
   color: var(--fg-muted); text-wrap: pretty; margin: 0;
+  /* Respeta los saltos de línea de la descripción (párrafos cortos / bullets "•")
+     sin necesidad de parsear markdown. Colapsa espacios redundantes. */
+  white-space: pre-line;
 }
 .ficha__sec-h {
   font-family: var(--font-display); font-weight: 500;

@@ -10,6 +10,8 @@ import {
   updatePlaceAction,
   uploadPlaceImageAction,
   importPlaceImageAction,
+  publishPlaceAction,
+  archivePlaceAction,
 } from './actions'
 import {
   PlaceFormValues,
@@ -18,6 +20,7 @@ import {
   RESERVATION_OPTIONS,
   RAIN_OPTIONS,
   SOCIAL_NETWORK_OPTIONS,
+  STATUS_LABELS,
   TAG_LAYER_LABELS,
   TAG_LAYER_ORDER,
 } from './types'
@@ -95,6 +98,9 @@ export function PlaceForm({ options, initial }: PlaceFormProps) {
   const [showPreview, setShowPreview] = useState(false)
   const [uploadingIdx, setUploadingIdx] = useState<number | null>(null)
   const [importingIdx, setImportingIdx] = useState<number | null>(null)
+  // Estado de publicación local (para mostrar Publicar/Archivar sin volver a la lista).
+  const [status, setStatus] = useState(initial?.status ?? 'PENDING_REVIEW')
+  const [statusMsg, setStatusMsg] = useState<string | null>(null)
 
   function set<K extends keyof PlaceFormValues>(key: K, value: PlaceFormValues[K]) {
     setValues((v) => ({ ...v, [key]: value }))
@@ -262,6 +268,34 @@ export function PlaceForm({ options, initial }: PlaceFormProps) {
       }
       if (mode === 'create') router.push('/admin/lugares')
       else setSuccess(true)
+    })
+  }
+
+  // Guarda los cambios actuales del form y luego publica (así no se pierden ediciones
+  // sin guardar al publicar desde la revisión). Solo en edición.
+  function handleSaveAndPublish() {
+    setError(null)
+    setSuccess(false)
+    setStatusMsg(null)
+    startTransition(async () => {
+      const saved = await updatePlaceAction(initial!.id, values)
+      if ('error' in saved) return setError(saved.error)
+      const pub = await publishPlaceAction(initial!.id)
+      if ('error' in pub) return setError(pub.error)
+      setStatus('PUBLISHED')
+      setStatusMsg('Guardado y publicado. Ya está visible en el sitio.')
+    })
+  }
+
+  function handleArchive() {
+    setError(null)
+    setSuccess(false)
+    setStatusMsg(null)
+    startTransition(async () => {
+      const res = await archivePlaceAction(initial!.id)
+      if ('error' in res) return setError(res.error)
+      setStatus('ARCHIVED')
+      setStatusMsg('Lugar archivado (ya no se muestra en el sitio).')
     })
   }
 
@@ -709,18 +743,38 @@ export function PlaceForm({ options, initial }: PlaceFormProps) {
       {success && (
         <p role="status" className="admin-form__success">Cambios guardados correctamente.</p>
       )}
+      {statusMsg && <p role="status" className="admin-form__success">{statusMsg}</p>}
 
       <div className="admin-form__actions">
         <button type="submit" className="btn btn--primary" disabled={isPending}>
           {isPending ? 'Guardando…' : mode === 'edit' ? 'Guardar cambios' : 'Crear lugar'}
         </button>
+
+        {mode === 'edit' && status !== 'PUBLISHED' && (
+          <button type="button" className="btn btn--primary" disabled={isPending}
+            onClick={handleSaveAndPublish}>
+            Guardar y publicar
+          </button>
+        )}
+        {mode === 'edit' && status === 'PUBLISHED' && (
+          <button type="button" className="btn btn--ghost" disabled={isPending}
+            onClick={handleArchive}>
+            Archivar
+          </button>
+        )}
+
         <button type="button" className="btn btn--ghost" onClick={() => setShowPreview(true)}>
           Vista previa
         </button>
         <button type="button" className="btn btn--ghost" onClick={() => router.push('/admin/lugares')}>
-          Cancelar
+          Volver a la lista
         </button>
       </div>
+      {mode === 'edit' && (
+        <p className="admin-form__hint" style={{ marginTop: 'var(--s-2)' }}>
+          Estado actual: <strong>{STATUS_LABELS[status] ?? status}</strong>
+        </p>
+      )}
 
       {showPreview && (
         <PlacePreview values={values} options={options} onClose={() => setShowPreview(false)} />

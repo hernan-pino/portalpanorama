@@ -83,10 +83,6 @@ export function PlacePreview({ values, options, onClose }: PlacePreviewProps) {
     values.phone || values.website || values.instagram || values.menuUrl || values.socialLinks.length
   )
   const hasAccess = !!(values.accessDetail || v.service.length)
-  const hasDesc = !!(
-    values.description || v.audience.length || v.occasion.length
-    || v.vibe.length || v.experience.length || v.specific.length
-  )
 
   return (
     <div className="preview-scrim" role="dialog" aria-modal="true" aria-label="Vista previa de la ficha"
@@ -142,17 +138,14 @@ export function PlacePreview({ values, options, onClose }: PlacePreviewProps) {
               )}
             </div>
 
-            {/* descripción + tags */}
-            {hasDesc && (
+            {/* descripción + tags clave (con quién / ocasión) */}
+            {(values.description || v.audience.length || v.occasion.length) ? (
               <div className="ficha__section">
                 {values.description && <p className="ficha__lead">{values.description}</p>}
                 <TagGroup label="Con quién" tags={v.audience} />
                 <TagGroup label="Ideal para" tags={v.occasion} />
-                <TagGroup label="Vibe" tags={v.vibe} />
-                <TagGroup label="Experiencia" tags={v.experience} />
-                <TagGroup label="Lo que ofrece" tags={v.specific} />
               </div>
-            )}
+            ) : null}
 
             {/* datos prácticos */}
             <div className="ficha__section">
@@ -204,6 +197,16 @@ export function PlacePreview({ values, options, onClose }: PlacePreviewProps) {
                 )}
               </div>
             </div>
+
+            {/* ambiente y detalles (tags secundarios, tras los datos prácticos) */}
+            {(v.vibe.length || v.experience.length || v.specific.length) ? (
+              <div className="ficha__section">
+                <h2 className="ficha__sec-h">Ambiente y detalles</h2>
+                <TagGroup label="Vibe" tags={v.vibe} />
+                <TagGroup label="Experiencia" tags={v.experience} />
+                <TagGroup label="Lo que ofrece" tags={v.specific} />
+              </div>
+            ) : null}
 
             {/* contacto */}
             {hasContact && (

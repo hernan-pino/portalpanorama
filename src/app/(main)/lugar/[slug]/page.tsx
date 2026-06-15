@@ -198,16 +198,12 @@ export default async function LugarPage({ params }: PageProps) {
           <ShareButton name={place.name} variant="button" />
         </div>
 
-        {/* descripción + tags */}
-        {(place.description || audience.length > 0 || occasion.length > 0
-          || vibe.length > 0 || experience.length > 0 || specific.length > 0) && (
+        {/* descripción + tags clave (los más útiles para decidir: con quién / ocasión) */}
+        {(place.description || audience.length > 0 || occasion.length > 0) && (
           <div className="ficha__section">
             {place.description && <p className="ficha__lead">{place.description}</p>}
             <TagGroup label="Con quién" tags={audience} />
             <TagGroup label="Ideal para" tags={occasion} />
-            <TagGroup label="Vibe" tags={vibe} />
-            <TagGroup label="Experiencia" tags={experience} />
-            <TagGroup label="Lo que ofrece" tags={specific} />
           </div>
         )}
 
@@ -263,6 +259,16 @@ export default async function LugarPage({ params }: PageProps) {
             )}
           </div>
         </div>
+
+        {/* ambiente y detalles (tags secundarios, tras los datos prácticos) */}
+        {(vibe.length > 0 || experience.length > 0 || specific.length > 0) && (
+          <div className="ficha__section">
+            <h2 className="ficha__sec-h">Ambiente y detalles</h2>
+            <TagGroup label="Vibe" tags={vibe} />
+            <TagGroup label="Experiencia" tags={experience} />
+            <TagGroup label="Lo que ofrece" tags={specific} />
+          </div>
+        )}
 
         {/* contacto */}
         {hasContact && (

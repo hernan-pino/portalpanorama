@@ -182,6 +182,10 @@ más adelante; requiere `RESEND_API_KEY` real + considerar rate-limit anti-bots.
   schema MVP está **completo** vs. PRD; horario estructurado sigue siendo post-MVP por decisión.
 
 **Pulido visual / deuda:**
+- **(u) Ficha en 2 columnas en desktop (pedido del usuario 2026-06-14, ANOTADO, no hecho)** — al usuario le
+  gustaba más el diseño original de la ficha en desktop: **izquierda** la info (descripción + tags + redes),
+  **derecha** un contenedor con los Datos prácticos (sticky). Hoy la ficha es de 1 columna apilada. Es solo
+  layout en `≥` desktop (móvil sigue apilado); revisar `.ficha__sheet`/`.ficha__section` + grid. No urgente.
 - **(f) Flechas de carrusel ✅ HECHO (2026-06-15)** — `PlaceRail` se generalizó (props `scrollClassName`
   + `className`, sin tocar la home) y la ficha "También te puede gustar" ahora lo reusa con flechas en
   desktop. Por qué no se veían en la home: solo aparecen ≥861px y se autoocultan cuando no hay más

@@ -161,7 +161,7 @@ distintos. Decide cuál usar **alineado con el modelo padre-hijo del directorio*
 ## 📍 [Nombre]
 `slug: ...`
 
-**Descripción:** ... (3–6 frases, voz humana — ver "Cómo escribir la descripción")
+**Descripción:** ... (compacta: 2–4 frases + bullets `•` con aire — ver "Cómo escribir la descripción")
 
 | Campo | Valor |
 |---|---|
@@ -253,9 +253,17 @@ Es la parte que más se nota. No es un campo de "datos": es la **voz del directo
 conoce el lugar y te lo recomienda. Nada de tono institucional ("Espacio cultural que alberga una vasta
 colección…"). Escribe como hablarías.
 
-**Largo:** 3 a 6 frases. Suficiente para dar una imagen real, sin volverse ensayo.
+**Largo y formato (importante — la ficha respeta los saltos de línea):**
+- **Corta y escaneable.** Apunta a **un párrafo de 2–4 frases**, no un bloque denso. Si te pasas, corta.
+- **Usa saltos de línea** (`\n` en el JSON / Enter en el texto) para separar ideas: por ejemplo, un primer
+  párrafo de "qué es / qué se hace" y, si hace falta, una línea aparte para el "ojo" honesto.
+- **Usa bullets cuando ayuden** — una lista corta se lee mejor que enumerar en prosa. Escríbelos con `• `
+  al inicio de cada línea (la ficha los muestra tal cual; no uses markdown `-`/`*`). Buen uso típico:
+  un mini "Ideal para: …" o 2–3 datos sueltos ("• Entrada liberada  • Mejor llegar temprano").
+- No abuses: si en 2 frases queda redondo, déjalo en prosa. El bullet es para cuando hay varios ítems
+  parejos. Nunca todo en bullets ni todo en un bloque sin aire.
 
-Funde estos ángulos en prosa natural (no como lista; no todos aplican a todo lugar):
+Funde estos ángulos (no todos aplican a todo lugar; en prosa breve + bullets donde calce):
 - **Qué es, en una frase honesta** — qué tipo, qué onda, qué escala (un café chico de barrio ≠ una cafetería grande de paso).
 - **Qué se hace ahí** — el verbo concreto: recorrer salas, quedarte a leer con un flat white, llevar al perro, ver el atardecer, picar con amigos, trabajar con notebook.
 - **Qué esperar de verdad** — vibe, tamaño, cuánto rato te toma, si se llena, si hay que esperar. Acá entran los "peros" honestos de las reseñas, dichos con tacto.
@@ -269,9 +277,17 @@ Funde estos ángulos en prosa natural (no como lista; no todos aplican a todo lu
 - Apóyate en señales reales de reseñas/blogs. Si algo es inferencia, que sea plausible y suave — **no inventes** platos, precios ni premios.
 - **Honestidad antes que venta.** Si es lindo pero chico, o rico pero caro, dilo. Eso genera confianza.
 
-**Débil (tono folleto):** "Museo ubicado en el centro que alberga una vasta colección. Un panorama imperdible para toda la familia."
+**Débil (tono folleto, denso):** "Museo ubicado en el centro que alberga una vasta colección. Un panorama imperdible para toda la familia."
 
-**Mejor (humano):** "Es el museo de arte más grande y antiguo del país, metido en pleno Parque Forestal. Vas a pasar una o dos horas paseando entre pintura y escultura chilena, con salas de muestras temporales que cambian seguido, así que conviene revisar su Instagram antes de ir. La entrada es gratis y el edificio —una mole neoclásica con cúpula de vidrio— es bonito por sí solo. Buen plan para un día de lluvia, una cita tranquila o combinarlo con un café por Lastarria. Eso sí: los domingos se llena de grupos y los baños no son su fuerte."
+**Mejor (humano, compacto, con aire):** así se vería el campo `descripcion` (con sus saltos de línea):
+
+```
+El museo de arte más grande y antiguo del país, en pleno Parque Forestal. Pasas una o dos horas entre pintura y escultura chilena, con muestras temporales que rotan seguido (conviene mirar su IG antes de ir). El edificio neoclásico con cúpula de vidrio ya vale la visita.
+
+• Ideal para: día de lluvia, una cita tranquila o combinar con un café por Lastarria
+• Entrada liberada
+• Ojo: los domingos se llena y los baños no son su fuerte
+```
 
 ---
 
