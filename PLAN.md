@@ -224,8 +224,13 @@ Foto de "qué falta para lanzar live". Lo ✅ ya está. Lo demás, ordenado por 
 ### P0 — sin esto no hay lanzamiento
 - [ ] **Contenido: cargar panoramas.** Los más populares de Santiago + ~10 por subcategoría en las
   comunas núcleo (Providencia, Santiago, Ñuñoa, Las Condes). No 20 en todas — ~100-150 fichas es un MVP
-  sólido; el resto se expande post-launch. **Vía: el agente `investigador-lugares` + `ingest-fichas`**
-  (este lote también valida el flujo del agente end-to-end).
+  sólido; el resto se expande post-launch. **Vía: el agente `investigador-lugares` + `ingest-fichas`**.
+  **🔄 EN CURSO (2026-06-15):** 12 lugares cargados (2 publicados: Parquemet + Cerro San Cristóbal;
+  10 borradores por revisar). El flujo agente→ingesta quedó validado e2e. Para ver qué falta por
+  subcategoría: **`/admin/cobertura`** (vista nueva). **Pendiente clave:** integrar un **scraper de
+  rating/place_id** (el agente los deja en `null` porque no lee Maps directo) — el usuario encontró
+  scrapers free (~500 q); falta que pase cuál para wirear el adapter (port `PlaceRatingProvider`).
+  Calidad de fichas: descripción ahora compacta con negrita/bullets; revisar y publicar a mano.
 - [ ] **Push a prod.** (a) Decidir workflow de BD: hoy `prisma db push` sin migraciones; antes de prod
   decidir si seguimos con `db push` o introducimos migraciones reales (no se puede `--force-reset`
   contra prod con datos). (b) Schema + seed de catálogos en Neon prod. (c) `RESEND_API_KEY` real
