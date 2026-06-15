@@ -30,6 +30,7 @@ import { GetSitemapEntriesUseCase } from '@application/place/GetSitemapEntriesUs
 import { ListPlacesForAdminUseCase } from '@application/place/ListPlacesForAdminUseCase'
 import { GetPlaceForEditUseCase } from '@application/place/GetPlaceForEditUseCase'
 import { GetPlaceFormOptionsUseCase } from '@application/place/GetPlaceFormOptionsUseCase'
+import { GetCatalogCoverageUseCase } from '@application/place/GetCatalogCoverageUseCase'
 import { UploadPlaceImageUseCase } from '@application/place/UploadPlaceImageUseCase'
 import { ImportImageFromUrlUseCase } from '@application/place/ImportImageFromUrlUseCase'
 import { CreateReportUseCase } from '@application/place/CreateReportUseCase'
@@ -152,6 +153,10 @@ export const container = {
 
   getGetPlaceFormOptionsUseCase() {
     return new GetPlaceFormOptionsUseCase(categoryRepo, tagRepo, locationRepo, placeRepo)
+  },
+
+  getGetCatalogCoverageUseCase() {
+    return new GetCatalogCoverageUseCase(categoryRepo, placeRepo)
   },
 
   // Lazy: el adapter de Blob exige BLOB_READ_WRITE_TOKEN; se instancia recién al subir.

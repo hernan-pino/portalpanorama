@@ -115,7 +115,7 @@ const CATEGORIES: {
     // Regla: la categoría = por qué vas. Un bar/pub se queda en Gastronomía + tag "vida nocturna";
     // acá van los lugares cuyo centro es la actividad nocturna o el panorama.
     name: 'Entretenimiento', isActive: true, eventOnly: false,
-    subcategories: ['Discoteca / Club', 'Karaoke', 'Escape room', 'Bowling', 'Club de jazz / blues', 'Sala de conciertos', 'Salón de juegos / Arcade'],
+    subcategories: ['Discoteca / Club', 'Karaoke', 'Escape room', 'Bowling', 'Club de jazz / blues', 'Sala de conciertos', 'Salón de juegos / Arcade', 'Mirador / Observatorio'],
   },
   {
     // event-only: tipos de SHOW (ocurren en una fecha). Se encienden con Eventos.

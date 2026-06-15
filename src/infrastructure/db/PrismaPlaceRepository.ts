@@ -340,6 +340,25 @@ export class PrismaPlaceRepository implements PlaceRepository {
     })
   }
 
+  // Conteo por subcategoría primaria (vista de cobertura): total no-archivado +
+  // publicados. groupBy por subcategoría y estado; se agrega en memoria.
+  async coverageBySubcategory(): Promise<
+    { subcategoryId: string; total: number; published: number }[]
+  > {
+    const rows = await this.prisma.place.groupBy({
+      by: ['subcategoryId', 'status'],
+      _count: { _all: true },
+    })
+    const map = new Map<string, { total: number; published: number }>()
+    for (const r of rows) {
+      const entry = map.get(r.subcategoryId) ?? { total: 0, published: 0 }
+      if (r.status !== $Enums.PlaceStatus.ARCHIVED) entry.total += r._count._all
+      if (r.status === $Enums.PlaceStatus.PUBLISHED) entry.published += r._count._all
+      map.set(r.subcategoryId, entry)
+    }
+    return [...map].map(([subcategoryId, c]) => ({ subcategoryId, ...c }))
+  }
+
   // Cadena de ancestros (padre, abuelo, …) recorriendo parentId hacia arriba. Tope
   // defensivo por si quedara un ciclo en datos (no debería: el dominio lo impide).
   async findAncestorIds(placeId: string): Promise<string[]> {

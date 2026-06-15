@@ -107,6 +107,11 @@ export interface PlaceRepository {
   // Lugares candidatos a ser "padre" en el selector del form (id + nombre).
   listForParentOptions(): Promise<PlaceParentOption[]>
 
+  // Conteo de lugares por subcategoría primaria (para la vista de cobertura del
+  // catálogo): total no-archivado y publicados. Subcategorías sin lugares no aparecen.
+  coverageBySubcategory(): Promise<{ subcategoryId: string; total: number; published: number }[]>
+
+
   // Cadena de ids ancestros de un lugar (padre, abuelo, …), para el anti-ciclo.
   findAncestorIds(placeId: string): Promise<string[]>
 
