@@ -243,7 +243,12 @@ Foto de "qué falta para lanzar live". Lo ✅ ya está. Lo demás, ordenado por 
   reales en BD. **Auto-attach de fotos ✅ (2026-06-17):** flag `--with-photos` rehospeda hasta 5 fotos de
   Google Maps al Blob (use case `AttachPlacePhotosUseCase` + `Place.withImages`), **solo en fichas sin
   imágenes** (no pisa las curadas), crédito "Google Maps". Verificado e2e (Emporio La Rosa: 5 fotos al
-  Blob). Falta: seguir cargando contenido.
+  Blob). **Lote 1 cargado (2026-06-17): 15 cafés de Providencia** (skill desktop "modo carga" → place_id →
+  agente `investigador-lugares` → ingesta → enrich exacto + fotos). Todos PENDING_REVIEW con rating/score/
+  ~5 fotos. **→ ~27 lugares reales en BD.** Ojo: **el Galgo Café** quedó cargado pero está **cerrado
+  temporalmente** (robo 8-jun-2026) → NO publicar hasta confirmar reapertura. Barrios faltantes en el seed
+  (Pedro de Valdivia, Manuel Montt, Barrio Suecia → esas fichas quedaron sin barrio). Falta: revisar/
+  publicar + seguir cargando.
 - [ ] **Push a prod.** (a) Decidir workflow de BD: hoy `prisma db push` sin migraciones; antes de prod
   decidir si seguimos con `db push` o introducimos migraciones reales (no se puede `--force-reset`
   contra prod con datos). (b) Schema + seed de catálogos en Neon prod. (c) `RESEND_API_KEY` real
