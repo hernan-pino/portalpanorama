@@ -176,6 +176,11 @@ más adelante; requiere `RESEND_API_KEY` real + considerar rate-limit anti-bots.
 - **(o.7) Tags pendientes de pulir:** revisar exclusiones mutuas; `LGBT+ friendly` recién agregado.
 
 **Schema / modelo:**
+- **(w) Entidad `Brand` / Negocio (marca con varias sucursales) — ESPECIFICADA, no construida (2026-06-17).**
+  Agrupar las sucursales de una marca bajo una identidad comercial + bloque "Por [Marca]" en la ficha +
+  página `/marca/[slug]` con todas sus sucursales. Eje nuevo (`brandId`), ortogonal a `parentId`
+  (contención) y `ownerId` (gestión). Spec completo en [BRAND_SPEC.md](BRAND_SPEC.md). **Recomendación:
+  post-launch** (`brandId` nullable → se agrega sin migración dolorosa); no bloquea lanzar.
 - **(l) Redes sociales múltiples ✅ HECHO (2026-06-15)** — `socialLinks Json?` `[{network,url}]` en
   Place (WhatsApp/Facebook/TikTok…); Instagram queda como campo principal aparte. Cableado de punta a
   punta (dominio → form admin → ficha → JSON-LD `sameAs`), BD local migrada. Auditoría: el resto del
