@@ -227,10 +227,14 @@ Foto de "qué falta para lanzar live". Lo ✅ ya está. Lo demás, ordenado por 
   sólido; el resto se expande post-launch. **Vía: el agente `investigador-lugares` + `ingest-fichas`**.
   **🔄 EN CURSO (2026-06-15):** 12 lugares cargados (2 publicados: Parquemet + Cerro San Cristóbal;
   10 borradores por revisar). El flujo agente→ingesta quedó validado e2e. Para ver qué falta por
-  subcategoría: **`/admin/cobertura`** (vista nueva). **Pendiente clave:** integrar un **scraper de
-  rating/place_id** (el agente los deja en `null` porque no lee Maps directo) — el usuario encontró
-  scrapers free (~500 q); falta que pase cuál para wirear el adapter (port `PlaceRatingProvider`).
-  Calidad de fichas: descripción ahora compacta con negrita/bullets; revisar y publicar a mano.
+  subcategoría: **`/admin/cobertura`** (vista nueva). **Scraper de rating/place_id ✅ CONSTRUIDO
+  (2026-06-17):** se integró **Apify** (Google Maps Scraper) detrás del port `PlaceRatingProvider` —
+  adapter `ApifyRatingProvider`, use case `EnrichPlaceRatingUseCase` (setea rating/reseñas/place_id +
+  recalcula score bayesiano, sin tocar el estado), y script **`scripts/enrich-ratings.ts`** (`--dry`,
+  `--force`, flag `⚠️ REVISAR` cuando el nombre del match no coincide). Verificado e2e con La Piojera
+  (4.3 · 7.299 reseñas · 10 fotos). Sin tarjeta (free US$5/mes de Apify cubre el MVP). El adapter ya
+  **trae** las URLs de fotos pero el auto-attach a la ficha quedó como paso aparte. **Falta:** correr el
+  enriquecimiento real sobre los 12. Calidad de fichas: descripción compacta con negrita/bullets.
 - [ ] **Push a prod.** (a) Decidir workflow de BD: hoy `prisma db push` sin migraciones; antes de prod
   decidir si seguimos con `db push` o introducimos migraciones reales (no se puede `--force-reset`
   contra prod con datos). (b) Schema + seed de catálogos en Neon prod. (c) `RESEND_API_KEY` real
@@ -259,13 +263,15 @@ Foto de "qué falta para lanzar live". Lo ✅ ya está. Lo demás, ordenado por 
   malos). Sumar un form simple "sugerir lugar / mejora" → email o tabla. — S/M.
 - [ ] **3-5 listas curadas como landing SEO** (ítem d). — M.
 
-### Fuente de rating automática (decidido, post-validación)
-- [ ] **Apify** para traer rating + nº reseñas (y algún dato) al cargar fichas. Decidido vs. Google
-  Places (miedo a cobro sorpresa) y scraper propio. Se integra **cuando arranque el lote grande (20+)**;
-  para los pocos de ahora, a mano / screenshot. Modelo prepago = sin sorpresas. Ojo ToS: cachear ratings
-  de Google permanentemente es zona gris (aplica a cualquier fuente).
+### Fuente de rating automática — ✅ INTEGRADA (2026-06-17)
+- [x] **Apify** (Google Maps Scraper) detrás del port `PlaceRatingProvider`. Elegido vs. Outscraper
+  (pedía tarjeta), Google Places (tarjeta + cobro por SKU + fotos extra) y SerpApi: Apify da token
+  **sin tarjeta**, free US$5/mes (US$1,50/1.000 lugares = MVP gratis), y trae rating + reseñas +
+  place_id + fotos en una llamada. Verificado e2e. **Falta:** correr el lote real + (opcional) auto-attach
+  de fotos. Ojo ToS: cachear ratings de Google permanentemente es zona gris (aplica a cualquier fuente).
 
 ### Ya hecho ✅
+- [x] Scraper de rating/place_id vía **Apify** (port + use case + script `enrich-ratings.ts`) — 2026-06-17.
 - [x] Flujo de imágenes (Vercel Blob + compresión + "Traer" desde URL) — 2026-06-14.
 - [x] Carga asistida por agente (skill `ficha-lugar` + `investigador-lugares` + `ingest-fichas`) — 2026-06-14.
 - [x] Páginas legales privacidad/términos — 2026-06-15 (falta revisión por abogado).

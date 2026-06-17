@@ -139,6 +139,41 @@ describe('Place — transiciones de estado', () => {
   })
 })
 
+describe('Place.withReputation', () => {
+  it('setea place_id, rating y nº de reseñas de Google', () => {
+    const p = Place.create(makeProps()).withReputation({
+      googlePlaceId: 'ChIJxxx',
+      googleRating: 4.6,
+      googleReviewCount: 1200,
+    })
+    expect(p.googlePlaceId).toBe('ChIJxxx')
+    expect(p.googleRating).toBe(4.6)
+    expect(p.googleReviewCount).toBe(1200)
+  })
+
+  it('no toca el estado ni el resto de la ficha', () => {
+    const p = Place.create(makeProps({ status: PlaceStatus.PUBLISHED, score: 3.1 })).withReputation({
+      googleRating: 4.0,
+      googleReviewCount: 50,
+    })
+    expect(p.status).toBe(PlaceStatus.PUBLISHED)
+    expect(p.score).toBe(3.1)
+    expect(p.name).toBe('Bar de prueba')
+  })
+
+  it('conserva el valor previo cuando un campo viene undefined', () => {
+    const base = Place.create(makeProps()).withReputation({
+      googlePlaceId: 'ChIJxxx',
+      googleRating: 4.6,
+      googleReviewCount: 1200,
+    })
+    const next = base.withReputation({ googleRating: 4.7 })
+    expect(next.googleRating).toBe(4.7)
+    expect(next.googlePlaceId).toBe('ChIJxxx') // intacto
+    expect(next.googleReviewCount).toBe(1200) // intacto
+  })
+})
+
 describe('Place.primaryImage', () => {
   const img = (id: string, isPrimary: boolean): PlaceImage => ({
     id,

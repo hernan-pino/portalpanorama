@@ -253,6 +253,23 @@ export class Place {
     return new Place({ ...this.toProps(), score, updatedAt: new Date() })
   }
 
+  // Setea la reputación de Google (B.7) traída por un PlaceRatingProvider externo.
+  // El `score` se recalcula aparte en el use case con el promedio global; acá solo
+  // se persisten los datos crudos. No cambia el estado de la ficha.
+  withReputation(rep: {
+    googlePlaceId?: string
+    googleRating?: number
+    googleReviewCount?: number
+  }): Place {
+    return new Place({
+      ...this.toProps(),
+      googlePlaceId: rep.googlePlaceId ?? this.googlePlaceId,
+      googleRating: rep.googleRating ?? this.googleRating,
+      googleReviewCount: rep.googleReviewCount ?? this.googleReviewCount,
+      updatedAt: new Date(),
+    })
+  }
+
   isPublished(): boolean {
     return this.status === PlaceStatus.PUBLISHED
   }

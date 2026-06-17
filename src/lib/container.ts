@@ -15,6 +15,7 @@ import { ResendEmailService } from '@infrastructure/email/ResendEmailService'
 import { VercelBlobStorageService } from '@infrastructure/storage/VercelBlobStorageService'
 import { SharpImageProcessor } from '@infrastructure/storage/SharpImageProcessor'
 import { SafeHttpImageFetcher } from '@infrastructure/storage/SafeHttpImageFetcher'
+import { ApifyRatingProvider } from '@infrastructure/rating/ApifyRatingProvider'
 
 // ── Use cases ───────────────────────────────────────────────────────────
 import { SearchPlacesUseCase } from '@application/place/SearchPlacesUseCase'
@@ -26,6 +27,7 @@ import { UpdatePlaceUseCase } from '@application/place/UpdatePlaceUseCase'
 import { PublishPlaceUseCase } from '@application/place/PublishPlaceUseCase'
 import { ArchivePlaceUseCase } from '@application/place/ArchivePlaceUseCase'
 import { RecalculateScoresUseCase } from '@application/place/RecalculateScoresUseCase'
+import { EnrichPlaceRatingUseCase } from '@application/place/EnrichPlaceRatingUseCase'
 import { GetSitemapEntriesUseCase } from '@application/place/GetSitemapEntriesUseCase'
 import { ListPlacesForAdminUseCase } from '@application/place/ListPlacesForAdminUseCase'
 import { GetPlaceForEditUseCase } from '@application/place/GetPlaceForEditUseCase'
@@ -190,5 +192,10 @@ export const container = {
 
   getRecalculateScoresUseCase() {
     return new RecalculateScoresUseCase(placeRepo)
+  },
+
+  // Lazy: el adapter de Apify exige APIFY_TOKEN; se instancia recién al enriquecer.
+  getEnrichPlaceRatingUseCase() {
+    return new EnrichPlaceRatingUseCase(placeRepo, locationRepo, new ApifyRatingProvider())
   },
 }

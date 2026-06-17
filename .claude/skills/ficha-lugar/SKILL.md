@@ -306,6 +306,20 @@ de buenas fotos (sitio oficial, Wikimedia/Wikipedia, Unsplash, prensa, Google, e
   Maps con firma/token: esos a veces expiran o bloquean la descarga, y "Traer" puede fallar.
 - Marca cuál es la **portada**. Agrega `alt` descriptivo y `crédito` (fuente) si lo sabes.
 - 1 a 3 imágenes está bien para empezar.
+
+### Qué fotos elegir (criterios de calidad)
+Apunta a **mostrar el lugar de verdad**, en este orden de prioridad:
+1. **Fachada / entrada** — cómo se ve por fuera, para reconocerlo al llegar. Ideal como **portada**.
+2. **Interior / ambiente** — la sala, las mesas, la vista, el espacio que vas a vivir.
+3. **El "producto" o atractivo principal** — el plato estrella, la obra, el mirador, la cancha: lo que justifica ir.
+4. **Logo** — solo si no hay nada mejor o como complemento; nunca como única imagen.
+
+Reglas de calidad (descarta lo que no cumpla):
+- **Horizontal (landscape)** y de **buena resolución** (≥1000px de ancho aprox.); evita verticales chicas o pixeladas.
+- **Representativa y actual:** que muestre el lugar, no un evento puntual viejo ni una foto genérica de stock.
+- **Limpia:** sin marca de agua grande, sin collage, sin captura de pantalla, sin mapa, sin texto promocional encima.
+- **Nada de:** logos como portada, screenshots de Maps/redes, fotos de gente como protagonista, imágenes borrosas o muy oscuras.
+- Si las únicas fotos buenas son de Google Maps / redes, úsalas igual (el form rehospeda) pero **deja dicho el caveat** de copyright.
 - **Caveat de copyright/ToS:** rehospedar fotos de terceros (blogs, prensa, Google Maps) es responsabilidad
   del usuario. Lo ideal son fotos propias del local, de Wikimedia (libres) o con permiso. Déjalo dicho si la
   única foto buena es de una fuente con derechos.
