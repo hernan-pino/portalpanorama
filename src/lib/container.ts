@@ -28,6 +28,7 @@ import { PublishPlaceUseCase } from '@application/place/PublishPlaceUseCase'
 import { ArchivePlaceUseCase } from '@application/place/ArchivePlaceUseCase'
 import { RecalculateScoresUseCase } from '@application/place/RecalculateScoresUseCase'
 import { EnrichPlaceRatingUseCase } from '@application/place/EnrichPlaceRatingUseCase'
+import { AttachPlacePhotosUseCase } from '@application/place/AttachPlacePhotosUseCase'
 import { GetSitemapEntriesUseCase } from '@application/place/GetSitemapEntriesUseCase'
 import { ListPlacesForAdminUseCase } from '@application/place/ListPlacesForAdminUseCase'
 import { GetPlaceForEditUseCase } from '@application/place/GetPlaceForEditUseCase'
@@ -197,5 +198,11 @@ export const container = {
   // Lazy: el adapter de Apify exige APIFY_TOKEN; se instancia recién al enriquecer.
   getEnrichPlaceRatingUseCase() {
     return new EnrichPlaceRatingUseCase(placeRepo, locationRepo, new ApifyRatingProvider())
+  },
+
+  // Adjunta fotos externas (Google Maps vía Apify) rehospedándolas con el pipeline
+  // de "Traer". Reusa ImportImageFromUrlUseCase (SSRF + compresión + Blob).
+  getAttachPlacePhotosUseCase() {
+    return new AttachPlacePhotosUseCase(placeRepo, this.getImportImageFromUrlUseCase())
   },
 }

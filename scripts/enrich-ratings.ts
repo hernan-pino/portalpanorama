@@ -10,6 +10,8 @@
 //   placeId...        enriquece solo esos ids (aunque ya tengan rating)
 //   --dry             resuelve el match y el score pero NO escribe (previsualizar)
 //   --force           re-consulta también los que ya tienen rating (refresca)
+//   --with-photos     además rehospeda hasta 5 fotos de Google Maps en las fichas SIN
+//                     imágenes (no pisa las curadas). Ignorado en --dry.
 //
 // Requiere APIFY_TOKEN en el entorno (.env.local). Costo: ~US$1,50/1.000 lugares;
 // para tu volumen entra en el free de Apify.
@@ -40,13 +42,16 @@ async function main() {
   const args = process.argv.slice(2)
   const dry = args.includes('--dry')
   const force = args.includes('--force')
+  const withPhotos = args.includes('--with-photos') && !dry
   const ids = args.filter((a) => !a.startsWith('--'))
 
   if (dry) console.log('— MODO DRY: resuelve el match y el score, NO escribe —')
+  if (withPhotos) console.log('— Fotos: rehospedo hasta 5 de Google Maps en las fichas sin imágenes —')
   const targets = await selectTargets(ids, force)
   console.log(`${targets.length} lugar(es) a enriquecer\n`)
 
   const uc = container.getEnrichPlaceRatingUseCase()
+  const photosUc = withPhotos ? container.getAttachPlacePhotosUseCase() : null
   let updated = 0
   let skipped = 0
   let notFound = 0
@@ -77,6 +82,13 @@ async function main() {
           `score ${res.score.toFixed(2)} · ${r.photoUrls.length} foto(s) encontradas`,
       )
       if (!res.nameMatch) needsCheck++
+
+      if (photosUc && r.photoUrls.length > 0) {
+        const ph = await photosUc.execute({ placeId: t.id, photoUrls: r.photoUrls, max: 5 })
+        if (ph.status === 'attached') console.log(`    📷 ${ph.count} foto(s) rehospedadas a la ficha`)
+        else if (ph.reason === 'has-images') console.log(`    📷 (ya tenía imágenes, no se tocó)`)
+        else console.log(`    📷 no se pudo adjuntar (${ph.reason})`)
+      }
     } catch (e) {
       skipped++
       console.log(`✗ ${t.name} — ERROR: ${(e as Error).message}`)

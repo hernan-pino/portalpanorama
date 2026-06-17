@@ -270,6 +270,16 @@ export class Place {
     })
   }
 
+  // Reemplaza la galería completa (las imágenes ya rehospedadas las arma el use case).
+  // Garantiza exactamente una portada si hay imágenes. No toca el estado de la ficha.
+  withImages(images: ReadonlyArray<PlaceImage>): Place {
+    const withPrimary =
+      images.length > 0 && !images.some((im) => im.isPrimary)
+        ? images.map((im, i) => ({ ...im, isPrimary: i === 0 }))
+        : images
+    return new Place({ ...this.toProps(), images: withPrimary, updatedAt: new Date() })
+  }
+
   isPublished(): boolean {
     return this.status === PlaceStatus.PUBLISHED
   }

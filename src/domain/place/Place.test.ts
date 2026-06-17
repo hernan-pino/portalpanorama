@@ -174,6 +174,31 @@ describe('Place.withReputation', () => {
   })
 })
 
+describe('Place.withImages', () => {
+  const img = (id: string, isPrimary = false): PlaceImage => ({
+    id,
+    url: `https://x/${id}.webp`,
+    isPrimary,
+    sortOrder: 0,
+  })
+
+  it('reemplaza la galería', () => {
+    const p = Place.create(makeProps({ images: [img('viejo', true)] })).withImages([img('nuevo')])
+    expect(p.images.map((i) => i.id)).toEqual(['nuevo'])
+  })
+
+  it('si ninguna viene marcada como portada, la primera queda de portada', () => {
+    const p = Place.create(makeProps()).withImages([img('a'), img('b')])
+    expect(p.primaryImage()?.id).toBe('a')
+    expect(p.images[0].isPrimary).toBe(true)
+  })
+
+  it('respeta la portada explícita si ya viene una', () => {
+    const p = Place.create(makeProps()).withImages([img('a'), img('b', true)])
+    expect(p.primaryImage()?.id).toBe('b')
+  })
+})
+
 describe('Place.primaryImage', () => {
   const img = (id: string, isPrimary: boolean): PlaceImage => ({
     id,
