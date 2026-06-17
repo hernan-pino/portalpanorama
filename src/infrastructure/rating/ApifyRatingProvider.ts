@@ -49,7 +49,8 @@ export class ApifyRatingProvider implements PlaceRatingProvider {
     if (query.knownPlaceId) {
       return { ...base, placeIds: [query.knownPlaceId], maxCrawledPlacesPerSearch: 1 }
     }
-    const terms = [query.name, query.commune, 'Chile'].filter(Boolean).join(', ')
+    // Incluir la dirección fija la sucursal correcta en marcas multi-local.
+    const terms = [query.name, query.address, query.commune, 'Chile'].filter(Boolean).join(', ')
     return { ...base, searchStringsArray: [terms], maxCrawledPlacesPerSearch: 1 }
   }
 

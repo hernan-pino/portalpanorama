@@ -43,6 +43,7 @@ export class EnrichPlaceRatingUseCase {
 
     const result = await this.ratingProvider.lookup({
       name: place.name,
+      address: place.address,
       commune: communeName,
       knownPlaceId: place.googlePlaceId,
     })

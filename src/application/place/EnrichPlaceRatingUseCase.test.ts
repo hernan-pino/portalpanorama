@@ -66,7 +66,7 @@ describe('EnrichPlaceRatingUseCase', () => {
   })
 
   it('re-consulta un lugar con rating si force=true (búsqueda exacta por place_id)', async () => {
-    const place = makePlace({ googlePlaceId: 'ChIJexistente' })
+    const place = makePlace({ googlePlaceId: 'ChIJexistente', address: 'Av. Bicentenario 3236' })
     const result: RatingResult = { googlePlaceId: 'ChIJexistente', googleRating: 4.8, googleReviewCount: 100, photoUrls: [] }
     const { placeRepo, locationRepo, ratingProvider, lookup } = deps(place, result)
     const uc = new EnrichPlaceRatingUseCase(placeRepo, locationRepo, ratingProvider)
@@ -74,8 +74,23 @@ describe('EnrichPlaceRatingUseCase', () => {
     expect(res.status).toBe('updated')
     expect(lookup).toHaveBeenCalledWith({
       name: 'Parque Bicentenario',
+      address: 'Av. Bicentenario 3236',
       commune: 'Vitacura',
       knownPlaceId: 'ChIJexistente',
+    })
+  })
+
+  it('pasa la dirección de la ficha a la query (fija la sucursal en marcas multi-local)', async () => {
+    const place = makePlace({ address: 'José Victorino Lastarria 71' })
+    const result: RatingResult = { googlePlaceId: 'ChIJx', googleRating: 4.3, googleReviewCount: 1200, photoUrls: [] }
+    const { placeRepo, locationRepo, ratingProvider, lookup } = deps(place, result)
+    const uc = new EnrichPlaceRatingUseCase(placeRepo, locationRepo, ratingProvider)
+    await uc.execute({ placeId: 'place_1' })
+    expect(lookup).toHaveBeenCalledWith({
+      name: 'Parque Bicentenario',
+      address: 'José Victorino Lastarria 71',
+      commune: 'Vitacura',
+      knownPlaceId: undefined,
     })
   })
 

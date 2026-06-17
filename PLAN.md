@@ -231,10 +231,12 @@ Foto de "qué falta para lanzar live". Lo ✅ ya está. Lo demás, ordenado por 
   (2026-06-17):** se integró **Apify** (Google Maps Scraper) detrás del port `PlaceRatingProvider` —
   adapter `ApifyRatingProvider`, use case `EnrichPlaceRatingUseCase` (setea rating/reseñas/place_id +
   recalcula score bayesiano, sin tocar el estado), y script **`scripts/enrich-ratings.ts`** (`--dry`,
-  `--force`, flag `⚠️ REVISAR` cuando el nombre del match no coincide). Verificado e2e con La Piojera
-  (4.3 · 7.299 reseñas · 10 fotos). Sin tarjeta (free US$5/mes de Apify cubre el MVP). El adapter ya
-  **trae** las URLs de fotos pero el auto-attach a la ficha quedó como paso aparte. **Falta:** correr el
-  enriquecimiento real sobre los 12. Calidad de fichas: descripción compacta con negrita/bullets.
+  `--force`, flag `⚠️ REVISAR` cuando el nombre del match no coincide). La query incluye la **dirección**
+  de la ficha para fijar la sucursal correcta en marcas multi-local (Emporio La Rosa → su sucursal, no
+  otra). Sin tarjeta (free US$5/mes de Apify cubre el MVP). **Aplicado (2026-06-17):** 6 lugares reales
+  enriquecidos con rating/place_id/fotos + score recalculado; 4 fichas de prueba borradas → 12 lugares
+  reales en BD. El adapter ya **trae** las URLs de fotos pero el auto-attach a la ficha quedó pendiente
+  (paso aparte). Falta: seguir cargando contenido.
 - [ ] **Push a prod.** (a) Decidir workflow de BD: hoy `prisma db push` sin migraciones; antes de prod
   decidir si seguimos con `db push` o introducimos migraciones reales (no se puede `--force-reset`
   contra prod con datos). (b) Schema + seed de catálogos en Neon prod. (c) `RESEND_API_KEY` real

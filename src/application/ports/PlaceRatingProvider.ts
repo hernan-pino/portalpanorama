@@ -6,6 +6,10 @@
 export interface RatingQuery {
   // Nombre del lugar tal como lo conoce la gente (lo que se busca en Maps).
   name: string
+  // Dirección de la ficha. Clave para fijar la SUCURSAL correcta cuando la marca
+  // tiene varios locales (Emporio La Rosa Lastarria vs Providencia): sin esto, Maps
+  // devuelve la que rankea primero, que puede no ser la de la ficha.
+  address?: string
   // Comuna para desambiguar (cadenas, nombres repetidos). Opcional pero recomendado.
   commune?: string
   // Si ya conocemos el place_id, búsqueda exacta (2ª pasada): evita el matching difuso.
