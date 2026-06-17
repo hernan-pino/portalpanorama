@@ -131,3 +131,40 @@ sus `location`s.
 3. ¿**Logo** obligatorio u opcional?
 4. Ruta: **`/marca/[slug]`** (preciso para cadenas) vs **`/negocio/[slug]`** (más amplio).
 5. ¿Una sucursal puede pertenecer a **más de una** marca? (Default: no — `brandId` es uno solo).
+
+---
+
+## 10. 🔜 PRÓXIMA SESIÓN — Brand × Eventos (a definir bien)
+
+**Pedido del usuario (2026-06-17), para arrancar la próxima sesión.** Cuando se enciendan Eventos
+(hoy apagados en el MVP), la marca y los eventos se cruzan y hay que modelarlo con cuidado.
+
+**Escenario real a resolver:** una marca **X** tiene 3 locales por Santiago. X además **hace eventos**:
+- a veces el evento es en **un solo local** (ej. cata en la sucursal de Providencia);
+- a veces hay **eventos distintos en cada local** (cada sucursal su propia cartelera);
+- (y el caso implícito) a veces es un **evento de marca** que aplica a varias/todas las sucursales.
+
+**Cómo se conecta con lo ya modelado:**
+- El `Event` actual ya tiene **`placeId String?`** (nullable: evento sin local fijo). Ver SCHEMA.
+- Ya está decidido que, al encender Eventos, **un Place puede tener su cartelera en su propia ficha**
+  (ver PLAN_FASE9, decisión de la sesión de taxonomía).
+
+**Opción de modelado a evaluar (no decidida):** sumar **`Event.brandId String?`** junto al `placeId`, y
+que la combinación exprese los tres casos:
+
+| `brandId` | `placeId` | Significado |
+|---|---|---|
+| — | sí | Evento en un local puntual (sin marca, o marca implícita por el Place) |
+| sí | sí | Evento **de la marca X en su sucursal Y** (eventos distintos por local) |
+| sí | — | Evento **de marca** (varias/todas las sucursales, o sin local fijo) |
+| — | — | Evento suelto sin local ni marca (feria, concierto en parque) |
+
+Con eso: la **página `/marca`** muestra la cartelera de toda la marca; la **ficha del Place** muestra
+los eventos de ese local (su `placeId`), y un evento brand-wide podría listarse en todas sus fichas.
+
+**Preguntas a cerrar la próxima:**
+1. ¿`Event` lleva `brandId` además de `placeId`, o el vínculo a marca se deriva del `Place`?
+2. Un evento brand-wide "en varias sucursales", ¿es **un** Event con `brandId` (sin place), o **N** Events
+   (uno por sucursal)? Trade-off: cartelera simple vs. detalle por local (cupos/horario distintos).
+3. ¿La ficha del Place muestra también los eventos **brand-wide** de su marca, o solo los suyos propios?
+4. ¿Esto entra cuando se enciendan Eventos (post-MVP), o se diseña el schema antes para no migrar después?

@@ -62,6 +62,11 @@ volcados al backlog y al checklist de abajo. Los principales:
 
 ## ▶️ Próximos pasos (en orden)
 
+> **🔜 ARRANCAR LA PRÓXIMA SESIÓN — definir Brand/Negocios × Eventos.** Pedido del usuario
+> (2026-06-17): cómo se modela una marca con varias sucursales que además hace eventos (a veces en un
+> local, a veces distintos por local, a veces brand-wide). Escenario + opciones + preguntas a cerrar en
+> **[BRAND_SPEC.md](BRAND_SPEC.md) §10**. Recién después se decide si entra a MVP o post-launch.
+
 0. **✅ HECHO (2026-06-14) — flujo de imágenes (ítem p).** Tres caminos (subir archivo · pegar URL
    permitida · "Traer" desde URL externa con guardas anti-SSRF), todos rehospedan en **Vercel Blob** y
    comprimen a `.webp`. Token de Blob arreglado en `.env.local` (store `portal-panorama-images`).
@@ -246,9 +251,10 @@ Foto de "qué falta para lanzar live". Lo ✅ ya está. Lo demás, ordenado por 
   Blob). **Lote 1 cargado (2026-06-17): 15 cafés de Providencia** (skill desktop "modo carga" → place_id →
   agente `investigador-lugares` → ingesta → enrich exacto + fotos). Todos PENDING_REVIEW con rating/score/
   ~5 fotos. **→ ~27 lugares reales en BD.** Ojo: **el Galgo Café** quedó cargado pero está **cerrado
-  temporalmente** (robo 8-jun-2026) → NO publicar hasta confirmar reapertura. Barrios faltantes en el seed
-  (Pedro de Valdivia, Manuel Montt, Barrio Suecia → esas fichas quedaron sin barrio). Falta: revisar/
-  publicar + seguir cargando.
+  temporalmente** (robo 8-jun-2026) → NO publicar hasta confirmar reapertura. Barrios nuevos (Pedro de
+  Valdivia, Manuel Montt, Barrio Suecia) **agregados al seed + asignados** a las 9 fichas que los usaban.
+  **Práctica:** cuando un lote deje barrios omitidos, agregarlos al seed y reasignar (ver memoria). Falta:
+  revisar/publicar + seguir cargando.
 - [ ] **Push a prod.** (a) Decidir workflow de BD: hoy `prisma db push` sin migraciones; antes de prod
   decidir si seguimos con `db push` o introducimos migraciones reales (no se puede `--force-reset`
   contra prod con datos). (b) Schema + seed de catálogos en Neon prod. (c) `RESEND_API_KEY` real

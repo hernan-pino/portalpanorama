@@ -87,6 +87,9 @@ const NEIGHBORHOODS: { name: string; communeNames: string[] }[] = [
   { name: 'Parque Forestal', communeNames: ['Santiago'] },
   { name: 'Centro Histórico', communeNames: ['Santiago'] },
   { name: 'Barrio Mapocho', communeNames: ['Santiago'] },
+  { name: 'Pedro de Valdivia', communeNames: ['Providencia'] },
+  { name: 'Manuel Montt', communeNames: ['Providencia'] },
+  { name: 'Barrio Suecia', communeNames: ['Providencia'] },
 ]
 
 // ─── Categorías (7) + subcategorías (B.4 / doc 04) ───────────────────────────────
