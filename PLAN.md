@@ -8,7 +8,7 @@ priorizado. Se actualiza cada vez que avanzamos. Liviano a propósito — para r
 - **Modelo de datos:** [SCHEMA.md](SCHEMA.md) · **Capas:** [ARCHITECTURE.md](ARCHITECTURE.md) · **Carga:** [PLANTILLA_CSV.md](PLANTILLA_CSV.md)
 - **Bitácora del rediseño (historia + razonamiento de las decisiones):** [PLAN_FASE9.md](PLAN_FASE9.md)
 
-**Última actualización:** 2026-06-14 (auditoría pre-lanzamiento: plan priorizado P0/P1/P2)
+**Última actualización:** 2026-06-18 (lote 2 cargado: +51 lugares → 78 total; mejora de marcas auto)
 
 ---
 
@@ -62,10 +62,14 @@ volcados al backlog y al checklist de abajo. Los principales:
 
 ## ▶️ Próximos pasos (en orden)
 
-> **🔜 ARRANCAR LA PRÓXIMA SESIÓN — definir Brand/Negocios × Eventos.** Pedido del usuario
-> (2026-06-17): cómo se modela una marca con varias sucursales que además hace eventos (a veces en un
-> local, a veces distintos por local, a veces brand-wide). Escenario + opciones + preguntas a cerrar en
-> **[BRAND_SPEC.md](BRAND_SPEC.md) §10**. Recién después se decide si entra a MVP o post-launch.
+> **✅ Brand (MVP mínimo) CONSTRUIDO + e2e OK (2026-06-18) — solo falta prod.** Entidad `Brand` de punta a
+> punta: schema (model Brand + `brandId` en Place **y** Event, db push local OK), dominio
+> (`Brand` aggregate), aplicación (port `BrandRepository` + use cases create/update/getPage/forEdit/
+> listForAdmin + `BrandPageView`), infra (`PrismaBrandRepository` + `brandId` en PrismaPlaceRepository),
+> presentation (admin CRUD `/admin/marcas`, selector "Marca" en el form de Place, bloque "Por [Marca] ↗"
+> en la ficha, página pública `/marca/[slug]` con grilla de locales + JSON-LD Organization). Typecheck +
+> 84 tests verdes; rutas compilan sin error. **e2e OK (2026-06-18)** (marcas reales creadas + vistas en
+> `/marca/[slug]`; fix del preview de logo). Solo falta el push a prod. Decisiones en [BRAND_SPEC.md](BRAND_SPEC.md) §10.
 
 0. **✅ HECHO (2026-06-14) — flujo de imágenes (ítem p).** Tres caminos (subir archivo · pegar URL
    permitida · "Traer" desde URL externa con guardas anti-SSRF), todos rehospedan en **Vercel Blob** y
@@ -181,11 +185,26 @@ más adelante; requiere `RESEND_API_KEY` real + considerar rate-limit anti-bots.
 - **(o.7) Tags pendientes de pulir:** revisar exclusiones mutuas; `LGBT+ friendly` recién agregado.
 
 **Schema / modelo:**
-- **(w) Entidad `Brand` / Negocio (marca con varias sucursales) — ESPECIFICADA, no construida (2026-06-17).**
-  Agrupar las sucursales de una marca bajo una identidad comercial + bloque "Por [Marca]" en la ficha +
-  página `/marca/[slug]` con todas sus sucursales. Eje nuevo (`brandId`), ortogonal a `parentId`
-  (contención) y `ownerId` (gestión). Spec completo en [BRAND_SPEC.md](BRAND_SPEC.md). **Recomendación:
-  post-launch** (`brandId` nullable → se agrega sin migración dolorosa); no bloquea lanzar.
+- **(w) Entidad `Brand` / Negocio (marca con varias sucursales) — ✅ CONSTRUIDA (2026-06-17), falta e2e humano + prod.**
+  Agrupa las sucursales de una marca bajo una identidad comercial + bloque "Por [Marca] ↗" en la ficha +
+  página `/marca/[slug]` con todas sus sucursales publicadas. Eje nuevo (`brandId`), ortogonal a `parentId`
+  (contención) y `ownerId` (gestión). **Insight Brand×Eventos (caso "Honesto Mike"):** Brand es la
+  **entidad paraguas**; debajo cuelgan **Places** (real hoy) y **Events** (futuro), independientes —
+  `brandId` es FK explícito en **ambos** (`Event.brandId` reservado mientras Eventos sigue apagado; una
+  marca puede tener solo eventos sin local). Hexagonal de punta a punta (domain `Brand` · port
+  `BrandRepository` · use cases · `PrismaBrandRepository` · admin CRUD + selector en form Place + ficha +
+  `/marca/[slug]` con JSON-LD Organization). Typecheck + 84 tests OK. Decisiones en [BRAND_SPEC.md](BRAND_SPEC.md) §10.
+  **Brand vs. Cuenta (§11, 2026-06-17):** cuenta gestiona marca agrupa lugares (cadena, no lo mismo); en
+  MVP la marca la crea el **admin** (no hay cuentas de negocio), el flujo "el dueño se registra y agrega
+  lugares" es self-service post-MVP montado encima de Brand. Puerta barata reservada: **`Brand.ownerId`
+  nullable** (relación `BrandOwner`→User parqueada, el dominio/repos aún no la usan; db push aplicado local).
+  **e2e humano ✅ (2026-06-18):** el usuario creó marcas reales por el admin (incl. Bar Flama) y se ven en
+  `/marca/[slug]`. **Fix (2026-06-18):** el preview del logo en el form de marca usaba `next/image` y
+  tumbaba la página (error boundary) al pegar una URL de host no permitido → ahora usa `<img>` plano como
+  el form de Place. **Mejora (2026-06-18):** la skill `ficha-lugar` + ingesta ahora crean la marca **con
+  descripción/logo/links auto** (campo `marca` como objeto), no vacía; si la marca ya existe no se pisa.
+  **Falta:** solo el push a prod (db push de la BD de producción incluirá el model Brand + las 2 columnas
+  `brandId` + `Brand.ownerId`).
 - **(l) Redes sociales múltiples ✅ HECHO (2026-06-15)** — `socialLinks Json?` `[{network,url}]` en
   Place (WhatsApp/Facebook/TikTok…); Instagram queda como campo principal aparte. Cableado de punta a
   punta (dominio → form admin → ficha → JSON-LD `sameAs`), BD local migrada. Auditoría: el resto del
@@ -253,8 +272,24 @@ Foto de "qué falta para lanzar live". Lo ✅ ya está. Lo demás, ordenado por 
   ~5 fotos. **→ ~27 lugares reales en BD.** Ojo: **el Galgo Café** quedó cargado pero está **cerrado
   temporalmente** (robo 8-jun-2026) → NO publicar hasta confirmar reapertura. Barrios nuevos (Pedro de
   Valdivia, Manuel Montt, Barrio Suecia) **agregados al seed + asignados** a las 9 fichas que los usaban.
-  **Práctica:** cuando un lote deje barrios omitidos, agregarlos al seed y reasignar (ver memoria). Falta:
-  revisar/publicar + seguir cargando.
+  **Práctica:** cuando un lote deje barrios omitidos, agregarlos al seed y reasignar (ver memoria).
+  **✅ Publicación (2026-06-17):** revisados y **publicados 18 lugares** (los cafés del lote 1 + museos +
+  cerros/parques); **el Galgo Café retenido en PENDING_REVIEW** (cerrado por robo, verificar reapertura
+  antes de publicar). **Cambio de flujo de ingesta (2026-06-17):** `ingest-fichas.ts` ahora **publica por
+  defecto** (antes dejaba todo en borrador); solo quedan en revisión las fichas con `_meta.requiere_revision:
+  true` (cerrado/dudoso) o si se corre con `--review`. Además resuelve **marca → brandId** (la crea como
+  borrador si no existe). La skill `ficha-lugar` + el agente `investigador-lugares` quedaron adaptados al
+  schema nuevo (campo `marca`, flag `requiere_revision`, etiqueta "Sin reserva").
+  **Lote 2 cargado (2026-06-18): +51 lugares → 78 total.** Bares (12 incl. Bar Flama x2), restaurantes (10),
+  librerías (10), disquerías (9), tiendas/vintage (10) — vía 5 corridas paralelas del agente
+  `investigador-lugares` → ingesta. Corrigió el desbalance: **Gastronomía 18→40** (abrió Bar + llenó
+  Restaurante), **Locales y tiendas 0→29** (categoría que estaba 100% vacía). 48 publicados, **3 en
+  `PENDING_REVIEW`** (Colectivo Informal, Rarities Pedro Nolasco, Galpón Bío Bío — dudas legítimas).
+  **6 marcas nuevas creadas con descripción automática** (Le Bistrot, Catalonia, Liguria, Nolita, Punto
+  Musical, Rossie La Loca) gracias a la mejora de marca-objeto; Bar Flama se reusó sin pisar. **Fotos:**
+  enrich `--with-photos` (tope bajado a **3/ficha**) adjuntó 3 fotos de Google Maps a las 47 sin imágenes.
+  Barrio **Franklin** agregado al seed (5 fichas del Persa). Falta: seguir cargando (Naturaleza/Arte/
+  Entretenimiento siguen flacos) + revisar las 3 en PENDING_REVIEW.
 - [ ] **Push a prod.** (a) Decidir workflow de BD: hoy `prisma db push` sin migraciones; antes de prod
   decidir si seguimos con `db push` o introducimos migraciones reales (no se puede `--force-reset`
   contra prod con datos). (b) Schema + seed de catálogos en Neon prod. (c) `RESEND_API_KEY` real
