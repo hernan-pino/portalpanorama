@@ -100,7 +100,7 @@ Topes solo en las 3 capas subjetivas; las objetivas van sin tope ("más info = m
 
 ### Enums (valores exactos)
 - **Rango de precio:** Gratis · Menos de $5.000 · $5.000–15.000 · $15.000–30.000 · Más de $30.000
-- **Reserva:** Requiere reserva · Reserva recomendada · Sin reserva (llega no más)
+- **Reserva:** Requiere reserva · Reserva recomendada · Sin reserva
 - **Si llueve** (SOLO si la categoría principal o secundaria es *Naturaleza y aire libre*; si no → vacío):
   Si llueve se suspende · Con lluvia se traslada a techado · Funciona igual con lluvia
 - **Métodos de pago** (multi-selección, solo de esta lista): Efectivo · Débito · Crédito · Transferencia · Mercado Pago
@@ -112,6 +112,31 @@ Si el lugar **está dentro de** otro lugar que también tiene ficha (ej. el Zool
 Parquemet, un local dentro del MUT), anótalo como **"Parte de: [lugar padre]"**. Si el lugar **contiene
 puntos sin ficha propia** (miradores, kioscos, "el local donde venden X"), lístalos como **spots**
 (nombre + breve descripción). No fuerces esto: la mayoría de las fichas no son contenedores.
+
+### Marca / Negocio (opcional, solo si es una cadena)
+Si el lugar es **una sucursal de una marca con varios locales** (Emporio La Rosa, Starbucks, Castaño,
+Juan Valdez…), anota la **marca**. El directorio agrupa todas las sucursales bajo esa marca y arma una
+página `/marca/[slug]` con todas. **Cada sucursal sigue siendo su propia ficha con su rating y dirección
+propios** — la marca solo las agrupa.
+
+**No uses `marca` para locales independientes de una sola sede** (un café de barrio único no es una marca).
+Es distinto de "Parte de": *Parte de* = contención física (está adentro de otro lugar); *Marca* = misma
+empresa con varias sucursales en distintas direcciones. Un lugar puede tener ambos, pero es raro.
+
+**Investiga también la marca, no solo la sucursal.** Cuando marques `marca`, trae además los **datos de
+la marca como entidad** (su identidad comercial, no la de esta sucursal): una **descripción de la marca**,
+su **logo**, **sitio web**, **Instagram** y redes **de la cadena** (no los de la sucursal puntual). El
+importador crea la marca **ya enriquecida** con esto la primera vez que la ve; si la marca ya existía, no
+la pisa. Así no queda una marca vacía que haya que completar a mano. En el Markdown muéstralo como un
+bloque **"🏷️ Marca: [nombre]"** con esos campos; en el JSON va en el objeto `marca` (ver esquema).
+
+**Cómo escribir la descripción de la marca** (distinta de la de la sucursal): describe **la cadena / el
+concepto**, no un local en particular. Qué es la marca, qué la distingue, qué esperar en cualquiera de sus
+locales, cuántas sedes tiene aprox. y dónde. Misma voz humana y escaneable que la descripción de lugar
+(2 párrafos cortos, negrita en lo clave, sin clichés de folleto), pero el sujeto es **la marca**, no la
+dirección. Ejemplo: *"**Cadena chilena de heladerías** nacida en el Mercado Central; hoy con varias sedes
+en Santiago. Famosa por sus **helados de fruta natural** y un puñado de sabores que rotan…"* — no menciones
+la dirección ni el rating de una sucursal acá (eso vive en cada ficha).
 
 ### Reputación de Google — cuál ficha de Maps usar (lugares con varias)
 Un mismo lugar físico a veces tiene **varias fichas en Maps**, cada una con su puntaje y N° de reseñas
@@ -172,6 +197,7 @@ distintos. Decide cuál usar **alineado con el modelo padre-hijo del directorio*
 | Metro | ... |
 | Lat / Long | ... / ... |
 | Parte de (contenedor) | ... (o —) |
+| Marca / Negocio | ... (solo si es cadena; o —) |
 | Rango de precio | ... |
 | Reserva | ... |
 | Métodos de pago | ... |
@@ -193,6 +219,8 @@ distintos. Decide cuál usar **alineado con el modelo padre-hijo del directorio*
 - 🏷️ Específicos: ...
 
 **Spots sin ficha** (si aplica): nombre — descripción · ...
+
+**🏷️ Marca** (solo si es cadena): nombre · descripción de la marca · logo url · sitio web · IG · otras redes
 
 **Imágenes** (pega cada URL en el form y toca **Traer**):
 1. [portada] url — alt — crédito
@@ -216,6 +244,7 @@ distintos. Decide cuál usar **alineado con el modelo padre-hijo del directorio*
 {
   "slug": "",
   "basicos": { "nombre": "", "descripcion": "", "url_menu": null },
+  "marca": null,
   "categorizacion": {
     "categoria": "", "subcategoria": "",
     "categoria_secundaria": null, "subcategoria_secundaria": null
@@ -241,10 +270,41 @@ distintos. Decide cuál usar **alineado con el modelo padre-hijo del directorio*
   "imagenes": [ { "url": "", "alt": "", "credito": null, "portada": true } ],
   "_meta": {
     "campos_a_verificar": [], "campos_no_encontrados": [],
-    "confianza_general": "alta | media | baja"
+    "confianza_general": "alta | media | baja",
+    "requiere_revision": false, "motivo_revision": null
   }
 }
 ```
+
+**Campo `marca`:** `null` si el lugar no es una cadena. Si lo es, va un **objeto** con los datos de la
+marca (no de la sucursal):
+
+```json
+"marca": {
+  "nombre": "Emporio La Rosa",
+  "descripcion": "Cadena chilena de heladerías… (la voz de la marca, no de esta sucursal)",
+  "logo_url": "https://…",
+  "sitio_web": "https://…",
+  "instagram": "@emporiolarosa",
+  "redes_extra": [ { "red": "Facebook", "url": "https://…" } ]
+}
+```
+
+Todo salvo `nombre` es opcional (lo que no encuentres, omítelo o `null`). El importador crea la marca con
+estos datos la primera vez; si ya existía, no la pisa. Un **string suelto** (`"marca": "Emporio La Rosa"`)
+también se acepta como compat (crea la marca solo con el nombre).
+
+### Flag `requiere_revision` — cuándo NO publicar automáticamente
+El importador **publica las fichas por defecto**. Pon `requiere_revision: true` (con un `motivo_revision`
+corto) cuando el lugar **no debería salir al sitio sin que un humano lo mire**:
+
+- **Cerrado temporal o permanentemente** (en remodelación, "cerrado hasta nuevo aviso", quiebra, robo).
+- **Datos en conflicto** entre fuentes que no pudiste resolver (dos direcciones, dos ratings muy distintos).
+- **Confianza baja** en que el lugar siga operando o en que la info sea correcta.
+- **Duda de identidad** (no estás seguro de cuál de varios lugares homónimos es).
+
+Si el lugar está operando normal y la info es sólida, déjalo en `false` (se publica solo). Esto reemplaza
+al viejo flujo de "todo entra como borrador a revisar": ahora solo se frena lo dudoso.
 
 ---
 

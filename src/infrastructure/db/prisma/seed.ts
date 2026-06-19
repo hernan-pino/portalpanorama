@@ -90,6 +90,7 @@ const NEIGHBORHOODS: { name: string; communeNames: string[] }[] = [
   { name: 'Pedro de Valdivia', communeNames: ['Providencia'] },
   { name: 'Manuel Montt', communeNames: ['Providencia'] },
   { name: 'Barrio Suecia', communeNames: ['Providencia'] },
+  { name: 'Barrio Franklin', communeNames: ['Santiago'] },
 ]
 
 // ─── Categorías (7) + subcategorías (B.4 / doc 04) ───────────────────────────────

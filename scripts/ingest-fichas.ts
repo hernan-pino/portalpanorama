@@ -1,27 +1,52 @@
 // Ingesta de fichas investigadas (salida JSON de la skill `ficha-lugar`) → crea
-// Places en estado PENDING_REVIEW (borrador) para revisar y publicar a mano en el
-// admin. Resuelve nombres del catálogo → IDs, rehospeda imágenes con el pipeline
-// de "Traer" (ImportImageFromUrlUseCase) y reporta lo que no calza. NUNCA publica.
+// Places y, por defecto, los PUBLICA. Resuelve nombres del catálogo → IDs, resuelve
+// la marca (creándola si no existe), rehospeda imágenes con el pipeline de "Traer"
+// (ImportImageFromUrlUseCase) y reporta lo que no calza.
 //
-//   npx tsx --env-file=.env.local scripts/ingest-fichas.ts [carpeta-o-archivo]
+//   npx tsx --env-file=.env.local scripts/ingest-fichas.ts [carpeta-o-archivo] [--review] [--dry]
 //   (por defecto: tmp/fichas/*.json — cada .json es una ficha; o un array de fichas)
 //
-// Flujo completo: [agente investigador] escribe los JSON → este script los ingesta
-// como borradores → tú revisás en /admin/lugares (con Preview) y publicás.
+// Publicación: cada ficha se PUBLICA salvo que ella misma pida revisión
+// (`_meta.requiere_revision: true`, p. ej. cerrado temporalmente / dato dudoso), que
+// quedan en PENDING_REVIEW para mirarlas a mano. `--review` fuerza TODO a PENDING_REVIEW.
+//
+// Flujo completo: [agente investigador] escribe los JSON → este script los ingesta y
+// publica (las dudosas quedan en revisión) → revisás esas pocas en /admin/lugares.
 import { readdirSync, readFileSync, statSync } from 'node:fs'
 import { join } from 'node:path'
 import { prisma } from '../src/lib/db'
 import { container } from '../src/lib/container'
 import type { PlaceFormOptions } from '../src/application/place/GetPlaceFormOptionsUseCase'
 import type { PlaceWriteInput, PlaceImageInput } from '../src/application/place/PlaceWriteInput'
+import type { BrandWriteInput } from '../src/application/brand/BrandWriteInput'
 import { PriceRange } from '../src/domain/place/PriceRange'
 import { ReservationPolicy } from '../src/domain/place/ReservationPolicy'
 import { RainPolicy } from '../src/domain/place/RainPolicy'
 
 // ── Contrato de entrada (salida de la skill ficha-lugar). Todo opcional salvo lo
 //    mínimo para crear: nombre + categoría + subcategoría + comuna. ──
+// Datos de la marca cuando la ficha trae el objeto (no solo el nombre).
+interface MarcaInput {
+  nombre: string
+  descripcion?: string | null
+  logo_url?: string | null
+  sitio_web?: string | null
+  instagram?: string | null
+  redes_extra?: { red: string; url: string }[] | null
+}
+
 interface FichaJSON {
   basicos?: { nombre?: string; descripcion?: string; url_menu?: string | null }
+  // Marca/Negocio: solo si el lugar es sucursal de una marca con varios locales
+  // (Emporio La Rosa, Starbucks…). El ingestor la resuelve → brandId (la crea si no
+  // existe). NO usar para locales independientes de una sola sede.
+  //
+  // Acepta dos formas:
+  //   - string  → solo el nombre (compat): la marca se crea vacía si no existe.
+  //   - objeto  → nombre + datos de la marca (descripción/logo/redes). Si la marca
+  //     todavía no existe, se crea ya enriquecida (logo rehospedado); si ya existe,
+  //     NO se pisa (los datos cargados a mano ganan).
+  marca?: string | MarcaInput | null
   categorizacion?: {
     categoria?: string; subcategoria?: string
     categoria_secundaria?: string | null; subcategoria_secundaria?: string | null
@@ -44,6 +69,9 @@ interface FichaJSON {
   tags?: Partial<Record<'audience' | 'occasion' | 'vibe' | 'experience' | 'service' | 'specific', string[]>>
   spots?: { nombre: string; descripcion?: string | null }[]
   imagenes?: { url: string; alt?: string | null; credito?: string | null; portada?: boolean }[]
+  // Señal de la skill para no publicar automáticamente (cerrado temporal/permanente,
+  // datos en conflicto, confianza baja). Si va true → queda PENDING_REVIEW con el motivo.
+  _meta?: { requiere_revision?: boolean; motivo_revision?: string | null }
 }
 
 const norm = (s: string) =>
@@ -81,6 +109,44 @@ function toRain(v?: string | null): RainPolicy | undefined {
 }
 
 type Warn = string[]
+
+// Normaliza el campo `marca` (string suelto o objeto) a una forma común, o null si
+// no viene / viene vacío.
+function normalizeMarca(raw: FichaJSON['marca']): MarcaInput | null {
+  if (!raw) return null
+  if (typeof raw === 'string') {
+    const nombre = raw.trim()
+    return nombre ? { nombre } : null
+  }
+  const nombre = raw.nombre?.trim()
+  return nombre ? { ...raw, nombre } : null
+}
+
+// Arma el BrandWriteInput para crear una marca nueva a partir de los datos de la ficha.
+// Rehospeda el logo (si vino una URL) con el mismo pipeline de "Traer" que las fotos,
+// para que `next/image` pueda renderizarlo (host permitido).
+async function buildBrandWriteInput(marca: MarcaInput, warn: Warn): Promise<BrandWriteInput> {
+  let logoUrl: string | undefined
+  if (marca.logo_url?.trim()) {
+    try {
+      const { url } = await container.getImportImageFromUrlUseCase().execute({ url: marca.logo_url.trim() })
+      logoUrl = url
+    } catch (e) {
+      warn.push(`logo de marca omitido (no se pudo traer): ${marca.logo_url} — ${(e as Error).message}`)
+    }
+  }
+  const socialLinks = (marca.redes_extra ?? [])
+    .filter((r) => r?.red?.trim() && r?.url?.trim())
+    .map((r) => ({ network: r.red.trim(), url: r.url.trim() }))
+  return {
+    name: marca.nombre,
+    logoUrl,
+    description: marca.descripcion?.trim() || undefined,
+    website: marca.sitio_web?.trim() || undefined,
+    instagram: marca.instagram?.trim() || undefined,
+    socialLinks,
+  }
+}
 
 // Resuelve una ficha contra el catálogo. Devuelve el input listo o null si falta
 // algo obligatorio; acumula advertencias de lo que se omitió.
@@ -261,8 +327,10 @@ function loadFichas(target: string): FichaJSON[] {
 async function main() {
   const args = process.argv.slice(2)
   const dry = args.includes('--dry')
+  const forceReview = args.includes('--review')
   const target = args.find((a) => !a.startsWith('--')) ?? 'tmp/fichas'
   if (dry) console.log('— MODO DRY: resuelve y valida, NO crea ni rehospeda —')
+  if (forceReview) console.log('— MODO REVIEW: todo queda PENDING_REVIEW (no publica) —')
   console.log(`Leyendo fichas de: ${target}`)
   const fichas = loadFichas(target)
   console.log(`  ${fichas.length} ficha(s) encontradas\n`)
@@ -270,6 +338,9 @@ async function main() {
   const opts = await container.getGetPlaceFormOptionsUseCase().execute()
   const nameToId = new Map<string, string>()
   for (const p of opts.parents) nameToId.set(norm(p.name), p.id)
+  // Marcas existentes (nombre→id); se crean al vuelo si una ficha trae una nueva.
+  const brandNameToId = new Map<string, string>()
+  for (const b of opts.brands) brandNameToId.set(norm(b.name), b.id)
 
   // Procesa "padres" primero (los que son referidos por otra ficha como parte_de),
   // así un contenedor cargado en la misma corrida queda disponible para sus hijos.
@@ -293,15 +364,52 @@ async function main() {
         warn.forEach((w) => console.log(`    · ${w}`))
         continue
       }
+
+      // Marca/Negocio: resuelve nombre→brandId (la crea si no existe, ya enriquecida
+      // con los datos que trae la ficha; si ya existía, no se pisa).
+      const marca = normalizeMarca(f.marca)
+      if (marca) {
+        const key = norm(marca.nombre)
+        let brandId = brandNameToId.get(key)
+        if (!brandId) {
+          if (dry) {
+            warn.push(`marca nueva (se crearía): "${marca.nombre}"${marca.descripcion ? ' (con descripción)' : ''}`)
+          } else {
+            const write = await buildBrandWriteInput(marca, warn)
+            const res = await container.getCreateBrandUseCase().execute(write)
+            brandId = res.brandId
+            brandNameToId.set(key, brandId)
+            warn.push(
+              write.description
+                ? `marca creada: "${marca.nombre}" (con descripción${write.logoUrl ? ' + logo' : ''})`
+                : `marca creada: "${marca.nombre}" — sin descripción, complétala en /admin/marcas`,
+            )
+          }
+        } else {
+          brandNameToId.set(key, brandId)
+        }
+        if (brandId) input.brandId = brandId
+      }
+
+      // Revisión: la ficha la pide (cerrado/dudoso) o se forzó con --review.
+      const review = forceReview || f._meta?.requiere_revision === true
+      const motivo = f._meta?.motivo_revision?.trim()
+
       if (dry) {
         nameToId.set(norm(input.name), 'dry') // así un hijo del mismo lote resuelve a su padre
         created++
-        console.log(`✓ ${label} — OK (resolvería; ${input.tagIds.length} tags, ${input.images.length} imgs)`)
+        const destino = review ? 'PENDING_REVIEW' : 'PUBLICADO'
+        console.log(`✓ ${label} — OK (resolvería → ${destino}; ${input.tagIds.length} tags, ${input.images.length} imgs)`)
       } else {
         const { placeId } = await container.getCreatePlaceUseCase().execute(input)
         nameToId.set(norm(input.name), placeId) // disponible como padre para los siguientes
         created++
-        console.log(`✓ ${label} — creado PENDING_REVIEW (${placeId})`)
+        if (review) {
+          console.log(`✓ ${label} — creado PENDING_REVIEW${motivo ? ` (${motivo})` : ''} (${placeId})`)
+        } else {
+          await container.getPublishPlaceUseCase().execute(placeId)
+          console.log(`✓ ${label} — PUBLICADO (${placeId})`)
+        }
       }
       if (warn.length) {
         console.log('    a verificar:')
@@ -314,8 +422,8 @@ async function main() {
     }
   }
 
-  console.log(`\nResumen: ${created} creado(s) como borrador, ${skipped} omitida(s).`)
-  console.log('Revisá y publicá en /admin/lugares (usa el botón Preview).')
+  console.log(`\nResumen: ${created} creado(s), ${skipped} omitida(s).`)
+  console.log('Las publicadas ya están en el sitio. Revisá las que quedaron en PENDING_REVIEW en /admin/lugares.')
 }
 
 main()

@@ -20,10 +20,11 @@ es lo que consume el script de ingesta. Por cada lugar:
 
 1. Investiga con búsquedas en paralelo (Google Maps, sitio oficial, redes, blogs).
 2. Arma la ficha respetando el **contrato JSON** de la skill (sección "Salida bajo
-   pedido — JSON"): claves `basicos`, `categorizacion`, `ubicacion` (incl. `parte_de`),
-   `presupuesto_operacion`, `contacto_redes` (incl. `redes_extra`), `reputacion_google`,
-   `tags` (las 6 capas: `audience/occasion/vibe/experience/service/specific`), `spots`,
-   `imagenes`, `_meta`.
+   pedido — JSON"): claves `basicos`, `marca` (solo si es sucursal de una cadena),
+   `categorizacion`, `ubicacion` (incl. `parte_de`), `presupuesto_operacion`,
+   `contacto_redes` (incl. `redes_extra`), `reputacion_google`, `tags` (las 6 capas:
+   `audience/occasion/vibe/experience/service/specific`), `spots`, `imagenes`, `_meta`
+   (incl. `requiere_revision` + `motivo_revision`).
 3. Usa **exactamente los nombres del catálogo** de la skill para categoría, subcategoría,
    comuna, barrio, metro y tags (el ingestor matchea por nombre). Si dudas que un valor
    exista, igual ponlo y anótalo en `_meta.campos_a_verificar`.
@@ -35,10 +36,17 @@ es lo que consume el script de ingesta. Por cada lugar:
 ## Reglas
 - **Nunca inventes** estrellas, reseñas, teléfono, Place ID, lat/long. Sin fuente → `null`
   y entra en `_meta.campos_no_encontrados`.
-- **No publiques ni toques la BD.** Solo escribes JSON. La ingesta (estado borrador
-  PENDING_REVIEW) la corre el script `scripts/ingest-fichas.ts` aparte.
+- **No publiques ni toques la BD.** Solo escribes JSON. La ingesta la corre el script
+  `scripts/ingest-fichas.ts` aparte, que **publica por defecto** y solo deja en revisión
+  las fichas con `_meta.requiere_revision: true`. Marca ese flag (con `motivo_revision`)
+  cuando el lugar esté cerrado/dudoso y no deba salir al sitio sin revisión humana.
 - Contenedores: si el lugar es parte de otro (o contiene puntos sin ficha), refléjalo en
   `parte_de` / `spots`, y haz **una ficha por entidad** con su propio rating según la regla
   de Google.
+- Marca: si el lugar es **sucursal de una cadena** (varios locales), llena `marca` con un
+  **objeto** `{ nombre, descripcion, logo_url, sitio_web, instagram, redes_extra }` con los
+  datos **de la marca** (no de esta sucursal): investiga la cadena y escribe una descripción
+  de la marca, su logo y sus redes. El importador crea la marca enriquecida la primera vez.
+  No la uses para locales independientes de una sola sede.
 - Al terminar, devuelve un resumen corto: qué fichas escribiste, su confianza, y qué quedó
   para verificar. No vuelques los JSON completos en el mensaje.
