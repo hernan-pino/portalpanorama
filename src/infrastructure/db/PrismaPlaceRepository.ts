@@ -77,6 +77,7 @@ function toPlaceDomain(row: PlaceAggregateRow): Place {
     ownerId: row.ownerId ?? undefined,
     status: row.status as PlaceStatus,
     parentId: row.parentId ?? undefined,
+    brandId: row.brandId ?? undefined,
     images: row.images.map((img) => ({
       id: img.id,
       url: img.url,
@@ -143,6 +144,7 @@ function toWriteData(place: Place) {
     ownerId: place.ownerId ?? null,
     status: place.status as $Enums.PlaceStatus,
     parentId: place.parentId ?? null,
+    brandId: place.brandId ?? null,
     updatedAt: place.updatedAt,
   }
 }
@@ -169,6 +171,8 @@ const detailArgs = Prisma.validator<Prisma.PlaceDefaultArgs>()({
       select: placeCardArgs.select,
     },
     points: { orderBy: { sortOrder: 'asc' } },
+    // Marca de la sucursal (bloque "Por [Marca]"): solo lo que pinta la ficha.
+    brand: { select: { slug: true, name: true, logoUrl: true } },
   },
 })
 type PlaceDetailRow = Prisma.PlaceGetPayload<typeof detailArgs>
@@ -223,6 +227,9 @@ function toPlaceDetailView(row: PlaceDetailRow): PlaceDetailView {
       description: pt.description ?? undefined,
       kind: pt.kind ?? undefined,
     })),
+    brand: row.brand
+      ? { slug: row.brand.slug, name: row.brand.name, logoUrl: row.brand.logoUrl ?? undefined }
+      : undefined,
   }
 }
 

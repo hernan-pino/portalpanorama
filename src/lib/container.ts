@@ -3,6 +3,7 @@ import { prisma } from './db'
 // ── Infrastructure adapters ─────────────────────────────────────────────
 import { PrismaUserRepository } from '@infrastructure/db/PrismaUserRepository'
 import { PrismaPlaceRepository } from '@infrastructure/db/PrismaPlaceRepository'
+import { PrismaBrandRepository } from '@infrastructure/db/PrismaBrandRepository'
 import { PrismaCategoryRepository } from '@infrastructure/db/PrismaCategoryRepository'
 import { PrismaTagRepository } from '@infrastructure/db/PrismaTagRepository'
 import { PrismaCollectionRepository } from '@infrastructure/db/PrismaCollectionRepository'
@@ -34,6 +35,11 @@ import { ListPlacesForAdminUseCase } from '@application/place/ListPlacesForAdmin
 import { GetPlaceForEditUseCase } from '@application/place/GetPlaceForEditUseCase'
 import { GetPlaceFormOptionsUseCase } from '@application/place/GetPlaceFormOptionsUseCase'
 import { GetCatalogCoverageUseCase } from '@application/place/GetCatalogCoverageUseCase'
+import { GetBrandPageUseCase } from '@application/brand/GetBrandPageUseCase'
+import { CreateBrandUseCase } from '@application/brand/CreateBrandUseCase'
+import { UpdateBrandUseCase } from '@application/brand/UpdateBrandUseCase'
+import { GetBrandForEditUseCase } from '@application/brand/GetBrandForEditUseCase'
+import { ListBrandsForAdminUseCase } from '@application/brand/ListBrandsForAdminUseCase'
 import { UploadPlaceImageUseCase } from '@application/place/UploadPlaceImageUseCase'
 import { ImportImageFromUrlUseCase } from '@application/place/ImportImageFromUrlUseCase'
 import { CreateReportUseCase } from '@application/place/CreateReportUseCase'
@@ -54,6 +60,7 @@ import { RecordVisitUseCase } from '@application/user/RecordVisitUseCase'
 // Los adapters son stateless sobre el cliente Prisma compartido: una instancia basta.
 const userRepo = new PrismaUserRepository(prisma)
 const placeRepo = new PrismaPlaceRepository(prisma)
+const brandRepo = new PrismaBrandRepository(prisma)
 const categoryRepo = new PrismaCategoryRepository(prisma)
 const tagRepo = new PrismaTagRepository(prisma)
 const collectionRepo = new PrismaCollectionRepository(prisma)
@@ -155,11 +162,32 @@ export const container = {
   },
 
   getGetPlaceFormOptionsUseCase() {
-    return new GetPlaceFormOptionsUseCase(categoryRepo, tagRepo, locationRepo, placeRepo)
+    return new GetPlaceFormOptionsUseCase(categoryRepo, tagRepo, locationRepo, placeRepo, brandRepo)
   },
 
   getGetCatalogCoverageUseCase() {
     return new GetCatalogCoverageUseCase(categoryRepo, placeRepo)
+  },
+
+  // ── Marcas / Negocios ───────────────────────────────────────────────
+  getGetBrandPageUseCase() {
+    return new GetBrandPageUseCase(brandRepo)
+  },
+
+  getCreateBrandUseCase() {
+    return new CreateBrandUseCase(brandRepo)
+  },
+
+  getUpdateBrandUseCase() {
+    return new UpdateBrandUseCase(brandRepo)
+  },
+
+  getGetBrandForEditUseCase() {
+    return new GetBrandForEditUseCase(brandRepo)
+  },
+
+  getListBrandsForAdminUseCase() {
+    return new ListBrandsForAdminUseCase(brandRepo)
   },
 
   // Lazy: el adapter de Blob exige BLOB_READ_WRITE_TOKEN; se instancia recién al subir.

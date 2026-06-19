@@ -161,6 +161,7 @@ model User {
   reports            Report[]
   topicSubscriptions TopicSubscription[]
   ownedPlaces        Place[]             @relation("PlaceOwner")
+  ownedBrands        Brand[]             @relation("BrandOwner")
   accounts           Account[]
   sessions           Session[]
 
@@ -277,6 +278,41 @@ model PlaceTag {
   @@index([tagId])
 }
 
+// ─── Brand (Negocio / Marca con varias sucursales) ──────────────────────────────
+// Entidad paraguas: agrupa las sucursales (Place) de una marca comercial bajo una
+// identidad común y, a futuro, su cartelera (Event). Eje ORTOGONAL a parentId
+// (contención física) y ownerId (gestión). Una marca puede tener solo Places (hoy),
+// solo Events (futuro: productoras), o ambos — por eso brandId va en los dos, no se
+// deriva del Place. brandId nullable: la mayoría de las fichas no lo usan. Decisiones
+// en BRAND_SPEC.md §10.
+model Brand {
+  id          String  @id
+  slug        String  @unique
+  name        String
+  logoUrl     String? // rehospedado con el pipeline de imágenes propio (nunca hotlink)
+  description String? @db.Text
+  website     String?
+  instagram   String?
+  socialLinks Json? // redes extra: [{ network, url }] (mismo shape que Place)
+
+  // Cuenta que gestiona la marca (self-service). RESERVADO/PARQUEADO: en el MVP la
+  // marca la crea el admin y ownerId queda null. Es el puente cuenta↔marca para
+  // cuando el dueño se registre y "reclame" su marca. Una cuenta gestiona una o más
+  // marcas; equipos (varias cuentas por marca) irían a una tabla de miembros aparte.
+  // Ver BRAND_SPEC.md §11. Puerta barata: nullable → se enciende sin migrar.
+  ownerId String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  owner  User?   @relation("BrandOwner", fields: [ownerId], references: [id])
+  places Place[] // sucursales (real hoy)
+  events Event[] // cartelera de la marca (reservado; Eventos apagado en MVP)
+
+  @@index([slug])
+  @@index([ownerId])
+}
+
 // ─── Place (Lugar) — entidad central del MVP, siempre permanente, sin tipo ──────
 
 model Place {
@@ -331,6 +367,10 @@ model Place {
   // borra los hijos (SetNull). El anti-ciclo lo cuida el dominio + use case.
   parentId String?
 
+  // Marca/Negocio (eje comercial): la sucursal cuelga de una Brand. Borrar la marca
+  // NO borra los locales (SetNull). Ortogonal a parentId/ownerId. Ver BRAND_SPEC.md.
+  brandId String?
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -344,6 +384,7 @@ model Place {
   owner                User?         @relation("PlaceOwner", fields: [ownerId], references: [id])
   parent               Place?        @relation("PlaceContainer", fields: [parentId], references: [id], onDelete: SetNull)
   children             Place[]       @relation("PlaceContainer")
+  brand                Brand?        @relation(fields: [brandId], references: [id], onDelete: SetNull)
 
   images          PlaceImage[]
   points          PlacePoint[]
@@ -362,6 +403,7 @@ model Place {
   @@index([score(sort: Desc)])
   @@index([ownerId])
   @@index([parentId])
+  @@index([brandId])
 }
 
 // Spot SIN ficha (mirador, kiosco, "el local donde venden X"): contenido editorial
@@ -403,6 +445,10 @@ model Event {
   description String? @db.Text
 
   placeId       String? // nullable: evento sin local fijo (concierto en parque, feria)
+  // Marca/Negocio que organiza el evento. RESERVADO mientras Eventos sigue apagado.
+  // Combina con placeId: (brand,place)=evento de marca en su sucursal · (brand,—)=
+  // evento brand-wide · (—,place)=evento de un local suelto. Ver BRAND_SPEC.md §10.
+  brandId       String?
   categoryId    String // puede diferir de la del local (un bar que hace teatro)
   subcategoryId String?
 
@@ -438,6 +484,7 @@ model Event {
   updatedAt DateTime    @updatedAt
 
   place        Place?        @relation(fields: [placeId], references: [id])
+  brand        Brand?        @relation(fields: [brandId], references: [id], onDelete: SetNull)
   category     Category      @relation(fields: [categoryId], references: [id])
   subcategory  Subcategory?  @relation(fields: [subcategoryId], references: [id])
   commune      Commune?      @relation(fields: [communeId], references: [id])
@@ -445,6 +492,7 @@ model Event {
   metroStation MetroStation? @relation(fields: [metroStationId], references: [id])
 
   @@index([placeId])
+  @@index([brandId])
   @@index([status, startsAt])
   @@index([categoryId, status])
 }

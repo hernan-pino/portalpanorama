@@ -94,6 +94,9 @@ export interface PlaceProps {
   // use case con el repo; aquí solo se prohíbe ser su propio padre.
   readonly parentId?: string
 
+  // Marca/Negocio que agrupa esta sucursal (eje comercial, ortogonal a parentId).
+  readonly brandId?: string
+
   readonly images: ReadonlyArray<PlaceImage>
   readonly points: ReadonlyArray<PlacePoint>
   readonly tags: ReadonlyArray<PlaceTagRef>
@@ -137,6 +140,7 @@ export class Place {
   readonly ownerId?: string
   readonly status: PlaceStatus
   readonly parentId?: string
+  readonly brandId?: string
   readonly images: ReadonlyArray<PlaceImage>
   readonly points: ReadonlyArray<PlacePoint>
   readonly tags: ReadonlyArray<PlaceTagRef>
@@ -184,6 +188,7 @@ export class Place {
     this.ownerId = props.ownerId
     this.status = props.status
     this.parentId = props.parentId
+    this.brandId = props.brandId
     this.images = props.images
     this.points = props.points
     this.tags = props.tags
@@ -324,6 +329,7 @@ export class Place {
       ownerId: this.ownerId,
       status: this.status,
       parentId: this.parentId,
+      brandId: this.brandId,
       images: this.images,
       points: this.points,
       tags: this.tags,

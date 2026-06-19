@@ -59,6 +59,7 @@ export interface PlaceFormValues {
   isPremium: boolean
 
   parentId: string
+  brandId: string
 
   tagIds: string[]
   images: PlaceImageValues[]
@@ -77,7 +78,7 @@ export const PRICE_OPTIONS: { value: string; label: string }[] = [
 export const RESERVATION_OPTIONS: { value: string; label: string }[] = [
   { value: 'REQUIRED', label: 'Requiere reserva' },
   { value: 'RECOMMENDED', label: 'Reserva recomendada' },
-  { value: 'WALK_IN', label: 'Sin reserva (llega no más)' },
+  { value: 'WALK_IN', label: 'Sin reserva' },
 ]
 
 // Métodos de pago para la multi-selección del form (chips). Lista base; al editar

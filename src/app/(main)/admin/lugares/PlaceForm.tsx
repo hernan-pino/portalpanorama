@@ -33,7 +33,7 @@ const BLANK: PlaceFormValues = {
   priceRange: '', reservation: '', paymentMethods: [], schedule: '',
   phone: '', website: '', instagram: '', socialLinks: [],
   googlePlaceId: '', googleRating: '', googleReviewCount: '',
-  isPremium: false, parentId: '', tagIds: [], images: [], points: [],
+  isPremium: false, parentId: '', brandId: '', tagIds: [], images: [], points: [],
 }
 
 function fromInitial(p: PlaceEditView): PlaceFormValues {
@@ -68,6 +68,7 @@ function fromInitial(p: PlaceEditView): PlaceFormValues {
     googleReviewCount: num(p.googleReviewCount),
     isPremium: p.isPremium,
     parentId: p.parentId ?? '',
+    brandId: p.brandId ?? '',
     tagIds: [...p.tagIds],
     images: p.images.map((img) => ({
       url: img.url,
@@ -687,6 +688,19 @@ export function PlaceForm({ options, initial }: PlaceFormProps) {
           <p className="admin-form__hint">
             Ej.: el Zoológico pertenece a Parquemet. Solo un nivel; no podés elegir un lugar que ya
             cuelga de este.
+          </p>
+        </div>
+
+        <div className="form-row">
+          <label className="form-label" htmlFor="brandId">Marca / Negocio</label>
+          <select id="brandId" className="form-input" value={values.brandId}
+            onChange={(e) => set('brandId', e.target.value)}>
+            <option value="">— Sin marca (local independiente) —</option>
+            {options.brands.map((b) => <option key={b.id} value={b.id}>{b.name}</option>)}
+          </select>
+          <p className="admin-form__hint">
+            Si es una sucursal de una cadena (ej.: Emporio La Rosa), elegí su marca. ¿No está?
+            Creala primero en <a href="/admin/marcas/nuevo" target="_blank" rel="noopener noreferrer">Marcas</a>.
           </p>
         </div>
 

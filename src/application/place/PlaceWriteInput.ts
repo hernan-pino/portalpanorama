@@ -62,6 +62,9 @@ export interface PlaceWriteInput {
   // Contenedor: id del Place padre (Parquemet) si este lugar cuelga de otro.
   parentId?: string
 
+  // Marca/Negocio: id de la Brand que agrupa esta sucursal (opcional).
+  brandId?: string
+
   tagIds: string[]
   images: PlaceImageInput[]
   points: PlacePointInput[]

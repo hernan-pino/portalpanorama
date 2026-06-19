@@ -58,6 +58,8 @@ export interface PlaceDetailView {
   parent?: { slug: string; name: string }
   children: PlaceCardView[]
   points: { name: string; description?: string; kind?: string }[]
+  // Marca/Negocio dueño de la sucursal (bloque "Por [Marca] ↗" linkeable a /marca).
+  brand?: { slug: string; name: string; logoUrl?: string }
 }
 
 // Opción de "lugar padre" para el selector del form de admin.

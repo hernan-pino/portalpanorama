@@ -1,6 +1,8 @@
 # Spec — Entidad `Brand` (Negocio / Marca con varias sucursales)
 
-**Estado:** especificación, **no construida**. Decisión de scope pendiente (MVP vs post-launch).
+**Estado:** ✅ **CONSTRUIDO (2026-06-17)** — scope MVP mínimo (agrupar 2+ locales + página `/marca`).
+Hexagonal de punta a punta (domain/app/infra/presentation); typecheck + tests OK. Falta e2e humano +
+push a prod. `Event.brandId` quedó reservado (Eventos sigue apagado). Decisiones de Brand×Eventos en §10.
 **Fecha:** 2026-06-17 · **Relacionado:** [SCHEMA.md](SCHEMA.md) · [PRD.md](PRD.md) · [PLAN.md](PLAN.md)
 
 ---
@@ -168,3 +170,66 @@ los eventos de ese local (su `placeId`), y un evento brand-wide podría listarse
    (uno por sucursal)? Trade-off: cartelera simple vs. detalle por local (cupos/horario distintos).
 3. ¿La ficha del Place muestra también los eventos **brand-wide** de su marca, o solo los suyos propios?
 4. ¿Esto entra cuando se enciendan Eventos (post-MVP), o se diseña el schema antes para no migrar después?
+
+---
+
+## ✅ DECISIONES CERRADAS (2026-06-17)
+
+**Insight que reordena el modelo (caso "Honesto Mike"):** Brand/Negocio es la **entidad paraguas de
+arriba**; por debajo cuelgan **dos cosas independientes**: sus **Places** (sucursales, real hoy) y sus
+**Events** (cartelera, futuro). Una marca puede tener **solo Places** (hoy), **solo Events** (futuro:
+productoras/dueños que solo hacen eventos y quizás después abren un local), o **ambos**.
+
+```
+Brand (Honesto Mike)
+ ├── Places (sus locales)      ← real hoy
+ └── Events (su cartelera)     ← futuro (Eventos apagado en MVP)
+```
+
+1. **`brandId` es FK explícito en AMBOS `Place` y `Event`** (no derivado del Place). Razón: una marca que
+   **solo hace eventos** (sin ningún Place) no tendría de dónde derivar la marca → quedaría huérfana. Los
+   dos cuelgan de Brand de forma independiente.
+2. **Evento brand-wide = regla mixta** (decisión de carga, no de schema): **1 Event** (`brandId`,
+   `placeId=null`) si es idéntico en todas las sucursales; **N Events** (uno por local) si cupos/horario/
+   precio difieren por sucursal.
+3. **La ficha del Place muestra sus eventos propios + los brand-wide de su marca**, en secciones separadas
+   ("En este local" vs "De [Marca]"). Query: `placeId = X OR (brandId = Y AND placeId IS NULL)`.
+4. **Schema ahora** (el multisucursal ya es real): se construye el **Brand MVP mínimo** ya —
+   entidad + `brandId` en Place **y** Event (Event nullable, reservado mientras Eventos sigue apagado) +
+   admin para agrupar locales + bloque "Por [Marca]" en la ficha + página `/marca/[slug]` con las
+   sucursales. La cartelera/UI de eventos de marca va recién cuando se encienda Eventos.
+
+**Scope aprobado por el usuario:** lo necesario para **agregar 2+ locales a una marca y entrar a
+`/marca/[slug]` a ver todos sus locales**. El resto (eventos de marca, claim por dueño) es post-launch.
+
+---
+
+## 11. 🔑 Brand vs. Cuenta (¿quién crea la marca?) — clarificación 2026-06-17
+
+**Duda del usuario:** "en mi mente la marca es básicamente igual a una cuenta: el dueño del negocio crea
+su cuenta y agrega lugares bajo su nombre". Intuición **correcta para el caso común**, pero conviene
+separar tres conceptos que ahí colapsan en uno:
+
+| Concepto | Qué es | Visibilidad | Eje en el schema |
+|---|---|---|---|
+| **Cuenta (User)** | quién se loguea y administra (email, contraseña, cobro) | **privada** | `ownerId` |
+| **Marca (Brand)** | identidad comercial pública que agrupa locales (nombre, logo) | **pública** (`/marca`) | `brandId` |
+| **Lugar (Place)** | el local físico (dirección, rating) | pública (`/lugar`) | la ficha |
+
+**No son lo mismo: forman una cadena.** Una **cuenta gestiona una o más marcas → una marca agrupa uno o
+más lugares**. En el caso simple (un dueño, un negocio, varias sucursales) los tres se sienten como uno
+solo; se separan en los bordes:
+
+- Una cuenta puede manejar **varias marcas** (el dueño abre otro concepto → misma cuenta, marca nueva).
+- Una marca puede tener **varias cuentas** que la editan (dueño + encargado + community manager → tabla de
+  miembros, futura).
+- **Hoy las marcas las carga el admin, sin cuenta detrás** (Emporio La Rosa se agrupó editorialmente). Si
+  Marca == Cuenta, no se podrían agrupar cadenas sin inventar cuentas falsas.
+
+**Decisión:**
+1. **En el MVP, quién crea la marca = el admin** (no hay cuentas de negocio todavía). Es como quedó construido. ✅
+2. El flujo "el dueño se registra y agrega sus lugares" es el **self-service post-MVP**, que se monta
+   **encima** de la Brand actual (no la reemplaza): la marca es justo lo que ese dueño reclamaría.
+3. **Puerta barata reservada (2026-06-17):** se agregó **`Brand.ownerId String?` nullable** (relación
+   `BrandOwner` → User, parqueada) para conectar cuenta↔marca sin migrar cuando se encienda self-service.
+   En el MVP queda **null** y el dominio/repos **no lo usan todavía** (igual que `Event.brandId`).

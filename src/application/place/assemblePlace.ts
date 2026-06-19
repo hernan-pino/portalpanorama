@@ -52,6 +52,7 @@ export function assemblePlace(params: {
     ownerId: input.ownerId,
     status: params.status,
     parentId: input.parentId,
+    brandId: input.brandId,
     images: input.images.map((img) => ({
       id: createId(),
       url: img.url,

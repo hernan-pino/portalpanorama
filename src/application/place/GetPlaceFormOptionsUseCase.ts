@@ -1,6 +1,7 @@
 import { CategoryOption, CategoryRepository } from '../ports/CategoryRepository'
 import { TagOption, TagRepository } from '../ports/TagRepository'
 import { PlaceParentOption, PlaceRepository } from '../ports/PlaceRepository'
+import { BrandOption, BrandRepository } from '../ports/BrandRepository'
 import {
   CommuneOption,
   LocationRepository,
@@ -20,6 +21,8 @@ export interface PlaceFormOptions {
   // Lugares candidatos a "padre" (selector de contenedor). Incluye todos; el form
   // excluye el propio lugar en edición y el servidor rechaza ciclos transitivos.
   parents: PlaceParentOption[]
+  // Marcas existentes para el selector "Marca / Negocio" (opcional).
+  brands: BrandOption[]
 }
 
 export class GetPlaceFormOptionsUseCase {
@@ -28,17 +31,20 @@ export class GetPlaceFormOptionsUseCase {
     private readonly tagRepo: TagRepository,
     private readonly locationRepo: LocationRepository,
     private readonly placeRepo: PlaceRepository,
+    private readonly brandRepo: BrandRepository,
   ) {}
 
   async execute(): Promise<PlaceFormOptions> {
-    const [categories, tags, communes, neighborhoods, metroStations, parents] = await Promise.all([
-      this.categoryRepo.listForForm(),
-      this.tagRepo.listAll(),
-      this.locationRepo.listCommunes(),
-      this.locationRepo.listNeighborhoods(),
-      this.locationRepo.listMetroStations(),
-      this.placeRepo.listForParentOptions(),
-    ])
-    return { categories, tags, communes, neighborhoods, metroStations, parents }
+    const [categories, tags, communes, neighborhoods, metroStations, parents, brands] =
+      await Promise.all([
+        this.categoryRepo.listForForm(),
+        this.tagRepo.listAll(),
+        this.locationRepo.listCommunes(),
+        this.locationRepo.listNeighborhoods(),
+        this.locationRepo.listMetroStations(),
+        this.placeRepo.listForParentOptions(),
+        this.brandRepo.listForOptions(),
+      ])
+    return { categories, tags, communes, neighborhoods, metroStations, parents, brands }
   }
 }

@@ -45,6 +45,7 @@ export interface PlaceEditView {
   isPremium: boolean
 
   parentId?: string
+  brandId?: string
 
   tagIds: string[]
   images: { url: string; alt?: string; credit?: string; isPrimary: boolean; sortOrder: number }[]
@@ -93,6 +94,7 @@ export class GetPlaceForEditUseCase {
       googleReviewCount: place.googleReviewCount,
       isPremium: place.isPremium,
       parentId: place.parentId,
+      brandId: place.brandId,
       tagIds: place.tags.map((t) => t.id),
       images: place.images.map((img) => ({
         url: img.url,

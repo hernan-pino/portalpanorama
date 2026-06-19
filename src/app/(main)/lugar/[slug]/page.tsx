@@ -38,7 +38,7 @@ const PRICE_ORDER = ['FREE', 'UNDER_5000', 'FROM_5000_TO_15000', 'FROM_15000_TO_
 const RESERVATION_LABELS: Record<string, string> = {
   REQUIRED: 'Requiere reserva',
   RECOMMENDED: 'Reserva recomendada',
-  WALK_IN: 'Llega no más, sin reserva',
+  WALK_IN: 'Sin reserva',
 }
 const RAIN_LABELS: Record<string, string> = {
   SUSPENDED: 'Si llueve se suspende',
@@ -177,6 +177,21 @@ export default async function LugarPage({ params }: PageProps) {
           {place.parent && (
             <Link href={`/lugar/${place.parent.slug}`} className="ficha__parent">
               Parte de {place.parent.name} ↗
+            </Link>
+          )}
+
+          {place.brand && (
+            <Link href={`/marca/${place.brand.slug}`} className="ficha__brand">
+              {place.brand.logoUrl && (
+                <Image
+                  src={place.brand.logoUrl}
+                  alt={place.brand.name}
+                  width={20}
+                  height={20}
+                  className="ficha__brand-logo"
+                />
+              )}
+              Por {place.brand.name} ↗
             </Link>
           )}
 

@@ -109,6 +109,7 @@ const placeSchema = z
 
     isPremium: z.boolean().optional().default(false),
     parentId: optionalText,
+    brandId: optionalText,
     tagIds: z.array(z.string()).optional().default([]),
     images: z.array(imageSchema).optional().default([]),
     points: z.array(pointSchema).optional().default([]),
@@ -166,6 +167,7 @@ function toWriteInput(d: ParsedPlace): PlaceWriteInput {
     googleReviewCount: d.googleReviewCount,
     isPremium: d.isPremium,
     parentId: d.parentId,
+    brandId: d.brandId,
     tagIds: d.tagIds,
     images,
     points: d.points.map((pt, i) => ({
