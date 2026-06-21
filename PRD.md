@@ -57,17 +57,23 @@ queda como puerta abierta sin tabla.
   propia ficha** (su cartelera) — mismo patrón de presentación que los lugares hijo. Resuelve los venues
   cuyo valor son los shows (sala de conciertos, club de jazz): la ficha hoy queda fina y se llena con su
   agenda al activar Eventos.
-- **🗂️ `Category` + `Subcategory`** — 8 categorías. **Regla de clasificación (2026-06-14):** la
-  categoría principal = **por qué vas (la experiencia), no lo que el lugar incidentalmente tiene** — un
-  club de jazz sirve comida pero vas por la experiencia → es **Entretenimiento**, no Gastronomía; un
-  bar/pub se queda en Gastronomía + tag `vida nocturna`. La frontera la resuelven la categoría secundaria
-  y los tags, no la duplicación. Al lanzar se muestran las **5 con lugares** (**Gastronomía, Naturaleza y
-  aire libre, Arte y cultura, Locales y tiendas, Entretenimiento** — venues a los que vas por una
-  actividad: discoteca, karaoke, escape room, bowling, club de jazz, sala de conciertos); las event-only
-  (Shows y espectáculos, Ferias, Talleres) quedan registradas pero apagadas.
-- **🏷️ `Tag`** — tabla relacional, **4 capas** (`TagLayer`): contexto **SOCIAL** (máx 4) · atributos
-  **SPECIFIC** condicionales por categoría (ej. tipo de cocina en Gastronomía) · logística **ACCESS** ·
-  **VIBE** (máx 3). Límites y exclusiones mutuas = en dominio. Reserva NO es tag (campo `reservation`).
+- **🗂️ `Category` + `Subcategory`** — 9 categorías (6 activas + 3 event-only apagadas). **Regla de
+  clasificación (2026-06-14):** la categoría principal = **por qué vas (la experiencia), no lo que el
+  lugar incidentalmente tiene** — un club de jazz sirve comida pero vas por la música → es **Vida
+  nocturna**, no Gastronomía; un bar/pub se queda en Gastronomía + tag `vida nocturna`. La frontera la
+  resuelven la categoría secundaria y los tags, no la duplicación. **Reorganización (2026-06-20):** el
+  antiguo *Entretenimiento* se partió en **Vida nocturna** (discoteca, club de jazz, sala de conciertos)
+  y **Juegos y diversión** (karaoke, escape room, bowling, arcade, paintball, karting, minigolf,
+  trampolines, VR, billar); +sub *Atracción* en Locales (decks/hitos urbanos tipo Sky Costanera). Al
+  lanzar se muestran las **6 con lugares** (**Gastronomía, Naturaleza y aire libre, Arte y cultura,
+  Locales y tiendas, Vida nocturna, Juegos y diversión**); las event-only (Shows y espectáculos, Ferias,
+  Talleres) quedan registradas pero apagadas.
+- **🏷️ `Tag`** — tabla relacional, **6 capas** (`TagLayer`): **AUDIENCE** (¿con quién?, máx 4) ·
+  **OCCASION** (ideal para / ocasión, máx 3) · **VIBE** (ambiente, máx 3) · **EXPERIENCE** (qué ofrece
+  de destacable: rooftop, vista, vida nocturna…, sin tope) · **SERVICE** (servicios y acceso:
+  estacionamiento, wifi, accesible, pet friendly…, sin tope) · **SPECIFIC** (atributos condicionales por
+  categoría, ej. tipo de cocina, sin tope). Topes y exclusiones mutuas = en dominio. Reserva NO es tag
+  (campo `reservation`).
 - **🚇 `MetroStation` + `MetroLine`** — catálogo. Estación ↔ líneas (many-to-many: Baquedano = L1+L5).
   La línea lleva su color. Place con FK opcional a estación. Filtrable por estación y por línea.
 - **📍 `Commune` + `Neighborhood`** — barrio vinculado a comuna(s) (M2M), pero Place filtrable
@@ -119,8 +125,8 @@ Restricción transversal: **lean, barato, por capas, densidad > cantidad.**
 **✅ SÍ entra:**
 - **Contenido:** ~100 lugares permanentes (techo), carga paulatina (puñado a mano → soft-launch →
   masa mínima densa → ~20/semana). Concentrados en pocas zonas conectadas (Providencia + Ñuñoa
-  primero). Solo 5 categorías con lugares (Gastronomía, Naturaleza, Arte y cultura, Locales y tiendas, Entretenimiento).
-- **Ficha:** completa y estructurada · estrellas + nº reseñas de Google · tags 4 capas · CTA "Cómo
+  primero). Solo 6 categorías con lugares (Gastronomía, Naturaleza, Arte y cultura, Locales y tiendas, Vida nocturna, Juegos y diversión).
+- **Ficha:** completa y estructurada · estrellas + nº reseñas de Google · tags 6 capas · CTA "Cómo
   llegar" · compartir · "relacionados" (sin IA: tags + categoría + comuna).
 - **Búsqueda/filtros (el pilar):** facetas con contadores + ocultar vacíos (estáticos). Filtros
   vivos: ¿Con quién voy? · ¿Cuánto gasto? · ¿Dónde? · Accesibilidad · Ambiente. Orden por defecto =

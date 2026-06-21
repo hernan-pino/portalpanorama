@@ -54,22 +54,28 @@ inclúyelo igual y márcalo en "A verificar".
 ## Catálogo del formulario actual (respétalo)
 
 ### Categorías activas (elige UNA principal; la secundaria es opcional)
-Son **5** las asignables hoy. Cada una con sus subcategorías:
+Son **6** las asignables hoy (reorg 2026-06-20). Cada una con sus subcategorías:
 
-1. **Gastronomía** — Restaurante · Café / Cafetería · Bar · Botillería · Fuente de soda · Food truck ·
-   Heladería · Pastelería / Panadería · Jugería · Cevichería · Picada · Sushi / Asiática
+1. **Gastronomía** — Restaurante · Café / Cafetería · Bar · Cervecería · Mercado / Patio gastronómico ·
+   Botillería · Fuente de soda · Food truck · Heladería · Pastelería / Panadería · Jugería · Cevichería ·
+   Picada · Sushi / Asiática
 2. **Naturaleza y aire libre** — Parque urbano · Cerro / Trekking · Playa / Lago / Río · Reserva natural ·
-   Mirador · Jardín botánico · Camping · Piscina / Balneario
+   Mirador · Jardín botánico · Zoológico / Bioparque · Termas · Camping · Piscina / Balneario
 3. **Arte y cultura** — Museo · Galería de arte · Exposición temporal · Centro cultural ·
    Monumento / Patrimonio · Experiencia inmersiva · Cine / Cineteca · Biblioteca
-4. **Locales y tiendas** — Librería · Disquería / Vinilería · Tienda de diseño · Vintage / Segunda mano ·
-   Vinoteca / Botillería premium · Chocolatería · Florería · Tienda de plantas · Juguetería · Tienda de mascotas
-5. **Entretenimiento** — Discoteca / Club · Karaoke · Escape room · Bowling · Club de jazz / blues ·
-   Sala de conciertos · Salón de juegos / Arcade
+4. **Locales y tiendas** — Centro comercial · Galería comercial / Persa · Atracción · Librería ·
+   Disquería / Vinilería · Tienda de diseño · Vintage / Segunda mano · Vinoteca / Botillería premium ·
+   Chocolatería · Florería · Tienda de plantas · Juguetería · Tienda de mascotas
+5. **Vida nocturna** — Discoteca / Club · Club de jazz / blues · Sala de conciertos
+6. **Juegos y diversión** — Karaoke · Escape room · Bowling · Salón de juegos / Arcade · Paintball ·
+   Karting / Go-kart · Minigolf · Parque de trampolines · Realidad virtual (VR) · Billar / Pool
 
 > **Regla de clasificación:** la categoría = **por qué vas**, no lo incidental. Un bar/pub que es para
-> comer/tomar va en **Gastronomía** (+ tag `Vida nocturna`), no en Entretenimiento. Entretenimiento es
-> para venues cuyo motivo principal es la actividad (bailar, jugar, show).
+> comer/tomar va en **Gastronomía** (+ tag `Vida nocturna`), no en Vida nocturna. **Vida nocturna** es
+> para venues cuyo motivo es bailar / la música en vivo / el show nocturno (discoteca, club de jazz,
+> sala de conciertos). **Juegos y diversión** es para venues de actividad lúdica (karaoke, bowling,
+> escape room, arcade, paintball, karting…). **Atracción** (en Locales y tiendas) = decks/hitos urbanos
+> construidos tipo Sky Costanera (no es Naturaleza ni Arte).
 > **Apagadas en el MVP** (no las uses): *Shows y espectáculos*, *Talleres y actividades*, *Ferias y mercados*
 > (son event-only; volverán con Eventos).
 
@@ -96,7 +102,7 @@ Topes solo en las 3 capas subjetivas; las objetivas van sin tope ("más info = m
     Tienda interna · Exposición permanente · Exposición temporal · Talleres asociados
   - *Locales y tiendas:* Solo para llevar · Con zona de estar · Productos nacionales / importados ·
     Artesanal / Local · Envío disponible
-  - *Entretenimiento:* (aún sin específicos cargados — usa solo las capas universales)
+  - *Vida nocturna / Juegos y diversión:* (aún sin específicos cargados — usa solo las capas universales)
 
 ### Enums (valores exactos)
 - **Rango de precio:** Gratis · Menos de $5.000 · $5.000–15.000 · $15.000–30.000 · Más de $30.000
@@ -401,5 +407,5 @@ Reglas de calidad (descarta lo que no cumpla):
   imagen estable. Devuelve **solo el Markdown** + fuentes.
 - **"busca los datos del Parque Bicentenario para cargarlo"** → Naturaleza y aire libre › Parque urbano →
   habilita **Si llueve**. Rango de precio **Gratis**. Reserva **Sin reserva**.
-- **"investiga el Bar The Clinic y dame el JSON"** → Gastronomía › Bar (+ tag `Vida nocturna`, NO
-  Entretenimiento). Entrega Markdown **y** el bloque JSON porque lo pidió.
+- **"investiga el Bar The Clinic y dame el JSON"** → Gastronomía › Bar (+ tag `Vida nocturna`, NO la
+  categoría Vida nocturna). Entrega Markdown **y** el bloque JSON porque lo pidió.

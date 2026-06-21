@@ -8,7 +8,7 @@ priorizado. Se actualiza cada vez que avanzamos. Liviano a propósito — para r
 - **Modelo de datos:** [SCHEMA.md](SCHEMA.md) · **Capas:** [ARCHITECTURE.md](ARCHITECTURE.md) · **Carga:** [PLANTILLA_CSV.md](PLANTILLA_CSV.md)
 - **Bitácora del rediseño (historia + razonamiento de las decisiones):** [PLAN_FASE9.md](PLAN_FASE9.md)
 
-**Última actualización:** 2026-06-20 (lote 3: +37 netos → 115 total; **reorganización de taxonomía**: Entretenimiento partido en Vida nocturna + Juegos y diversión, +subcategorías nuevas, Atracción en Locales)
+**Última actualización:** 2026-06-20 (lote 3: +37 netos → 115 total; **reorganización de taxonomía**: Entretenimiento partido en Vida nocturna + Juegos y diversión, +subcategorías nuevas, Atracción en Locales; **drift de docs sincronizado**: PRD/SCHEMA/skill ficha-lugar)
 
 ---
 
@@ -322,8 +322,9 @@ Foto de "qué falta para lanzar live". Lo ✅ ya está. Lo demás, ordenado por 
   "Mirador/Observatorio". Migración por script (rename in-place de Entretenimiento→Juegos, mover subs+lugares,
   0 duplicados de slug); seed.ts actualizado; íconos del home para las 2 cats nuevas; typecheck + 84 tests OK.
   **Regla de "Atracción":** catch-all para atracciones turísticas construidas (observatorios, teleférico…);
-  si no cuaja, se borra. **DRIFT PENDIENTE:** `SCHEMA.md`/`PRD.md` aún dicen "8 categorías / Entretenimiento"
-  → sincronizar (la taxonomía real ahora: 6 activas + 3 event-only apagadas; Entretenimiento ya no existe).
+  si no cuaja, se borra. **DRIFT SINCRONIZADO (2026-06-20) ✅:** `PRD.md`, `SCHEMA.md` y la skill
+  `ficha-lugar` actualizados a la taxonomía real (6 activas + 3 event-only; Entretenimiento → Vida
+  nocturna + Juegos y diversión; sub Atracción). PRD además corregido a 6 capas de tags (decía 4).
 - [ ] **Push a prod.** (a) Decidir workflow de BD: hoy `prisma db push` sin migraciones; antes de prod
   decidir si seguimos con `db push` o introducimos migraciones reales (no se puede `--force-reset`
   contra prod con datos). (b) Schema + seed de catálogos en Neon prod. (c) `RESEND_API_KEY` real

@@ -112,9 +112,10 @@ fijo). Categoría **propia** (puede diferir de la del local).
 
 ### Catálogos
 
-- **`Category`** (8, rediseño 2026-06-14) — `slug` · `name` · `sortOrder` · `isActive` (se muestra en
-  UI) · `eventOnly` (Shows/Ferias/Talleres: registradas pero apagadas hasta encender eventos). Activas
-  al lanzar: Gastronomía, Naturaleza y aire libre, Arte y cultura, Locales y tiendas, Entretenimiento.
+- **`Category`** (9: 6 activas + 3 event-only; reorg 2026-06-20) — `slug` · `name` · `sortOrder` ·
+  `isActive` (se muestra en UI) · `eventOnly` (Shows/Ferias/Talleres: registradas pero apagadas hasta
+  encender eventos). Activas al lanzar: Gastronomía, Naturaleza y aire libre, Arte y cultura, Locales y
+  tiendas, **Vida nocturna**, **Juegos y diversión** (el antiguo *Entretenimiento* se partió en estas dos).
 - **`Subcategory`** — `slug` · `name` · `categoryId`. Unique `(categoryId, slug)`.
 - **`Tag`** — `slug @unique` · `name` · `layer TagLayer` · `categoryId?` (**null = universal**,
   seteado = condicional a esa categoría, ej. "tipo de cocina" → Gastronomía). Join **`PlaceTag`**.
