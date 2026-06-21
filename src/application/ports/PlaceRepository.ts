@@ -49,6 +49,9 @@ export interface PlaceDetailView {
   socialLinks: { network: string; url: string }[]
   googleRating?: number
   googleReviewCount?: number
+  // place_id de Google: deja que "Cómo llegar" apunte a la ficha exacta del
+  // negocio (destination_place_id) en vez de geocodificar la dirección a un punto.
+  googlePlaceId?: string
   score: number
   images: { url: string; alt?: string; credit?: string; isPrimary: boolean }[]
   tags: { slug: string; name: string; layer: string }[]

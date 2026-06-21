@@ -78,9 +78,17 @@ export function PlacePreview({ values, options, onClose }: PlacePreviewProps) {
     }
   }, [values, options])
 
-  const directionsHref = values.address
-    ? `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(values.address)}`
-    : undefined
+  // Mismo criterio que la ficha pública: place_id → dirección → coords.
+  const directionsHref = (() => {
+    const base = 'https://www.google.com/maps/dir/?api=1'
+    if (values.googlePlaceId) {
+      const label = values.address ? `${values.name}, ${values.address}` : values.name
+      return `${base}&destination=${encodeURIComponent(label)}&destination_place_id=${encodeURIComponent(values.googlePlaceId)}`
+    }
+    if (values.address) return `${base}&destination=${encodeURIComponent(values.address)}`
+    if (values.lat && values.lng) return `${base}&destination=${values.lat},${values.lng}`
+    return undefined
+  })()
   const hasContact = !!(
     values.phone || values.website || values.instagram || values.menuUrl || values.socialLinks.length
   )
@@ -236,7 +244,7 @@ export function PlacePreview({ values, options, onClose }: PlacePreviewProps) {
 
             {directionsHref && (
               <p className="admin-form__hint" style={{ marginTop: 'var(--s-4)' }}>
-                Botón “Cómo llegar” activo (dirección cargada).
+                Botón “Cómo llegar” activo{values.googlePlaceId ? ' (apunta a la ficha de Google por place_id)' : ' (por dirección/coordenadas)'}.
               </p>
             )}
           </div>

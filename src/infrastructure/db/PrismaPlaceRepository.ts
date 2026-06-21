@@ -208,6 +208,7 @@ function toPlaceDetailView(row: PlaceDetailRow): PlaceDetailView {
     socialLinks: parseSocialLinks(row.socialLinks),
     googleRating: row.googleRating ?? undefined,
     googleReviewCount: row.googleReviewCount ?? undefined,
+    googlePlaceId: row.googlePlaceId ?? undefined,
     score: row.score,
     images: row.images.map((img) => ({
       url: img.url,

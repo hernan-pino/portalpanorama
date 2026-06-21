@@ -60,6 +60,21 @@ volcados al backlog y al checklist de abajo. Los principales:
 
 ---
 
+## ✅ Resueltos recientes (2026-06-20)
+
+- **Bar Flama: las dos sucursales reales son Providencia + Lastarria.** La ficha estaba como "Bar Flama
+  (Merced)" pero su contenido describe el bar de Lastarria (pin del usuario: -33.4374816, -70.6420574,
+  a ~250 m de Merced 346). Se **renombró** "Bar Flama (Merced)" → **Bar Flama (Lastarria)** (slug
+  `bar-flama-lastarria`) y se afinaron las coords al pin, en vez de borrarla (habría dejado solo
+  Providencia). Quedan 2 bajo la marca `bar-flama`: Providencia + Lastarria. **Caveat:** el rating/place_id
+  (`ChIJ1_F4FADFYpYRMZje9xQCPBU`, 4.5/663) es del match anterior; es el mismo bar, pero queda pendiente
+  **re-enriquecer contra el pin** si se quiere confirmar.
+- **"Cómo llegar" ahora apunta a la ficha de Google del negocio.** Antes el link usaba solo la dirección
+  en texto (`destination=<dir>`), que Google a veces geocodifica a un punto. Ahora prefiere el **place_id**
+  (`destination_place_id`) cuando existe → abre las indicaciones a la ficha exacta del lugar; cae a
+  dirección y luego a coords. Se expuso `googlePlaceId` en el read-model `PlaceDetailView` (ficha pública
+  + preview admin). Typecheck OK, verificado en runtime.
+
 ## ▶️ Próximos pasos (en orden)
 
 > **✅ Brand (MVP mínimo) CONSTRUIDO + e2e OK (2026-06-18) — solo falta prod.** Entidad `Brand` de punta a

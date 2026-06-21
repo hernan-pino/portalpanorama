@@ -124,9 +124,19 @@ export default async function LugarPage({ params }: PageProps) {
     place.phone || place.website || place.instagram || place.menuUrl || place.socialLinks.length
   )
   const hasAccess = !!(place.accessDetail || service.length)
-  const directionsHref = place.address
-    ? `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(place.address)}`
-    : undefined
+  // "Cómo llegar": indicaciones a la ficha exacta del negocio. Con place_id de
+  // Google apunta al lugar real (no a un punto geocodificado); si no, cae a la
+  // dirección y, en último caso, a las coordenadas. Así siempre lleva AL lugar.
+  const directionsHref = (() => {
+    const base = 'https://www.google.com/maps/dir/?api=1'
+    if (place.googlePlaceId) {
+      const label = place.address ? `${place.name}, ${place.address}` : place.name
+      return `${base}&destination=${encodeURIComponent(label)}&destination_place_id=${encodeURIComponent(place.googlePlaceId)}`
+    }
+    if (place.address) return `${base}&destination=${encodeURIComponent(place.address)}`
+    if (place.lat != null && place.lng != null) return `${base}&destination=${place.lat},${place.lng}`
+    return undefined
+  })()
 
   const saveButton = (
     <SaveButton
