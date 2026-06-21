@@ -205,9 +205,14 @@ Los hijos del padre se muestran solo si están PUBLISHED.
 - **(e) SEO de la ficha:** ✅ **HECHO (2026-06-15)** — JSON-LD `LocalBusiness` (con address/geo/
   aggregateRating/sameAs), metadata rica (canonical + OpenGraph + Twitter), `metadataBase` global,
   `sitemap.ts` (rutas estáticas + un `<url>` por lugar publicado, vía use case nuevo) y `robots.ts`
-  (bloquea admin/cuenta/api/auth). Verificado en runtime. **Falta solo (e.2): revisar ISR** — hoy
-  `/lugar/[slug]` renderiza dinámico porque `auth()` en la ficha fuerza dynamic; para cachear habría
-  que separar la parte pública (cacheable) de la personalizada (botón Guardar / registrar visita).
+  (bloquea admin/cuenta/api/auth). Verificado en runtime.
+  - **(e.2) Perf de la ficha — parcial (2026-06-21).** ✅ **`recordVisit` ya no bloquea el render**
+    (corre con `after()` de `next/server`, tras enviar la respuesta) + las dos queries del usuario
+    (ficha + contexto de guardado) van **en paralelo** (`Promise.all`). ⏸️ **ISR descartado por ahora:**
+    toda la app es dinámica porque el **Header del root layout llama `auth()`** (no solo la ficha); pero
+    la sesión es **JWT** (`strategy: 'jwt'`), así que `auth()` no pega a la BD y el costo "dinámico" es
+    bajo. Cachear por SEO/escala exigiría convertir el Header a auth-en-cliente (refactor global del
+    chrome, riesgo alto / payoff bajo con JWT) → proyecto aparte si se necesita.
 - **(q) Docs desincronizados ✅ HECHO (2026-06-15)** — `SCHEMA.md` (6 capas / 8 cats + socialLinks +
   contenedores + ya migrado), header y comentarios de `schema.prisma`, `ARCHITECTURE.md` (código
   migrado + protección por layout/action). `lib/config.ts` borrado.

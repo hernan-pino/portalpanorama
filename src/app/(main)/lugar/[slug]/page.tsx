@@ -1,10 +1,12 @@
 import type { Metadata } from 'next'
+import { after } from 'next/server'
 import { notFound } from 'next/navigation'
 import Image from 'next/image'
 import Link from 'next/link'
 import { auth } from '@lib/auth'
 import { container } from '@lib/container'
 import type { PlaceDetailView, PlaceCardView } from '@application/ports/PlaceRepository'
+import type { SaveContextOutput } from '@application/collection/GetSaveContextUseCase'
 import { PlaceNotFoundError } from '@domain/place/errors/PlaceNotFoundError'
 import { Collection } from '@domain/collection/Collection'
 import { PlaceCard } from '@components/place/PlaceCard'
@@ -89,28 +91,38 @@ export default async function LugarPage({ params }: PageProps) {
   const session = await auth()
   const userId = session?.user?.id ?? undefined
 
+  // La ficha pública y el contexto de guardado del usuario no dependen entre sí:
+  // se traen en paralelo (el contexto solo si hay sesión).
   let place: PlaceDetailView
   let related: PlaceCardView[]
+  let ctx: SaveContextOutput | null
   try {
-    const result = await container.getGetPlaceBySlugUseCase().execute(slug)
+    const [result, saveCtx] = await Promise.all([
+      container.getGetPlaceBySlugUseCase().execute(slug),
+      userId ? container.getGetSaveContextUseCase().execute(userId) : Promise.resolve(null),
+    ])
     place = result.place
     related = result.related
+    ctx = saveCtx
   } catch (error) {
     if (error instanceof PlaceNotFoundError) notFound()
     throw error
   }
 
-  // Combustible IA (post-MVP): registrar visita del usuario logueado. Las listas
-  // del usuario + qué ya guardó alimentan el botón "Guardar".
+  // Las listas del usuario + qué ya guardó alimentan el botón "Guardar".
   let collections: { id: string; name: string; itemCount: number }[] = []
   let defaultCollectionId: string | null = null
   let isSaved = false
-  if (userId) {
-    const ctx = await container.getGetSaveContextUseCase().execute(userId)
+  if (ctx) {
     collections = ctx.collections.map((c) => ({ id: c.id, name: c.name, itemCount: c.itemCount }))
     defaultCollectionId = ctx.defaultCollectionId
     isSaved = ctx.savedPlaceIds.includes(place.id)
-    await container.getRecordVisitUseCase().execute({ userId, placeId: place.id })
+  }
+
+  // Combustible IA (post-MVP): registrar la visita del usuario logueado SIN bloquear
+  // el render — corre después de enviar la respuesta (no suma latencia a la ficha).
+  if (userId) {
+    after(() => container.getRecordVisitUseCase().execute({ userId, placeId: place.id }))
   }
 
   const audience = place.tags.filter((t) => t.layer === 'AUDIENCE')
