@@ -43,8 +43,8 @@ export function ProfileForm({ name, email }: ProfileFormProps) {
             border: '1px solid var(--surface-line)',
             borderRadius: 'var(--r-md)',
             fontSize: 'var(--t-body)',
-            background: 'var(--bg-base)',
-            color: 'var(--fg-base)',
+            background: 'var(--bg-raised)',
+            color: 'var(--ink-100)',
           }}
         />
       </div>
