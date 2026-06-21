@@ -8,7 +8,7 @@ priorizado. Se actualiza cada vez que avanzamos. Liviano a propósito — para r
 - **Modelo de datos:** [SCHEMA.md](SCHEMA.md) · **Capas:** [ARCHITECTURE.md](ARCHITECTURE.md) · **Carga:** [PLANTILLA_CSV.md](PLANTILLA_CSV.md)
 - **Bitácora del rediseño (historia + razonamiento de las decisiones):** [PLAN_FASE9.md](PLAN_FASE9.md)
 
-**Última actualización:** 2026-06-18 (lote 2 cargado: +51 lugares → 78 total; mejora de marcas auto)
+**Última actualización:** 2026-06-20 (lote 3: +37 netos → 115 total; **reorganización de taxonomía**: Entretenimiento partido en Vida nocturna + Juegos y diversión, +subcategorías nuevas, Atracción en Locales)
 
 ---
 
@@ -290,6 +290,40 @@ Foto de "qué falta para lanzar live". Lo ✅ ya está. Lo demás, ordenado por 
   enrich `--with-photos` (tope bajado a **3/ficha**) adjuntó 3 fotos de Google Maps a las 47 sin imágenes.
   Barrio **Franklin** agregado al seed (5 fichas del Persa). Falta: seguir cargando (Naturaleza/Arte/
   Entretenimiento siguen flacos) + revisar las 3 en PENDING_REVIEW.
+  **Lote 3 cargado (2026-06-19): +39 lugares → 117 total.** Atacó las 3 categorías flacas vía 3 corridas
+  paralelas del agente: **Naturaleza +14** (red de cerros reconocidos fuera de las comunas núcleo:
+  Quebrada de Macul, Aguas de Ramón, Manquehue, Pochoco, Provincia + parques Araucano/O'Higgins/Quinta
+  Normal/Mahuida/Inés de Suárez/de los Reyes + Río Clarillo + Cascada de las Ánimas + Jardín Chagual),
+  **Arte +14** (MNHN, M. Histórico, Artequin, La Chascona, MAVI, CC La Moneda, Matucana 100, Estación
+  Mapocho, Cineteca, Cine Normandie, Biblioteca Nacional, Cementerio General, Galería Patricia Ready,
+  Museo de la Moda), **Entretenimiento +10** (Thelonious, Club de Jazz, Teatro Caupolicán, Blondie, Club
+  Chocolate, La Batuta, Club La Feria, Happyland Mall Sport) + **Mall Sport** (contenedor). Naturaleza
+  4→18, Arte 4→17, Entretenimiento 1→11. **109 publicados, 8 en PENDING_REVIEW** (los 4 del lote 2 +
+  **Yukland** [no existe, matcheó un parque en California → BORRAR], **The Jazz Corner** [cerrado
+  definitivo sept-2025 → borrar/archivar], **Museo de la Moda** [abre por temporadas, confirmar],
+  **Jardín Botánico Chagual** [sin horario público; matcheó "Vivero Leliantú" 9 reseñas]).
+  **Contenedores:** Mall Sport → Happyland (hijo); Parque Metropolitano de Santiago → Cerro San Cristóbal
+  + Jardín Botánico Chagual (hijos). **Brand Happyland** auto-creada (cadena, +94 locales). Barrios nuevos
+  al seed: Quinta Normal, Plaza Ñuñoa, El Arrayán, San Alfonso. **Bug de rating arreglado:** GAM (4.6/25.109)
+  y Cerro Santa Lucía (4.6/3.647) no tenían rating porque la skill les capturó un `place_id` malo y el
+  enrich por defecto las saltaba (solo agarra fichas con `googlePlaceId: null`) → se limpia el id y se
+  re-enriquece por texto. **Sin rating (revisar a mano):** Parque O'Higgins (Maps lo mapea como polígono
+  sin rating agregado) y Happyland (colisión de `place_id` con Mall Sport en el enrich).
+  **Borrados (2026-06-20):** Yukland (no existe) y The Jazz Corner (cerrado) → **115 lugares, 109 publicados,
+  6 PENDING_REVIEW** (Colectivo Informal, Galgo Café, Rarities, Galpón Bío Bío, Museo de la Moda, Jardín Chagual).
+- **Reorganización de taxonomía (2026-06-20) ✅.** Sesión de catálogo a partir de cargar Mall Sport (un mall
+  no calzaba en ninguna subcategoría). Cambios: **(1)** Entretenimiento mezclaba vida nocturna con juegos →
+  **partido en 2 categorías activas:** **Vida nocturna** (Discoteca/Club, Club de jazz/blues, Sala de conciertos)
+  y **Juegos y diversión** (Karaoke, Escape room, Bowling, Arcade + nuevas Paintball, Karting, Minigolf,
+  Trampolines, VR, Billar). Ahora **6 categorías activas**. **(2)** Subcategorías nuevas: Gastronomía
+  (+Cervecería, +Mercado/Patio gastronómico), Naturaleza (+Zoológico/Bioparque, +Termas), Locales
+  (+Centro comercial, +Galería comercial/Persa, +**Atracción**). **(3)** **Atracción** (en Locales y tiendas)
+  para decks/hitos urbanos tipo Sky Costanera (que NO es Naturaleza ni Arte). **(4)** Se borró la sub duplicada
+  "Mirador/Observatorio". Migración por script (rename in-place de Entretenimiento→Juegos, mover subs+lugares,
+  0 duplicados de slug); seed.ts actualizado; íconos del home para las 2 cats nuevas; typecheck + 84 tests OK.
+  **Regla de "Atracción":** catch-all para atracciones turísticas construidas (observatorios, teleférico…);
+  si no cuaja, se borra. **DRIFT PENDIENTE:** `SCHEMA.md`/`PRD.md` aún dicen "8 categorías / Entretenimiento"
+  → sincronizar (la taxonomía real ahora: 6 activas + 3 event-only apagadas; Entretenimiento ya no existe).
 - [ ] **Push a prod.** (a) Decidir workflow de BD: hoy `prisma db push` sin migraciones; antes de prod
   decidir si seguimos con `db push` o introducimos migraciones reales (no se puede `--force-reset`
   contra prod con datos). (b) Schema + seed de catálogos en Neon prod. (c) `RESEND_API_KEY` real

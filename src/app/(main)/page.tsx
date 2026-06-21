@@ -43,11 +43,20 @@ const CATEGORY_ICON: Record<string, ReactNode> = {
       <path d="M9 9.5V7a3 3 0 0 1 6 0v2.5" />
     </svg>
   ),
-  entretenimiento: (
+  'vida-nocturna': (
     <svg className="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
       <path d="M5 4h14l-7 8z" />
       <path d="M12 12v7" />
       <path d="M8.5 19h7" />
+    </svg>
+  ),
+  'juegos-y-diversion': (
+    <svg className="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <rect x="4" y="4" width="16" height="16" rx="3" />
+      <circle cx="9" cy="9" r="1.1" />
+      <circle cx="15" cy="9" r="1.1" />
+      <circle cx="9" cy="15" r="1.1" />
+      <circle cx="15" cy="15" r="1.1" />
     </svg>
   ),
 }

@@ -56,7 +56,7 @@ const SPECS: Spec[] = [
   {
     name: 'Bar Lumen (prueba)',
     description: 'Bar de coctelería de autor y vinilos en vivo los jueves. Ambiente íntimo, ideal para after office o una cita.',
-    category: 'entretenimiento', subcategory: 'club-de-jazz-blues',
+    category: 'vida-nocturna', subcategory: 'club-de-jazz-blues',
     priceRange: PriceRange.FROM_15000_TO_30000, googleRating: 4.4, googleReviewCount: 540,
     audience: 2, occasion: 1, vibe: 2, image: 'photo-1514933651103-005eec06c04b',
   },

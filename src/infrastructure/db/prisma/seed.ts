@@ -91,20 +91,24 @@ const NEIGHBORHOODS: { name: string; communeNames: string[] }[] = [
   { name: 'Manuel Montt', communeNames: ['Providencia'] },
   { name: 'Barrio Suecia', communeNames: ['Providencia'] },
   { name: 'Barrio Franklin', communeNames: ['Santiago'] },
+  { name: 'Quinta Normal', communeNames: ['Santiago', 'Estación Central'] },
+  { name: 'Plaza Ñuñoa', communeNames: ['Ñuñoa'] },
+  { name: 'El Arrayán', communeNames: ['Lo Barnechea'] },
+  { name: 'San Alfonso', communeNames: ['San José de Maipo'] },
 ]
 
-// ─── Categorías (7) + subcategorías (B.4 / doc 04) ───────────────────────────────
-// 4 activas con lugares permanentes; 3 event-only registradas pero apagadas.
+// ─── Categorías (9) + subcategorías (B.4 / doc 04) ───────────────────────────────
+// 6 activas con lugares permanentes; 3 event-only registradas pero apagadas.
 const CATEGORIES: {
   name: string; isActive: boolean; eventOnly: boolean; subcategories: string[]
 }[] = [
   {
     name: 'Gastronomía', isActive: true, eventOnly: false,
-    subcategories: ['Restaurante', 'Café / Cafetería', 'Bar', 'Botillería', 'Fuente de soda', 'Food truck', 'Heladería', 'Pastelería / Panadería', 'Jugería', 'Cevichería', 'Picada', 'Sushi / Asiática'],
+    subcategories: ['Restaurante', 'Café / Cafetería', 'Bar', 'Cervecería', 'Mercado / Patio gastronómico', 'Botillería', 'Fuente de soda', 'Food truck', 'Heladería', 'Pastelería / Panadería', 'Jugería', 'Cevichería', 'Picada', 'Sushi / Asiática'],
   },
   {
     name: 'Naturaleza y aire libre', isActive: true, eventOnly: false,
-    subcategories: ['Parque urbano', 'Cerro / Trekking', 'Playa / Lago / Río', 'Reserva natural', 'Mirador', 'Jardín botánico', 'Camping', 'Piscina / Balneario'],
+    subcategories: ['Parque urbano', 'Cerro / Trekking', 'Playa / Lago / Río', 'Reserva natural', 'Mirador', 'Jardín botánico', 'Zoológico / Bioparque', 'Termas', 'Camping', 'Piscina / Balneario'],
   },
   {
     name: 'Arte y cultura', isActive: true, eventOnly: false,
@@ -112,18 +116,22 @@ const CATEGORIES: {
   },
   {
     name: 'Locales y tiendas', isActive: true, eventOnly: false,
-    subcategories: ['Librería', 'Disquería / Vinilería', 'Tienda de diseño', 'Vintage / Segunda mano', 'Vinoteca / Botillería premium', 'Chocolatería', 'Florería', 'Tienda de plantas', 'Juguetería', 'Tienda de mascotas'],
+    subcategories: ['Centro comercial', 'Galería comercial / Persa', 'Atracción', 'Librería', 'Disquería / Vinilería', 'Tienda de diseño', 'Vintage / Segunda mano', 'Vinoteca / Botillería premium', 'Chocolatería', 'Florería', 'Tienda de plantas', 'Juguetería', 'Tienda de mascotas'],
   },
   {
-    // Venues permanentes a los que vas por una actividad/experiencia (Places, no eventos).
+    // Venues permanentes de salida nocturna / música (Places, no eventos).
     // Regla: la categoría = por qué vas. Un bar/pub se queda en Gastronomía + tag "vida nocturna";
-    // acá van los lugares cuyo centro es la actividad nocturna o el panorama.
-    name: 'Entretenimiento', isActive: true, eventOnly: false,
-    subcategories: ['Discoteca / Club', 'Karaoke', 'Escape room', 'Bowling', 'Club de jazz / blues', 'Sala de conciertos', 'Salón de juegos / Arcade', 'Mirador / Observatorio'],
+    // acá van los lugares cuyo centro es bailar / la música en vivo / el show nocturno.
+    name: 'Vida nocturna', isActive: true, eventOnly: false,
+    subcategories: ['Discoteca / Club', 'Club de jazz / blues', 'Sala de conciertos'],
+  },
+  {
+    name: 'Juegos y diversión', isActive: true, eventOnly: false,
+    subcategories: ['Karaoke', 'Escape room', 'Bowling', 'Salón de juegos / Arcade', 'Paintball', 'Karting / Go-kart', 'Minigolf', 'Parque de trampolines', 'Realidad virtual (VR)', 'Billar / Pool'],
   },
   {
     // event-only: tipos de SHOW (ocurren en una fecha). Se encienden con Eventos.
-    // Karaoke/Escape room salieron de acá: son venues, viven en "Entretenimiento".
+    // Karaoke/Escape room salieron de acá: son venues, viven en "Juegos y diversión".
     name: 'Shows y espectáculos', isActive: false, eventOnly: true,
     subcategories: ['Concierto', 'Comedia / Stand-up', 'Teatro', 'Danza / Ballet', 'Ópera / Clásica', 'Festival', 'Fiesta / Club', 'Cine al aire libre', 'Trivia / Pub quiz', 'Magia / Circo'],
   },
