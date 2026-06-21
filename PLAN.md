@@ -366,6 +366,19 @@ Foto de "qué falta para lanzar live". Lo ✅ ya está. Lo demás, ordenado por 
 - [ ] **Registro seguro.** Rate-limit ✅ ya. Falta: (i.2) **fuerza de contraseña** (hoy solo `min(8)`;
   sumar reglas + medidor) — S; (i.3) **verificación de email** (token de un uso + gateo) — M, requiere
   `RESEND_API_KEY` real.
+- [ ] **Anti-scraping (ANTES del deploy, pedido del usuario 2026-06-21).** El contenido (fichas con
+  rating/fotos/datos curados) es el activo del producto → blindarlo contra raspado masivo con **todas las
+  medidas viables**. Candidatas, de barata a más cara: (1) **rate-limiting por IP** en las rutas públicas
+  de catálogo (`/explorar`, `/lugar/[slug]`, autocomplete de búsqueda) — extender `lib/rateLimit.ts`
+  (mover el store a Upstash/Redis para que aguante multi-instancia en Vercel); (2) **bloqueo de
+  data-center / bots** vía Vercel Firewall / `middleware.ts` (hoy no existe middleware) + lista de
+  User-Agents y ASN conocidos; (3) **Vercel Bot Management / Cloudflare** delante del dominio; (4) no
+  exponer un endpoint JSON masivo (paginar y limitar `take`, sin "dame todo"); (5) **honeypot + detección
+  de patrones** (muchas fichas distintas en poco tiempo desde una IP → throttle/CAPTCHA); (6) `robots.txt`
+  ya bloquea admin/api, pero el catálogo público es indexable por SEO a propósito → el anti-scraping va por
+  rate-limit/WAF, no por robots; (7) ofuscar/no incluir el `googlePlaceId` ni lat/lng exactos en el HTML
+  si no se usan client-side (hoy `googlePlaceId` se serializa para "Cómo llegar" → evaluar moverlo a una
+  action). Investigar el set completo y elegir el combo costo/beneficio antes de publicar.
 
 ### P1 — muy importante para un lanzamiento decente
 - [ ] **Listas guardadas visibles.** Hoy en Guardados ves las tarjetas de tus listas con conteo, pero
