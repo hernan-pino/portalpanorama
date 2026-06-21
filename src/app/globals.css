@@ -901,6 +901,11 @@ main:has(.explorar) + .footer { margin-top: 0; }
 .filter-sub__label { font-size: var(--t-body-sm); color: var(--fg-muted); margin-bottom: 6px; }
 .filter-empty { font-size: var(--t-body-sm); color: var(--fg-subtle); }
 .chip-set { display: flex; flex-wrap: wrap; gap: 6px; }
+.filter-more {
+  margin-top: var(--s-2); font-size: var(--t-body-sm); font-weight: 500;
+  color: var(--accent-60); text-decoration: underline; text-underline-offset: 2px;
+}
+.filter-more:hover { color: var(--accent-70); }
 .chip--count { gap: 6px; }
 .chip__count { font-family: var(--font-mono); font-size: 10px; color: var(--fg-subtle); }
 .chip--accent .chip__count { color: var(--paper-00); opacity: 0.8; }

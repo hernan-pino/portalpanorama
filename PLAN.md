@@ -75,6 +75,11 @@ volcados al backlog y al checklist de abajo. Los principales:
   dirección y luego a coords. Se expuso `googlePlaceId` en el read-model `PlaceDetailView` (ficha pública
   + preview admin). Typecheck OK, verificado en runtime.
 
+- **Filtro "¿Dónde?" con "Ver más" (2026-06-21) ✅.** Comuna y Barrio listan muchas opciones; ahora
+  muestran solo las **3 con más resultados** y un link **"Ver más (N)"** que revela el resto (toggle a
+  "Ver menos"). `CollapsibleChipSet` ordena por count desc y, si la opción activa queda oculta, arranca
+  expandido. Metro queda igual (pocas líneas). En `Filters.tsx` + estilo `.filter-more`.
+
 ## ▶️ Próximos pasos (en orden)
 
 > **✅ Brand (MVP mínimo) CONSTRUIDO + e2e OK (2026-06-18) — solo falta prod.** Entidad `Brand` de punta a

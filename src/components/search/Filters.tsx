@@ -76,7 +76,7 @@ function FiltersInner({ facets }: Props) {
       <Section title="¿Dónde?" count={dondeN} defaultOpen={dondeN > 0}>
         {facets.communes.length > 0 && (
           <Subgroup label="Comuna">
-            <ChipSet
+            <CollapsibleChipSet
               options={facets.communes}
               isActive={(v) => get('comuna') === v}
               onToggle={(v) => toggleSingle('comuna', v)}
@@ -85,7 +85,7 @@ function FiltersInner({ facets }: Props) {
         )}
         {facets.neighborhoods.length > 0 && (
           <Subgroup label="Barrio">
-            <ChipSet
+            <CollapsibleChipSet
               options={facets.neighborhoods}
               isActive={(v) => get('barrio') === v}
               onToggle={(v) => toggleSingle('barrio', v)}
@@ -233,6 +233,55 @@ function ChipSet({
         </button>
       ))}
     </div>
+  )
+}
+
+// Como ChipSet pero acotado: muestra solo las `limit` opciones con más resultados
+// y un link "Ver más" para revelar el resto (Comuna/Barrio tienen muchas opciones).
+// Se ordena por count desc para garantizar que las visibles sean las top. Si la
+// opción activa quedara oculta, arranca expandido para no esconder la selección.
+function CollapsibleChipSet({
+  options,
+  isActive,
+  onToggle,
+  limit = 3,
+}: {
+  options: FacetCount[]
+  isActive: (value: string) => boolean
+  onToggle: (value: string) => void
+  limit?: number
+}) {
+  const sorted = [...options].sort((a, b) => b.count - a.count)
+  const activeHidden = sorted.findIndex((o) => isActive(o.value)) >= limit
+  const [expanded, setExpanded] = useState(activeHidden)
+
+  if (sorted.length === 0) return <p className="filter-empty">Sin opciones por ahora.</p>
+
+  const visible = expanded ? sorted : sorted.slice(0, limit)
+  const hiddenCount = sorted.length - limit
+
+  return (
+    <>
+      <div className="chip-set">
+        {visible.map((o) => (
+          <button
+            key={o.value}
+            type="button"
+            className={`chip chip--count${isActive(o.value) ? ' chip--accent' : ''}`}
+            aria-pressed={isActive(o.value)}
+            onClick={() => onToggle(o.value)}
+          >
+            {o.label}
+            <span className="chip__count">{o.count}</span>
+          </button>
+        ))}
+      </div>
+      {hiddenCount > 0 && (
+        <button type="button" className="filter-more" onClick={() => setExpanded((e) => !e)}>
+          {expanded ? 'Ver menos' : `Ver más (${hiddenCount})`}
+        </button>
+      )}
+    </>
   )
 }
 
