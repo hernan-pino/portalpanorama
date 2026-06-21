@@ -166,6 +166,12 @@ solo `min(8)`; sumar reglas + medidor) · (i.3) **verificación de email** (toke
 más adelante; requiere `RESEND_API_KEY` real + considerar rate-limit anti-bots.
 
 **Mejoras del form de admin:**
+- **(x) Lista admin: eliminar + filtros + archivados separados ✅ HECHO (2026-06-20)** — la tabla de
+  `/admin/lugares` ahora tiene **borrado duro** (`DeletePlaceUseCase` + `delete()` en port/repo; las
+  relaciones caen por Cascade/SetNull, sin huérfanos; botón "Eliminar" con confirmación irreversible,
+  aparte de Archivar que preserva historial) + **filtros** (pestañas por estado con conteo, búsqueda por
+  nombre, dropdown de categoría; client-side sobre `PlacesAdminList`) + **archivados separados** (el
+  default "Activos" excluye ARCHIVED; los archivados viven en su propia pestaña). Typecheck + 84 tests OK.
 - **(k) Autosave del borrador** — ⏸️ descartado por el usuario (problema raro; no vale la pena).
 - **(n) Botón "Preview" ✅ HECHO (2026-06-15)** — `PlacePreview` cliente que abre un overlay con la
   ficha real (reusa las clases `.ficha`), resuelve ids→nombres desde las `options` del form y usa
@@ -309,8 +315,12 @@ Foto de "qué falta para lanzar live". Lo ✅ ya está. Lo demás, ordenado por 
   enrich por defecto las saltaba (solo agarra fichas con `googlePlaceId: null`) → se limpia el id y se
   re-enriquece por texto. **Sin rating (revisar a mano):** Parque O'Higgins (Maps lo mapea como polígono
   sin rating agregado) y Happyland (colisión de `place_id` con Mall Sport en el enrich).
-  **Borrados (2026-06-20):** Yukland (no existe) y The Jazz Corner (cerrado) → **115 lugares, 109 publicados,
-  6 PENDING_REVIEW** (Colectivo Informal, Galgo Café, Rarities, Galpón Bío Bío, Museo de la Moda, Jardín Chagual).
+  **Borrados (2026-06-20):** Yukland (no existe) y The Jazz Corner (cerrado) → 115 lugares.
+  **Triage de los 6 PENDING_REVIEW (2026-06-20):** se dejó **Galpón Bío Bío** en revisión (4.6/2.492,
+  listo para publicar); **archivados** el Galgo Café (cerrado temporal) y Museo de la Moda (abre por
+  temporadas) — republicables; **eliminados** Colectivo Informal (sin dirección, 3 reseñas), Rarities
+  (5 reseñas) y Jardín Chagual (place_id mal atado). → **112 lugares, 109 publicados, 2 archivados,
+  1 en revisión.**
 - **Reorganización de taxonomía (2026-06-20) ✅.** Sesión de catálogo a partir de cargar Mall Sport (un mall
   no calzaba en ninguna subcategoría). Cambios: **(1)** Entretenimiento mezclaba vida nocturna con juegos →
   **partido en 2 categorías activas:** **Vida nocturna** (Discoteca/Club, Club de jazz/blues, Sala de conciertos)

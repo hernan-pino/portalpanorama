@@ -1,13 +1,22 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import { container } from '@lib/container'
-import { STATUS_LABELS } from './types'
-import { PlaceRowActions } from './PlaceRowActions'
+import { PlacesAdminList, type AdminRow } from './PlacesAdminList'
 
 export const metadata: Metadata = { title: 'Lugares — Admin' }
 
 export default async function LugaresPage() {
   const places = await container.getListPlacesForAdminUseCase().execute()
+
+  // Subconjunto serializable que necesita la tabla (sin Date ni score).
+  const rows: AdminRow[] = places.map((p) => ({
+    id: p.id,
+    name: p.name,
+    status: p.status,
+    categoryName: p.categoryName,
+    communeName: p.communeName,
+    googleRating: p.googleRating,
+  }))
 
   return (
     <div className="admin-page">
@@ -25,40 +34,7 @@ export default async function LugaresPage() {
           Todavía no hay lugares. <Link href="/admin/lugares/nuevo">Creá el primero</Link>.
         </p>
       ) : (
-        <div className="admin-table">
-          <table>
-            <thead>
-              <tr>
-                <th>Nombre</th>
-                <th>Categoría</th>
-                <th>Comuna</th>
-                <th>Google</th>
-                <th>Estado</th>
-                <th aria-label="Acciones" />
-              </tr>
-            </thead>
-            <tbody>
-              {places.map((p) => (
-                <tr key={p.id}>
-                  <td>
-                    <Link href={`/admin/lugares/${p.id}`} className="admin-table__name">{p.name}</Link>
-                  </td>
-                  <td>{p.categoryName}</td>
-                  <td>{p.communeName}</td>
-                  <td>{p.googleRating != null ? `★ ${p.googleRating.toFixed(1)}` : '—'}</td>
-                  <td>
-                    <span className={`admin-badge admin-badge--${p.status.toLowerCase()}`}>
-                      {STATUS_LABELS[p.status] ?? p.status}
-                    </span>
-                  </td>
-                  <td>
-                    <PlaceRowActions id={p.id} status={p.status} />
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+        <PlacesAdminList places={rows} />
       )}
     </div>
   )

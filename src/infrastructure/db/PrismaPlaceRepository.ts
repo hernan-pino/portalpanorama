@@ -288,6 +288,12 @@ export class PrismaPlaceRepository implements PlaceRepository {
     ])
   }
 
+  // Borrado duro. Cascade/SetNull en el schema limpian las relaciones; no hace
+  // falta tocar las tablas hijas a mano.
+  async delete(id: string): Promise<void> {
+    await this.prisma.place.delete({ where: { id } })
+  }
+
   // Read-model PÚBLICO: solo lugares publicados. Un PENDING_REVIEW/ARCHIVED por
   // URL directa debe dar 404 (explorar ya los filtra; esto cierra la otra puerta).
   async getDetailBySlug(slug: string): Promise<PlaceDetailView | null> {

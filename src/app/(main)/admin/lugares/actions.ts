@@ -301,3 +301,15 @@ export async function archivePlaceAction(placeId: string): Promise<ActionResult>
     return { error: toErrorMessage(err) }
   }
 }
+
+// ── Eliminar (borrado duro, irreversible) ──
+export async function deletePlaceAction(placeId: string): Promise<ActionResult> {
+  if (!(await isAdmin())) return { error: 'No autorizado.' }
+  try {
+    await container.getDeletePlaceUseCase().execute(placeId)
+    revalidatePath('/admin/lugares')
+    return { success: true }
+  } catch (err) {
+    return { error: toErrorMessage(err) }
+  }
+}

@@ -94,6 +94,11 @@ export interface PlaceRepository {
   findById(id: string): Promise<Place | null>
   findBySlug(slug: string): Promise<Place | null>
   save(place: Place): Promise<void>
+  // Borrado duro (irreversible). Las relaciones del Place caen por Cascade
+  // (imágenes/tags/puntos/reportes/visitas/items de colección) o SetNull
+  // (hijos, marca, eventos): no deja huérfanos. Para quitar sin perder historial
+  // está archive(); esto es el borrado definitivo del admin.
+  delete(id: string): Promise<void>
 
   // ── Read-models para la UI ──
   getDetailBySlug(slug: string): Promise<PlaceDetailView | null>

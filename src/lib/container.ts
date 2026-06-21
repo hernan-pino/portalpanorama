@@ -27,6 +27,7 @@ import { CreatePlaceUseCase } from '@application/place/CreatePlaceUseCase'
 import { UpdatePlaceUseCase } from '@application/place/UpdatePlaceUseCase'
 import { PublishPlaceUseCase } from '@application/place/PublishPlaceUseCase'
 import { ArchivePlaceUseCase } from '@application/place/ArchivePlaceUseCase'
+import { DeletePlaceUseCase } from '@application/place/DeletePlaceUseCase'
 import { RecalculateScoresUseCase } from '@application/place/RecalculateScoresUseCase'
 import { EnrichPlaceRatingUseCase } from '@application/place/EnrichPlaceRatingUseCase'
 import { AttachPlacePhotosUseCase } from '@application/place/AttachPlacePhotosUseCase'
@@ -217,6 +218,10 @@ export const container = {
 
   getArchivePlaceUseCase() {
     return new ArchivePlaceUseCase(placeRepo)
+  },
+
+  getDeletePlaceUseCase() {
+    return new DeletePlaceUseCase(placeRepo)
   },
 
   getRecalculateScoresUseCase() {
