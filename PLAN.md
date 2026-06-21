@@ -8,7 +8,12 @@ priorizado. Se actualiza cada vez que avanzamos. Liviano a propósito — para r
 - **Modelo de datos:** [SCHEMA.md](SCHEMA.md) · **Capas:** [ARCHITECTURE.md](ARCHITECTURE.md) · **Carga:** [PLANTILLA_CSV.md](PLANTILLA_CSV.md)
 - **Bitácora del rediseño (historia + razonamiento de las decisiones):** [PLAN_FASE9.md](PLAN_FASE9.md)
 
-**Última actualización:** 2026-06-21 (sesión: triage de los 6 PENDING_REVIEW → 112 lugares; admin con
+**Última actualización:** 2026-06-21 (sesión 2: **lado usuario cerrado** — vista de detalle de listas
+guardadas en modo lista con gestión [renombrar/eliminar lista + quitar lugar]; dashboard limpiado a 3 tabs
+reales [Guardados · Historial · Perfil] con Historial terminado; **popup de compartir** con redes
+[WhatsApp/X/Telegram/Facebook/Email/Copiar + IG/TikTok copian link]; verificado a ojo; typecheck + 84 tests + build OK)
+
+**Sesión previa:** 2026-06-21 (sesión 1: triage de los 6 PENDING_REVIEW → 112 lugares; admin con
 eliminar+filtros+archivados+modal de confirmación; Bar Flama Merced→Lastarria re-enriquecido; "Cómo
 llegar" por place_id; "Ver más" en filtro Comuna/Barrio; fix banda gris ficha/footer; análisis de cierre)
 
@@ -19,10 +24,16 @@ llegar" por place_id; "Ver más" en filtro Comuna/Barrio; fix banda gris ficha/f
 Orden sugerido tras el análisis de cierre del 2026-06-21. Elegir uno; (1) es la recomendación principal
 (cierra el agujero más visible del flujo de usuario).
 
-1. **Cerrar el lado usuario.** (a) **Vista de detalle de listas guardadas** — hoy clickear una lista cae
-   en "Próximamente" pese a que el backend de colecciones existe (P1). (b) **Decidir por cada tab del
-   dashboard**: terminar (Historial tiene backend) u **ocultar** las no-MVP (Eventos, Reseñas, Config) —
-   hoy 5 de 7 son stubs y el usuario registrado ve mayormente humo.
+1. **✅ HECHO (2026-06-21, sesión 2) — Cerrar el lado usuario.** (a) **Vista de detalle de listas
+   guardadas** construida: clickear una lista en Guardados (`?tab=guardados&lista=<id>`) abre sus lugares
+   como PlaceCards + gestión (renombrar/eliminar la lista, quitar un lugar de la lista). Hexagonal:
+   read-model `findOwnedWithPlaces(collectionId, ownerId)` con ownership en la query (anti-IDOR) + use
+   case `GetUserCollectionUseCase`; actions `renameListAction`/`deleteListAction`/`removeFromListAction`
+   sobre los use cases ya existentes. (b) **Dashboard limpiado a 3 tabs reales** (decisión del usuario):
+   nav = **Guardados · Historial · Perfil**; **Historial terminado** (renderiza el `history` que ya
+   cargaba el dashboard); ocultos del nav los stubs no-MVP (Mis listas —redundante con Guardados—,
+   Eventos, Reseñas, Config) — sus componentes y rutas siguen para reactivarlos sin reconstruir.
+   Typecheck + 84 tests + `next build` OK. **Falta:** verificación e2e humana + va a prod con el push.
 2. **Cargar contenido de las categorías flacas.** Juegos y diversión tiene **1 publicado**, Vida nocturna
    7 → vía el agente `investigador-lugares`. Sube densidad barato.
 3. **Datos: capturar coordenadas.** **65 de 109 publicados sin lat/lng** — "Cómo llegar" se salva por
@@ -406,21 +417,21 @@ Foto de "qué falta para lanzar live". Lo ✅ ya está. Lo demás, ordenado por 
   action). Investigar el set completo y elegir el combo costo/beneficio antes de publicar.
 
 ### P1 — muy importante para un lanzamiento decente
-- [ ] **Listas guardadas visibles.** Hoy en Guardados ves las tarjetas de tus listas con conteo, pero
-  al hacer clic caen en `tab=listas` = placeholder **"Próximamente"**: no se puede abrir una lista ni
-  ver sus lugares. El backend (use cases de colección) ya existe; falta la **vista de detalle** (lugares
-  de una colección, con PlaceCards) + crear/renombrar/eliminar lista. — M.
+- [x] **Listas guardadas visibles ✅ HECHO (2026-06-21).** Clickear una lista en Guardados abre su
+  **vista de detalle** (lugares como PlaceCards) con renombrar/eliminar la lista y quitar lugares.
+  Read-model con ownership en la query (anti-IDOR) + use case + 3 actions sobre los use cases existentes.
 - [ ] **Analytics.** GA4 + Meta Pixel + eventos custom (del scope MVP, no construido). Conviene tenerlo
   desde el día 1 para medir el lanzamiento. — M.
-- [ ] **Limpiar el dashboard de usuario.** Hoy 5 de 7 tabs son stubs "Próximamente" (Config, Eventos,
-  Historial, Listas, Reseñas); solo Guardados y Perfil son reales. Decidir por tab: **terminar**
-  (Historial tiene backend; Listas = ítem de arriba) u **ocultar** lo no-MVP (Eventos = off; Reseñas
-  si reviews no van en MVP). — M.
+- [x] **Dashboard de usuario limpiado ✅ HECHO (2026-06-21).** Nav = **Guardados · Historial · Perfil**
+  (3 tabs reales); Historial terminado; ocultos del nav los stubs no-MVP (Mis listas, Eventos, Reseñas,
+  Config) — componentes/rutas preservados para reactivar.
 
 ### P2 — pulido / captura de valor
-- [ ] **Botón compartir.** Hoy usa `navigator.share` + fallback a copiar al portapapeles. El usuario
-  reporta que "no está bien" → falta diagnosticar qué falla puntual (¿toast? ¿feedback en desktop?
-  ¿posición?). — S.
+- [x] **Botón compartir ✅ HECHO (2026-06-21).** Reemplazado `navigator.share` por un **popup** con la
+  grilla de redes (reusa el shell `.save-modal`): **WhatsApp, X, Telegram, Facebook** abren con
+  nombre+link pre-cargado; **Email** vía `mailto`; **Copiar link**; **Instagram y TikTok** copian el link
+  + aviso "pégalo en tu historia/bio" (no existe API web para pre-cargar un link externo en esas dos —
+  limitación real, decidido con el usuario). Verificado a ojo.
 - [ ] **Sugerencias / feedback.** No existe mecanismo (solo `reportPlaceAction` para reportar datos
   malos). Sumar un form simple "sugerir lugar / mejora" → email o tabla. — S/M.
 - [ ] **3-5 listas curadas como landing SEO** (ítem d). — M.

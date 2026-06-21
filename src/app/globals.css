@@ -521,6 +521,19 @@ a { color: inherit; text-decoration: none; }
 .save-modal__new { display: flex; gap: var(--s-2); }
 .save-modal__error { color: var(--error); font-size: var(--t-body-sm); }
 
+/* modal de compartir — grilla de redes (reusa el shell .save-modal) */
+.share-grid { display: grid; grid-template-columns: 1fr 1fr; gap: var(--s-2); }
+.share-opt {
+  display: flex; align-items: center; gap: var(--s-3);
+  padding: 10px 12px; border-radius: var(--r-sm);
+  background: var(--bg-raised); border: 1px solid var(--surface-line);
+  cursor: pointer; text-align: left; font-size: var(--t-body-sm);
+  transition: background var(--d-fast), border-color var(--d-fast);
+}
+.share-opt:hover { background: var(--bg-sunken); border-color: var(--surface-line-soft); }
+.share-opt__ico { width: 20px; height: 20px; flex-shrink: 0; display: inline-flex; color: var(--ink-100); }
+.share-modal__feedback { font-size: var(--t-body-sm); color: var(--accent-70); text-align: center; }
+
 /* modal de bienvenida (tras registrarse) — descartable, solo explica la idea */
 .welcome-modal__scrim {
   position: fixed; inset: 0; z-index: 100;
