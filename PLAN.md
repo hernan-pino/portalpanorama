@@ -66,9 +66,9 @@ volcados al backlog y al checklist de abajo. Los principales:
   (Merced)" pero su contenido describe el bar de Lastarria (pin del usuario: -33.4374816, -70.6420574,
   a ~250 m de Merced 346). Se **renombró** "Bar Flama (Merced)" → **Bar Flama (Lastarria)** (slug
   `bar-flama-lastarria`) y se afinaron las coords al pin, en vez de borrarla (habría dejado solo
-  Providencia). Quedan 2 bajo la marca `bar-flama`: Providencia + Lastarria. **Caveat:** el rating/place_id
-  (`ChIJ1_F4FADFYpYRMZje9xQCPBU`, 4.5/663) es del match anterior; es el mismo bar, pero queda pendiente
-  **re-enriquecer contra el pin** si se quiere confirmar.
+  Providencia). Quedan 2 bajo la marca `bar-flama`: Providencia + Lastarria. **Re-enriquecido (2026-06-21) ✅:**
+  Apify confirmó el match (Bar Flama · Merced 346, sin flag de revisar), rating **4.5/673**, score 4.51,
+  place_id correcto; se borró la foto vieja y se rehospedaron **3 fotos de Google Maps** al Blob.
 - **"Cómo llegar" ahora apunta a la ficha de Google del negocio.** Antes el link usaba solo la dirección
   en texto (`destination=<dir>`), que Google a veces geocodifica a un punto. Ahora prefiere el **place_id**
   (`destination_place_id`) cuando existe → abre las indicaciones a la ficha exacta del lugar; cae a
@@ -187,6 +187,10 @@ más adelante; requiere `RESEND_API_KEY` real + considerar rate-limit anti-bots.
   aparte de Archivar que preserva historial) + **filtros** (pestañas por estado con conteo, búsqueda por
   nombre, dropdown de categoría; client-side sobre `PlacesAdminList`) + **archivados separados** (el
   default "Activos" excluye ARCHIVED; los archivados viven en su propia pestaña). Typecheck + 84 tests OK.
+  **Modal de confirmación (2026-06-21):** "Eliminar" ahora abre un modal (no `window.confirm`) con un
+  **checkbox de confirmación** ("Sí, entiendo que es permanente…") y el botón Eliminar **deshabilitado
+  hasta tildarlo**. (Fix de paso: la variable CSS inexistente `--bg-base`/`--fg-base` dejaba la pestaña
+  "Activos" sin texto y un input de perfil sin fondo → `--bg-raised`/`--ink-100`.)
 - **(k) Autosave del borrador** — ⏸️ descartado por el usuario (problema raro; no vale la pena).
 - **(n) Botón "Preview" ✅ HECHO (2026-06-15)** — `PlacePreview` cliente que abre un overlay con la
   ficha real (reusa las clases `.ficha`), resuelve ids→nombres desde las `options` del form y usa

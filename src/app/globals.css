@@ -1836,6 +1836,37 @@ select.form-input { cursor: pointer; }
   border-color: color-mix(in oklab, var(--error) 40%, transparent);
 }
 
+/* Modal de confirmación de borrado (irreversible): scrim + dialog + check */
+.confirm-modal__scrim {
+  position: fixed; inset: 0; z-index: 120;
+  background: rgba(28, 25, 23, 0.45);
+  display: flex; align-items: center; justify-content: center; padding: var(--s-5);
+}
+.confirm-modal {
+  width: 100%; max-width: 420px; text-align: left;
+  background: var(--paper-00); border: 1px solid var(--surface-line);
+  border-radius: var(--r-lg); padding: var(--s-5); box-shadow: var(--shadow-pop);
+  display: flex; flex-direction: column; gap: var(--s-4);
+}
+.confirm-modal__title { font-family: var(--font-display); font-size: 20px; font-weight: 500; }
+.confirm-modal__lead { font-size: var(--t-body-sm); color: var(--fg-muted); line-height: 1.55; }
+.confirm-modal__check {
+  display: flex; gap: var(--s-2); align-items: flex-start;
+  font-size: var(--t-body-sm); color: var(--ink-100); cursor: pointer;
+  padding: var(--s-3); border-radius: var(--r-md);
+  background: color-mix(in oklab, var(--error) 7%, transparent);
+  border: 1px solid color-mix(in oklab, var(--error) 22%, transparent);
+}
+.confirm-modal__check input { margin-top: 2px; flex-shrink: 0; accent-color: var(--error); }
+.confirm-modal__actions { display: flex; gap: var(--s-2); justify-content: flex-end; }
+.confirm-modal__delete {
+  background: var(--error); color: var(--paper-00); border-color: var(--error);
+}
+.confirm-modal__delete:hover:not(:disabled) {
+  background: color-mix(in oklab, var(--error) 85%, black);
+}
+.confirm-modal__delete:disabled { opacity: 0.5; cursor: not-allowed; }
+
 /* Filtros de la lista (estado + búsqueda + categoría) */
 .admin-filters {
   display: flex; align-items: center; justify-content: space-between;

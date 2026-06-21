@@ -20,6 +20,9 @@ export function PlaceRowActions({
   const router = useRouter()
   const [isPending, startTransition] = useTransition()
   const [error, setError] = useState<string | null>(null)
+  // Modal de confirmación de borrado: se abre con el botón y exige tildar el check.
+  const [confirmOpen, setConfirmOpen] = useState(false)
+  const [confirmChecked, setConfirmChecked] = useState(false)
 
   function run(action: () => Promise<ActionResult>) {
     setError(null)
@@ -30,11 +33,15 @@ export function PlaceRowActions({
     })
   }
 
-  function confirmDelete() {
-    // Borrado irreversible: doble confirmación con el nombre para no errarle a la fila.
-    if (window.confirm(`¿Eliminar "${name}" de forma permanente?\n\nEsto no se puede deshacer. Si solo querés ocultarlo, usá Archivar.`)) {
-      run(() => deletePlaceAction(id))
-    }
+  function openConfirm() {
+    setConfirmChecked(false)
+    setError(null)
+    setConfirmOpen(true)
+  }
+
+  function doDelete() {
+    setConfirmOpen(false)
+    run(() => deletePlaceAction(id))
   }
 
   return (
@@ -49,8 +56,56 @@ export function PlaceRowActions({
           onClick={() => run(() => archivePlaceAction(id))}>Archivar</button>
       )}
       <button className="btn btn--ghost btn--sm admin-row-actions__danger" disabled={isPending}
-        onClick={confirmDelete}>Eliminar</button>
+        onClick={openConfirm}>Eliminar</button>
       {error && <span className="admin-row-actions__error" role="alert">{error}</span>}
+
+      {confirmOpen && (
+        <div
+          className="confirm-modal__scrim"
+          role="presentation"
+          onClick={() => setConfirmOpen(false)}
+        >
+          <div
+            className="confirm-modal"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby={`del-title-${id}`}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <h2 id={`del-title-${id}`} className="confirm-modal__title">Eliminar lugar</h2>
+            <p className="confirm-modal__lead">
+              Vas a eliminar <strong>«{name}»</strong> de forma permanente. Esta acción{' '}
+              <strong>no se puede deshacer</strong> y borra su ficha, imágenes y datos asociados.
+              Si solo querés ocultarlo, mejor archivalo.
+            </p>
+            <label className="confirm-modal__check">
+              <input
+                type="checkbox"
+                checked={confirmChecked}
+                onChange={(e) => setConfirmChecked(e.target.checked)}
+              />
+              <span>Sí, entiendo que es permanente y quiero eliminar «{name}».</span>
+            </label>
+            <div className="confirm-modal__actions">
+              <button
+                type="button"
+                className="btn btn--ghost btn--sm"
+                onClick={() => setConfirmOpen(false)}
+              >
+                Cancelar
+              </button>
+              <button
+                type="button"
+                className="btn btn--sm confirm-modal__delete"
+                disabled={!confirmChecked}
+                onClick={doDelete}
+              >
+                Eliminar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
