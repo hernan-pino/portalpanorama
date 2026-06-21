@@ -11,7 +11,9 @@ priorizado. Se actualiza cada vez que avanzamos. Liviano a propósito — para r
 **Última actualización:** 2026-06-21 (sesión 2: **lado usuario cerrado** — vista de detalle de listas
 guardadas en modo lista con gestión [renombrar/eliminar lista + quitar lugar]; dashboard limpiado a 3 tabs
 reales [Guardados · Historial · Perfil] con Historial terminado; **popup de compartir** con redes
-[WhatsApp/X/Telegram/Facebook/Email/Copiar + IG/TikTok copian link]; verificado a ojo; typecheck + 84 tests + build OK)
+[WhatsApp/X/Telegram/Facebook/Email/Copiar + IG/TikTok copian link]; **perf de ficha** [recordVisit con
+`after()` no bloquea el render + queries en paralelo]; verificado a ojo; typecheck + 84 tests + build OK.
+Commits: `03ce143`, `455a9e3`, `33d5a05`)
 
 **Sesión previa:** 2026-06-21 (sesión 1: triage de los 6 PENDING_REVIEW → 112 lugares; admin con
 eliminar+filtros+archivados+modal de confirmación; Bar Flama Merced→Lastarria re-enriquecido; "Cómo
@@ -21,30 +23,33 @@ llegar" por place_id; "Ver más" en filtro Comuna/Barrio; fix banda gris ficha/f
 
 ## ▶️ Plan de acción — próxima sesión (recomendado)
 
-Orden sugerido tras el análisis de cierre del 2026-06-21. Elegir uno; (1) es la recomendación principal
-(cierra el agujero más visible del flujo de usuario).
+**Hecho en la sesión 2 (2026-06-21):** ✅ cerrado el lado usuario (detalle de listas guardadas + gestión,
+dashboard a 3 tabs reales) · ✅ popup de compartir con redes · ✅ perf de la ficha (recordVisit no bloquea
+el render + queries en paralelo). Todo commiteado en `main` (`03ce143`, `455a9e3`, `33d5a05`).
+**Pendiente transversal de todo lo anterior:** verificación e2e humana fina + **va a prod con el push**.
 
-1. **✅ HECHO (2026-06-21, sesión 2) — Cerrar el lado usuario.** (a) **Vista de detalle de listas
-   guardadas** construida: clickear una lista en Guardados (`?tab=guardados&lista=<id>`) abre sus lugares
-   como PlaceCards + gestión (renombrar/eliminar la lista, quitar un lugar de la lista). Hexagonal:
-   read-model `findOwnedWithPlaces(collectionId, ownerId)` con ownership en la query (anti-IDOR) + use
-   case `GetUserCollectionUseCase`; actions `renameListAction`/`deleteListAction`/`removeFromListAction`
-   sobre los use cases ya existentes. (b) **Dashboard limpiado a 3 tabs reales** (decisión del usuario):
-   nav = **Guardados · Historial · Perfil**; **Historial terminado** (renderiza el `history` que ya
-   cargaba el dashboard); ocultos del nav los stubs no-MVP (Mis listas —redundante con Guardados—,
-   Eventos, Reseñas, Config) — sus componentes y rutas siguen para reactivarlos sin reconstruir.
-   Typecheck + 84 tests + `next build` OK. **Falta:** verificación e2e humana + va a prod con el push.
-2. **Cargar contenido de las categorías flacas.** Juegos y diversión tiene **1 publicado**, Vida nocturna
-   7 → vía el agente `investigador-lugares`. Sube densidad barato.
-3. **Datos: capturar coordenadas.** **65 de 109 publicados sin lat/lng** — "Cómo llegar" se salva por
-   place_id, pero no hay pin/mapa ni "abierto/cerca". Ver si el enrich de Apify puede traer coords.
-4. **Preparar el deploy.** Anti-scraping (ítem P0 nuevo) + registro seguro (fuerza de contraseña +
-   verificación de email) + checklist de prod (BD, `RESEND_API_KEY`, Blob, redeploy).
-5. **Consistencia de CSS (deuda, no bloqueante).** El proyecto usa **design system propio: variables
-   (`--s-x`, `--ink-100`…) + clases semánticas BEM** en `globals.css` (798 className). **Tailwind v4 está
-   importado pero las utilities no se usan** (peso muerto salvo el reset) y hay **154 `style={{}}` inline**
-   (sobre todo en `mi-cuenta/*`, login, ProfileForm). Recomendación: estandarizar en variables+clases,
-   migrar los inline recurrentes a clases, y **decidir Tailwind** (adoptarlo o quitarlo).
+Orden sugerido para retomar. (1) es la recomendación principal (sube densidad de contenido, barato).
+
+1. **Cargar contenido de las categorías flacas.** Juegos y diversión tiene **1 publicado**, Vida nocturna
+   7 → vía el agente `investigador-lugares` (skill desktop "modo carga" → place_id → agente → ingesta →
+   enrich `--with-photos`). Naturaleza/Arte ya están bien. Sube densidad barato.
+2. **Datos: capturar coordenadas.** **65 de 109 publicados sin lat/lng** — "Cómo llegar" se salva por
+   place_id, pero no hay pin/mapa ni "abierto/cerca". Investigar si el enrich de Apify ya trae coords
+   (location.lat/lng en la respuesta) y, si sí, persistirlas en el script de enrich.
+3. **Preparar el deploy (P0).** (a) **Anti-scraping** ANTES de publicar (ver P0 abajo: rate-limit por IP en
+   rutas de catálogo + WAF/bot management + no exponer endpoint JSON masivo). (b) **Registro seguro**
+   (fuerza de contraseña + verificación de email). (c) **Checklist de prod**: decidir workflow de BD
+   (`db push` vs migraciones) + schema/seed en Neon prod + `RESEND_API_KEY` real + confirmar
+   `BLOB_READ_WRITE_TOKEN` + redeploy con la presentation nueva.
+4. **Consistencia de CSS (deuda, no bloqueante).** Design system propio: variables (`--s-x`, `--ink-100`…)
+   + clases semánticas BEM en `globals.css` (~800 className). **Tailwind v4 importado pero sin usar las
+   utilities** (peso muerto salvo el reset) + **~154 `style={{}}` inline** (sobre todo `mi-cuenta/*`, login,
+   ProfileForm). Estandarizar en variables+clases, migrar inline recurrentes a clases, y **decidir Tailwind**.
+
+**Optimización ya cubierta (no re-abrir sin necesidad):** ISR de la ficha quedó **descartado a propósito** —
+el Header del root layout llama `auth()` (toda la app es dinámica), pero la sesión es **JWT** (sin hit a BD),
+así que el costo es bajo; cachear exigiría refactor global del chrome (riesgo alto / payoff bajo). Detalle
+en el backlog, ítem (e.2).
 
 ---
 
