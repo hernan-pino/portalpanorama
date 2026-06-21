@@ -3,13 +3,13 @@ import Link from 'next/link'
 import { useSearchParams } from 'next/navigation'
 import { signOut } from 'next-auth/react'
 
+// MVP: solo los tabs con contenido real. Los stubs no-MVP (Mis listas —redundante
+// con Guardados—, Eventos, Mis reseñas, Configuración) quedan fuera del nav; sus
+// componentes y rutas siguen existiendo para reactivarlos sin reconstruir.
 const TABS = [
   { key: 'guardados', label: 'Guardados' },
-  { key: 'resenas', label: 'Mis reseñas' },
-  { key: 'listas', label: 'Mis listas', soon: true },
-  { key: 'eventos', label: 'Eventos', soon: true },
+  { key: 'historial', label: 'Historial' },
   { key: 'perfil', label: 'Perfil' },
-  { key: 'config', label: 'Configuración' },
 ]
 
 export function SidebarNav() {
@@ -18,7 +18,7 @@ export function SidebarNav() {
 
   return (
     <nav className="dash-sidenav">
-      {TABS.map(({ key, label, soon }) => (
+      {TABS.map(({ key, label }) => (
         <Link
           key={key}
           href={`/mi-cuenta?tab=${key}`}
@@ -26,21 +26,6 @@ export function SidebarNav() {
           style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 'var(--s-2)' }}
         >
           <span>{label}</span>
-          {soon && (
-            <span style={{
-              fontFamily: 'var(--font-mono)',
-              fontSize: '9px',
-              letterSpacing: '0.08em',
-              textTransform: 'uppercase',
-              color: 'var(--fg-subtle)',
-              background: 'var(--surface-line)',
-              padding: '2px 5px',
-              borderRadius: '3px',
-              flexShrink: 0,
-            }}>
-              Pronto
-            </span>
-          )}
         </Link>
       ))}
 

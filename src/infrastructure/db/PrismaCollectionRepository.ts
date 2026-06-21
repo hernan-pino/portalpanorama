@@ -4,6 +4,7 @@ import {
   CollectionRepository,
   CollectionSummary,
   CuratedCollectionView,
+  UserCollectionDetailView,
 } from '@application/ports/CollectionRepository'
 import { placeCardArgs, toPlaceCardView } from './placeCardView'
 
@@ -101,6 +102,32 @@ export class PrismaCollectionRepository implements CollectionRepository {
       itemCount: r._count.items,
       coverUrl: r.items[0]?.place.images[0]?.url,
     }))
+  }
+
+  // Detalle de una lista del usuario con sus tarjetas. `findFirst` con ownerId en
+  // el where → solo resuelve si la lista es suya (anti-IDOR), null en otro caso.
+  async findOwnedWithPlaces(
+    collectionId: string,
+    ownerId: string,
+  ): Promise<UserCollectionDetailView | null> {
+    const row = await this.prisma.collection.findFirst({
+      where: { id: collectionId, ownerId },
+      select: {
+        id: true,
+        name: true,
+        items: {
+          orderBy: { sortOrder: 'asc' },
+          select: { place: placeCardArgs },
+        },
+      },
+    })
+    if (!row) return null
+    return {
+      id: row.id,
+      name: row.name,
+      itemCount: row.items.length,
+      places: row.items.map((it) => toPlaceCardView(it.place)),
+    }
   }
 
   async findSavedPlaceIds(ownerId: string): Promise<string[]> {

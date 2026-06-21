@@ -45,7 +45,7 @@ export function TabGuardados({ collections }: { collections: CollectionSummary[]
           {collections.map((collection) => (
             <Link
               key={collection.id}
-              href={`/mi-cuenta?tab=listas`}
+              href={`/mi-cuenta?tab=guardados&lista=${collection.id}`}
               style={{
                 display: 'block',
                 background: 'var(--bg-raised)',
