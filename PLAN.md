@@ -8,7 +8,32 @@ priorizado. Se actualiza cada vez que avanzamos. Liviano a propósito — para r
 - **Modelo de datos:** [SCHEMA.md](SCHEMA.md) · **Capas:** [ARCHITECTURE.md](ARCHITECTURE.md) · **Carga:** [PLANTILLA_CSV.md](PLANTILLA_CSV.md)
 - **Bitácora del rediseño (historia + razonamiento de las decisiones):** [PLAN_FASE9.md](PLAN_FASE9.md)
 
-**Última actualización:** 2026-06-20 (lote 3: +37 netos → 115 total; **reorganización de taxonomía**: Entretenimiento partido en Vida nocturna + Juegos y diversión, +subcategorías nuevas, Atracción en Locales; **drift de docs sincronizado**: PRD/SCHEMA/skill ficha-lugar)
+**Última actualización:** 2026-06-21 (sesión: triage de los 6 PENDING_REVIEW → 112 lugares; admin con
+eliminar+filtros+archivados+modal de confirmación; Bar Flama Merced→Lastarria re-enriquecido; "Cómo
+llegar" por place_id; "Ver más" en filtro Comuna/Barrio; fix banda gris ficha/footer; análisis de cierre)
+
+---
+
+## ▶️ Plan de acción — próxima sesión (recomendado)
+
+Orden sugerido tras el análisis de cierre del 2026-06-21. Elegir uno; (1) es la recomendación principal
+(cierra el agujero más visible del flujo de usuario).
+
+1. **Cerrar el lado usuario.** (a) **Vista de detalle de listas guardadas** — hoy clickear una lista cae
+   en "Próximamente" pese a que el backend de colecciones existe (P1). (b) **Decidir por cada tab del
+   dashboard**: terminar (Historial tiene backend) u **ocultar** las no-MVP (Eventos, Reseñas, Config) —
+   hoy 5 de 7 son stubs y el usuario registrado ve mayormente humo.
+2. **Cargar contenido de las categorías flacas.** Juegos y diversión tiene **1 publicado**, Vida nocturna
+   7 → vía el agente `investigador-lugares`. Sube densidad barato.
+3. **Datos: capturar coordenadas.** **65 de 109 publicados sin lat/lng** — "Cómo llegar" se salva por
+   place_id, pero no hay pin/mapa ni "abierto/cerca". Ver si el enrich de Apify puede traer coords.
+4. **Preparar el deploy.** Anti-scraping (ítem P0 nuevo) + registro seguro (fuerza de contraseña +
+   verificación de email) + checklist de prod (BD, `RESEND_API_KEY`, Blob, redeploy).
+5. **Consistencia de CSS (deuda, no bloqueante).** El proyecto usa **design system propio: variables
+   (`--s-x`, `--ink-100`…) + clases semánticas BEM** en `globals.css` (798 className). **Tailwind v4 está
+   importado pero las utilities no se usan** (peso muerto salvo el reset) y hay **154 `style={{}}` inline**
+   (sobre todo en `mi-cuenta/*`, login, ProfileForm). Recomendación: estandarizar en variables+clases,
+   migrar los inline recurrentes a clases, y **decidir Tailwind** (adoptarlo o quitarlo).
 
 ---
 
