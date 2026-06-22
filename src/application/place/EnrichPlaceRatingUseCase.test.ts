@@ -129,6 +129,49 @@ describe('EnrichPlaceRatingUseCase', () => {
     expect(saved.status).toBe(PlaceStatus.PENDING_REVIEW) // estado intacto
   })
 
+  it('captura las coords de Google cuando la ficha no tiene', async () => {
+    const result: RatingResult = {
+      googlePlaceId: 'ChIJnuevo',
+      googleRating: 4.6,
+      googleReviewCount: 50,
+      photoUrls: [],
+      latitude: -33.4015,
+      longitude: -70.5836,
+    }
+    const { placeRepo, locationRepo, ratingProvider, save } = deps(makePlace(), result)
+    const uc = new EnrichPlaceRatingUseCase(placeRepo, locationRepo, ratingProvider)
+    const res = await uc.execute({ placeId: 'place_1' })
+
+    expect(res.status).toBe('updated')
+    if (res.status !== 'updated') return
+    expect(res.coordsSet).toBe(true)
+    const saved = save.mock.calls[0][0] as Place
+    expect(saved.lat).toBeCloseTo(-33.4015, 5)
+    expect(saved.lng).toBeCloseTo(-70.5836, 5)
+  })
+
+  it('NO pisa las coords curadas a mano aunque Google traiga otras', async () => {
+    const place = makePlace({ lat: -33.1111, lng: -70.2222 })
+    const result: RatingResult = {
+      googlePlaceId: 'ChIJnuevo',
+      googleRating: 4.6,
+      googleReviewCount: 50,
+      photoUrls: [],
+      latitude: -33.9999,
+      longitude: -70.9999,
+    }
+    const { placeRepo, locationRepo, ratingProvider, save } = deps(place, result)
+    const uc = new EnrichPlaceRatingUseCase(placeRepo, locationRepo, ratingProvider)
+    const res = await uc.execute({ placeId: 'place_1' })
+
+    expect(res.status).toBe('updated')
+    if (res.status !== 'updated') return
+    expect(res.coordsSet).toBe(false)
+    const saved = save.mock.calls[0][0] as Place
+    expect(saved.lat).toBeCloseTo(-33.1111, 5) // intacto
+    expect(saved.lng).toBeCloseTo(-70.2222, 5)
+  })
+
   it('en dryRun resuelve el match y el score pero NO persiste', async () => {
     const result: RatingResult = { googlePlaceId: 'ChIJnuevo', googleRating: 4.6, googleReviewCount: 50, photoUrls: [] }
     const { placeRepo, locationRepo, ratingProvider, save } = deps(makePlace(), result)

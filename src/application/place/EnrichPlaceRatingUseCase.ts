@@ -15,7 +15,15 @@ export interface EnrichPlaceRatingInput {
 
 // Resultado discriminado para que el caller (script) decida qué loguear/verificar.
 export type EnrichPlaceRatingResult =
-  | { status: 'updated'; result: RatingResult; nameMatch: boolean; score: number }
+  | {
+      status: 'updated'
+      result: RatingResult
+      nameMatch: boolean
+      score: number
+      // true si se tomaron las coords de Google porque la ficha no tenía (las curadas
+      // a mano nunca se pisan); false si ya tenía coords o Google no las trajo.
+      coordsSet: boolean
+    }
   | { status: 'skipped'; reason: 'already-has-rating' }
   | { status: 'not-found' }
 
@@ -49,11 +57,21 @@ export class EnrichPlaceRatingUseCase {
     })
     if (!result) return { status: 'not-found' }
 
-    const enriched = place.withReputation({
+    let enriched = place.withReputation({
       googlePlaceId: result.googlePlaceId,
       googleRating: result.googleRating,
       googleReviewCount: result.googleReviewCount,
     })
+
+    // Coords: solo si la ficha NO las tiene (no pisamos las curadas a mano) y Google
+    // las trajo. El "Cómo llegar" usa place_id, pero esto habilita pin/mapa a futuro.
+    const coordsSet =
+      !place.hasCoordinates() &&
+      typeof result.latitude === 'number' &&
+      typeof result.longitude === 'number'
+    if (coordsSet) {
+      enriched = enriched.withCoordinates(result.latitude!, result.longitude!)
+    }
 
     // Re-bate el score con el promedio global actual (prior C del bayesiano).
     const globalAverage = await this.placeRepo.globalAverageRating()
@@ -67,6 +85,7 @@ export class EnrichPlaceRatingUseCase {
       result,
       nameMatch: isLikelyMatch(place.name, result.matchedName),
       score,
+      coordsSet,
     }
   }
 }

@@ -27,6 +27,10 @@ export interface RatingResult {
   // URLs de fotos del lugar en Google Maps (portada primero). Sin etiqueta de tipo:
   // Google no distingue fachada/interior. El caller decide si las rehospeda.
   photoUrls: string[]
+  // Coordenadas del lugar según Google (centroide del pin). El caller decide si las
+  // persiste; conviene NO pisar coords curadas a mano (Google a veces apunta al techo).
+  latitude?: number
+  longitude?: number
 }
 
 // Error accionable y seguro de mostrar (sin filtrar internals: keys, endpoints).

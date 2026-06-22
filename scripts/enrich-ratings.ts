@@ -56,6 +56,7 @@ async function main() {
   let skipped = 0
   let notFound = 0
   let needsCheck = 0
+  let coordsSet = 0
 
   for (const t of targets) {
     try {
@@ -79,8 +80,10 @@ async function main() {
       )
       console.log(
         `    rating ${r.googleRating ?? '—'} (${r.googleReviewCount ?? 0} reseñas) · ` +
-          `score ${res.score.toFixed(2)} · ${r.photoUrls.length} foto(s) encontradas`,
+          `score ${res.score.toFixed(2)} · ${r.photoUrls.length} foto(s) encontradas` +
+          `${res.coordsSet ? ` · 📍 coords ${r.latitude!.toFixed(5)}, ${r.longitude!.toFixed(5)}` : ''}`,
       )
+      if (res.coordsSet) coordsSet++
       if (!res.nameMatch) needsCheck++
 
       if (photosUc && r.photoUrls.length > 0) {
@@ -97,7 +100,8 @@ async function main() {
 
   console.log(
     `\nResumen: ${updated} enriquecido(s)` +
-      `${dry ? ' (DRY, no se escribió)' : ''}, ${skipped} omitido(s), ${notFound} sin match.`,
+      `${dry ? ' (DRY, no se escribió)' : ''}, ${skipped} omitido(s), ${notFound} sin match` +
+      `, 📍 ${coordsSet} con coords nuevas.`,
   )
   if (needsCheck > 0) {
     console.log(`⚠️  ${needsCheck} con match dudoso (marcados REVISAR): confirmá a mano en /admin/lugares.`)

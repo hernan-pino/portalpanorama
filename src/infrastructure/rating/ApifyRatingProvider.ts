@@ -91,6 +91,8 @@ export class ApifyRatingProvider implements PlaceRatingProvider {
       matchedName: item.title ?? item.name ?? undefined,
       matchedAddress: item.address ?? item.street ?? undefined,
       photoUrls: extractPhotos(item).slice(0, MAX_PHOTOS),
+      latitude: numeric(item.location?.lat),
+      longitude: numeric(item.location?.lng),
     }
   }
 }
@@ -110,6 +112,7 @@ interface ApifyPlaceItem {
   reviews?: number
   imageUrls?: unknown
   images?: unknown
+  location?: { lat?: number; lng?: number }
 }
 
 function numeric(v: unknown): number | undefined {

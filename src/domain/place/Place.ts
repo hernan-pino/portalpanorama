@@ -275,6 +275,16 @@ export class Place {
     })
   }
 
+  // Setea las coordenadas (lat/lng) del lugar. La decisión de NO pisar coords curadas
+  // a mano la toma el use case (acá solo se asignan). No cambia el estado de la ficha.
+  withCoordinates(lat: number, lng: number): Place {
+    return new Place({ ...this.toProps(), lat, lng, updatedAt: new Date() })
+  }
+
+  hasCoordinates(): boolean {
+    return typeof this.lat === 'number' && typeof this.lng === 'number'
+  }
+
   // Reemplaza la galería completa (las imágenes ya rehospedadas las arma el use case).
   // Garantiza exactamente una portada si hay imágenes. No toca el estado de la ficha.
   withImages(images: ReadonlyArray<PlaceImage>): Place {
