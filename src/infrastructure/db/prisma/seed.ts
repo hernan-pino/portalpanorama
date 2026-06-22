@@ -95,6 +95,7 @@ const NEIGHBORHOODS: { name: string; communeNames: string[] }[] = [
   { name: 'Plaza Ñuñoa', communeNames: ['Ñuñoa'] },
   { name: 'El Arrayán', communeNames: ['Lo Barnechea'] },
   { name: 'San Alfonso', communeNames: ['San José de Maipo'] },
+  { name: 'Barrio Universitario', communeNames: ['Santiago'] },
 ]
 
 // ─── Categorías (9) + subcategorías (B.4 / doc 04) ───────────────────────────────

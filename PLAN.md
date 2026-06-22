@@ -8,16 +8,19 @@ priorizado. Se actualiza cada vez que avanzamos. Liviano a propósito — para r
 - **Modelo de datos:** [SCHEMA.md](SCHEMA.md) · **Capas:** [ARCHITECTURE.md](ARCHITECTURE.md) · **Carga:** [PLANTILLA_CSV.md](PLANTILLA_CSV.md)
 - **Bitácora del rediseño (historia + razonamiento de las decisiones):** [PLAN_FASE9.md](PLAN_FASE9.md)
 
-**Última actualización:** 2026-06-21 (sesión 2: **lado usuario cerrado** — vista de detalle de listas
-guardadas en modo lista con gestión [renombrar/eliminar lista + quitar lugar]; dashboard limpiado a 3 tabs
-reales [Guardados · Historial · Perfil] con Historial terminado; **popup de compartir** con redes
-[WhatsApp/X/Telegram/Facebook/Email/Copiar + IG/TikTok copian link]; **perf de ficha** [recordVisit con
-`after()` no bloquea el render + queries en paralelo]; verificado a ojo; typecheck + 84 tests + build OK.
-Commits: `03ce143`, `455a9e3`, `33d5a05`)
+**Última actualización:** 2026-06-21 (sesión 3: **Lote 4 cargado — +48 lugares → 160 total** [154
+publicados] atacando las 2 categorías flacas: **Juegos y diversión 1→27** y **Vida nocturna 7→26**
+publicados [karaokes, escape rooms, arcades, billares, VR, discotecas, clubes de jazz, salas de
+conciertos]. Vía 5 corridas del agente `investigador-lugares` → ingesta → enrich `--force --with-photos`.
+Las 48 con **coordenadas + fotos** de Google Maps. Marcas nuevas: FUGA Escape Room, Insert Coin Bar.
+3 en PENDING_REVIEW [Caleido cerrada, Salón de Pool, Pool Hall Room 9]. Duplicados descartados: Blondie,
+La Batuta. **Enrich ahora captura lat/lng** [nueva mejora cableada port→adapter→entidad→use case, no pisa
+coords curadas; +2 tests → 86 verdes]. Barrio Universitario agregado al seed [Japimax]. Bar El Bajo →
+hijo del GAM. Sin commit todavía.)
 
-**Sesión previa:** 2026-06-21 (sesión 1: triage de los 6 PENDING_REVIEW → 112 lugares; admin con
-eliminar+filtros+archivados+modal de confirmación; Bar Flama Merced→Lastarria re-enriquecido; "Cómo
-llegar" por place_id; "Ver más" en filtro Comuna/Barrio; fix banda gris ficha/footer; análisis de cierre)
+**Sesión previa:** 2026-06-21 (sesión 2: **lado usuario cerrado** — vista de detalle de listas
+guardadas con gestión; dashboard a 3 tabs reales; **popup de compartir** con redes; **perf de ficha**
+[recordVisit con `after()` + queries en paralelo]. Commits: `03ce143`, `455a9e3`, `33d5a05`)
 
 ---
 
@@ -28,14 +31,17 @@ dashboard a 3 tabs reales) · ✅ popup de compartir con redes · ✅ perf de la
 el render + queries en paralelo). Todo commiteado en `main` (`03ce143`, `455a9e3`, `33d5a05`).
 **Pendiente transversal de todo lo anterior:** verificación e2e humana fina + **va a prod con el push**.
 
-Orden sugerido para retomar. (1) es la recomendación principal (sube densidad de contenido, barato).
+Orden sugerido para retomar.
 
-1. **Cargar contenido de las categorías flacas.** Juegos y diversión tiene **1 publicado**, Vida nocturna
-   7 → vía el agente `investigador-lugares` (skill desktop "modo carga" → place_id → agente → ingesta →
-   enrich `--with-photos`). Naturaleza/Arte ya están bien. Sube densidad barato.
-2. **Datos: capturar coordenadas.** **65 de 109 publicados sin lat/lng** — "Cómo llegar" se salva por
-   place_id, pero no hay pin/mapa ni "abierto/cerca". Investigar si el enrich de Apify ya trae coords
-   (location.lat/lng en la respuesta) y, si sí, persistirlas en el script de enrich.
+1. **✅ HECHO (sesión 3) — Cargar las categorías flacas.** Juegos y diversión 1→27 y Vida nocturna 7→26
+   publicados (Lote 4, +48). Siguiente densidad si se quiere: más comunas núcleo / subcategorías aún
+   delgadas. Flujo validado: skill desktop "modo carga" → place_id → agente `investigador-lugares` →
+   `ingest-fichas` → `enrich-ratings --force --with-photos`.
+2. **🔄 Datos: backfill de coordenadas de los lugares VIEJOS.** El enrich **ya captura lat/lng** (mejora
+   sesión 3: `location.lat/lng` de Apify → entidad, sin pisar coords curadas). Las 48 del Lote 4 ya tienen
+   coords; faltan **~65 publicados viejos** sin lat/lng → corre `enrich-ratings.ts --force` (sin ids,
+   re-consulta todos los no-archivados; los que ya tienen coords no se pisan). Ojo: son ~158 llamadas en
+   serie a Apify (lento) — conviene en background o por tandas de ids. Habilita pin/mapa y "abierto/cerca".
 3. **Preparar el deploy (P0).** (a) **Anti-scraping** ANTES de publicar (ver P0 abajo: rate-limit por IP en
    rutas de catálogo + WAF/bot management + no exponer endpoint JSON masivo). (b) **Registro seguro**
    (fuerza de contraseña + verificación de email). (c) **Checklist de prod**: decidir workflow de BD
@@ -391,6 +397,20 @@ Foto de "qué falta para lanzar live". Lo ✅ ya está. Lo demás, ordenado por 
   temporadas) — republicables; **eliminados** Colectivo Informal (sin dirección, 3 reseñas), Rarities
   (5 reseñas) y Jardín Chagual (place_id mal atado). → **112 lugares, 109 publicados, 2 archivados,
   1 en revisión.**
+  **Lote 4 cargado (2026-06-21): +48 lugares → 160 total.** Atacó las 2 categorías flacas vía 5 corridas
+  paralelas del agente con place_ids ya provistos por el usuario: **Juegos y diversión 1→27** (karaokes,
+  escape rooms FUGA, bowling, arcades/gamer bars Insert Coin/Diana/Happyland Mall Centro, billares, VR
+  Vimerzion) y **Vida nocturna 7→26** (discotecas Sala Portugal/Fausto/Mandala/etc, clubes de jazz
+  Backroom/Grez/El Bajo, salas de conciertos Movistar Arena/Ramblas/Sala Master/RBX). **154 publicados,
+  3 nuevos en PENDING_REVIEW**: Caleido (cerrada — patente rechazada + incendio), Salón de Pool y Pool Hall
+  Room 9 (baja presencia web pero el enrich confirmó que son reales). Duplicados descartados antes de
+  cargar: **Blondie** y **La Batuta** (ya estaban del lote 3). **Marcas nuevas con descripción**: FUGA
+  Escape Room, Insert Coin Bar (Happyland se reusó). **Enrich con coords + fotos:** las 48 quedaron con
+  lat/lng y 2-3 fotos de Google Maps (6 tuvieron timeout transitorio de Neon al guardar las fotos →
+  reintentadas OK). **Fix de catálogo:** **Barrio Universitario** agregado al seed (Santiago) + asignado a
+  Japimax; **Bar El Bajo** reapuntado como hijo del **GAM** (su `parte_de` decía "Centro Gabriela Mistral"
+  y el real es "Centro Cultural Gabriela Mistral (GAM)"). Bowling - Club Providencia queda sin contenedor
+  (Club Providencia no es ficha).
 - **Reorganización de taxonomía (2026-06-20) ✅.** Sesión de catálogo a partir de cargar Mall Sport (un mall
   no calzaba en ninguna subcategoría). Cambios: **(1)** Entretenimiento mezclaba vida nocturna con juegos →
   **partido en 2 categorías activas:** **Vida nocturna** (Discoteca/Club, Club de jazz/blues, Sala de conciertos)
