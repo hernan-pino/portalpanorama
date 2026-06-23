@@ -31,6 +31,20 @@ fuera del código:** dominio **portalpanorama.cl** → nameservers movidos a **C
 poder cargar los registros DNS de **Resend**; esperando propagación. **Pendiente de cuentas del usuario:** Resend
 (key + dominio verificado), Google OAuth (client id/secret), Neon prod + env vars en Vercel. **Sin commit todavía.**
 
+**🚀 DEPLOY A PRODUCCIÓN — LIVE (2026-06-23).** La app está **viva** en `portal-panorama.vercel.app`
+con los 214 lugares publicados. Camino recorrido en esta sesión: **Resend** dominio `contacto.portalpanorama.cl`
+verificado (DNS en Cloudflare, nameservers movidos desde NIC) + envío real OK; **Upstash** configurado;
+**Google OAuth** creado y funcionando en prod; **Neon prod = branch `prod`** clonado del branch `production`
+(trae los 214 lugares + catálogos + admin + historial de migración, sin migrate/seed manual); **env vars**
+cargadas en Vercel (Production); commits pusheados a `main` (estaba 79 commits atrás → subió todo el rediseño
+Fase 9 de una). **Tres fixes de prod resueltos en vivo:** (1) `trustHost: true` en NextAuth (sin él, `UntrustedHost`
+→ 500 en toda la app porque el Header del layout llama `auth()`); (2) **sharp** no cargaba en linux-x64
+(`libvips-cpp.so` missing) → `serverExternalPackages: ['sharp']` + binarios linux agregados al `package-lock.json`
+(el lock se había generado en Windows); (3) `AUTH_SECRET` mal cargada en Vercel (corregida por el usuario).
+**Pendiente del lanzamiento:** conectar dominio `portalpanorama.cl` (hoy en `*.vercel.app`); **regla de Rate
+Limit en Vercel Firewall** para `/lugar`+`/explorar`; **GA4** (analytics, lo quería para el lanzamiento);
+estilizar los **emails** con la marca; resolver los **2-3 PENDING_REVIEW**; **mejoras de diseño** (ver backlog).
+
 **Sesión previa:** 2026-06-22 (sesión 4 — parte 2: **Lote oriente cargado — +61 lugares**
 [58 en la 1ª pasada + 3 que reintenté tras recortar tags; Pub Golden Music ya existía del Lote 4 →
 saltado sin duplicar]. Ataca la concentración Santiago+Providencia [77%] metiendo **Las Condes,

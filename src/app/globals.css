@@ -1382,7 +1382,12 @@ button.ficha__hero-img { cursor: zoom-in; }
     border-top: 1px solid var(--surface-line);
     box-shadow: 0 -10px 28px rgba(20,17,15,.10);
     padding: var(--s-3) var(--content-pad) calc(var(--s-3) + env(safe-area-inset-bottom));
+    /* Oculta por defecto: aparece al scrollear (StickyActionBar agrega .is-visible) */
+    transform: translateY(110%);
+    transition: transform var(--d-base, .28s) ease;
+    pointer-events: none;
   }
+  .ficha__bar.is-visible { transform: translateY(0); pointer-events: auto; }
   .ficha__bar-row { display: flex; gap: var(--s-3); }
   .ficha__bar-row > * { flex: 1; }
 }
@@ -1461,7 +1466,8 @@ button.ficha__hero-img { cursor: zoom-in; }
 .auth-shell {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  height: calc(100dvh - 72px);
+  /* 72px del header + 1px de su borde inferior → llena exacto la pantalla, sin scroll de página */
+  height: calc(100dvh - 73px);
 }
 .auth-shell__art {
   background: var(--ink-100); color: var(--paper-05);
@@ -1482,6 +1488,8 @@ button.ficha__hero-img { cursor: zoom-in; }
   padding: var(--s-12);
   display: flex; flex-direction: column; justify-content: center;
   max-width: 480px;
+  /* Si el form es más alto que el viewport (pantallas bajas), scrollea él, no la página */
+  overflow-y: auto;
 }
 .auth-tabs {
   display: flex;

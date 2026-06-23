@@ -12,6 +12,7 @@ import { Collection } from '@domain/collection/Collection'
 import { PlaceCard } from '@components/place/PlaceCard'
 import { PlaceRail } from '@components/place/PlaceRail'
 import { Gallery } from './Gallery'
+import { StickyActionBar } from './StickyActionBar'
 import { PointsList } from './PointsList'
 import { RichText } from './RichText'
 import { SaveButton } from './SaveButton'
@@ -365,17 +366,15 @@ export default async function LugarPage({ params }: PageProps) {
         </div>
       </div>
 
-      {/* barra de acción fija (móvil) */}
-      <div className="ficha__bar">
-        <div className="ficha__bar-row">
-          {saveButton}
-          {directionsHref && (
-            <a href={directionsHref} target="_blank" rel="noopener noreferrer" className="btn btn--ghost" style={{ justifyContent: 'center' }}>
-              <NavIcon /> Cómo llegar
-            </a>
-          )}
-        </div>
-      </div>
+      {/* barra de acción fija (móvil) — aparece al scrollear, no de entrada */}
+      <StickyActionBar>
+        {saveButton}
+        {directionsHref && (
+          <a href={directionsHref} target="_blank" rel="noopener noreferrer" className="btn btn--ghost" style={{ justifyContent: 'center' }}>
+            <NavIcon /> Cómo llegar
+          </a>
+        )}
+      </StickyActionBar>
     </div>
   )
 }
