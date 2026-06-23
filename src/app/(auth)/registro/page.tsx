@@ -33,7 +33,7 @@ export default function RegistroPage() {
 
       {/* ── Form panel ── */}
       <div className="auth-shell__form">
-        <Link href="/" className="brand" style={{ marginBottom: 'var(--s-5)', display: 'inline-flex' }}>
+        <Link href="/" className="brand" style={{ marginBottom: 'var(--s-3)', display: 'inline-flex' }}>
           <span className="brand__mark" aria-hidden="true" />
           Portal<em>Panorama</em>
         </Link>
@@ -56,7 +56,7 @@ export default function RegistroPage() {
         >
           Crear cuenta
         </h1>
-        <p style={{ color: 'var(--fg-muted)', fontSize: 'var(--t-body-sm)', marginBottom: 'var(--s-5)' }}>
+        <p style={{ color: 'var(--fg-muted)', fontSize: 'var(--t-body-sm)', marginBottom: 'var(--s-4)' }}>
           Gratis. Sin tarjeta de crédito.
         </p>
 

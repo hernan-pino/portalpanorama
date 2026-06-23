@@ -1484,16 +1484,21 @@ button.ficha__hero-img { cursor: zoom-in; }
   font-variation-settings: "opsz" 144, "SOFT" 100;
 }
 .auth-shell__form {
-  padding: var(--s-8) var(--s-12);
+  padding: var(--s-6) var(--s-12);
   display: flex; flex-direction: column; justify-content: center;
-  max-width: 480px;
+  max-width: 460px;
+  /* centra el bloque del form dentro de la mitad derecha (antes pegado a la izquierda) */
+  justify-self: center;
+  width: 100%;
 }
+/* inputs un poco más bajos solo en el form de auth, para que entre sin scroll */
+.auth-shell__form .input { height: 40px; }
 .auth-tabs {
   display: flex;
   background: var(--bg-sunken);
   border-radius: var(--r-pill);
   padding: 3px;
-  margin-bottom: var(--s-5);
+  margin-bottom: var(--s-4);
   gap: 2px;
 }
 .auth-tabs__item {
