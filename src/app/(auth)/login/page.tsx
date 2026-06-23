@@ -1,10 +1,23 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
+import { googleAuthEnabled } from '@lib/auth'
+import { GoogleButton } from '../GoogleButton'
 import { LoginForm } from './LoginForm'
 
 export const metadata: Metadata = { title: 'Iniciar sesión' }
 
-export default function LoginPage() {
+export default async function LoginPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ reset?: string; registered?: string }>
+}) {
+  const { reset, registered } = await searchParams
+  const notice = reset
+    ? 'Tu contraseña se actualizó. Ya podés iniciar sesión.'
+    : registered
+      ? 'Tu cuenta se creó. Iniciá sesión para continuar.'
+      : null
+
   return (
     <div className="auth-shell">
 
@@ -27,24 +40,6 @@ export default function LoginPage() {
         <p style={{ fontFamily: 'var(--font-mono)', fontSize: 'var(--t-mono-sm)', letterSpacing: 'var(--tr-wide)', textTransform: 'uppercase', color: 'var(--paper-40)' }}>
           Portal Panorama · Otoño 2026
         </p>
-      </div>
-
-      {/* ── DEV credentials (borrar antes de deploy) ── */}
-      <div className="dev-creds" style={{
-        position: 'fixed', bottom: 'var(--s-4)', right: 'var(--s-4)',
-        background: 'var(--bg-raised)', border: '1px solid var(--surface-line)',
-        borderRadius: 'var(--r-lg)', padding: 'var(--s-4) var(--s-5)',
-        fontSize: 'var(--t-body-sm)', zIndex: 9999,
-        boxShadow: '0 4px 16px rgba(0,0,0,.12)',
-      }}>
-        <p style={{ fontFamily: 'var(--font-mono)', fontSize: 'var(--t-mono-sm)', letterSpacing: 'var(--tr-wider)', textTransform: 'uppercase', color: 'var(--fg-subtle)', marginBottom: 'var(--s-3)' }}>
-          Dev — credenciales
-        </p>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--s-2)' }}>
-          <CredRow label="Admin" email="admin@portalpanorama.cl" pass="admin1234" />
-          <CredRow label="Negocio" email="negocio@portalpanorama.cl" pass="negocio1234" />
-          <CredRow label="Usuario" email="usuario@portalpanorama.cl" pass="usuario1234" />
-        </div>
       </div>
 
       {/* ── Form panel ── */}
@@ -76,19 +71,25 @@ export default function LoginPage() {
           Ingresá con tu cuenta de Portal Panorama
         </p>
 
+        {notice && (
+          <p
+            role="status"
+            style={{
+              fontSize: 'var(--t-body-sm)',
+              padding: 'var(--s-3) var(--s-4)',
+              background: 'color-mix(in oklab, var(--accent) 10%, transparent)',
+              borderRadius: 'var(--r-md)',
+              marginBottom: 'var(--s-6)',
+            }}
+          >
+            {notice}
+          </p>
+        )}
+
         <LoginForm />
+        {googleAuthEnabled && <GoogleButton />}
       </div>
 
-    </div>
-  )
-}
-
-function CredRow({ label, email, pass }: { label: string; email: string; pass: string }) {
-  return (
-    <div style={{ display: 'flex', gap: 'var(--s-3)', alignItems: 'baseline' }}>
-      <span style={{ fontFamily: 'var(--font-mono)', fontSize: 'var(--t-mono-sm)', color: 'var(--fg-subtle)', minWidth: 48 }}>{label}</span>
-      <span style={{ fontFamily: 'var(--font-mono)', fontSize: 'var(--t-mono-sm)', userSelect: 'all' }}>{email}</span>
-      <span style={{ fontFamily: 'var(--font-mono)', fontSize: 'var(--t-mono-sm)', color: 'var(--fg-muted)', userSelect: 'all' }}>{pass}</span>
     </div>
   )
 }

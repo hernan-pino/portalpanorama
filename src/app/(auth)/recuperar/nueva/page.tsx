@@ -1,47 +1,38 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
-import { googleAuthEnabled } from '@lib/auth'
-import { GoogleButton } from '../GoogleButton'
-import { RegisterForm } from './RegisterForm'
+import { ResetPasswordForm } from './ResetPasswordForm'
 
-export const metadata: Metadata = { title: 'Crear cuenta' }
+export const metadata: Metadata = { title: 'Nueva contraseña' }
 
-export default function RegistroPage() {
+export default async function NuevaPasswordPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ token?: string }>
+}) {
+  const { token } = await searchParams
+
   return (
     <div className="auth-shell">
-
-      {/* ── Art panel ── */}
       <div className="auth-shell__art">
         <Link href="/" className="brand" style={{ color: 'var(--paper-05)' }}>
           <span className="brand__mark" aria-hidden="true" />
           Portal<em>Panorama</em>
         </Link>
-
         <blockquote style={{ margin: 0 }}>
           <h2>
-            Lo bueno de la ciudad, <em>curado</em> como revista.
+            Elegí una contraseña <em>nueva</em>.
           </h2>
-          <p style={{ fontFamily: 'var(--font-mono)', fontSize: 'var(--t-mono-sm)', letterSpacing: 'var(--tr-wider)', textTransform: 'uppercase', color: 'var(--paper-40)', marginTop: 'var(--s-5)' }}>
-            — Editorial · Santiago 2026
-          </p>
         </blockquote>
-
         <p style={{ fontFamily: 'var(--font-mono)', fontSize: 'var(--t-mono-sm)', letterSpacing: 'var(--tr-wide)', textTransform: 'uppercase', color: 'var(--paper-40)' }}>
           Portal Panorama · Otoño 2026
         </p>
       </div>
 
-      {/* ── Form panel ── */}
       <div className="auth-shell__form">
         <Link href="/" className="brand" style={{ marginBottom: 'var(--s-8)', display: 'inline-flex' }}>
           <span className="brand__mark" aria-hidden="true" />
           Portal<em>Panorama</em>
         </Link>
-
-        <div className="auth-tabs">
-          <Link href="/login" className="auth-tabs__item">Iniciar sesión</Link>
-          <span className="auth-tabs__item auth-tabs__item--active">Registrarse</span>
-        </div>
 
         <h1
           style={{
@@ -54,16 +45,26 @@ export default function RegistroPage() {
             fontVariationSettings: '"opsz" 100',
           }}
         >
-          Crear cuenta
+          Nueva contraseña
         </h1>
-        <p style={{ color: 'var(--fg-muted)', fontSize: 'var(--t-body-sm)', marginBottom: 'var(--s-8)' }}>
-          Gratis. Sin tarjeta de crédito.
-        </p>
 
-        <RegisterForm />
-        {googleAuthEnabled && <GoogleButton label="Registrarse con Google" />}
+        {token ? (
+          <>
+            <p style={{ color: 'var(--fg-muted)', fontSize: 'var(--t-body-sm)', marginBottom: 'var(--s-8)' }}>
+              Creá tu nueva contraseña para volver a entrar.
+            </p>
+            <ResetPasswordForm token={token} />
+          </>
+        ) : (
+          <p style={{ color: 'var(--fg-muted)', fontSize: 'var(--t-body-sm)', marginTop: 'var(--s-6)' }}>
+            El enlace está incompleto o es inválido.{' '}
+            <Link href="/recuperar" className="link">
+              Pedí uno nuevo
+            </Link>
+            .
+          </p>
+        )}
       </div>
-
     </div>
   )
 }

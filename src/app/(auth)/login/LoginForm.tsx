@@ -1,5 +1,6 @@
 'use client'
 import { useActionState } from 'react'
+import Link from 'next/link'
 import { loginAction } from './actions'
 
 export function LoginForm() {
@@ -56,6 +57,13 @@ export function LoginForm() {
           placeholder="••••••••"
           className="input"
         />
+        <Link
+          href="/recuperar"
+          className="link"
+          style={{ fontSize: 'var(--t-body-sm)', alignSelf: 'flex-end' }}
+        >
+          ¿Olvidaste tu contraseña?
+        </Link>
       </div>
 
       <button

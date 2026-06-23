@@ -164,8 +164,24 @@ model User {
   ownedBrands        Brand[]             @relation("BrandOwner")
   accounts           Account[]
   sessions           Session[]
+  passwordResetTokens PasswordResetToken[]
 
   @@index([homeCommuneId])
+}
+
+// Recuperar contraseña. Se guarda el HASH del token (no el token en claro): un
+// dump de la BD no entrega tokens usables. Single-use (usedAt) + expiración corta.
+model PasswordResetToken {
+  id        String    @id @default(cuid())
+  userId    String
+  tokenHash String    @unique
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime  @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
 }
 
 // ─── Catálogos geográficos ────────────────────────────────────────────────────

@@ -38,4 +38,19 @@ export class ResendEmailService implements EmailService {
       html: `<p>Hola ${escapeHtml(name)}, gracias por registrarte en Portal Panorama.</p>`,
     })
   }
+
+  async sendPasswordReset(to: string, name: string, resetUrl: string): Promise<void> {
+    const safeUrl = escapeHtml(resetUrl)
+    await this.client().emails.send({
+      from: this.from,
+      to,
+      subject: 'Recupera tu contraseña — Portal Panorama',
+      html: `
+        <p>Hola ${escapeHtml(name)},</p>
+        <p>Recibimos un pedido para restablecer tu contraseña. Hacé clic en el enlace de abajo para crear una nueva. El enlace vence en 1 hora.</p>
+        <p><a href="${safeUrl}">Restablecer mi contraseña</a></p>
+        <p>Si no pediste esto, podés ignorar este correo: tu contraseña no cambió.</p>
+      `,
+    })
+  }
 }

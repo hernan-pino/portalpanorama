@@ -8,7 +8,30 @@ priorizado. Se actualiza cada vez que avanzamos. Liviano a propósito — para r
 - **Modelo de datos:** [SCHEMA.md](SCHEMA.md) · **Capas:** [ARCHITECTURE.md](ARCHITECTURE.md) · **Carga:** [PLANTILLA_CSV.md](PLANTILLA_CSV.md)
 - **Bitácora del rediseño (historia + razonamiento de las decisiones):** [PLAN_FASE9.md](PLAN_FASE9.md)
 
-**Última actualización:** 2026-06-22 (sesión 4 — parte 2: **Lote oriente cargado — +61 lugares**
+**Última actualización:** 2026-06-23 (sesión 5 — **prep de deploy, bloque de código sin cuentas externas**):
+**(1) Fuerza de contraseña** — política pura `domain/user/PasswordPolicy.ts` (mín. 8 + letra + número para
+registrar; score 0-4 premia largo/mayús/símbolos), compartida por el Zod del registro y un **medidor visual**
+en vivo (`(auth)/PasswordMeter.tsx`). +6 tests → **92 verdes**. **(2) Recuperar contraseña** — flujo hexagonal
+completo: model `PasswordResetToken` (guarda el **hash** del token, single-use `usedAt`, expira 1h), ports
+`PasswordResetTokenRepository` + `TokenGenerator`, use cases `RequestPasswordResetUseCase` (respuesta genérica
+anti-enumeración) + `ResetPasswordUseCase`, infra `PrismaPasswordResetTokenRepository` + `CryptoTokenGenerator`
+(sha256) + `EmailService.sendPasswordReset` + `UserRepository.updatePassword`, páginas `/recuperar` y
+`/recuperar/nueva` + link en login + aviso `?reset=1`. **Inerte hasta que llegue la key de Resend** (si el email
+falla no rompe ni filtra). **(3) Google cableado pero APAGADO** — provider en `lib/auth.ts` gated por
+`googleAuthEnabled` (se enciende solo si existen `AUTH_GOOGLE_ID`+`AUTH_GOOGLE_SECRET`); upsert de User por email
+para OAuth; botón "Continuar con Google" condicional (respeta la regla MVP). **(4) Anti-scraping** — limiter
+**durable con Upstash** (`lib/rateLimit.ts` → `rateLimitDurable`, REST pipeline INCR+PEXPIRE NX, falla abierto,
+cae a memoria sin envs), aplicado a `/api/suggest` (60/min/IP) + migradas las actions registro/reset/reporte.
+Payloads ya capados (suggest=6, explorar=24). **Verificado contra la instancia Upstash real.** Rate-limit de
+páginas (`/lugar`,`/explorar`) se deja a **Vercel Firewall** (edge, sin quemar cuota free). **(5) Migraciones
+Prisma adoptadas** — baseline `0_init` (schema completo, 675 líneas) generado y `migrate resolve --applied`;
+local en sync. Prod hará `migrate deploy` limpio. **(6) Borrado** el bloque "DEV — credenciales" del login
+(estaba marcado "borrar antes de deploy"). Typecheck limpio. **Upstash configurado** (`.env.local`). **En curso
+fuera del código:** dominio **portalpanorama.cl** → nameservers movidos a **Cloudflare** (agustin/brynne) para
+poder cargar los registros DNS de **Resend**; esperando propagación. **Pendiente de cuentas del usuario:** Resend
+(key + dominio verificado), Google OAuth (client id/secret), Neon prod + env vars en Vercel. **Sin commit todavía.**
+
+**Sesión previa:** 2026-06-22 (sesión 4 — parte 2: **Lote oriente cargado — +61 lugares**
 [58 en la 1ª pasada + 3 que reintenté tras recortar tags; Pub Golden Music ya existía del Lote 4 →
 saltado sin duplicar]. Ataca la concentración Santiago+Providencia [77%] metiendo **Las Condes,
 Vitacura, Lo Barnechea, Ñuñoa** + la subcat más flaca **Restaurante** [+30: 6 cocinas × 5] + cafés,
@@ -453,14 +476,17 @@ Foto de "qué falta para lanzar live". Lo ✅ ya está. Lo demás, ordenado por 
   si no cuaja, se borra. **DRIFT SINCRONIZADO (2026-06-20) ✅:** `PRD.md`, `SCHEMA.md` y la skill
   `ficha-lugar` actualizados a la taxonomía real (6 activas + 3 event-only; Entretenimiento → Vida
   nocturna + Juegos y diversión; sub Atracción). PRD además corregido a 6 capas de tags (decía 4).
-- [ ] **Push a prod.** (a) Decidir workflow de BD: hoy `prisma db push` sin migraciones; antes de prod
-  decidir si seguimos con `db push` o introducimos migraciones reales (no se puede `--force-reset`
-  contra prod con datos). (b) Schema + seed de catálogos en Neon prod. (c) `RESEND_API_KEY` real
-  (si no, no sale la bienvenida). (d) Confirmar `BLOB_READ_WRITE_TOKEN` en env de prod. (e) Redeploy.
-- [ ] **Registro seguro.** Rate-limit ✅ ya. Falta: (i.2) **fuerza de contraseña** (hoy solo `min(8)`;
-  sumar reglas + medidor) — S; (i.3) **verificación de email** (token de un uso + gateo) — M, requiere
-  `RESEND_API_KEY` real.
-- [ ] **Anti-scraping (ANTES del deploy, pedido del usuario 2026-06-21).** El contenido (fichas con
+- [ ] **Push a prod.** (a) **Workflow de BD DECIDIDO (2026-06-23): migraciones Prisma.** Baseline `0_init`
+  ya generado + marcado aplicado en local; prod hará `migrate deploy` limpio (BD vacía). (b) Schema + seed de
+  catálogos en Neon prod (vía `migrate deploy` + `db:seed`). (c) `RESEND_API_KEY` real (si no, no sale la
+  bienvenida ni el reset). (d) Confirmar `BLOB_READ_WRITE_TOKEN` + setear `UPSTASH_*` en env de prod. (e) Redeploy.
+- [x] **Registro seguro (parcial 2026-06-23).** Rate-limit ✅ (ahora durable, Upstash). (i.2) **fuerza de
+  contraseña + medidor ✅ HECHO**. **Recuperar contraseña ✅ HECHO** (token hasheado single-use, inerte hasta
+  Resend). **Google login cableado pero apagado ✅** (flag `googleAuthEnabled`). Falta solo: (i.3) verificación
+  de email al registrarse (token + gateo) — opcional post-launch; requiere `RESEND_API_KEY` real.
+- [ ] **Anti-scraping (parcial 2026-06-23).** ✅ **Rate-limit durable (Upstash)** en `/api/suggest` +
+  actions registro/reset/reporte; payloads capados. **Falta: regla de Rate Limit en Vercel Firewall** para
+  `/lugar/*` y `/explorar` (se configura en el dashboard al deployar). Contexto original abajo. El contenido (fichas con
   rating/fotos/datos curados) es el activo del producto → blindarlo contra raspado masivo con **todas las
   medidas viables**. Candidatas, de barata a más cara: (1) **rate-limiting por IP** en las rutas públicas
   de catálogo (`/explorar`, `/lugar/[slug]`, autocomplete de búsqueda) — extender `lib/rateLimit.ts`

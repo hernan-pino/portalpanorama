@@ -12,6 +12,8 @@ import { PrismaReportRepository } from '@infrastructure/db/PrismaReportRepositor
 import { PrismaLocationRepository } from '@infrastructure/db/PrismaLocationRepository'
 import { PostgresFTSSearchService } from '@infrastructure/search/PostgresFTSSearchService'
 import { BcryptPasswordHasher } from '@infrastructure/auth/BcryptPasswordHasher'
+import { CryptoTokenGenerator } from '@infrastructure/auth/CryptoTokenGenerator'
+import { PrismaPasswordResetTokenRepository } from '@infrastructure/db/PrismaPasswordResetTokenRepository'
 import { ResendEmailService } from '@infrastructure/email/ResendEmailService'
 import { VercelBlobStorageService } from '@infrastructure/storage/VercelBlobStorageService'
 import { SharpImageProcessor } from '@infrastructure/storage/SharpImageProcessor'
@@ -55,6 +57,8 @@ import { RemovePlaceFromCollectionUseCase } from '@application/collection/Remove
 import { GetSaveContextUseCase } from '@application/collection/GetSaveContextUseCase'
 import { GetUserCollectionUseCase } from '@application/collection/GetUserCollectionUseCase'
 import { RegisterUserUseCase } from '@application/user/RegisterUserUseCase'
+import { RequestPasswordResetUseCase } from '@application/user/RequestPasswordResetUseCase'
+import { ResetPasswordUseCase } from '@application/user/ResetPasswordUseCase'
 import { UpdateUserProfileUseCase } from '@application/user/UpdateUserProfileUseCase'
 import { GetUserDashboardUseCase } from '@application/user/GetUserDashboardUseCase'
 import { RecordVisitUseCase } from '@application/user/RecordVisitUseCase'
@@ -72,6 +76,8 @@ const locationRepo = new PrismaLocationRepository(prisma)
 const searchService = new PostgresFTSSearchService(prisma)
 const passwordHasher = new BcryptPasswordHasher()
 const emailService = new ResendEmailService()
+const passwordResetTokenRepo = new PrismaPasswordResetTokenRepository(prisma)
+const tokenGenerator = new CryptoTokenGenerator()
 
 export const container = {
   // ── Discovery (público) ─────────────────────────────────────────────
@@ -106,6 +112,14 @@ export const container = {
   // ── Usuario ─────────────────────────────────────────────────────────
   getRegisterUserUseCase() {
     return new RegisterUserUseCase(userRepo, passwordHasher, emailService)
+  },
+
+  getRequestPasswordResetUseCase() {
+    return new RequestPasswordResetUseCase(userRepo, passwordResetTokenRepo, tokenGenerator, emailService)
+  },
+
+  getResetPasswordUseCase() {
+    return new ResetPasswordUseCase(passwordResetTokenRepo, userRepo, passwordHasher, tokenGenerator)
   },
 
   getUpdateUserProfileUseCase() {

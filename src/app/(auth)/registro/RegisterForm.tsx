@@ -1,9 +1,11 @@
 'use client'
-import { useActionState } from 'react'
+import { useActionState, useState } from 'react'
+import { PasswordMeter } from '../PasswordMeter'
 import { registerAction } from './actions'
 
 export function RegisterForm() {
   const [state, formAction, pending] = useActionState(registerAction, null)
+  const [password, setPassword] = useState('')
 
   return (
     <form action={formAction} style={{ display: 'flex', flexDirection: 'column', gap: 'var(--s-4)' }}>
@@ -45,7 +47,11 @@ export function RegisterForm() {
         autoComplete="new-password"
         placeholder="Mínimo 8 caracteres"
         error={state?.fieldErrors?.password?.[0]}
-      />
+        value={password}
+        onChange={(e) => setPassword(e.target.value)}
+      >
+        <PasswordMeter password={password} />
+      </FieldGroup>
 
       <button
         type="submit"
@@ -66,6 +72,9 @@ function FieldGroup({
   autoComplete,
   placeholder,
   error,
+  value,
+  onChange,
+  children,
 }: {
   id: string
   label: string
@@ -73,6 +82,9 @@ function FieldGroup({
   autoComplete: string
   placeholder: string
   error?: string
+  value?: string
+  onChange?: (e: React.ChangeEvent<HTMLInputElement>) => void
+  children?: React.ReactNode
 }) {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--s-2)' }}>
@@ -87,9 +99,12 @@ function FieldGroup({
         required
         placeholder={placeholder}
         className="input"
+        value={value}
+        onChange={onChange}
         aria-describedby={error ? `${id}-error` : undefined}
         style={error ? { borderColor: 'var(--error)' } : undefined}
       />
+      {children}
       {error && (
         <p
           id={`${id}-error`}

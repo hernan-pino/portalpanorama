@@ -4,13 +4,18 @@ import { redirect } from 'next/navigation'
 import { z } from 'zod'
 import { signIn } from '@lib/auth'
 import { container } from '@lib/container'
-import { rateLimit, clientIp } from '@lib/rateLimit'
+import { rateLimitDurable, clientIp } from '@lib/rateLimit'
 import { EmailAlreadyInUseError } from '@domain/user/errors/EmailAlreadyInUseError'
+import { evaluatePassword } from '@domain/user/PasswordPolicy'
 
 const schema = z.object({
   name: z.string().min(2, 'El nombre debe tener al menos 2 caracteres.'),
   email: z.string().email('Email inválido.'),
-  password: z.string().min(8, 'La contraseña debe tener al menos 8 caracteres.'),
+  password: z.string().superRefine((value, ctx) => {
+    for (const issue of evaluatePassword(value).issues) {
+      ctx.addIssue({ code: 'custom', message: `La contraseña necesita: ${issue.toLowerCase()}.` })
+    }
+  }),
 })
 
 export async function registerAction(
@@ -19,7 +24,7 @@ export async function registerAction(
 ): Promise<{ error?: string; fieldErrors?: Record<string, string[]> }> {
   // Anti-bots: tope de altas por IP. Best-effort (ver lib/rateLimit).
   const ip = await clientIp()
-  if (!rateLimit(`register:${ip}`, 5, 60 * 60_000).ok) {
+  if (!(await rateLimitDurable(`register:${ip}`, 5, 60 * 60_000)).ok) {
     return { error: 'Demasiados intentos de registro desde aquí. Probá de nuevo más tarde.' }
   }
 
