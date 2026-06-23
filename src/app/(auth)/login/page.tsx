@@ -44,7 +44,7 @@ export default async function LoginPage({
 
       {/* ── Form panel ── */}
       <div className="auth-shell__form">
-        <Link href="/" className="brand" style={{ marginBottom: 'var(--s-8)', display: 'inline-flex' }}>
+        <Link href="/" className="brand" style={{ marginBottom: 'var(--s-5)', display: 'inline-flex' }}>
           <span className="brand__mark" aria-hidden="true" />
           Portal<em>Panorama</em>
         </Link>
@@ -57,7 +57,7 @@ export default async function LoginPage({
         <h1
           style={{
             fontFamily: 'var(--font-display)',
-            fontSize: 'clamp(30px, 8vw, 40px)',
+            fontSize: 'clamp(26px, 5vw, 32px)',
             fontWeight: 400,
             letterSpacing: 'var(--tr-tight)',
             lineHeight: 1,
@@ -67,7 +67,7 @@ export default async function LoginPage({
         >
           Bienvenido de vuelta
         </h1>
-        <p style={{ color: 'var(--fg-muted)', fontSize: 'var(--t-body-sm)', marginBottom: 'var(--s-8)' }}>
+        <p style={{ color: 'var(--fg-muted)', fontSize: 'var(--t-body-sm)', marginBottom: 'var(--s-5)' }}>
           Ingresá con tu cuenta de Portal Panorama
         </p>
 

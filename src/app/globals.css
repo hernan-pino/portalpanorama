@@ -1466,8 +1466,7 @@ button.ficha__hero-img { cursor: zoom-in; }
 .auth-shell {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  /* 72px del header + 1px de su borde inferior → llena exacto la pantalla, sin scroll de página */
-  height: calc(100dvh - 73px);
+  height: calc(100dvh - 72px);
 }
 .auth-shell__art {
   background: var(--ink-100); color: var(--paper-05);
@@ -1485,18 +1484,16 @@ button.ficha__hero-img { cursor: zoom-in; }
   font-variation-settings: "opsz" 144, "SOFT" 100;
 }
 .auth-shell__form {
-  padding: var(--s-12);
+  padding: var(--s-8) var(--s-12);
   display: flex; flex-direction: column; justify-content: center;
   max-width: 480px;
-  /* Si el form es más alto que el viewport (pantallas bajas), scrollea él, no la página */
-  overflow-y: auto;
 }
 .auth-tabs {
   display: flex;
   background: var(--bg-sunken);
   border-radius: var(--r-pill);
   padding: 3px;
-  margin-bottom: var(--s-8);
+  margin-bottom: var(--s-5);
   gap: 2px;
 }
 .auth-tabs__item {

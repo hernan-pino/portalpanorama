@@ -89,6 +89,46 @@ guardadas con gestión; dashboard a 3 tabs reales; **popup de compartir** con re
 
 ---
 
+## ▶️ PRÓXIMA SESIÓN (anotado 2026-06-23, post-deploy)
+
+**La app ya está LIVE** en `portal-panorama.vercel.app`. Lo que queda, en orden sugerido:
+
+**A. Cerrar el lanzamiento del MVP (terminar el deploy "completo"):**
+1. **Conectar el dominio `portalpanorama.cl`** (hoy en `*.vercel.app`): agregar el dominio en Vercel →
+   cargar los registros que pida en Cloudflare → actualizar `NEXT_PUBLIC_BASE_URL` a `https://portalpanorama.cl`
+   en Vercel → la redirect URI de prod de Google ya está registrada (`portalpanorama.cl/api/auth/callback/google`).
+2. **GA4 (analytics)** — el usuario lo quería para el lanzamiento. Crear propiedad GA4 → `NEXT_PUBLIC_GA_ID` →
+   cablear con `@next/third-parties` (apagado si no hay ID). Pixels (Meta/Google Ads) recién cuando se paute.
+   Evaluar banner de consentimiento de cookies.
+3. **Regla de Rate Limit en Vercel Firewall** para `/lugar/*` y `/explorar` (anti-scraping a nivel edge;
+   el rate-limit de app ya está con Upstash en /api/suggest + actions).
+4. **Emails con la marca** — hoy `ResendEmailService` manda HTML básico; rehacer plantillas (bienvenida + reset)
+   con la estética del sitio (logo, Fraunces/Inter, colores). Cambio aislado, no toca el flujo.
+5. **Resolver los 2-3 PENDING_REVIEW** (Tengu, Distrito Pop, NOSU/NoSo) — publicar/archivar/eliminar.
+
+**B. Cambios de diseño (el usuario irá listando):**
+- ✅ HECHO: barra de acción de la ficha (móvil) aparece al scrollear, no de entrada.
+- 🔄 login/registro desktop sin scroll: el intento de scroll interno del form metía un scrollbar feo →
+  se descartó eso y en su lugar se **achicó el footprint del form** (padding vertical, margen de las tabs,
+  tamaño del título, márgenes del logo/subtítulo) para que entre en `100dvh - 72px` sin scroll. Verificar
+  en distintos altos de ventana; si en pantallas muy bajas aún desborda, la página scrollea (fallback OK).
+- Pendiente: el usuario tiene más ajustes de diseño para listar (sesión de diseño con su flujo de refs).
+
+**C. 🧭 HITO ESTRATÉGICO — reevaluación post-MVP (pedido explícito del usuario, 2026-06-23):**
+Una vez **completo el deploy del MVP** (punto A), **reevaluar todo lo definido antes de empezar a construir**,
+porque el contexto cambió (producto vivo, contenido real cargado). Temas a re-decidir desde cero:
+- **Monetización** — estaba parqueada (Money/Flow/self-service post-MVP). ¿Cómo y cuándo se enciende?
+  ¿Qué modelo (fichas premium, destacados, suscripción de negocios, ads)? Ver PRD/PLAN_FASE9 para lo que
+  estaba definido y desafiarlo.
+- **Próximo paso de desarrollo** — ¿qué feature/funcionalidad sigue? (Eventos está apagado; reseñas de
+  usuarios apagadas; self-service de negocios sobre Brand parqueado; "abierto/cerrado" requiere horario
+  estructurado; filtros OCCASION/EXPERIENCE pendientes). Priorizar con datos reales de uso (GA4).
+- **Estrategia de marketing / go-to-market** — cómo se consiguen los primeros usuarios, SEO ya está armado
+  (JSON-LD/sitemap), pauta (Meta/Google Ads → ahí entran los pixels), listas curadas como landings.
+- **Próximos pasos generales** — revisar el roadmap completo a la luz de tener el producto vivo.
+
+---
+
 ## ▶️ Plan de acción — próxima sesión (recomendado)
 
 **Hecho en la sesión 2 (2026-06-21):** ✅ cerrado el lado usuario (detalle de listas guardadas + gestión,
