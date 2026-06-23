@@ -8,7 +8,35 @@ priorizado. Se actualiza cada vez que avanzamos. Liviano a propósito — para r
 - **Modelo de datos:** [SCHEMA.md](SCHEMA.md) · **Capas:** [ARCHITECTURE.md](ARCHITECTURE.md) · **Carga:** [PLANTILLA_CSV.md](PLANTILLA_CSV.md)
 - **Bitácora del rediseño (historia + razonamiento de las decisiones):** [PLAN_FASE9.md](PLAN_FASE9.md)
 
-**Última actualización:** 2026-06-21 (sesión 3: **Lote 4 cargado — +48 lugares → 160 total** [154
+**Última actualización:** 2026-06-22 (sesión 4 — parte 2: **Lote oriente cargado — +61 lugares**
+[58 en la 1ª pasada + 3 que reintenté tras recortar tags; Pub Golden Music ya existía del Lote 4 →
+saltado sin duplicar]. Ataca la concentración Santiago+Providencia [77%] metiendo **Las Condes,
+Vitacura, Lo Barnechea, Ñuñoa** + la subcat más flaca **Restaurante** [+30: 6 cocinas × 5] + cafés,
+bares, **Cervecería y Mercado/Patio** [estaban en 0], termas, Buin Zoo, Mapulemu, galerías y teatros.
+**Catálogo:** se agregó la subcat **Teatro** a *Arte y cultura* [decisión del usuario; sincronizada en
+seed + skill `ficha-lugar`] y **5 barrios** al seed [El Golf, Las Tranqueras, Alonso de Córdova, La
+Dehesa, Pedro de Valdivia Norte]. **3 en PENDING_REVIEW**: Tengu [muy nuevo, 32 reseñas], Distrito Pop
+[pocas reseñas], NOSU/NoSo [conflicto nombre/comuna: el W Santiago es Las Condes no Vitacura, y el resto
+se llama NoSo → revisar]. Flujo: 5 corridas del agente `investigador-lugares` con place_ids provistos →
+`ingest-fichas` → `enrich --no-coords --with-photos` [coords + fotos de Google, exacto por place_id;
+corriendo]. **TOTAL BD: ~211 publicados.** 3 duplicados del Lote 3/4 descartados antes de cargar [RBX,
+Patricia Ready, Caupolicán]. Cambios de código sin commit todavía.)
+
+**Sesión previa:** 2026-06-22 (sesión 4 — parte 1: **backfill de coordenadas completo** — los **158
+lugares no-archivados ahora tienen lat/lng** [antes faltaban 66: 65 publicados + 1 en revisión]. Vía
+flag nuevo `--no-coords` en `enrich-ratings.ts` [apunta solo a los no-archivados sin coords; implica
+`--force`, nunca pisa coords curadas — verifica `!place.hasCoordinates()`]. 66/66 con coords, 0 sin
+match. El único flag `⚠️ REVISAR` fue el hijo **Happyland Mall Sport**, que matcheó otra sucursal de
+la cadena [Happyland Alto Las Condes, Kennedy 9001] — resultó **espurio** [Mall Sport no tiene Happyland;
+era un Funtopia que ya no opera] → **borrado** [`DeletePlaceUseCase`]. Mall Sport [padre] quedó intacto
+y con coords propias correctas. **→ 153 publicados, 157 no-archivados con coords.** Costo Apify ~$0.44
+[66 × ~$0.0067]; saldo del mes: **$3.46/$5 usados → ~$1.54 libres**.
+**Insight (cadenas vs. contención):** padre e hijo NO comparten place_id ni coords — cada negocio es su
+propia ficha de Google con su pin. El riesgo de mismatch no es la contención sino las **cadenas**
+[mismo nombre, muchas sucursales]; el enrich ya pasa la dirección para desambiguar y marca `⚠️ REVISAR`
+cuando el nombre no calza. Cambio del script sin commit todavía.)
+
+**Sesión previa:** 2026-06-21 (sesión 3: **Lote 4 cargado — +48 lugares → 160 total** [154
 publicados] atacando las 2 categorías flacas: **Juegos y diversión 1→27** y **Vida nocturna 7→26**
 publicados [karaokes, escape rooms, arcades, billares, VR, discotecas, clubes de jazz, salas de
 conciertos]. Vía 5 corridas del agente `investigador-lugares` → ingesta → enrich `--force --with-photos`.
@@ -16,7 +44,7 @@ Las 48 con **coordenadas + fotos** de Google Maps. Marcas nuevas: FUGA Escape Ro
 3 en PENDING_REVIEW [Caleido cerrada, Salón de Pool, Pool Hall Room 9]. Duplicados descartados: Blondie,
 La Batuta. **Enrich ahora captura lat/lng** [nueva mejora cableada port→adapter→entidad→use case, no pisa
 coords curadas; +2 tests → 86 verdes]. Barrio Universitario agregado al seed [Japimax]. Bar El Bajo →
-hijo del GAM. Sin commit todavía.)
+hijo del GAM. Commiteado en `e3eeea5`.)
 
 **Sesión previa:** 2026-06-21 (sesión 2: **lado usuario cerrado** — vista de detalle de listas
 guardadas con gestión; dashboard a 3 tabs reales; **popup de compartir** con redes; **perf de ficha**
@@ -37,11 +65,11 @@ Orden sugerido para retomar.
    publicados (Lote 4, +48). Siguiente densidad si se quiere: más comunas núcleo / subcategorías aún
    delgadas. Flujo validado: skill desktop "modo carga" → place_id → agente `investigador-lugares` →
    `ingest-fichas` → `enrich-ratings --force --with-photos`.
-2. **🔄 Datos: backfill de coordenadas de los lugares VIEJOS.** El enrich **ya captura lat/lng** (mejora
-   sesión 3: `location.lat/lng` de Apify → entidad, sin pisar coords curadas). Las 48 del Lote 4 ya tienen
-   coords; faltan **~65 publicados viejos** sin lat/lng → corre `enrich-ratings.ts --force` (sin ids,
-   re-consulta todos los no-archivados; los que ya tienen coords no se pisan). Ojo: son ~158 llamadas en
-   serie a Apify (lento) — conviene en background o por tandas de ids. Habilita pin/mapa y "abierto/cerca".
+2. **✅ HECHO (sesión 4) — Backfill de coordenadas de los lugares VIEJOS.** Se agregó el flag
+   `--no-coords` a `enrich-ratings.ts` (apunta solo a los no-archivados sin lat/lng; implica `--force`,
+   nunca pisa coords curadas). **66/66 enriquecidos con coords, 0 sin match** → todos los no-archivados ya
+   tienen lat/lng. Costo ~$0.44. El único flag REVISAR (hijo **Happyland Mall Sport**) resultó espurio y
+   se borró (ver header). **→ 153 publicados.** Habilita pin/mapa y "abierto/cerca".
 3. **Preparar el deploy (P0).** (a) **Anti-scraping** ANTES de publicar (ver P0 abajo: rate-limit por IP en
    rutas de catálogo + WAF/bot management + no exponer endpoint JSON masivo). (b) **Registro seguro**
    (fuerza de contraseña + verificación de email). (c) **Checklist de prod**: decidir workflow de BD

@@ -10,6 +10,8 @@
 //   placeId...        enriquece solo esos ids (aunque ya tengan rating)
 //   --dry             resuelve el match y el score pero NO escribe (previsualizar)
 //   --force           re-consulta también los que ya tienen rating (refresca)
+//   --no-coords       apunta solo a los lugares no-archivados SIN lat/lng (backfill de
+//                     coordenadas); implica --force. Las coords curadas nunca se pisan.
 //   --with-photos     además rehospeda hasta 3 fotos de Google Maps en las fichas SIN
 //                     imágenes (no pisa las curadas). Ignorado en --dry.
 //
@@ -24,9 +26,18 @@ interface Target {
   name: string
 }
 
-async function selectTargets(ids: string[], force: boolean): Promise<Target[]> {
+async function selectTargets(ids: string[], force: boolean, noCoords: boolean): Promise<Target[]> {
   if (ids.length > 0) {
     return prisma.place.findMany({ where: { id: { in: ids } }, select: { id: true, name: true } })
+  }
+  if (noCoords) {
+    // Backfill de coordenadas: solo los no-archivados que aún no tienen lat/lng. El
+    // use case re-consulta (force) pero nunca pisa coords curadas.
+    return prisma.place.findMany({
+      where: { status: { not: PlaceStatus.ARCHIVED }, lat: null },
+      select: { id: true, name: true },
+      orderBy: { updatedAt: 'desc' },
+    })
   }
   return prisma.place.findMany({
     where: {
@@ -41,13 +52,15 @@ async function selectTargets(ids: string[], force: boolean): Promise<Target[]> {
 async function main() {
   const args = process.argv.slice(2)
   const dry = args.includes('--dry')
-  const force = args.includes('--force')
+  const noCoords = args.includes('--no-coords')
+  const force = args.includes('--force') || noCoords
   const withPhotos = args.includes('--with-photos') && !dry
   const ids = args.filter((a) => !a.startsWith('--'))
 
   if (dry) console.log('— MODO DRY: resuelve el match y el score, NO escribe —')
+  if (noCoords) console.log('— Backfill de coordenadas: solo lugares no-archivados sin lat/lng —')
   if (withPhotos) console.log('— Fotos: rehospedo hasta 3 de Google Maps en las fichas sin imágenes —')
-  const targets = await selectTargets(ids, force)
+  const targets = await selectTargets(ids, force, noCoords)
   console.log(`${targets.length} lugar(es) a enriquecer\n`)
 
   const uc = container.getEnrichPlaceRatingUseCase()

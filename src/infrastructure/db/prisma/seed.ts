@@ -96,6 +96,11 @@ const NEIGHBORHOODS: { name: string; communeNames: string[] }[] = [
   { name: 'El Arrayán', communeNames: ['Lo Barnechea'] },
   { name: 'San Alfonso', communeNames: ['San José de Maipo'] },
   { name: 'Barrio Universitario', communeNames: ['Santiago'] },
+  { name: 'El Golf', communeNames: ['Las Condes'] },
+  { name: 'Las Tranqueras', communeNames: ['Las Condes'] },
+  { name: 'Alonso de Córdova', communeNames: ['Vitacura'] },
+  { name: 'La Dehesa', communeNames: ['Lo Barnechea'] },
+  { name: 'Pedro de Valdivia Norte', communeNames: ['Providencia'] },
 ]
 
 // ─── Categorías (9) + subcategorías (B.4 / doc 04) ───────────────────────────────
@@ -113,7 +118,7 @@ const CATEGORIES: {
   },
   {
     name: 'Arte y cultura', isActive: true, eventOnly: false,
-    subcategories: ['Museo', 'Galería de arte', 'Exposición temporal', 'Centro cultural', 'Monumento / Patrimonio', 'Experiencia inmersiva', 'Cine / Cineteca', 'Biblioteca'],
+    subcategories: ['Museo', 'Galería de arte', 'Exposición temporal', 'Centro cultural', 'Teatro', 'Monumento / Patrimonio', 'Experiencia inmersiva', 'Cine / Cineteca', 'Biblioteca'],
   },
   {
     name: 'Locales y tiendas', isActive: true, eventOnly: false,

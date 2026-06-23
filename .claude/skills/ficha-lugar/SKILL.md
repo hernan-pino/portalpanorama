@@ -62,7 +62,7 @@ Son **6** las asignables hoy (reorg 2026-06-20). Cada una con sus subcategorías
 2. **Naturaleza y aire libre** — Parque urbano · Cerro / Trekking · Playa / Lago / Río · Reserva natural ·
    Mirador · Jardín botánico · Zoológico / Bioparque · Termas · Camping · Piscina / Balneario
 3. **Arte y cultura** — Museo · Galería de arte · Exposición temporal · Centro cultural ·
-   Monumento / Patrimonio · Experiencia inmersiva · Cine / Cineteca · Biblioteca
+   Teatro · Monumento / Patrimonio · Experiencia inmersiva · Cine / Cineteca · Biblioteca
 4. **Locales y tiendas** — Centro comercial · Galería comercial / Persa · Atracción · Librería ·
    Disquería / Vinilería · Tienda de diseño · Vintage / Segunda mano · Vinoteca / Botillería premium ·
    Chocolatería · Florería · Tienda de plantas · Juguetería · Tienda de mascotas
