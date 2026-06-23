@@ -47,6 +47,11 @@ if (googleAuthEnabled) {
 export const { auth, handlers, signIn, signOut } = NextAuth({
   providers,
 
+  // En producción Auth.js no confía en el host por defecto (UntrustedHost) → tumba
+  // auth() y por ende toda página que lo use (el Header del layout). En Vercel el
+  // host lo controla la plataforma, así que es seguro confiar.
+  trustHost: true,
+
   session: { strategy: 'jwt' },
 
   callbacks: {
