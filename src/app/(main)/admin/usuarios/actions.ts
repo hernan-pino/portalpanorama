@@ -15,11 +15,17 @@ const schema = z.object({
   role: z.enum(['USER', 'ADMIN']),
 })
 
-export async function setUserRoleAction(input: unknown): Promise<ActionResult> {
+// Resuelve el admin de la sesión, o null si no está autorizado.
+async function requireAdmin(): Promise<string | null> {
   const session = await auth()
   const actingUserId = session?.user?.id
   const isAdmin = Boolean(actingUserId) && (session!.user as { role?: string }).role === 'ADMIN'
-  if (!isAdmin || !actingUserId) return { error: 'No autorizado.' }
+  return isAdmin && actingUserId ? actingUserId : null
+}
+
+export async function setUserRoleAction(input: unknown): Promise<ActionResult> {
+  const actingUserId = await requireAdmin()
+  if (!actingUserId) return { error: 'No autorizado.' }
 
   const parsed = schema.safeParse(input)
   if (!parsed.success) return { error: 'Datos inválidos.' }
@@ -35,5 +41,22 @@ export async function setUserRoleAction(input: unknown): Promise<ActionResult> {
   } catch (error) {
     if (error instanceof DomainError) return { error: error.message }
     return { error: 'No se pudo cambiar el rol. Intenta de nuevo.' }
+  }
+}
+
+export async function deleteUserAction(targetUserId: unknown): Promise<ActionResult> {
+  const actingUserId = await requireAdmin()
+  if (!actingUserId) return { error: 'No autorizado.' }
+
+  const parsed = z.string().min(1).safeParse(targetUserId)
+  if (!parsed.success) return { error: 'Datos inválidos.' }
+
+  try {
+    await container.getDeleteUserUseCase().execute({ actingUserId, targetUserId: parsed.data })
+    revalidatePath('/admin/usuarios')
+    return { success: true }
+  } catch (error) {
+    if (error instanceof DomainError) return { error: error.message }
+    return { error: 'No se pudo eliminar el usuario. Intenta de nuevo.' }
   }
 }

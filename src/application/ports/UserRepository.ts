@@ -16,4 +16,6 @@ export interface UserRepository {
   listForAdmin(): Promise<AdminUserRow[]>
   /** Cambia el rol de un usuario (promover/quitar admin). */
   setRole(userId: string, role: UserRole): Promise<void>
+  /** Borrado duro. Las cascadas de BD limpian los datos dependientes. */
+  delete(userId: string): Promise<void>
 }

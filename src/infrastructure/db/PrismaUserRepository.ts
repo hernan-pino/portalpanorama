@@ -115,4 +115,8 @@ export class PrismaUserRepository implements UserRepository {
   async setRole(userId: string, role: UserRole): Promise<void> {
     await this.prisma.user.update({ where: { id: userId }, data: { role } })
   }
+
+  async delete(userId: string): Promise<void> {
+    await this.prisma.user.delete({ where: { id: userId } })
+  }
 }

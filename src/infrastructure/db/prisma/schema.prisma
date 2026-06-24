@@ -90,6 +90,19 @@ enum ReportStatus {
   DISMISSED
 }
 
+// Sugerencias / feedback general del público (no atado a un lugar puntual).
+enum SuggestionKind {
+  FALTA_LUGAR // "falta este lugar / agreguen X"
+  FOTO // "la foto está mal / mejorable"
+  INFO // "me gustaría ver esta info"
+  OTRO
+}
+
+enum SuggestionStatus {
+  OPEN
+  RESOLVED
+}
+
 enum EventStatus {
   DRAFT
   PUBLISHED
@@ -159,6 +172,7 @@ model User {
   visitHistory       VisitHistory[]
   reviews            Review[]
   reports            Report[]
+  suggestions        Suggestion[]
   topicSubscriptions TopicSubscription[]
   ownedPlaces        Place[]             @relation("PlaceOwner")
   ownedBrands        Brand[]             @relation("BrandOwner")
@@ -596,6 +610,23 @@ model Report {
   user  User? @relation(fields: [userId], references: [id], onDelete: SetNull)
 
   @@index([placeId])
+  @@index([status])
+}
+
+// ─── Suggestion — "sugerencias" / feedback general del público ────────────────────
+
+model Suggestion {
+  id         String           @id
+  kind       SuggestionKind   @default(OTRO)
+  message    String           @db.Text
+  email      String? // opcional: para poder responderle si dejó contacto
+  userId     String? // si estaba logueado
+  status     SuggestionStatus @default(OPEN)
+  createdAt  DateTime         @default(now())
+  resolvedAt DateTime?
+
+  user User? @relation(fields: [userId], references: [id], onDelete: SetNull)
+
   @@index([status])
 }
 

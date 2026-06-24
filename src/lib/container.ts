@@ -9,6 +9,7 @@ import { PrismaTagRepository } from '@infrastructure/db/PrismaTagRepository'
 import { PrismaCollectionRepository } from '@infrastructure/db/PrismaCollectionRepository'
 import { PrismaVisitHistoryRepository } from '@infrastructure/db/PrismaVisitHistoryRepository'
 import { PrismaReportRepository } from '@infrastructure/db/PrismaReportRepository'
+import { PrismaSuggestionRepository } from '@infrastructure/db/PrismaSuggestionRepository'
 import { PrismaLocationRepository } from '@infrastructure/db/PrismaLocationRepository'
 import { PostgresFTSSearchService } from '@infrastructure/search/PostgresFTSSearchService'
 import { BcryptPasswordHasher } from '@infrastructure/auth/BcryptPasswordHasher'
@@ -46,6 +47,12 @@ import { ListBrandsForAdminUseCase } from '@application/brand/ListBrandsForAdmin
 import { UploadPlaceImageUseCase } from '@application/place/UploadPlaceImageUseCase'
 import { ImportImageFromUrlUseCase } from '@application/place/ImportImageFromUrlUseCase'
 import { CreateReportUseCase } from '@application/place/CreateReportUseCase'
+import { ListReportsForAdminUseCase } from '@application/report/ListReportsForAdminUseCase'
+import { SetReportStatusUseCase } from '@application/report/SetReportStatusUseCase'
+import { CreateSuggestionUseCase } from '@application/suggestion/CreateSuggestionUseCase'
+import { ListSuggestionsForAdminUseCase } from '@application/suggestion/ListSuggestionsForAdminUseCase'
+import { SetSuggestionStatusUseCase } from '@application/suggestion/SetSuggestionStatusUseCase'
+import { DeleteSuggestionUseCase } from '@application/suggestion/DeleteSuggestionUseCase'
 import { GetCategoriesUseCase } from '@application/catalog/GetCategoriesUseCase'
 import { GetCuratedCollectionUseCase } from '@application/collection/GetCuratedCollectionUseCase'
 import { CreateCollectionUseCase } from '@application/collection/CreateCollectionUseCase'
@@ -65,6 +72,7 @@ import { GetUserDashboardUseCase } from '@application/user/GetUserDashboardUseCa
 import { RecordVisitUseCase } from '@application/user/RecordVisitUseCase'
 import { ListUsersForAdminUseCase } from '@application/user/ListUsersForAdminUseCase'
 import { SetUserRoleUseCase } from '@application/user/SetUserRoleUseCase'
+import { DeleteUserUseCase } from '@application/user/DeleteUserUseCase'
 
 // Los adapters son stateless sobre el cliente Prisma compartido: una instancia basta.
 const userRepo = new PrismaUserRepository(prisma)
@@ -75,6 +83,7 @@ const tagRepo = new PrismaTagRepository(prisma)
 const collectionRepo = new PrismaCollectionRepository(prisma)
 const historyRepo = new PrismaVisitHistoryRepository(prisma)
 const reportRepo = new PrismaReportRepository(prisma)
+const suggestionRepo = new PrismaSuggestionRepository(prisma)
 const locationRepo = new PrismaLocationRepository(prisma)
 const searchService = new PostgresFTSSearchService(prisma)
 const passwordHasher = new BcryptPasswordHasher()
@@ -179,6 +188,31 @@ export const container = {
     return new CreateReportUseCase(reportRepo)
   },
 
+  getListReportsForAdminUseCase() {
+    return new ListReportsForAdminUseCase(reportRepo)
+  },
+
+  getSetReportStatusUseCase() {
+    return new SetReportStatusUseCase(reportRepo)
+  },
+
+  // ── Sugerencias (footer) + buzón ────────────────────────────────────
+  getCreateSuggestionUseCase() {
+    return new CreateSuggestionUseCase(suggestionRepo)
+  },
+
+  getListSuggestionsForAdminUseCase() {
+    return new ListSuggestionsForAdminUseCase(suggestionRepo)
+  },
+
+  getSetSuggestionStatusUseCase() {
+    return new SetSuggestionStatusUseCase(suggestionRepo)
+  },
+
+  getDeleteSuggestionUseCase() {
+    return new DeleteSuggestionUseCase(suggestionRepo)
+  },
+
   // ── Admin (usuarios) ────────────────────────────────────────────────
   getListUsersForAdminUseCase() {
     return new ListUsersForAdminUseCase(userRepo)
@@ -186,6 +220,10 @@ export const container = {
 
   getSetUserRoleUseCase() {
     return new SetUserRoleUseCase(userRepo)
+  },
+
+  getDeleteUserUseCase() {
+    return new DeleteUserUseCase(userRepo)
   },
 
   // ── Admin (CRUD de lugares) ─────────────────────────────────────────

@@ -1,7 +1,7 @@
 'use client'
 import { useMemo, useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
-import { setUserRoleAction } from './actions'
+import { setUserRoleAction, deleteUserAction } from './actions'
 
 // Read-model serializable que recibe la tabla (Date ya es ISO string).
 export interface AdminUserRowView {
@@ -46,6 +46,8 @@ export function UsersAdminList({
   const [isPending, startTransition] = useTransition()
   const [error, setError] = useState<string | null>(null)
   const [pending, setPending] = useState<PendingChange | null>(null)
+  const [pendingDelete, setPendingDelete] = useState<{ id: string; name: string } | null>(null)
+  const [confirmChecked, setConfirmChecked] = useState(false)
 
   const counts = useMemo(() => {
     const c = { TODOS: users.length, ADMIN: 0, USER: 0 }
@@ -69,6 +71,18 @@ export function UsersAdminList({
     setError(null)
     startTransition(async () => {
       const result = await setUserRoleAction({ targetUserId: change.id, role: change.nextRole })
+      if ('error' in result) setError(result.error)
+      else router.refresh()
+    })
+  }
+
+  function confirmDelete() {
+    if (!pendingDelete) return
+    const target = pendingDelete
+    setPendingDelete(null)
+    setError(null)
+    startTransition(async () => {
+      const result = await deleteUserAction(target.id)
       if ('error' in result) setError(result.error)
       else router.refresh()
     })
@@ -153,14 +167,27 @@ export function UsersAdminList({
                             Hacer admin
                           </button>
                         ) : isSelf ? (
-                          <span className="admin-self-tag">—</span>
+                          <span className="admin-self-tag">tú</span>
                         ) : (
                           <button
-                            className="btn btn--ghost btn--sm admin-row-actions__danger"
+                            className="btn btn--ghost btn--sm"
                             disabled={isPending}
                             onClick={() => setPending({ id: u.id, name: u.name, nextRole: 'USER' })}
                           >
                             Quitar admin
+                          </button>
+                        )}
+                        {!isSelf && (
+                          <button
+                            className="btn btn--ghost btn--sm admin-row-actions__danger"
+                            disabled={isPending}
+                            onClick={() => {
+                              setConfirmChecked(false)
+                              setError(null)
+                              setPendingDelete({ id: u.id, name: u.name })
+                            }}
+                          >
+                            Eliminar
                           </button>
                         )}
                       </div>
@@ -204,6 +231,46 @@ export function UsersAdminList({
               </button>
               <button type="button" className="btn btn--primary btn--sm" onClick={confirmChange}>
                 {pending.nextRole === 'ADMIN' ? 'Hacer admin' : 'Quitar admin'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {pendingDelete && (
+        <div className="confirm-modal__scrim" role="presentation" onClick={() => setPendingDelete(null)}>
+          <div
+            className="confirm-modal"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="del-user-title"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <h2 id="del-user-title" className="confirm-modal__title">Eliminar usuario</h2>
+            <p className="confirm-modal__lead">
+              Vas a eliminar a <strong>«{pendingDelete.name}»</strong> de forma permanente. Esta
+              acción <strong>no se puede deshacer</strong>: borra su cuenta, sus listas guardadas e
+              historial. Sus lugares y marcas (si tuviera) no se borran.
+            </p>
+            <label className="confirm-modal__check">
+              <input
+                type="checkbox"
+                checked={confirmChecked}
+                onChange={(e) => setConfirmChecked(e.target.checked)}
+              />
+              <span>Sí, entiendo que es permanente y quiero eliminar a «{pendingDelete.name}».</span>
+            </label>
+            <div className="confirm-modal__actions">
+              <button type="button" className="btn btn--ghost btn--sm" onClick={() => setPendingDelete(null)}>
+                Cancelar
+              </button>
+              <button
+                type="button"
+                className="btn btn--sm confirm-modal__delete"
+                disabled={!confirmChecked}
+                onClick={confirmDelete}
+              >
+                Eliminar
               </button>
             </div>
           </div>
