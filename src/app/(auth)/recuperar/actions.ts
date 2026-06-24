@@ -18,7 +18,7 @@ export async function requestPasswordResetAction(
   // Anti-abuso: tope de pedidos por IP (best-effort, ver lib/rateLimit).
   const ip = await clientIp()
   if (!(await rateLimitDurable(`reset-request:${ip}`, 5, 60 * 60_000)).ok) {
-    return { error: 'Demasiados pedidos desde aquí. Probá de nuevo más tarde.' }
+    return { error: 'Demasiados pedidos desde aquí. Prueba de nuevo más tarde.' }
   }
 
   const parsed = schema.safeParse({ email: formData.get('email') })

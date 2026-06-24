@@ -25,7 +25,7 @@ export async function reportPlaceAction(formData: FormData): Promise<ActionResul
   // Anti-spam: tope por IP (el reporte es anónimo-friendly, sin esto un bot inunda la cola).
   const ip = await clientIp()
   if (!(await rateLimitDurable(`report:${ip}`, 5, 10 * 60_000)).ok) {
-    return { error: 'Recibimos varios reportes desde aquí. Probá de nuevo en unos minutos.' }
+    return { error: 'Recibimos varios reportes desde aquí. Prueba de nuevo en unos minutos.' }
   }
 
   const parsed = reportSchema.safeParse({

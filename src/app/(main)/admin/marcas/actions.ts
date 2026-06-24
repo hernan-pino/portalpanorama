@@ -23,7 +23,7 @@ const optionalText = z.preprocess(emptyToUndef, z.string().trim().optional())
 const optionalUrl = z.preprocess(emptyToUndef, z.string().trim().url('URL inválida.').optional())
 
 const socialLinkSchema = z.object({
-  network: z.string().trim().min(1, 'Elegí la red social.'),
+  network: z.string().trim().min(1, 'Elige la red social.'),
   url: z.string().trim().url('Cada red necesita una URL válida.'),
 })
 
@@ -64,9 +64,9 @@ function toWriteInput(d: ParsedBrand): BrandWriteInput {
 function toErrorMessage(err: unknown): string {
   if (err instanceof DomainError) return err.message
   if (typeof err === 'object' && err !== null && (err as { code?: string }).code === 'P2002') {
-    return 'Ya existe una marca con ese nombre (slug duplicado). Cambiá el nombre.'
+    return 'Ya existe una marca con ese nombre (slug duplicado). Cambia el nombre.'
   }
-  return 'No se pudo guardar la marca. Revisá los datos e intentá de nuevo.'
+  return 'No se pudo guardar la marca. Revisa los datos e intenta de nuevo.'
 }
 
 // ── Subir / traer logo (reusa el pipeline de imágenes; mismas guardas que Place) ──
@@ -94,7 +94,7 @@ export async function uploadBrandLogoAction(
       .execute({ buffer, filename: file.name })
     return { url }
   } catch {
-    return { error: 'No se pudo subir el logo. Intentá de nuevo.' }
+    return { error: 'No se pudo subir el logo. Intenta de nuevo.' }
   }
 }
 
@@ -103,7 +103,7 @@ export async function importBrandLogoAction(
 ): Promise<{ error: string } | { url: string }> {
   if (!(await isAdmin())) return { error: 'No autorizado.' }
 
-  const parsed = z.string().trim().url('Pegá una URL válida.').safeParse(rawUrl)
+  const parsed = z.string().trim().url('Pega una URL válida.').safeParse(rawUrl)
   if (!parsed.success) return { error: parsed.error.issues[0]?.message ?? 'URL inválida.' }
 
   try {

@@ -25,7 +25,7 @@ export async function registerAction(
   // Anti-bots: tope de altas por IP. Best-effort (ver lib/rateLimit).
   const ip = await clientIp()
   if (!(await rateLimitDurable(`register:${ip}`, 5, 60 * 60_000)).ok) {
-    return { error: 'Demasiados intentos de registro desde aquí. Probá de nuevo más tarde.' }
+    return { error: 'Demasiados intentos de registro desde aquí. Prueba de nuevo más tarde.' }
   }
 
   const parsed = schema.safeParse({
@@ -42,7 +42,7 @@ export async function registerAction(
     await container.getRegisterUserUseCase().execute(parsed.data)
   } catch (error) {
     if (error instanceof EmailAlreadyInUseError) {
-      return { error: 'Este email ya está registrado. ¿Querés iniciar sesión?' }
+      return { error: 'Este email ya está registrado. ¿Quieres iniciar sesión?' }
     }
     throw error
   }

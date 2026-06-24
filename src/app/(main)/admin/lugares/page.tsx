@@ -31,7 +31,7 @@ export default async function LugaresPage() {
 
       {places.length === 0 ? (
         <p className="admin-empty">
-          Todavía no hay lugares. <Link href="/admin/lugares/nuevo">Creá el primero</Link>.
+          Todavía no hay lugares. <Link href="/admin/lugares/nuevo">Crea el primero</Link>.
         </p>
       ) : (
         <PlacesAdminList places={rows} />

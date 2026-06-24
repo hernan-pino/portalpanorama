@@ -227,7 +227,7 @@ export function PlaceForm({ options, initial }: PlaceFormProps) {
   async function importFromUrl(i: number) {
     const src = values.images[i]?.url.trim()
     if (!src) {
-      setError('Pegá primero una URL en el campo de abajo.')
+      setError('Pega primero una URL en el campo de abajo.')
       return
     }
     setError(null)
@@ -330,7 +330,7 @@ export function PlaceForm({ options, initial }: PlaceFormProps) {
                 // Al salir de Gastronomía, descartamos el menú (no aplica a museos/parques).
                 setValues((v) => ({ ...v, categoryId, subcategoryId: '', menuUrl: gastro ? v.menuUrl : '' }))
               }}>
-              <option value="">— Elegí —</option>
+              <option value="">— Elige —</option>
               {options.categories.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
             </select>
           </div>
@@ -339,7 +339,7 @@ export function PlaceForm({ options, initial }: PlaceFormProps) {
             <select id="subcategoryId" className="form-input" value={values.subcategoryId} required
               disabled={!values.categoryId}
               onChange={(e) => set('subcategoryId', e.target.value)}>
-              <option value="">— Elegí —</option>
+              <option value="">— Elige —</option>
               {subOptions.map((s) => <option key={s.id} value={s.id}>{s.name}</option>)}
             </select>
           </div>
@@ -358,7 +358,7 @@ export function PlaceForm({ options, initial }: PlaceFormProps) {
             <select id="secondarySubcategoryId" className="form-input" value={values.secondarySubcategoryId}
               disabled={!values.secondaryCategoryId}
               onChange={(e) => set('secondarySubcategoryId', e.target.value)}>
-              <option value="">— Elegí —</option>
+              <option value="">— Elige —</option>
               {secSubOptions.map((s) => <option key={s.id} value={s.id}>{s.name}</option>)}
             </select>
           </div>
@@ -378,7 +378,7 @@ export function PlaceForm({ options, initial }: PlaceFormProps) {
             <label className="form-label" htmlFor="communeId">Comuna *</label>
             <select id="communeId" className="form-input" value={values.communeId} required
               onChange={(e) => setValues((v) => ({ ...v, communeId: e.target.value, neighborhoodId: '' }))}>
-              <option value="">— Elegí —</option>
+              <option value="">— Elige —</option>
               {options.communes.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
             </select>
           </div>
@@ -415,7 +415,7 @@ export function PlaceForm({ options, initial }: PlaceFormProps) {
             <select id="metroStationId" className="form-input" value={values.metroStationId}
               disabled={!metroLineCode}
               onChange={(e) => set('metroStationId', e.target.value)}>
-              <option value="">{metroLineCode ? '— Elegí la estación —' : '— Elegí la línea primero —'}</option>
+              <option value="">{metroLineCode ? '— Elige la estación —' : '— Elige la línea primero —'}</option>
               {stationsForLine.map((m) => <option key={m.id} value={m.id}>{m.name}</option>)}
             </select>
           </div>
@@ -609,7 +609,7 @@ export function PlaceForm({ options, initial }: PlaceFormProps) {
       <section className="admin-form__section">
         <h3 className="admin-form__legend">Imágenes</h3>
         <p className="admin-form__hint">
-          Subí la foto (se comprime sola), o pegá una URL de cualquier sitio y tocá
+          Sube la foto (se comprime sola), o pega una URL de cualquier sitio y toca
           <strong> Traer</strong> para copiarla a tu almacenamiento. Solo se guardan URLs
           de hosts permitidos ({ALLOWED_IMAGE_HOSTS.join(' · ')}).
         </p>
@@ -633,7 +633,7 @@ export function PlaceForm({ options, initial }: PlaceFormProps) {
               </label>
             </div>
             <div className="form-row">
-              <label className="form-label" htmlFor={`img-url-${i}`}>o pegá una URL</label>
+              <label className="form-label" htmlFor={`img-url-${i}`}>o pega una URL</label>
               <div className="admin-img-row__url">
                 <input id={`img-url-${i}`} className="form-input" type="url" value={img.url}
                   onChange={(e) => updateImage(i, 'url', e.target.value)} placeholder="https://…" />
@@ -686,7 +686,7 @@ export function PlaceForm({ options, initial }: PlaceFormProps) {
             {parentOptions.map((p) => <option key={p.id} value={p.id}>{p.name}</option>)}
           </select>
           <p className="admin-form__hint">
-            Ej.: el Zoológico pertenece a Parquemet. Solo un nivel; no podés elegir un lugar que ya
+            Ej.: el Zoológico pertenece a Parquemet. Solo un nivel; no puedes elegir un lugar que ya
             cuelga de este.
           </p>
         </div>
@@ -699,7 +699,7 @@ export function PlaceForm({ options, initial }: PlaceFormProps) {
             {options.brands.map((b) => <option key={b.id} value={b.id}>{b.name}</option>)}
           </select>
           <p className="admin-form__hint">
-            Si es una sucursal de una cadena (ej.: Emporio La Rosa), elegí su marca. ¿No está?
+            Si es una sucursal de una cadena (ej.: Emporio La Rosa), elige su marca. ¿No está?
             Creala primero en <a href="/admin/marcas/nuevo" target="_blank" rel="noopener noreferrer">Marcas</a>.
           </p>
         </div>

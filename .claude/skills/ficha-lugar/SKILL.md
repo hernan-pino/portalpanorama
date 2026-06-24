@@ -340,6 +340,9 @@ Funde estos ángulos (no todos aplican a todo lugar; en prosa breve + bullets do
 - **Movimiento / eventos** — si rota exposiciones, hay música en vivo, ferias o temporadas, dilo y sugiere seguir su IG. Si es siempre igual, no fuerces nada.
 
 **Reglas:**
+- **⛔ Español de Chile, NUNCA voseo argentino.** Usa tuteo chileno: "**Pasas** un rato", "**mira** su IG",
+  "**puedes** llevar al perro", "si **quieres** algo tranquilo". JAMÁS rioplatense: nada de "pasás", "mirá",
+  "podés", "querés", "tenés", "andá", "elegí", "disfrutá", "buscá". Si una frase suena a Buenos Aires, reescríbela.
 - **Concreto > genérico.** "El patio con parras es lo mejor para una tarde de domingo" vale más que "ambiente acogedor".
 - **Cero clichés de folleto:** evita "imperdible", "experiencia única", "para todos los gustos", "joya escondida", "un must".
 - Apóyate en señales reales de reseñas/blogs. Si algo es inferencia, que sea plausible y suave — **no inventes** platos, precios ni premios.
@@ -393,6 +396,8 @@ Reglas de calidad (descarta lo que no cumpla):
 ---
 
 ## Principios de calidad
+- **⛔ Idioma: español de Chile (tuteo), NUNCA voseo argentino.** Aplica a TODO texto que escribas
+  (descripción del lugar y de la marca): "puedes/quieres/tienes/mira/pasas", nunca "podés/querés/tenés/mirá/pasás".
 - **Nunca inventes** estrellas, reseñas, teléfono, Place ID, lat/long. Si no lo viste en una fuente, va vacío y entra en "No encontrado".
 - **Datos frescos:** Google Maps cambia; usa la cifra más reciente. Si dos fuentes discrepan en estrellas/reseñas, usa Maps y nota la discrepancia.
 - **Una sola ficha por lugar**, salvo que pidan varias.

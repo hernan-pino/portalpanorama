@@ -20,7 +20,7 @@ export default async function NuevaPasswordPage({
         </Link>
         <blockquote style={{ margin: 0 }}>
           <h2>
-            Elegí una contraseña <em>nueva</em>.
+            Elige una contraseña <em>nueva</em>.
           </h2>
         </blockquote>
         <p style={{ fontFamily: 'var(--font-mono)', fontSize: 'var(--t-mono-sm)', letterSpacing: 'var(--tr-wide)', textTransform: 'uppercase', color: 'var(--paper-40)' }}>
@@ -51,7 +51,7 @@ export default async function NuevaPasswordPage({
         {token ? (
           <>
             <p style={{ color: 'var(--fg-muted)', fontSize: 'var(--t-body-sm)', marginBottom: 'var(--s-8)' }}>
-              Creá tu nueva contraseña para volver a entrar.
+              Crea tu nueva contraseña para volver a entrar.
             </p>
             <ResetPasswordForm token={token} />
           </>

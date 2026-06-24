@@ -61,7 +61,7 @@ export function BrandForm({ initial }: BrandFormProps) {
   async function importLogo() {
     const src = values.logoUrl.trim()
     if (!src) {
-      setError('Pegá primero una URL en el campo del logo.')
+      setError('Pega primero una URL en el campo del logo.')
       return
     }
     setError(null)
@@ -151,10 +151,10 @@ export function BrandForm({ initial }: BrandFormProps) {
               {importing ? 'Trayendo…' : 'Traer desde URL'}
             </button>
           </div>
-          <input id="logoUrl" className="form-input" value={values.logoUrl} placeholder="o pegá una URL"
+          <input id="logoUrl" className="form-input" value={values.logoUrl} placeholder="o pega una URL"
             onChange={(e) => set('logoUrl', e.target.value)} />
           <p className="admin-form__hint">
-            Subí el archivo o pegá una URL y tocá “Traer” (se rehospeda en nuestro almacenamiento).
+            Sube el archivo o pega una URL y toca “Traer” (se rehospeda en nuestro almacenamiento).
             Hosts permitidos: {ALLOWED_IMAGE_HOSTS.join(', ')}.
           </p>
         </div>

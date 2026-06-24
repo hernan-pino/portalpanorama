@@ -13,9 +13,9 @@ export default async function LoginPage({
 }) {
   const { reset, registered } = await searchParams
   const notice = reset
-    ? 'Tu contraseña se actualizó. Ya podés iniciar sesión.'
+    ? 'Tu contraseña se actualizó. Ya puedes iniciar sesión.'
     : registered
-      ? 'Tu cuenta se creó. Iniciá sesión para continuar.'
+      ? 'Tu cuenta se creó. Inicia sesión para continuar.'
       : null
 
   return (

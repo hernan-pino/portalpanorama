@@ -24,11 +24,11 @@ export class ResendEmailService implements EmailService {
 
   async sendWelcome(to: string, name: string): Promise<void> {
     const html = renderEmail({
-      preheader: 'Tu cuenta está lista. Empezá a descubrir y guardar lugares.',
+      preheader: 'Tu cuenta está lista. Empieza a descubrir y guardar lugares.',
       bodyHtml:
         paragraph(`Hola <strong>${escapeHtml(name)}</strong>,`) +
-        paragraph('¡Gracias por sumarte a <strong>Portal Panorama</strong>! Ya podés explorar los mejores lugares de Chile, guardar tus favoritos y armar tus propias listas.') +
-        paragraph('¿Por dónde empezar? Buscá por comuna, categoría o lo que tengas ganas de hacer.'),
+        paragraph('¡Gracias por sumarte a <strong>Portal Panorama</strong>! Ya puedes explorar los mejores lugares de Chile, guardar tus favoritos y armar tus propias listas.') +
+        paragraph('¿Por dónde empezar? Busca por comuna, categoría o lo que tengas ganas de hacer.'),
       button: { label: 'Explorar lugares', url: 'https://portalpanorama.cl/explorar' },
     })
     await this.client().emails.send({
@@ -41,11 +41,11 @@ export class ResendEmailService implements EmailService {
 
   async sendPasswordReset(to: string, name: string, resetUrl: string): Promise<void> {
     const html = renderEmail({
-      preheader: 'Restablecé tu contraseña. El enlace vence en 1 hora.',
+      preheader: 'Restablece tu contraseña. El enlace vence en 1 hora.',
       bodyHtml:
         paragraph(`Hola <strong>${escapeHtml(name)}</strong>,`) +
-        paragraph('Recibimos un pedido para restablecer tu contraseña. Hacé clic en el botón de abajo para crear una nueva. <strong>El enlace vence en 1 hora.</strong>') +
-        muted('Si no pediste esto, podés ignorar este correo: tu contraseña no cambió.'),
+        paragraph('Recibimos un pedido para restablecer tu contraseña. Haz clic en el botón de abajo para crear una nueva. <strong>El enlace vence en 1 hora.</strong>') +
+        muted('Si no pediste esto, puedes ignorar este correo: tu contraseña no cambió.'),
       button: { label: 'Restablecer mi contraseña', url: resetUrl },
     })
     await this.client().emails.send({

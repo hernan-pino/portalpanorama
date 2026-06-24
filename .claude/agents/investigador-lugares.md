@@ -34,6 +34,9 @@ es lo que consume el script de ingesta. Por cada lugar:
    si no existe.
 
 ## Reglas
+- **⛔ Español de Chile (tuteo), NUNCA voseo argentino** en toda descripción que escribas (lugar y marca):
+  "puedes/quieres/tienes/mira/pasas", jamás "podés/querés/tenés/mirá/pasás/andá/elegí". Si suena a Buenos
+  Aires, reescríbelo. (Detalle en la skill `ficha-lugar` → "Cómo escribir la descripción".)
 - **Nunca inventes** estrellas, reseñas, teléfono, Place ID, lat/long. Sin fuente → `null`
   y entra en `_meta.campos_no_encontrados`.
 - **No publiques ni toques la BD.** Solo escribes JSON. La ingesta la corre el script

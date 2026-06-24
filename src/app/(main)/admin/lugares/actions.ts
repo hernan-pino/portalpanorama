@@ -37,7 +37,7 @@ const pointSchema = z.object({
 })
 
 const socialLinkSchema = z.object({
-  network: z.string().trim().min(1, 'Elegí la red social.'),
+  network: z.string().trim().min(1, 'Elige la red social.'),
   url: z.string().trim().url('Cada red necesita una URL válida.'),
 })
 
@@ -62,13 +62,13 @@ const placeSchema = z
     description: optionalText,
     menuUrl: optionalUrl,
 
-    categoryId: z.string().min(1, 'Elegí una categoría.'),
-    subcategoryId: z.string().min(1, 'Elegí una subcategoría.'),
+    categoryId: z.string().min(1, 'Elige una categoría.'),
+    subcategoryId: z.string().min(1, 'Elige una subcategoría.'),
     secondaryCategoryId: optionalText,
     secondarySubcategoryId: optionalText,
 
     address: optionalText,
-    communeId: z.string().min(1, 'Elegí una comuna.'),
+    communeId: z.string().min(1, 'Elige una comuna.'),
     neighborhoodId: optionalText,
     lat: optionalNumber,
     lng: optionalNumber,
@@ -116,7 +116,7 @@ const placeSchema = z
   })
   // Categoría secundaria = par (B.5): si va una, va su subcategoría.
   .refine((d) => !d.secondaryCategoryId || Boolean(d.secondarySubcategoryId), {
-    message: 'Si pones categoría secundaria, elegí también su subcategoría.',
+    message: 'Si pones categoría secundaria, elige también su subcategoría.',
     path: ['secondarySubcategoryId'],
   })
 
@@ -183,9 +183,9 @@ function toWriteInput(d: ParsedPlace): PlaceWriteInput {
 function toErrorMessage(err: unknown): string {
   if (err instanceof DomainError) return err.message
   if (typeof err === 'object' && err !== null && (err as { code?: string }).code === 'P2002') {
-    return 'Ya existe un lugar con ese nombre (slug duplicado). Cambiá el nombre.'
+    return 'Ya existe un lugar con ese nombre (slug duplicado). Cambia el nombre.'
   }
-  return 'No se pudo guardar el lugar. Revisá los datos e intentá de nuevo.'
+  return 'No se pudo guardar el lugar. Revisa los datos e intenta de nuevo.'
 }
 
 // ── Subir imagen ──
@@ -215,7 +215,7 @@ export async function uploadPlaceImageAction(
       .execute({ buffer, filename: file.name })
     return { url }
   } catch {
-    return { error: 'No se pudo subir la imagen. Intentá de nuevo.' }
+    return { error: 'No se pudo subir la imagen. Intenta de nuevo.' }
   }
 }
 
@@ -227,7 +227,7 @@ export async function importPlaceImageAction(
 ): Promise<{ error: string } | { url: string }> {
   if (!(await isAdmin())) return { error: 'No autorizado.' }
 
-  const parsed = z.string().trim().url('Pegá una URL válida.').safeParse(rawUrl)
+  const parsed = z.string().trim().url('Pega una URL válida.').safeParse(rawUrl)
   if (!parsed.success) return { error: parsed.error.issues[0]?.message ?? 'URL inválida.' }
 
   try {

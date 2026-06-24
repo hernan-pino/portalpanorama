@@ -14,7 +14,7 @@ const schema = z.object({
 
 const changePasswordSchema = z
   .object({
-    currentPassword: z.string().min(1, 'Ingresá tu contraseña actual.'),
+    currentPassword: z.string().min(1, 'Ingresa tu contraseña actual.'),
     newPassword: z.string().superRefine((value, ctx) => {
       for (const issue of evaluatePassword(value).issues) {
         ctx.addIssue({ code: 'custom', message: `La nueva contraseña necesita: ${issue.toLowerCase()}.` })
@@ -48,7 +48,7 @@ export async function updateProfileAction(
       name: parsed.data.name,
     })
   } catch (error) {
-    if (error instanceof UserNotFoundError) return { error: 'Sesión inválida. Por favor volvé a iniciar sesión.' }
+    if (error instanceof UserNotFoundError) return { error: 'Sesión inválida. Por favor vuelve a iniciar sesión.' }
     throw error
   }
 
@@ -80,7 +80,7 @@ export async function changePasswordAction(
     if (error instanceof NoPasswordSetError) {
       return { error: 'Tu cuenta ingresa con Google y no tiene contraseña. Usá "¿Olvidaste tu contraseña?" desde el login para crear una.' }
     }
-    if (error instanceof UserNotFoundError) return { error: 'Sesión inválida. Por favor volvé a iniciar sesión.' }
+    if (error instanceof UserNotFoundError) return { error: 'Sesión inválida. Por favor vuelve a iniciar sesión.' }
     throw error
   }
 

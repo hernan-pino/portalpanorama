@@ -201,6 +201,23 @@ Reconstruir cada componente con React + Tailwind respetando los tokens.
 - Pagos recurrentes: **Flow** (webhooks en `/api/webhooks/flow`)
 - Idioma UI: Español de Chile
 
+### ⛔ REGLA DE IDIOMA — Español de Chile, NUNCA voseo argentino (no negociable)
+
+Aplica a **TODO** el texto orientado al usuario: copy de UI, mensajes de error/validación,
+emails, descripciones de fichas, y cualquier contenido que generen las skills/agentes
+(`ficha-lugar`, `investigador-lugares`). También aplica a cómo Claude **escribe y conversa**
+en este proyecto.
+
+- **Usar tuteo chileno** (formas con "tú"), NO el voseo rioplatense.
+- **Prohibido el imperativo voseante** (acento en la última sílaba): se escribe
+  `Busca`, `Descubre`, `Guarda`, `Crea`, `Elige`, `Haz clic`, `Ingresa`, `Revisa`,
+  `Prueba`, `Vuelve`, `Empieza`, `Filtra`, `Comparte`, `Regístrate`, `Inicia sesión`.
+  **NUNCA** `Buscá`, `Descubrí`, `Guardá`, `Creá`, `Elegí`, `Hacé`, `Ingresá`, `Revisá`,
+  `Probá`, `Volvé`, `Empezá`, `Filtrá`, `Compartí`, `Registrate`, `Iniciá`.
+- **Prohibido el presente voseante:** se escribe `puedes`, `quieres`, `tienes`, `sabes`.
+  **NUNCA** `podés`, `querés`, `tenés`, `sabés`.
+- En la duda, neutral chileno > rioplatense. Si un texto suena a Buenos Aires, está mal.
+
 ---
 
 ## Workflow por Fases

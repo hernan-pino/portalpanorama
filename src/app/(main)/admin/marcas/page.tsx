@@ -20,7 +20,7 @@ export default async function MarcasPage() {
 
       {brands.length === 0 ? (
         <p className="admin-empty">
-          Todavía no hay marcas. <Link href="/admin/marcas/nuevo">Creá la primera</Link>.
+          Todavía no hay marcas. <Link href="/admin/marcas/nuevo">Crea la primera</Link>.
         </p>
       ) : (
         <div className="admin-table">

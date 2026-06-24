@@ -7,7 +7,7 @@ export default function NotFound() {
       <p className="eyebrow">Error 404</p>
       <h1 className="display status-screen__title">Esta página se nos perdió.</h1>
       <p className="status-screen__text">
-        El lugar o la página que buscas no existe o cambió de dirección. Probá volver al inicio o
+        El lugar o la página que buscas no existe o cambió de dirección. Prueba volver al inicio o
         explorar los lugares de Santiago.
       </p>
       <div className="status-screen__actions">

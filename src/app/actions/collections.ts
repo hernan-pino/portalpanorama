@@ -17,7 +17,7 @@ export async function saveToCollectionAction(
   collectionId: string,
 ): Promise<ActionResult> {
   const session = await auth()
-  if (!session?.user?.id) return { error: 'Tenés que iniciar sesión para guardar lugares.' }
+  if (!session?.user?.id) return { error: 'Tienes que iniciar sesión para guardar lugares.' }
 
   await container.getAddPlaceToCollectionUseCase().execute({
     userId: session.user.id,
@@ -29,12 +29,12 @@ export async function saveToCollectionAction(
   return { success: true }
 }
 
-// ── Guardar en la lista por defecto ("Favoritos"), creándola si no existe ──
+// ── Guardar en la lista por defecto ("Favoritos"), creandola si no existe ──
 export async function saveToDefaultCollectionAction(
   placeId: string,
 ): Promise<{ error: string } | { success: true; collectionId: string }> {
   const session = await auth()
-  if (!session?.user?.id) return { error: 'Tenés que iniciar sesión para guardar lugares.' }
+  if (!session?.user?.id) return { error: 'Tienes que iniciar sesión para guardar lugares.' }
 
   const { collectionId } = await container.getSaveToDefaultCollectionUseCase().execute({
     userId: session.user.id,
@@ -55,7 +55,7 @@ export async function createListAndSaveAction(
   name: string,
 ): Promise<{ error: string } | { success: true; collectionId: string }> {
   const session = await auth()
-  if (!session?.user?.id) return { error: 'Tenés que iniciar sesión para guardar lugares.' }
+  if (!session?.user?.id) return { error: 'Tienes que iniciar sesión para guardar lugares.' }
 
   const parsed = createListSchema.safeParse({ name })
   if (!parsed.success) return { error: parsed.error.issues[0]?.message ?? 'Nombre inválido.' }
@@ -86,7 +86,7 @@ export async function renameListAction(
   name: string,
 ): Promise<ActionResult> {
   const session = await auth()
-  if (!session?.user?.id) return { error: 'Tenés que iniciar sesión.' }
+  if (!session?.user?.id) return { error: 'Tienes que iniciar sesión.' }
 
   const parsed = renameListSchema.safeParse({ name })
   if (!parsed.success) return { error: parsed.error.issues[0]?.message ?? 'Nombre inválido.' }
@@ -109,7 +109,7 @@ export async function renameListAction(
 // Eliminar la lista completa (con sus items, por Cascade).
 export async function deleteListAction(collectionId: string): Promise<ActionResult> {
   const session = await auth()
-  if (!session?.user?.id) return { error: 'Tenés que iniciar sesión.' }
+  if (!session?.user?.id) return { error: 'Tienes que iniciar sesión.' }
 
   try {
     await container.getDeleteCollectionUseCase().execute({
@@ -131,7 +131,7 @@ export async function removeFromListAction(
   placeId: string,
 ): Promise<ActionResult> {
   const session = await auth()
-  if (!session?.user?.id) return { error: 'Tenés que iniciar sesión.' }
+  if (!session?.user?.id) return { error: 'Tienes que iniciar sesión.' }
 
   try {
     await container.getRemovePlaceFromCollectionUseCase().execute({

@@ -236,7 +236,7 @@ export default async function ExplorarPage({ searchParams }: PageProps) {
           ) : (
             <div className="results-empty">
               <p className="results-empty__title">Sin resultados</p>
-              <p className="results-empty__lead">No encontramos lugares con esos filtros. Probá quitando alguno.</p>
+              <p className="results-empty__lead">No encontramos lugares con esos filtros. Prueba quitando alguno.</p>
               <Link href="/explorar" className="btn btn--ghost">Ver todos los lugares</Link>
             </div>
           )}

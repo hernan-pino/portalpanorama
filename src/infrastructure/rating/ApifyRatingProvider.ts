@@ -67,7 +67,7 @@ export class ApifyRatingProvider implements PlaceRatingProvider {
       throw new RatingLookupError('No se pudo conectar con Apify (timeout o red).')
     }
     if (res.status === 401 || res.status === 403) {
-      throw new RatingLookupError('Apify rechazó el token (revisá APIFY_TOKEN).')
+      throw new RatingLookupError('Apify rechazó el token (revisa APIFY_TOKEN).')
     }
     if (!res.ok) {
       throw new RatingLookupError(`Apify respondió con error (HTTP ${res.status}).`)

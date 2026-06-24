@@ -423,7 +423,7 @@ async function main() {
   }
 
   console.log(`\nResumen: ${created} creado(s), ${skipped} omitida(s).`)
-  console.log('Las publicadas ya están en el sitio. Revisá las que quedaron en PENDING_REVIEW en /admin/lugares.')
+  console.log('Las publicadas ya están en el sitio. Revisa las que quedaron en PENDING_REVIEW en /admin/lugares.')
 }
 
 main()

@@ -42,7 +42,7 @@ export default function RecuperarPage() {
           Recuperar contraseña
         </h1>
         <p style={{ color: 'var(--fg-muted)', fontSize: 'var(--t-body-sm)', marginBottom: 'var(--s-8)' }}>
-          Ingresá tu email y te enviamos un enlace para crear una nueva contraseña.
+          Ingresa tu email y te enviamos un enlace para crear una nueva contraseña.
         </p>
 
         <RequestResetForm />

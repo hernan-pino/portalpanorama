@@ -30,7 +30,7 @@ export function TabPerfil({ user }: { user: User }) {
           Seguridad
         </h2>
         <p style={{ fontSize: 'var(--t-body-sm)', color: 'var(--fg-muted)' }}>
-          Cambiá la contraseña con la que iniciás sesión.
+          Cambia la contraseña con la que inicias sesión.
         </p>
       </div>
 

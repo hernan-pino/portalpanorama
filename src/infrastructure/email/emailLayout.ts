@@ -92,7 +92,7 @@ export function renderEmail({ preheader, bodyHtml, button }: EmailLayoutParams):
           <tr>
             <td style="padding:20px 32px 28px;border-top:1px solid ${BRAND.line};font-family:Helvetica,Arial,sans-serif;">
               <p style="margin:0;font-size:12px;line-height:1.6;color:${BRAND.muted};">
-                Portal Panorama — descubrí los mejores lugares de Chile.<br>
+                Portal Panorama — descubre los mejores lugares de Chile.<br>
                 <a href="https://portalpanorama.cl" style="color:${BRAND.accentDark};text-decoration:none;">portalpanorama.cl</a>
               </p>
             </td>

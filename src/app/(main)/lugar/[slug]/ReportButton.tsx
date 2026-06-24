@@ -72,7 +72,7 @@ export function ReportButton({ placeId }: { placeId: string }) {
         className="form-input"
         rows={3}
         maxLength={500}
-        placeholder="Contanos un poco más (opcional)…"
+        placeholder="Cuéntanos un poco más (opcional)…"
       />
 
       {error && <p style={{ color: 'var(--error)', fontSize: 'var(--t-body-sm)', margin: 0 }}>{error}</p>}

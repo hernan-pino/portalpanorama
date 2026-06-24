@@ -101,9 +101,9 @@ export function SaveHeart({
           >
             {!isLoggedIn ? (
               <>
-                <h4 className="save-modal__title">Guardá este lugar</h4>
+                <h4 className="save-modal__title">Guarda este lugar</h4>
                 <p className="save-modal__lead">
-                  Creá una cuenta o iniciá sesión para guardar <strong>{placeName}</strong> en tus listas.
+                  Crea una cuenta o inicia sesión para guardar <strong>{placeName}</strong> en tus listas.
                 </p>
                 <div className="save-modal__actions">
                   <Link href="/login" className="btn btn--accent" style={{ flex: 1, justifyContent: 'center' }}>

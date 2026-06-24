@@ -76,7 +76,7 @@ export function PlaceRowActions({
             <p className="confirm-modal__lead">
               Vas a eliminar <strong>«{name}»</strong> de forma permanente. Esta acción{' '}
               <strong>no se puede deshacer</strong> y borra su ficha, imágenes y datos asociados.
-              Si solo querés ocultarlo, mejor archivalo.
+              Si solo quieres ocultarlo, mejor archívalo.
             </p>
             <label className="confirm-modal__check">
               <input

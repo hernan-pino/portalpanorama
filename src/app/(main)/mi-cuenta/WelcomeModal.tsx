@@ -58,9 +58,9 @@ export function WelcomeModal() {
           por lo que necesitás: con quién vas, presupuesto, comuna o cerca del metro.
         </p>
         <ul className="welcome-modal__list">
-          <li>Filtrá por contexto: en pareja, con amigos, con niños, pet friendly.</li>
+          <li>Filtra por contexto: en pareja, con amigos, con niños, pet friendly.</li>
           <li>Compará precio, horario y cómo llegar sin saltar entre apps.</li>
-          <li>Guardá tus favoritos en listas para tenerlos a mano.</li>
+          <li>Guarda tus favoritos en listas para tenerlos a mano.</li>
         </ul>
         <div className="welcome-modal__actions">
           <Link href="/explorar" className="btn btn--primary" onClick={close}>

@@ -11,7 +11,7 @@ import { Collection } from '@domain/collection/Collection'
 export const metadata: Metadata = {
   title: 'Portal Panorama — Qué hacer hoy en Santiago',
   description:
-    'Descubrí, decidí y guardá qué hacer en tu ciudad: gastronomía, naturaleza, arte y tiendas. Filtrá por con quién vas, presupuesto y comuna.',
+    'Descubre, decide y guarda qué hacer en tu ciudad: gastronomía, naturaleza, arte y tiendas. Filtra por con quién vas, presupuesto y comuna.',
 }
 
 // Íconos de las 4 categorías activas. El catálogo (GetCategories) aún no trae ícono
@@ -102,7 +102,7 @@ export default async function HomePage() {
           ¿Qué <em>hacer</em> hoy en Santiago?
         </h1>
         <p className="home-hero__sub">
-          Lugares reales de la ciudad para cualquier plan. Filtrá por con quién vas hoy y andá directo a explorar.
+          Lugares reales de la ciudad para cualquier plan. Filtra por con quién vas hoy y ve directo a explorar.
         </p>
         <div className="home-hero__search">
           <SearchBar />

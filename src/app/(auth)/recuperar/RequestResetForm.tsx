@@ -20,7 +20,7 @@ export function RequestResetForm() {
       >
         <p style={{ marginBottom: 'var(--s-2)' }}>
           Si hay una cuenta asociada a ese email, te enviamos un enlace para restablecer tu
-          contraseña. Revisá tu correo (y la carpeta de spam).
+          contraseña. Revisa tu correo (y la carpeta de spam).
         </p>
         <Link href="/login" className="link">
           Volver a iniciar sesión
