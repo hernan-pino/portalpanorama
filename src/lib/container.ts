@@ -63,6 +63,8 @@ import { UpdateUserProfileUseCase } from '@application/user/UpdateUserProfileUse
 import { ChangePasswordUseCase } from '@application/user/ChangePasswordUseCase'
 import { GetUserDashboardUseCase } from '@application/user/GetUserDashboardUseCase'
 import { RecordVisitUseCase } from '@application/user/RecordVisitUseCase'
+import { ListUsersForAdminUseCase } from '@application/user/ListUsersForAdminUseCase'
+import { SetUserRoleUseCase } from '@application/user/SetUserRoleUseCase'
 
 // Los adapters son stateless sobre el cliente Prisma compartido: una instancia basta.
 const userRepo = new PrismaUserRepository(prisma)
@@ -175,6 +177,15 @@ export const container = {
   // ── Reportes ────────────────────────────────────────────────────────
   getCreateReportUseCase() {
     return new CreateReportUseCase(reportRepo)
+  },
+
+  // ── Admin (usuarios) ────────────────────────────────────────────────
+  getListUsersForAdminUseCase() {
+    return new ListUsersForAdminUseCase(userRepo)
+  },
+
+  getSetUserRoleUseCase() {
+    return new SetUserRoleUseCase(userRepo)
   },
 
   // ── Admin (CRUD de lugares) ─────────────────────────────────────────

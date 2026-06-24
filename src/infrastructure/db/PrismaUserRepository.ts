@@ -3,6 +3,7 @@ import { User } from '@domain/user/User'
 import { UserRole } from '@domain/user/UserRole'
 import { Email } from '@domain/shared/Email'
 import { UserRepository } from '@application/ports/UserRepository'
+import { AdminUserRow, UserAuthMethod } from '@application/user/AdminUserRow'
 
 type UserRow = Prisma.UserGetPayload<Record<string, never>>
 
@@ -71,5 +72,47 @@ export class PrismaUserRepository implements UserRepository {
 
   async updatePassword(userId: string, passwordHash: string): Promise<void> {
     await this.prisma.user.update({ where: { id: userId }, data: { passwordHash } })
+  }
+
+  async listForAdmin(): Promise<AdminUserRow[]> {
+    const rows = await this.prisma.user.findMany({
+      orderBy: { createdAt: 'desc' },
+      select: {
+        id: true,
+        email: true,
+        name: true,
+        role: true,
+        passwordHash: true,
+        createdAt: true,
+        // ¿Tiene contraseña local y/o cuenta OAuth? Basta saber si hay ≥1 cuenta.
+        accounts: { select: { provider: true }, take: 1 },
+        // Lugares guardados = ítems sumados sobre todas sus listas.
+        collections: { select: { _count: { select: { items: true } } } },
+      },
+    })
+
+    return rows.map((r): AdminUserRow => {
+      // El flujo de Google hace upsert del User por email SIN crear fila Account
+      // (sesión JWT), así que un usuario sin contraseña entró por Google. La fila
+      // Account, si existe, confirma el OAuth (caso "both" si además tiene contraseña).
+      const hasPassword = r.passwordHash != null
+      const hasOauthAccount = r.accounts.length > 0
+      const authMethod: UserAuthMethod =
+        hasPassword && hasOauthAccount ? 'both' : hasPassword ? 'password' : 'oauth'
+      const savedCount = r.collections.reduce((sum, c) => sum + c._count.items, 0)
+      return {
+        id: r.id,
+        email: r.email,
+        name: r.name,
+        role: r.role as UserRole,
+        authMethod,
+        savedCount,
+        createdAt: r.createdAt,
+      }
+    })
+  }
+
+  async setRole(userId: string, role: UserRole): Promise<void> {
+    await this.prisma.user.update({ where: { id: userId }, data: { role } })
   }
 }

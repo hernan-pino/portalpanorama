@@ -1861,6 +1861,9 @@ select.form-input { cursor: pointer; }
 .admin-badge--pending_review { background: color-mix(in oklab, var(--warning) 18%, transparent); color: var(--warning); }
 .admin-badge--archived { background: var(--bg-sunken); color: var(--fg-muted); }
 
+/* "(tú)" junto al nombre del propio admin en la tabla de usuarios */
+.admin-self-tag { color: var(--fg-muted); font-size: var(--t-mono); }
+
 /* Acciones de fila */
 .admin-row-actions { display: flex; align-items: center; gap: var(--s-2); flex-wrap: wrap; justify-content: flex-end; }
 .admin-row-actions__error { font-size: var(--t-mono); color: var(--error); }

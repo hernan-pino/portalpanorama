@@ -1,4 +1,6 @@
 import { User } from '@domain/user/User'
+import { UserRole } from '@domain/user/UserRole'
+import { AdminUserRow } from '@application/user/AdminUserRow'
 
 export interface UserRepository {
   findById(id: string): Promise<User | null>
@@ -10,4 +12,8 @@ export interface UserRepository {
   create(user: User, passwordHash: string): Promise<void>
   save(user: User): Promise<void>
   updatePassword(userId: string, passwordHash: string): Promise<void>
+  /** Panel de admin: todos los usuarios con métricas (login, guardados). Recientes primero. */
+  listForAdmin(): Promise<AdminUserRow[]>
+  /** Cambia el rol de un usuario (promover/quitar admin). */
+  setRole(userId: string, role: UserRole): Promise<void>
 }
