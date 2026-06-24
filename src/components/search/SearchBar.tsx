@@ -2,6 +2,7 @@
 import Image from 'next/image'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { useState, useRef, useEffect, Suspense } from 'react'
+import { trackEvent } from '@lib/analytics'
 
 interface Suggestion {
   slug: string
@@ -57,13 +58,16 @@ function SearchBarInner({ compact = false }: { compact?: boolean }) {
   function goSearch(q: string) {
     const params = new URLSearchParams(compact ? searchParams.toString() : '')
     const v = q.trim()
-    if (v) params.set('q', v); else params.delete('q')
+    if (v) { params.set('q', v); trackEvent('buscar', { search_term: v, tipo: 'texto' }) }
+    else params.delete('q')
     params.delete('pagina')
     setOpen(false)
     router.push(`/explorar?${params.toString()}`)
   }
 
   function goPlace(slug: string) {
+    const term = query.trim()
+    if (term) trackEvent('buscar', { search_term: term, tipo: 'sugerencia', slug })
     setOpen(false)
     router.push(`/lugar/${slug}`)
   }

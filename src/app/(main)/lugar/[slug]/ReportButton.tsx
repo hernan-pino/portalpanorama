@@ -2,6 +2,7 @@
 import { useState, useTransition } from 'react'
 import { FlagIcon } from './icons'
 import { reportPlaceAction } from './actions'
+import { trackEvent } from '@lib/analytics'
 
 const REASONS = [
   { value: 'CLOSED', label: 'El lugar cerró' },
@@ -23,6 +24,7 @@ export function ReportButton({ placeId }: { placeId: string }) {
     startTransition(async () => {
       const res = await reportPlaceAction(formData)
       if ('error' in res) { setError(res.error); return }
+      trackEvent('reportar_lugar', { place_id: placeId, reason: String(formData.get('reason') ?? '') })
       setDone(true)
     })
   }

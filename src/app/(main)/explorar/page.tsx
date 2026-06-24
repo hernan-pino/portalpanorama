@@ -5,6 +5,7 @@ import { container } from '@lib/container'
 import { SearchBar } from '@components/search/SearchBar'
 import { Filters } from '@components/search/Filters'
 import { PlaceCard, type SaveContext } from '@components/place/PlaceCard'
+import { LoginEventTracker } from '@components/analytics/LoginEventTracker'
 import { Collection } from '@domain/collection/Collection'
 import { parseSearchParams, type RawSearchParams } from '@lib/parseSearchParams'
 
@@ -134,6 +135,7 @@ export default async function ExplorarPage({ searchParams }: PageProps) {
 
   return (
     <div className="explorar page-enter">
+      <LoginEventTracker />
       <div className="explorar__head container">
         <div className="hero__eyebrow" style={{ margin: 0 }}>
           <span className="line" aria-hidden="true" />

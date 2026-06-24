@@ -1,6 +1,7 @@
 'use client'
 import { useState } from 'react'
 import { ShareIcon } from './icons'
+import { trackEvent } from '@lib/analytics'
 
 interface Props {
   name: string
@@ -47,6 +48,7 @@ export function ShareButton({ name, variant }: Props) {
   }
 
   async function pick(target: ShareTarget) {
+    trackEvent('compartir_lugar', { method: target.key, place_name: name })
     if (target.kind === 'open') {
       window.open(target.href, '_blank', 'noopener,noreferrer')
       close()

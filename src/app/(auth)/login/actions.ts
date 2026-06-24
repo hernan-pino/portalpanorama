@@ -35,5 +35,5 @@ export async function loginAction(
     throw error
   }
 
-  redirect('/explorar')
+  redirect('/explorar?ingreso=1')
 }

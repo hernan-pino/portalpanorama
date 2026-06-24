@@ -18,9 +18,10 @@ import { RichText } from './RichText'
 import { SaveButton } from './SaveButton'
 import { ShareButton } from './ShareButton'
 import { ReportButton } from './ReportButton'
+import { DirectionsLink } from './DirectionsLink'
 import { placeJsonLd } from './jsonLd'
 import {
-  PinIcon, NavIcon, WalletIcon, ClockIcon, TicketIcon, CardIcon, MetroIcon,
+  PinIcon, WalletIcon, ClockIcon, TicketIcon, CardIcon, MetroIcon,
   AccessIcon, UmbrellaIcon, PhoneIcon, GlobeIcon, InstagramIcon, MenuIcon, StarIcon, Stars,
 } from './icons'
 
@@ -231,9 +232,7 @@ export default async function LugarPage({ params }: PageProps) {
         <div className="ficha__cta">
           {saveButton}
           {directionsHref && (
-            <a href={directionsHref} target="_blank" rel="noopener noreferrer" className="btn btn--ghost">
-              <NavIcon /> Cómo llegar
-            </a>
+            <DirectionsLink href={directionsHref} placeId={place.id} placeName={place.name} />
           )}
           <ShareButton name={place.name} variant="button" />
         </div>
@@ -370,9 +369,7 @@ export default async function LugarPage({ params }: PageProps) {
       <StickyActionBar>
         {saveButton}
         {directionsHref && (
-          <a href={directionsHref} target="_blank" rel="noopener noreferrer" className="btn btn--ghost" style={{ justifyContent: 'center' }}>
-            <NavIcon /> Cómo llegar
-          </a>
+          <DirectionsLink href={directionsHref} placeId={place.id} placeName={place.name} block />
         )}
       </StickyActionBar>
     </div>

@@ -2,6 +2,7 @@
 import { useCallback, useEffect, useState } from 'react'
 import Link from 'next/link'
 import { usePathname, useRouter, useSearchParams } from 'next/navigation'
+import { trackEvent } from '@lib/analytics'
 
 // Modal de bienvenida tras registrarse. Se dispara con ?bienvenida=1 (lo agrega
 // el registro al auto-login). Descartable y NO bloqueante: solo explica la idea,
@@ -12,6 +13,13 @@ export function WelcomeModal() {
   const router = useRouter()
   const pathname = usePathname()
   const [open, setOpen] = useState(params.get('bienvenida') === '1')
+
+  // El modal solo se muestra justo tras registrarse (?bienvenida=1) → es la señal
+  // fiable de "cuenta nueva creada". sign_up es el evento recomendado de GA4.
+  useEffect(() => {
+    if (params.get('bienvenida') === '1') trackEvent('sign_up', { method: 'email' })
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   const close = useCallback(() => {
     setOpen(false)

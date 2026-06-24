@@ -6,6 +6,7 @@ import {
   saveToDefaultCollectionAction,
   createListAndSaveAction,
 } from '@/app/actions/collections'
+import { trackEvent } from '@lib/analytics'
 
 interface Collection {
   id: string
@@ -60,6 +61,7 @@ export function SaveHeart({
     startTransition(async () => {
       const res = await action()
       if ('error' in res) { setError(res.error); return }
+      trackEvent('guardar_lugar', { place_id: placeId, place_name: placeName, origen: 'tarjeta' })
       setSaved(true)
       close()
     })

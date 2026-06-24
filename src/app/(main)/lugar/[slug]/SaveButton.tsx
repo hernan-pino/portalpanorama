@@ -6,6 +6,7 @@ import {
   saveToDefaultCollectionAction,
   createListAndSaveAction,
 } from '@/app/actions/collections'
+import { trackEvent } from '@lib/analytics'
 
 interface Collection {
   id: string
@@ -62,6 +63,7 @@ export function SaveButton({
     startTransition(async () => {
       const res = await action()
       if ('error' in res) { setError(res.error); return }
+      trackEvent('guardar_lugar', { place_id: placeId, origen: 'ficha' })
       setSaved(true)
       setSavedIn(label)
       setNewName('')
