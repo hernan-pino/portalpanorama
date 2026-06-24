@@ -30,6 +30,19 @@ export class PrismaUserRepository implements UserRepository {
     return row ? toUserDomain(row) : null
   }
 
+  async findPasswordHash(userId: string): Promise<string | null> {
+    const row = await this.prisma.user.findUnique({
+      where: { id: userId },
+      select: { passwordHash: true },
+    })
+    return row?.passwordHash ?? null
+  }
+
+  async exists(userId: string): Promise<boolean> {
+    const row = await this.prisma.user.findUnique({ where: { id: userId }, select: { id: true } })
+    return row !== null
+  }
+
   async create(user: User, passwordHash: string): Promise<void> {
     await this.prisma.user.create({
       data: {

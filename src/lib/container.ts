@@ -60,6 +60,7 @@ import { RegisterUserUseCase } from '@application/user/RegisterUserUseCase'
 import { RequestPasswordResetUseCase } from '@application/user/RequestPasswordResetUseCase'
 import { ResetPasswordUseCase } from '@application/user/ResetPasswordUseCase'
 import { UpdateUserProfileUseCase } from '@application/user/UpdateUserProfileUseCase'
+import { ChangePasswordUseCase } from '@application/user/ChangePasswordUseCase'
 import { GetUserDashboardUseCase } from '@application/user/GetUserDashboardUseCase'
 import { RecordVisitUseCase } from '@application/user/RecordVisitUseCase'
 
@@ -124,6 +125,10 @@ export const container = {
 
   getUpdateUserProfileUseCase() {
     return new UpdateUserProfileUseCase(userRepo)
+  },
+
+  getChangePasswordUseCase() {
+    return new ChangePasswordUseCase(userRepo, passwordHasher)
   },
 
   getGetUserDashboardUseCase() {

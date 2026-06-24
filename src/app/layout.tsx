@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import { Fraunces, Inter_Tight } from 'next/font/google'
 import './globals.css'
 import { Header } from '@components/layout/Header'
+import { GoogleAnalytics } from '@components/analytics/GoogleAnalytics'
 import { siteUrl } from '@lib/siteUrl'
 
 const fraunces = Fraunces({
@@ -41,6 +42,7 @@ export default function RootLayout({
       <body>
         <Header />
         {children}
+        <GoogleAnalytics />
       </body>
     </html>
   )

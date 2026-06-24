@@ -94,17 +94,27 @@ guardadas con gestión; dashboard a 3 tabs reales; **popup de compartir** con re
 **La app ya está LIVE** en `portal-panorama.vercel.app`. Lo que queda, en orden sugerido:
 
 **A. Cerrar el lanzamiento del MVP (terminar el deploy "completo"):**
-1. **Conectar el dominio `portalpanorama.cl`** (hoy en `*.vercel.app`): agregar el dominio en Vercel →
-   cargar los registros que pida en Cloudflare → actualizar `NEXT_PUBLIC_BASE_URL` a `https://portalpanorama.cl`
-   en Vercel → la redirect URI de prod de Google ya está registrada (`portalpanorama.cl/api/auth/callback/google`).
-2. **GA4 (analytics)** — el usuario lo quería para el lanzamiento. Crear propiedad GA4 → `NEXT_PUBLIC_GA_ID` →
-   cablear con `@next/third-parties` (apagado si no hay ID). Pixels (Meta/Google Ads) recién cuando se paute.
-   Evaluar banner de consentimiento de cookies.
+1. **Conectar el dominio `portalpanorama.cl`** 🔄 **EN CURSO (2026-06-23, sesión 6)** — dominio agregado en
+   Vercel (apex = Production, `www` → 308 al apex), DNS cargado en **Cloudflare** (CNAME `@` →
+   `25c484b02719a924.vercel-dns-017.com`, DNS only; los 4 registros de Resend intactos). Ambos dominios en
+   **Valid Configuration ✓**; SSL de `www` generándose. **Falta del usuario:** setear `NEXT_PUBLIC_BASE_URL`
+   = `https://portalpanorama.cl` en Vercel (Production) + redeploy. La redirect URI de prod de Google ya
+   está registrada (`portalpanorama.cl/api/auth/callback/google`).
+2. **GA4 (analytics)** — ✅ **código cableado (2026-06-23, sesión 6):** `components/analytics/GoogleAnalytics.tsx`
+   (gtag.js vía `next/script`, **sin** `@next/third-parties` para no tocar el lockfile en Windows), apagado
+   salvo que exista `NEXT_PUBLIC_GA_ID` (leído en `lib/analytics.ts`). **Falta del usuario:** crear la propiedad
+   GA4 + Data Stream web → poner `NEXT_PUBLIC_GA_ID` en Vercel. Pixels (Meta/Google Ads) recién cuando se paute.
 3. **Regla de Rate Limit en Vercel Firewall** para `/lugar/*` y `/explorar` (anti-scraping a nivel edge;
    el rate-limit de app ya está con Upstash en /api/suggest + actions).
-4. **Emails con la marca** — hoy `ResendEmailService` manda HTML básico; rehacer plantillas (bienvenida + reset)
-   con la estética del sitio (logo, Fraunces/Inter, colores). Cambio aislado, no toca el flujo.
+4. **Emails con la marca ✅ HECHO (2026-06-23, sesión 6)** — plantilla branded compartida
+   `infrastructure/email/emailLayout.ts` (tabla + inline styles, wordmark "Portal *Panorama*", colores del
+   handoff en hex, CTA con botón, preheader, footer); `ResendEmailService` (bienvenida + reset) la usa.
 5. **Resolver los 2-3 PENDING_REVIEW** (Tengu, Distrito Pop, NOSU/NoSo) — publicar/archivar/eliminar.
+6. **Cambiar contraseña estando logueado ✅ HECHO (2026-06-23, sesión 6)** — `ChangePasswordUseCase`
+   (verifica la actual con `PasswordHasher.verify`, valida fuerza con `evaluatePassword`, distingue cuenta
+   OAuth sin contraseña → `NoPasswordSetError`); `findPasswordHash`/`exists` en `UserRepository` + Prisma;
+   `changePasswordAction`; sección **Seguridad** en el tab Perfil con `ChangePasswordForm` + `PasswordMeter`.
+   92 tests verdes, typecheck limpio.
 
 **B. Cambios de diseño (el usuario irá listando):**
 - ✅ HECHO: barra de acción de la ficha (móvil) aparece al scrollear, no de entrada.

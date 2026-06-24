@@ -1,14 +1,6 @@
 import { Resend } from 'resend'
 import { EmailService } from '@application/ports/EmailService'
-
-function escapeHtml(s: string): string {
-  return s
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&#x27;')
-}
+import { renderEmail, paragraph, muted, escapeHtml } from './emailLayout'
 
 export class ResendEmailService implements EmailService {
   private resend?: Resend
@@ -31,26 +23,36 @@ export class ResendEmailService implements EmailService {
   }
 
   async sendWelcome(to: string, name: string): Promise<void> {
+    const html = renderEmail({
+      preheader: 'Tu cuenta está lista. Empezá a descubrir y guardar lugares.',
+      bodyHtml:
+        paragraph(`Hola <strong>${escapeHtml(name)}</strong>,`) +
+        paragraph('¡Gracias por sumarte a <strong>Portal Panorama</strong>! Ya podés explorar los mejores lugares de Chile, guardar tus favoritos y armar tus propias listas.') +
+        paragraph('¿Por dónde empezar? Buscá por comuna, categoría o lo que tengas ganas de hacer.'),
+      button: { label: 'Explorar lugares', url: 'https://portalpanorama.cl/explorar' },
+    })
     await this.client().emails.send({
       from: this.from,
       to,
       subject: '¡Bienvenido a Portal Panorama!',
-      html: `<p>Hola ${escapeHtml(name)}, gracias por registrarte en Portal Panorama.</p>`,
+      html,
     })
   }
 
   async sendPasswordReset(to: string, name: string, resetUrl: string): Promise<void> {
-    const safeUrl = escapeHtml(resetUrl)
+    const html = renderEmail({
+      preheader: 'Restablecé tu contraseña. El enlace vence en 1 hora.',
+      bodyHtml:
+        paragraph(`Hola <strong>${escapeHtml(name)}</strong>,`) +
+        paragraph('Recibimos un pedido para restablecer tu contraseña. Hacé clic en el botón de abajo para crear una nueva. <strong>El enlace vence en 1 hora.</strong>') +
+        muted('Si no pediste esto, podés ignorar este correo: tu contraseña no cambió.'),
+      button: { label: 'Restablecer mi contraseña', url: resetUrl },
+    })
     await this.client().emails.send({
       from: this.from,
       to,
       subject: 'Recupera tu contraseña — Portal Panorama',
-      html: `
-        <p>Hola ${escapeHtml(name)},</p>
-        <p>Recibimos un pedido para restablecer tu contraseña. Hacé clic en el enlace de abajo para crear una nueva. El enlace vence en 1 hora.</p>
-        <p><a href="${safeUrl}">Restablecer mi contraseña</a></p>
-        <p>Si no pediste esto, podés ignorar este correo: tu contraseña no cambió.</p>
-      `,
+      html,
     })
   }
 }
