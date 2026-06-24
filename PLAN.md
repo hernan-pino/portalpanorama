@@ -8,7 +8,23 @@ priorizado. Se actualiza cada vez que avanzamos. Liviano a propósito — para r
 - **Modelo de datos:** [SCHEMA.md](SCHEMA.md) · **Capas:** [ARCHITECTURE.md](ARCHITECTURE.md) · **Carga:** [PLANTILLA_CSV.md](PLANTILLA_CSV.md)
 - **Bitácora del rediseño (historia + razonamiento de las decisiones):** [PLAN_FASE9.md](PLAN_FASE9.md)
 
-**Última actualización:** 2026-06-23 (sesión 5 — **prep de deploy, bloque de código sin cuentas externas**):
+**Última actualización:** 2026-06-24 (sesión 6 — **cierre de lanzamiento + analítica**):
+**(1) Dominio `portalpanorama.cl` conectado** — apex = Production, `www` → 308 al apex; DNS en Cloudflare
+(CNAME `@` → `…vercel-dns-017.com`, DNS only; los 4 registros de Resend intactos); ambos en Valid Configuration.
+`NEXT_PUBLIC_BASE_URL=https://portalpanorama.cl` en Vercel (confirmado vía sitemap en vivo). **(2) GA4 vivo** —
+`G-GP1SGZSJ5Q` cableado vía `components/analytics/GoogleAnalytics.tsx` (gtag.js + `next/script`, sin
+`@next/third-parties` para no tocar el lockfile), apagado salvo `NEXT_PUBLIC_GA_ID`. **Eventos custom**
+(`lib/analytics.ts` → `trackEvent`, no-op si GA bloqueado): `guardar_lugar`, `click_como_llegar` (nuevo
+`DirectionsLink`), `compartir_lugar`, `buscar` (search_term), `reportar_lugar`, `sign_up` (modal bienvenida),
+`login` (`LoginEventTracker` vía `?ingreso=1`). **(3) Cambiar contraseña logueado** — `ChangePasswordUseCase`
+(verifica actual, valida fuerza, distingue OAuth sin pass), `findPasswordHash`/`exists` en UserRepo+Prisma,
+sección Seguridad en el tab Perfil con medidor. **(4) Emails con la marca** — plantilla `emailLayout.ts`
+(tabla+inline, wordmark, CTA) en bienvenida+reset. Commits: `a512da7`, `3d72658`. 92 tests verdes.
+**Falta del usuario (no código):** marcar eventos clave en GA4; **Rate Limit en Vercel Firewall** (`/lugar/*`,
+`/explorar`); **resolver los PENDING_REVIEW** (Tengu, Distrito Pop, NOSU/NoSo). Próximo gran hito: el **C.
+reevaluación post-MVP** (monetización / próxima feature / go-to-market).
+
+**Sesión previa:** 2026-06-23 (sesión 5 — **prep de deploy, bloque de código sin cuentas externas**):
 **(1) Fuerza de contraseña** — política pura `domain/user/PasswordPolicy.ts` (mín. 8 + letra + número para
 registrar; score 0-4 premia largo/mayús/símbolos), compartida por el Zod del registro y un **medidor visual**
 en vivo (`(auth)/PasswordMeter.tsx`). +6 tests → **92 verdes**. **(2) Recuperar contraseña** — flujo hexagonal
