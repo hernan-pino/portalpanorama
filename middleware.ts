@@ -21,8 +21,26 @@ const GOOD_BOTS =
 const SCRAPER_UA =
   /(python-requests|urllib|aiohttp|httpx|scrapy|curl\/|libcurl|wget|libwww|java\/|jakarta|go-http-client|okhttp|node-fetch|axios\/|undici|guzzle|mechanize|colly|apache-httpclient|httpclient|restsharp|postmanruntime|insomnia|headlesschrome)/i
 
+// Asistentes de IA que SÍ dejamos leer el TEXTO de las fichas: así Portal Panorama
+// aparece cuando alguien le pregunta a ChatGPT/Perplexity/Claude/Gemini por panoramas
+// (no son buscadores tradicionales, pero leen para citar y mandan tráfico de vuelta).
+// NO bajan las fotos: eso se restringe en robots.txt (Disallow /_next/image), que estos
+// bots reputados respetan. 'Google-Extended' es el de IA de Google (Gemini), distinto de
+// 'Googlebot' (búsqueda, en GOOD_BOTS).
+const AI_ASSISTANTS =
+  /(oai-searchbot|chatgpt-user|perplexitybot|perplexity-user|claudebot|claude-web|anthropic-ai|google-extended)/i
+
+// Bots de IA que solo COSECHAN para entrenar/revender, sin mandar tráfico de vuelta:
+// bloqueados en todo. 'GPTBot' es el crawler de ENTRENAMIENTO de OpenAI, distinto de
+// 'OAI-SearchBot' (búsqueda con IA, permitido arriba). Bytespider/CCBot además son
+// scrapers agresivos. Bloquearlos no afecta el SEO en Google/Bing.
+const AI_HARVESTERS =
+  /(gptbot|ccbot|bytespider|amazonbot|diffbot|imagesiftbot|omgili|timpibot|youbot|meta-externalagent|applebot-extended|cohere-ai)/i
+
 function isBlockedScraper(ua: string | null): boolean {
   if (!ua || ua.trim() === '') return true // sin User-Agent = casi siempre script/bot
+  if (AI_HARVESTERS.test(ua)) return true // cosechadores de IA: bloqueados aunque simulen navegador
+  if (AI_ASSISTANTS.test(ua)) return false // asistentes de IA: los dejamos citar el texto
   if (GOOD_BOTS.test(ua)) return false
   return SCRAPER_UA.test(ua)
 }
