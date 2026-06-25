@@ -8,7 +8,29 @@ priorizado. Se actualiza cada vez que avanzamos. Liviano a propósito — para r
 - **Modelo de datos:** [SCHEMA.md](SCHEMA.md) · **Capas:** [ARCHITECTURE.md](ARCHITECTURE.md) · **Carga:** [PLANTILLA_CSV.md](PLANTILLA_CSV.md)
 - **Bitácora del rediseño (historia + razonamiento de las decisiones):** [PLAN_FASE9.md](PLAN_FASE9.md)
 
-**Última actualización:** 2026-06-24 (sesión 6 — **cierre de lanzamiento + analítica**):
+**Última actualización:** 2026-06-24 (sesión 7 — **i18n + herramientas de admin + participación**):
+**(1) Español de Chile** — barrido de voseo rioplatense → tuteo en TODO el copy (28 archivos de UI +
+emails) y 2 descripciones de fichas (Bocanáriz, Liguria); **regla permanente** en `CLAUDE.md` + skill
+`ficha-lugar` + agente `investigador-lugares` para que el contenido nuevo nazca en chileno. **(2) Panel
+`/admin/usuarios`** — lista (email, método de login [sin contraseña ⇒ Google], fecha de alta, nº de
+guardados), filtros por rol, **hacer/quitar admin** + **borrar usuario** (guards de dominio: no
+auto-degradarse ni auto-borrarse; las cascadas limpian datos personales y no tocan lugares/marcas). Se
+promovió **hernan.pino7@gmail.com a ADMIN en local** (en prod queda pendiente). **(3) Anti-scraper** —
+filtro de User-Agents en el **edge** (`middleware.ts`) para `/lugar/*`+`/explorar` (bloquea curl/
+python-requests/scrapy/etc., con allowlist de Googlebot/redes; no gasta cuota de Upstash). **(4) Buzón
+`/admin/reportes`** — rescata los reportes "dato incorrecto / lugar cerrado" que **caían invisibles en la
+BD** (el puerto solo tenía `create()`) + **sugerencias del público**; resolver/descartar/reabrir/eliminar.
+Modelo **`Suggestion`** nuevo + migración `add_suggestion` (local). **(5) Footer rediseñado** — 3 columnas
+(logo+redes · links · **tarjeta crema "Ayúdanos a mejorar"** → popup con mini-form de sugerencia,
+anónimo-friendly + rate-limit por IP), wordmark chico, redes con aviso "coming soon" (aún sin cuentas).
+**(6) Favicon** de marca (`src/app/icon.svg`). Commits: `bc6df6b` (i18n), `c933071` (usuarios+favicon),
+`c4d8507` (anti-scraper), `2993b4d` (buzón+sugerencias+footer+borrado). **100 tests verdes**, typecheck
+limpio, flujos verificados e2e contra la BD. **Falta para prod (push pendiente):** `prisma migrate deploy`
+en Neon prod (crea la tabla `Suggestion`; sin esto las sugerencias fallan) + dar ADMIN a hernan.pino7 en
+prod + (de antes) marcar eventos clave en GA4 + Rate Limit en Vercel Firewall. Próximo gran hito sigue
+siendo el **C. reevaluación post-MVP**.
+
+**Sesión previa:** 2026-06-24 (sesión 6 — **cierre de lanzamiento + analítica**):
 **(1) Dominio `portalpanorama.cl` conectado** — apex = Production, `www` → 308 al apex; DNS en Cloudflare
 (CNAME `@` → `…vercel-dns-017.com`, DNS only; los 4 registros de Resend intactos); ambos en Valid Configuration.
 `NEXT_PUBLIC_BASE_URL=https://portalpanorama.cl` en Vercel (confirmado vía sitemap en vivo). **(2) GA4 vivo** —
