@@ -8,7 +8,24 @@ priorizado. Se actualiza cada vez que avanzamos. Liviano a propósito — para r
 - **Modelo de datos:** [SCHEMA.md](SCHEMA.md) · **Capas:** [ARCHITECTURE.md](ARCHITECTURE.md) · **Carga:** [PLANTILLA_CSV.md](PLANTILLA_CSV.md)
 - **Bitácora del rediseño (historia + razonamiento de las decisiones):** [PLAN_FASE9.md](PLAN_FASE9.md)
 
-**Última actualización:** 2026-06-24 (sesión 7 — **i18n + herramientas de admin + participación**):
+**Última actualización:** 2026-06-24 (sesión 8 — **push a prod de la sesión 7 + migraciones
+automáticas**): **(1) Push a prod** de los 5 commits de la sesión 7 (`bc6df6b`→`179853c`) → Vercel
+redeployó con i18n, panel de usuarios, anti-scraper, buzón y footer. **(2) Migración `add_suggestion`
+aplicada a Neon prod** (a mano, esta única vez): el `vercel env pull` traía `DATABASE_URL=""` (está
+marcada **Sensitive** en Vercel, no se puede leer de vuelta), así que se sacó la **connection string
+directa** del branch `prod` de Neon (`ep-billowing-dream-act3f6q5`, sin `-pooler`) → `prisma migrate
+deploy` creó la tabla `Suggestion`. **(3) Migraciones automáticas cableadas (nunca más a mano):**
+`package.json` build = `prisma migrate deploy && next build`; `prisma.config.ts` usa
+`process.env.DIRECT_URL ?? process.env.DATABASE_URL` (las migraciones por conexión **directa**, el
+runtime sigue con la **pooled** vía `src/lib/db.ts`, porque el pooler de Neon puede fallar con los locks
+de Prisma Migrate); se agregó **`DIRECT_URL`** en Vercel (Production, Sensitive) = conexión directa de
+prod. Commit `f79c647`. **De ahora en más: editar en local (BD local aparte, branch `ep-cool-glitter`)
+→ `git push` → se sincroniza código + estructura de la BD solo.** **Falta del usuario:** dar **ADMIN a
+hernan.pino7@gmail.com en prod** (tras iniciar sesión una vez en el live: `/admin/usuarios` → "Hacer
+admin"); **rotar la contraseña de Neon prod** (quedó expuesta en el chat de esta sesión) y actualizar
+`DATABASE_URL` + `DIRECT_URL` en Vercel. Próximo gran hito sigue siendo el **C. reevaluación post-MVP**.
+
+**Sesión previa:** 2026-06-24 (sesión 7 — **i18n + herramientas de admin + participación**):
 **(1) Español de Chile** — barrido de voseo rioplatense → tuteo en TODO el copy (28 archivos de UI +
 emails) y 2 descripciones de fichas (Bocanáriz, Liguria); **regla permanente** en `CLAUDE.md` + skill
 `ficha-lugar` + agente `investigador-lugares` para que el contenido nuevo nazca en chileno. **(2) Panel
