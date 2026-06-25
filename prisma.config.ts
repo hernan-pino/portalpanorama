@@ -10,6 +10,9 @@ try {
 export default defineConfig({
   schema: 'src/infrastructure/db/prisma/schema.prisma',
   datasource: {
-    url: process.env.DATABASE_URL,
+    // Las migraciones usan una conexión DIRECTA (sin pooler) si está disponible.
+    // El pooler de Neon (PgBouncer) puede fallar con los locks de Prisma Migrate.
+    // El runtime de la app sigue usando DATABASE_URL (pooled) vía src/lib/db.ts.
+    url: process.env.DIRECT_URL ?? process.env.DATABASE_URL,
   },
 })
