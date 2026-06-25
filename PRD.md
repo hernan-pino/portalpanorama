@@ -4,10 +4,10 @@
 Esto NO cambia sesión a sesión; se actualiza solo cuando cambia una decisión de producto.
 
 - **Plan vivo (estado + backlog + próximos pasos):** [PLAN.md](PLAN.md)
-- **Seguimiento de pasos:** [ROADMAP.md](ROADMAP.md)
+- **Estrategia post-MVP (go-to-market · monetización · próxima feature):** [STRATEGY.md](STRATEGY.md)
 - **Modelo de datos:** [SCHEMA.md](SCHEMA.md) · **Capas/contextos:** [ARCHITECTURE.md](ARCHITECTURE.md)
 - **Bitácora del rediseño (razonamiento, sub-sesiones A-D, decisiones de schema):** [PLAN_FASE9.md](PLAN_FASE9.md)
-- **Cuestionario original de definición:** [PRODUCTO.md](PRODUCTO.md)
+- **Histórico (cuestionario original, roadmap viejo, insumos):** [docs/historico/](docs/historico/)
 
 > Síntesis de los 4 entregables aprobados en la Fase 9 (Etapa 1). El detalle del razonamiento que
 > llevó a cada decisión vive en `PLAN_FASE9.md` (sub-sesiones A-D y bitácora).

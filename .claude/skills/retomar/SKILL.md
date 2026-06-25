@@ -1,6 +1,6 @@
 ---
 name: retomar
-description: Retoma el trabajo de Portal Panorama desde donde quedó. Lee el roadmap, el documento de producto y el plan de la fase actual, y resume en qué vamos, qué se decidió y cuál es el próximo paso concreto. Úsala al empezar una sesión nueva o cuando el usuario diga "retomemos", "en qué íbamos", "ponte al día", "sigamos donde quedamos".
+description: Retoma el trabajo de Portal Panorama desde donde quedó. Lee el plan vivo, el documento de producto y la estrategia post-MVP, y resume en qué vamos, qué se decidió y cuál es el próximo paso concreto. Úsala al empezar una sesión nueva o cuando el usuario diga "retomemos", "en qué íbamos", "ponte al día", "sigamos donde quedamos".
 ---
 
 # Retomar trabajo — Portal Panorama
@@ -17,17 +17,19 @@ ni a rediseñar nada — esta skill es solo para **reorientarse y proponer el pr
      de lanzamiento. Casi todo lo que necesitas para retomar está acá.
    - `PRD.md` — el norte permanente: qué es el producto, para quién, entidades, permisos,
      scope MVP. Léelo si necesitas el "qué/por qué", no para el estado del día a día.
-   - `ROADMAP.md` — el seguimiento general por pasos. Mira "ESTADO HOY" y los pasos de la
-     fase en curso con su estado (⬜🔄✅⚠️🔁❌⏸️).
+   - `STRATEGY.md` — la **estrategia post-MVP** (go-to-market · monetización · próxima
+     feature) y su secuencia. Léelo cuando el trabajo sea de producto/crecimiento, no de
+     una tarea puntual de código.
    - **Histórico (solo si hace falta entender por qué se decidió algo):** `PLAN_FASE9.md`
      es la **bitácora congelada del rediseño** (sub-sesiones A-D, decisiones de schema,
-     changelog de la Fase 9). `PRODUCTO.md` es el cuestionario original. No los necesitas
+     changelog de la Fase 9). En `docs/historico/` viven los docs superados (`ROADMAP.md`
+     viejo, `PRODUCTO.md` original, `PLANTILLA_CSV.md`, insumos `input/`). No los necesitas
      para retomar el día a día.
 
 2. **Revisa los últimos commits** para detectar avances no anotados todavía:
    `git log --oneline -8`. Si ves trabajo en commits que el plan no refleja, dilo.
 
-3. **Detecta desalineaciones.** Si el plan, el roadmap y los commits se contradicen
+3. **Detecta desalineaciones.** Si el plan y los commits se contradicen
    (ej: el plan dice "Etapa 2 pendiente" pero hay un commit que ya tocó el schema),
    NO asumas — señálalo al usuario y pregunta cuál refleja la realidad.
 

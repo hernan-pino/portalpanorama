@@ -3,10 +3,9 @@
 **La fuente de verdad del trabajo desde hoy.** Estado actual, lo que falta para lanzar, y el backlog
 priorizado. Se actualiza cada vez que avanzamos. Liviano a propósito — para retomar rápido.
 
-- **Qué es el producto / por qué (norte permanente):** [PRD.md](PRD.md)
-- **Seguimiento de pasos:** [ROADMAP.md](ROADMAP.md)
-- **Modelo de datos:** [SCHEMA.md](SCHEMA.md) · **Capas:** [ARCHITECTURE.md](ARCHITECTURE.md) · **Carga:** [PLANTILLA_CSV.md](PLANTILLA_CSV.md)
-- **Bitácora del rediseño (historia + razonamiento de las decisiones):** [PLAN_FASE9.md](PLAN_FASE9.md)
+- **Qué es el producto / por qué (norte permanente):** [PRD.md](PRD.md) · **Estrategia post-MVP:** [STRATEGY.md](STRATEGY.md)
+- **Modelo de datos:** [SCHEMA.md](SCHEMA.md) · **Capas:** [ARCHITECTURE.md](ARCHITECTURE.md) · **Marca:** [BRAND_SPEC.md](BRAND_SPEC.md)
+- **Bitácora del rediseño (historia + razonamiento de las decisiones):** [PLAN_FASE9.md](PLAN_FASE9.md) · **Histórico (docs superados):** [docs/historico/](docs/historico/)
 
 **Última actualización:** 2026-06-24 (sesión 9 — **analítica + anti-scraping con visibilidad en IA**):
 **(1) GA4** — mapeados los 7 eventos custom (`lib/analytics.ts`): `sign_up`, `login`, `guardar_lugar`,
@@ -21,10 +20,16 @@ pregunta a una IA por panoramas, pero `robots.txt` les niega **`/_next/image`** 
 pagaron vía Apify/Blob); **cosechadores** (GPTBot de entrenamiento, CCBot, Bytespider, Amazonbot, Diffbot…)
 **403 en el edge**. Googlebot/Bingbot intactos → **el SEO de búsqueda no se toca**. **Decisión clave:** el
 rating NO se esconde (es el `aggregateRating` que da las estrellitas en Google = SEO, y es número público de
-Google). Typecheck limpio. **Falta:** el commit `133df9f` está **en local** — con `git push` Vercel redeploya
-y activa el middleware/robots nuevos (el rate-limit de Firewall ya está activo, no depende del deploy). Sigue
-pendiente del usuario: resolver los **PENDING_REVIEW** (Tengu, Distrito Pop, NOSU/NoSo). Próximo gran hito: el
-**C. reevaluación post-MVP**.
+Google). Typecheck limpio. **✅ PUSHEADO A PROD (2026-06-24):** `git push` (`8b73ed1..49c7aca`) → Vercel
+redeployó y activó el middleware/robots nuevos (el rate-limit de Firewall ya estaba activo). **PENDING_REVIEW
+(Tengu, Distrito Pop, NOSU/NoSo) resueltos por el usuario.** **Punto A (cerrar lanzamiento del MVP) = COMPLETO**
+salvo GA4, que el usuario revisa el 2026-06-25 (los informes de GA4 salen solos con 24-48h de retraso; el
+cableado de los 7 eventos está verificado en código). **Punto C (reevaluación post-MVP) → secuencia
+DECIDIDA y escrita en [STRATEGY.md](STRATEGY.md):** ingresos ← audiencia ← go-to-market; Fase A (ahora) =
+go-to-market + filtros OCCASION/EXPERIENCE + GA4; Fase B (~1 mes, con datos) = feature de demanda
+(hipótesis Eventos); Fase C = monetización de oferta. **Limpieza de docs:** ROADMAP/PRODUCTO/PLANTILLA_CSV
++ insumos `input/` archivados en `docs/historico/`; raíz queda con 8 docs vivos. **Próximo paso concreto:
+aterrizar el go-to-market** (STRATEGY §5).
 
 **Sesión previa:** 2026-06-24 (sesión 8 — **push a prod de la sesión 7 + migraciones
 automáticas**): **(1) Push a prod** de los 5 commits de la sesión 7 (`bc6df6b`→`179853c`) → Vercel
@@ -197,18 +202,18 @@ guardadas con gestión; dashboard a 3 tabs reales; **popup de compartir** con re
   en distintos altos de ventana; si en pantallas muy bajas aún desborda, la página scrollea (fallback OK).
 - Pendiente: el usuario tiene más ajustes de diseño para listar (sesión de diseño con su flujo de refs).
 
-**C. 🧭 HITO ESTRATÉGICO — reevaluación post-MVP (pedido explícito del usuario, 2026-06-23):**
-Una vez **completo el deploy del MVP** (punto A), **reevaluar todo lo definido antes de empezar a construir**,
-porque el contexto cambió (producto vivo, contenido real cargado). Temas a re-decidir desde cero:
-- **Monetización** — estaba parqueada (Money/Flow/self-service post-MVP). ¿Cómo y cuándo se enciende?
-  ¿Qué modelo (fichas premium, destacados, suscripción de negocios, ads)? Ver PRD/PLAN_FASE9 para lo que
-  estaba definido y desafiarlo.
-- **Próximo paso de desarrollo** — ¿qué feature/funcionalidad sigue? (Eventos está apagado; reseñas de
-  usuarios apagadas; self-service de negocios sobre Brand parqueado; "abierto/cerrado" requiere horario
-  estructurado; filtros OCCASION/EXPERIENCE pendientes). Priorizar con datos reales de uso (GA4).
-- **Estrategia de marketing / go-to-market** — cómo se consiguen los primeros usuarios, SEO ya está armado
-  (JSON-LD/sitemap), pauta (Meta/Google Ads → ahí entran los pixels), listas curadas como landings.
-- **Próximos pasos generales** — revisar el roadmap completo a la luz de tener el producto vivo.
+**C. 🧭 HITO ESTRATÉGICO — reevaluación post-MVP → ✅ SECUENCIA DECIDIDA (2026-06-24).**
+La estrategia quedó escrita en **[STRATEGY.md](STRATEGY.md)** (fuente de verdad del punto C). Resumen de
+lo decidido:
+- **No se reabre la monetización ni se elige la próxima feature todavía** — ambas dependen de tener
+  audiencia/datos. El modelo de monetización ya definido (PLAN_FASE9 §Bloque 6) sigue en pie, parqueado.
+- **La cadena del ingreso manda el orden:** ingresos ← vender visibilidad ← audiencia ← tráfico+retención.
+  Por eso primero **go-to-market**, no construir monetización.
+- **Secuencia A/B/C:** **Fase A (ahora)** = go-to-market + afilar el core barato (activar filtros
+  OCCASION/EXPERIENCE) + medir con GA4. **Fase B (~1 mes, con datos)** = elegir el feature de demanda
+  (hipótesis: Eventos). **Fase C** = encender monetización de oferta sobre la audiencia ya construida.
+- **Próximo paso concreto:** aterrizar el **go-to-market** (STRATEGY §5) en acciones — objetivo medible,
+  canal a atacar primero, calendario, qué se mide en GA4.
 
 ---
 

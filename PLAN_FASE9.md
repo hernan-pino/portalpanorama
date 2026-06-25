@@ -6,7 +6,8 @@
 > schema y el changelog de implementación. El contenido se repartió así:
 > - **Qué es el producto / visión / entidades / permisos / scope** → [PRD.md](PRD.md)
 > - **Estado actual + backlog + próximos pasos + checklist de lanzamiento** → [PLAN.md](PLAN.md) (el plan vivo)
-> - **Seguimiento de pasos** → [ROADMAP.md](ROADMAP.md) · **Modelo de datos** → [SCHEMA.md](SCHEMA.md)
+> - **Modelo de datos** → [SCHEMA.md](SCHEMA.md) · **Estrategia post-MVP** → [STRATEGY.md](STRATEGY.md)
+> - **Histórico (roadmap viejo, cuestionario, insumos)** → [docs/historico/](docs/historico/)
 >
 > Aquí abajo se conserva todo el detalle histórico (no hace falta leerlo para retomar; sirve para
 > entender **por qué** se decidió algo). La sección "EN QUÉ VAMOS AHORA MISMO" de abajo es el
@@ -253,7 +254,7 @@
     visualmente (¿hard-refresh? ¿muy sutiles? quizá subir contraste/tamaño o moverlas); (g) **footer Legal apunta a
     `/terminos` y `/privacidad` que NO existen (404)** — la página legal de privacidad/cookies ya era ítem abierto del
     MVP (D.2, exigida por la instrumentación GA4/Pixel); decidir si se crean placeholders o se quita la columna hasta
-    tenerlas; (h) **importador CSV** (Etapa 5): la plantilla existe ([PLANTILLA_CSV.md](PLANTILLA_CSV.md)); falta la
+    tenerlas; (h) **importador CSV** (Etapa 5): la plantilla existe ([PLANTILLA_CSV.md](docs/historico/PLANTILLA_CSV.md)); falta la
     página/script de admin que lea el CSV curado (Google Sheets → export) y cree lugares en lote vía CreatePlace;
     (i) **endurecer la seguridad del registro (pedido del usuario 2026-06-13):** (i.1) el **formato de email YA se
     valida** (`z.string().email()` en [registro/actions.ts](src/app/(auth)/registro/actions.ts)) — nada que hacer ahí;
@@ -448,7 +449,7 @@
 
 ### Próximo paso concreto
 **Sub-productos de la Etapa 2 COMPLETOS (2026-06-07):** schema ([SCHEMA.md](SCHEMA.md)) ·
-plantilla CSV ([PLANTILLA_CSV.md](PLANTILLA_CSV.md) + [input/plantilla_lugares.csv](input/plantilla_lugares.csv)) ·
+plantilla CSV ([PLANTILLA_CSV.md](docs/historico/PLANTILLA_CSV.md) + [input/plantilla_lugares.csv](docs/historico/input/plantilla_lugares.csv)) ·
 [ARCHITECTURE.md](ARCHITECTURE.md) reescrito al modelo nuevo (150 líneas; apunta a SCHEMA.md para
 datos). Lo que toca: que el usuario **revise/apruebe** schema + plantilla + arquitectura. Después →
 **Etapa 3** (`prisma migrate reset` + migración + seed). **El seed debe poblar los catálogos ANTES
@@ -1295,7 +1296,7 @@ _(registro de las decisiones de producto que vamos tomando — la fuente de verd
   Etapa 2 están completos** (schema + plantilla CSV + arquitectura). Próximo: aprobación del usuario →
   Etapa 3 (migración + seed, resolviendo H2/H3/H4 de catálogos).
 - **2026-06-07** — **Plantilla CSV de carga entregada + redundancia de reserva quitada.** Se creó la
-  **plantilla de columnas** ([PLANTILLA_CSV.md](PLANTILLA_CSV.md) + [input/plantilla_lugares.csv](input/plantilla_lugares.csv)),
+  **plantilla de columnas** ([PLANTILLA_CSV.md](docs/historico/PLANTILLA_CSV.md) + [input/plantilla_lugares.csv](docs/historico/input/plantilla_lugares.csv)),
   derivada directo del schema: 34 columnas con formato/obligatoriedad/origen sugerido (Apify/manual/
   auto), FKs por slug, listas con `;`, y nota de que `score`/`status`/`is_premium`/`owner_id` NO van
   en el CSV. Decisión de orden: la plantilla se hace **ahora** (es la "lista de compras" del producto,
