@@ -8,7 +8,25 @@ priorizado. Se actualiza cada vez que avanzamos. Liviano a propósito — para r
 - **Modelo de datos:** [SCHEMA.md](SCHEMA.md) · **Capas:** [ARCHITECTURE.md](ARCHITECTURE.md) · **Carga:** [PLANTILLA_CSV.md](PLANTILLA_CSV.md)
 - **Bitácora del rediseño (historia + razonamiento de las decisiones):** [PLAN_FASE9.md](PLAN_FASE9.md)
 
-**Última actualización:** 2026-06-24 (sesión 8 — **push a prod de la sesión 7 + migraciones
+**Última actualización:** 2026-06-24 (sesión 9 — **analítica + anti-scraping con visibilidad en IA**):
+**(1) GA4** — mapeados los 7 eventos custom (`lib/analytics.ts`): `sign_up`, `login`, `guardar_lugar`,
+`click_como_llegar`, `compartir_lugar`, `reportar_lugar`, `buscar`. GA4 solo lista los que ya se
+gatillaron (los faltantes aparecen solos). Recomendado marcar `click_como_llegar` como **Evento clave**
+(la intención más fuerte de visitar). **(2) Rate-limit de volumen en Vercel Firewall** (lo configuró el
+usuario, plan Hobby vía **Custom Rules**, sin redeploy): Path empieza con `/lugar` **OR** `=/explorar` →
+**Fixed Window 50 req/60s por IP → Deny 403**. **(3) Bots de IA segmentados (commit `133df9f`)** — en vez
+de bloquear toda la IA, se separó en dos grupos en `middleware.ts` + `robots.ts`: **asistentes** (OAI-SearchBot,
+ChatGPT-User, PerplexityBot, ClaudeBot, Google-Extended…) **leen el TEXTO** → aparecemos cuando alguien le
+pregunta a una IA por panoramas, pero `robots.txt` les niega **`/_next/image`** (las fotos optimizadas que se
+pagaron vía Apify/Blob); **cosechadores** (GPTBot de entrenamiento, CCBot, Bytespider, Amazonbot, Diffbot…)
+**403 en el edge**. Googlebot/Bingbot intactos → **el SEO de búsqueda no se toca**. **Decisión clave:** el
+rating NO se esconde (es el `aggregateRating` que da las estrellitas en Google = SEO, y es número público de
+Google). Typecheck limpio. **Falta:** el commit `133df9f` está **en local** — con `git push` Vercel redeploya
+y activa el middleware/robots nuevos (el rate-limit de Firewall ya está activo, no depende del deploy). Sigue
+pendiente del usuario: resolver los **PENDING_REVIEW** (Tengu, Distrito Pop, NOSU/NoSo). Próximo gran hito: el
+**C. reevaluación post-MVP**.
+
+**Sesión previa:** 2026-06-24 (sesión 8 — **push a prod de la sesión 7 + migraciones
 automáticas**): **(1) Push a prod** de los 5 commits de la sesión 7 (`bc6df6b`→`179853c`) → Vercel
 redeployó con i18n, panel de usuarios, anti-scraper, buzón y footer. **(2) Migración `add_suggestion`
 aplicada a Neon prod** (a mano, esta única vez): el `vercel env pull` traía `DATABASE_URL=""` (está
