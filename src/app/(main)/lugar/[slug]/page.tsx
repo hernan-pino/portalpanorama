@@ -152,6 +152,11 @@ export default async function LugarPage({ params }: PageProps) {
     return undefined
   })()
 
+  // Link a las reseñas del negocio en Google (su ficha de Google Maps). Requiere el place_id.
+  const reviewsHref = place.googlePlaceId
+    ? `https://search.google.com/local/reviews?placeid=${encodeURIComponent(place.googlePlaceId)}`
+    : undefined
+
   const saveButton = (
     <SaveButton
       placeId={place.id}
@@ -224,6 +229,16 @@ export default async function LugarPage({ params }: PageProps) {
               <Stars value={place.googleRating} />
               <span className="num">{place.googleRating.toFixed(1)}</span>
               {place.googleReviewCount != null && <span>({fmtCount(place.googleReviewCount)}) · Google</span>}
+              {reviewsHref && (
+                <a
+                  href={reviewsHref}
+                  target="_blank"
+                  rel="noopener noreferrer nofollow"
+                  className="ficha__reviews-link"
+                >
+                  Ver reseñas ↗
+                </a>
+              )}
             </div>
           )}
         </div>

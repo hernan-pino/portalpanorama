@@ -302,6 +302,12 @@ volcados al backlog y al checklist de abajo. Los principales:
 
 ## ✅ Resueltos recientes (2026-06-20)
 
+- **Link "Ver reseñas ↗" en la ficha (2026-06-25).** Debajo del rating de Google, un link a las
+  reseñas del negocio en su ficha de Google (`search.google.com/local/reviews?placeid=…`); solo
+  aparece si hay `googlePlaceId`. Costo cero, sin riesgo de ToS (no rehospeda texto). **Mostrar
+  snippets de reseñas en la ficha quedó DIFERIDO a Fase C** (su valor es vender la ficha al negocio;
+  hoy suma costo Apify + staleness + zona gris legal por el texto/autor). Cuando se enciendan reseñas
+  **internas**, ver la idea de notas por dimensión en [STRATEGY.md](STRATEGY.md) §4 (Fase B).
 - **Bar Flama: las dos sucursales reales son Providencia + Lastarria.** La ficha estaba como "Bar Flama
   (Merced)" pero su contenido describe el bar de Lastarria (pin del usuario: -33.4374816, -70.6420574,
   a ~250 m de Merced 346). Se **renombró** "Bar Flama (Merced)" → **Bar Flama (Lastarria)** (slug

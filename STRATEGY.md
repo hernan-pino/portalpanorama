@@ -98,6 +98,12 @@ todos, siempre.** Se monetiza la **visibilidad**, no la **información**, y toda
   Confirmar con datos antes de invertir el build grande.
 - Candidatos de respaldo: reseñas propias (engagement + SEO), mapa/cerca de mí, IA recomendadora
   (el norte, build más pesado, va más adelante).
+  - **Idea registrada para reseñas internas (2026-06-24):** que NO sean una nota general vacía sino
+    **notas por dimensión** (ej. ambiente · rapidez · accesibilidad · sabor), con la nota del lugar =
+    **promedio de las dimensiones**. Así se sabe "comida 5/5 pero atención 2/5". Valor extra: las
+    escriben usuarios que **de verdad fueron** (el "organizador" que definimos) → tienen peso real, a
+    diferencia de una reseña anónima. Esto vuelve mucho más vendible la ficha al negocio (Fase C). El
+    `Review` del schema (polimórfico, puerta abierta) habría que extenderlo a multi-dimensión.
 - *Por qué esperar: el PRD pide priorizar con datos; elegir hoy sería adivinar.*
 
 ### Fase C — DESPUÉS (con audiencia): encender la monetización de oferta
@@ -155,7 +161,14 @@ primero y se carga **hacia** él → el mismo esfuerzo produce densidad + asset 
 4. **Sembrar en comunidades** (grupos de Facebook, Reddit r/santiago) + Instagram cuando exista la cuenta.
 5. **Medir en GA4** contra la meta.
 
-**Pendiente de definir con el usuario:** los 3-5 primeros temas de guía/lista.
+### Temas de arranque (confirmados 2026-06-24)
+2 guías exhaustivas + 2 listas por ocasión. Las pizzerías/plazas/comunas entran como siguientes guías.
+| Tema | Tipo | Por qué |
+|---|---|---|
+| **Museos de Santiago** | Guía exhaustiva | Finito/completable → se puede decir "todos"; SEO fuerte; sub-ángulo "museos gratis". |
+| **Hamburgueserías de Santiago** | Guía exhaustiva | Cargable en lote, alta demanda. |
+| **Panoramas gratis en Santiago** | Ocasión | Cruza categorías, alto search, muy compartible. |
+| **Para una primera cita** | Ocasión | Diferenciador puro (contexto social). |
 
 ---
 
