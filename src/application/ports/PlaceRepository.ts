@@ -65,6 +65,13 @@ export interface PlaceDetailView {
   brand?: { slug: string; name: string; logoUrl?: string }
 }
 
+// Destacado de una lista curada: la tarjeta + el horario (la landing lo muestra
+// como "data importante" en la fila editorial). Es la card enriquecida; solo se
+// resuelve para los pins, por eso el horario no carga en PlaceCardView normal.
+export interface FeaturedPlaceView extends PlaceCardView {
+  schedule?: string
+}
+
 // Opción de "lugar padre" para el selector del form de admin.
 export interface PlaceParentOption {
   id: string
@@ -107,10 +114,10 @@ export interface PlaceRepository {
   getDetailBySlug(slug: string): Promise<PlaceDetailView | null>
   findRelated(placeId: string, limit: number): Promise<PlaceCardView[]>
 
-  // Tarjetas de los lugares PUBLICADOS cuyos ids se piden (para resolver los
-  // destacados de una lista curada). Solo publicados: un destacado archivado no
-  // aparece. Sin orden garantizado — el caller reordena según su criterio.
-  findCardsByIds(ids: string[]): Promise<PlaceCardView[]>
+  // Tarjetas (enriquecidas con horario) de los lugares PUBLICADOS cuyos ids se piden
+  // (para resolver los destacados de una lista curada). Solo publicados: un destacado
+  // archivado no aparece. Sin orden garantizado — el caller reordena según su criterio.
+  findCardsByIds(ids: string[]): Promise<FeaturedPlaceView[]>
 
   // Slugs publicados + fecha de edición, para armar el sitemap.xml.
   listPublishedForSitemap(): Promise<{ slug: string; updatedAt: Date }[]>

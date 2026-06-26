@@ -1,5 +1,5 @@
 import { CuratedList, CuratedListKind } from '@domain/curatedList/CuratedList'
-import { PlaceCardView } from './PlaceRepository'
+import { FeaturedPlaceView, PlaceCardView } from './PlaceRepository'
 
 // Fila de la tabla del panel de admin (todos los estados). Denormalizada; el
 // conteo de destacados ayuda a ver de un vistazo qué tan armada está la lista.
@@ -51,7 +51,7 @@ export interface CuratedListPageView {
   description?: string
   intro?: string
   coverImageUrl?: string
-  pinned: { blurb?: string; place: PlaceCardView }[]
+  pinned: { blurb?: string; place: FeaturedPlaceView }[]
   rest: PlaceCardView[]
   total: number
 }

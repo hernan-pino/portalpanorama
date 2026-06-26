@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 import Image from 'next/image'
+import Link from 'next/link'
 import { auth } from '@lib/auth'
 import { container } from '@lib/container'
 import type { CuratedListPageView } from '@application/ports/CuratedListRepository'
@@ -94,15 +95,64 @@ export default async function ListaPage({ params }: PageProps) {
         </div>
       </header>
 
-      {/* Destacados (con bajada editorial) */}
+      {/* Destacados: filas editoriales (imagen · nombre · descripción · data · ver ficha) */}
       {list.pinned.length > 0 && (
         <section className="curated-page__section">
-          <div className="results-grid">
-            {list.pinned.map(({ place, blurb }) => (
-              <div key={place.id} className="curated-pin">
-                <PlaceCard place={place} save={save} />
-                {blurb && <p className="curated-pin__blurb">{blurb}</p>}
-              </div>
+          <div className="curated-features">
+            {list.pinned.map(({ place, blurb }, idx) => (
+              <article key={place.id} className="curated-feature">
+                <Link href={`/lugar/${place.slug}`} className="curated-feature__media" aria-label={`Ver ficha de ${place.name}`}>
+                  {place.coverUrl ? (
+                    <Image src={place.coverUrl} alt={place.name} fill sizes="(max-width: 760px) 100vw, 320px" style={{ objectFit: 'cover' }} />
+                  ) : (
+                    <span className="placeholder-stripe" style={{ width: '100%', height: '100%' }} />
+                  )}
+                </Link>
+
+                <div className="curated-feature__body">
+                  <h2 className="curated-feature__name">
+                    <span className="curated-feature__num">{idx + 1}</span>
+                    <Link href={`/lugar/${place.slug}`}>{place.name}</Link>
+                  </h2>
+
+                  <div className="curated-feature__facts">
+                    {place.googleRating != null && (
+                      <span className="curated-feature__fact">
+                        <StarGlyph />
+                        <span className="num">{place.googleRating.toFixed(1)}</span>
+                        {place.googleReviewCount != null && (
+                          <span className="cnt">({place.googleReviewCount.toLocaleString('es-CL')})</span>
+                        )}
+                      </span>
+                    )}
+                    {place.metroLines && place.metroLines.length > 0 && (
+                      <span className="curated-feature__fact">
+                        {place.metroLines.slice(0, 2).map((l) => (
+                          <span key={l.code} className="metro-badge" style={{ background: l.color }}>{l.code}</span>
+                        ))}
+                      </span>
+                    )}
+                    {place.schedule && (
+                      <span className="curated-feature__fact curated-feature__schedule">
+                        <ClockGlyph />
+                        <span>{place.schedule}</span>
+                      </span>
+                    )}
+                  </div>
+
+                  {blurb && (
+                    <div className="curated-feature__text">
+                      {blurb.split(/\n+/).map((p) => p.trim()).filter(Boolean).map((p, i) => (
+                        <p key={i}>{renderInline(p)}</p>
+                      ))}
+                    </div>
+                  )}
+
+                  <Link href={`/lugar/${place.slug}`} className="curated-feature__cta">
+                    Ver ficha completa en Portal Panorama →
+                  </Link>
+                </div>
+              </article>
             ))}
           </div>
         </section>
@@ -126,5 +176,31 @@ export default async function ListaPage({ params }: PageProps) {
         </p>
       )}
     </div>
+  )
+}
+
+// Negrita escaneable: convierte **texto** en <strong> dentro de un párrafo. Sin HTML
+// crudo (split + map), así el texto del admin es seguro aunque venga de un textarea.
+function renderInline(text: string): React.ReactNode[] {
+  return text.split(/(\*\*[^*]+\*\*)/g).map((part, i) => {
+    const m = /^\*\*([^*]+)\*\*$/.exec(part)
+    return m ? <strong key={i}>{m[1]}</strong> : part
+  })
+}
+
+function StarGlyph() {
+  return (
+    <svg viewBox="0 0 20 20" width="13" height="13" fill="currentColor" aria-hidden="true">
+      <path d="M10 1.6l2.47 5.18 5.7.72-4.2 3.9 1.1 5.64L10 14.3l-5.07 2.74 1.1-5.64-4.2-3.9 5.7-.72z" />
+    </svg>
+  )
+}
+
+function ClockGlyph() {
+  return (
+    <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <circle cx="12" cy="12" r="9" />
+      <path d="M12 7v5l3 2" />
+    </svg>
   )
 }

@@ -285,8 +285,8 @@ export function CuratedListForm({ facets, places, initial }: Props) {
       <section className="admin-form__section">
         <h3 className="admin-form__legend">Destacados (opcional)</h3>
         <p className="admin-form__hint">
-          Lugares fijados a mano que van <strong>arriba</strong> del resto, en este orden, con una
-          bajada editorial. Solo aparecen los que estén publicados.
+          Lugares fijados a mano que van <strong>arriba</strong> del resto, en este orden, como
+          <strong> artículos</strong> (imagen + recomendación). Solo aparecen los que estén publicados.
         </p>
 
         <div className="admin-form__repeat-row">
@@ -309,8 +309,10 @@ export function CuratedListForm({ facets, places, initial }: Props) {
               <button type="button" className="btn btn--ghost btn--sm" onClick={() => movePin(i, 1)} disabled={i === values.pins.length - 1} aria-label="Bajar">↓</button>
               <button type="button" className="btn btn--ghost btn--sm" onClick={() => removePin(i)}>Quitar</button>
             </div>
-            <input className="form-input" value={pin.blurb} placeholder="Bajada: qué es / qué esperar (opcional)"
+            <textarea className="form-input" value={pin.blurb} rows={5}
+              placeholder="Recomendación tipo artículo: cuenta qué es, por qué ir, qué pedir/ver, y menciona datos útiles (cerca de qué metro, horario, si es gratis…). Separa párrafos con una línea en blanco."
               onChange={(e) => updatePinBlurb(i, e.target.value)} />
+            <p className="admin-form__hint">Se muestra en párrafos. Tono hablado, en chileno.</p>
           </div>
         ))}
       </section>

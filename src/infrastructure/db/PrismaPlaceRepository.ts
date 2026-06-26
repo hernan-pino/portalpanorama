@@ -10,6 +10,7 @@ import {
   PlaceAdminRow,
   PlaceCardView,
   PlaceDetailView,
+  FeaturedPlaceView,
   PlaceParentOption,
   PlaceRatingRow,
   PlaceRepository,
@@ -431,13 +432,13 @@ export class PrismaPlaceRepository implements PlaceRepository {
     return ranked.slice(0, limit).map((r) => r.card)
   }
 
-  async findCardsByIds(ids: string[]): Promise<PlaceCardView[]> {
+  async findCardsByIds(ids: string[]): Promise<FeaturedPlaceView[]> {
     if (ids.length === 0) return []
     const rows = await this.prisma.place.findMany({
       where: { id: { in: ids }, status: $Enums.PlaceStatus.PUBLISHED },
-      select: placeCardArgs.select,
+      select: { ...placeCardArgs.select, schedule: true },
     })
-    return rows.map(toPlaceCardView)
+    return rows.map((row) => ({ ...toPlaceCardView(row), schedule: row.schedule ?? undefined }))
   }
 
   // C del bayesiano: promedio de la nota de Google en todo el catálogo con rating.
