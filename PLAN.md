@@ -7,7 +7,19 @@ priorizado. Se actualiza cada vez que avanzamos. Liviano a propósito — para r
 - **Modelo de datos:** [SCHEMA.md](SCHEMA.md) · **Capas:** [ARCHITECTURE.md](ARCHITECTURE.md) · **Marca:** [BRAND_SPEC.md](BRAND_SPEC.md)
 - **Bitácora del rediseño (historia + razonamiento de las decisiones):** [PLAN_FASE9.md](PLAN_FASE9.md) · **Histórico (docs superados):** [docs/historico/](docs/historico/)
 
-**Última actualización:** 2026-06-25 (sesión 11 — **Listas Curadas: presentation completa**): se cerró la
+**Última actualización:** 2026-06-26 (sesión 12 — **Listas Curadas: formato editorial + 1ª guía**): se rediseñó
+la landing `/lista/[slug]` al formato **guía-revista**: los destacados son **artículos** (imagen al lado +
+recomendación hablada en párrafos con **negrita** escaneable + data importante [rating · línea de metro ·
+horario] + link "Ver ficha completa"); el resto de la regla queda como grilla de tarjetas debajo. Backend:
+read-model **`FeaturedPlaceView`** (`findCardsByIds` ahora trae el horario, solo para destacados); parser de
+`**negrita**` seguro; el campo de destacado en el admin pasó a **textarea** multilínea. Se creó la **1ª guía
+real (local): "Los mejores museos de Santiago"** (regla = subcategoría museo, 8 lugares, 3 destacados con texto
+de verdad) para validar el flujo end-to-end. Typecheck limpio + 99 tests verdes. Commits `8864b93` (rediseño)
+sobre `38e92ac` (feature completa). **Falta para prod (sin cambios):** chequeo de la migración
+(`SELECT count(*) FROM "Collection" WHERE "ownerId" IS NULL` debe dar 0) → `git push` → recrear/cargar guías en
+prod. La guía de museos vive **solo en la BD local**; en prod se crea desde `/admin/listas`.
+
+**Sesión previa:** 2026-06-25 (sesión 11 — **Listas Curadas: presentation completa**): se cerró la
 **Fase 1 del ítem (d)** de punta a punta sobre el backend de la sesión 10 — admin `/admin/listas` (tabla +
 form con editor de regla por facetas/slugs + destacados) · landing pública `/lista/[slug]` (JSON-LD `ItemList`
 + OG + corazón de guardado) · sección "Guías" en la home · `sitemap.ts`. **Typecheck limpio + 99 tests verdes
