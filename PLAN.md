@@ -7,7 +7,16 @@ priorizado. Se actualiza cada vez que avanzamos. Liviano a propósito — para r
 - **Modelo de datos:** [SCHEMA.md](SCHEMA.md) · **Capas:** [ARCHITECTURE.md](ARCHITECTURE.md) · **Marca:** [BRAND_SPEC.md](BRAND_SPEC.md)
 - **Bitácora del rediseño (historia + razonamiento de las decisiones):** [PLAN_FASE9.md](PLAN_FASE9.md) · **Histórico (docs superados):** [docs/historico/](docs/historico/)
 
-**Última actualización:** 2026-06-24 (sesión 9 — **analítica + anti-scraping con visibilidad en IA**):
+**Última actualización:** 2026-06-25 (sesión 11 — **Listas Curadas: presentation completa**): se cerró la
+**Fase 1 del ítem (d)** de punta a punta sobre el backend de la sesión 10 — admin `/admin/listas` (tabla +
+form con editor de regla por facetas/slugs + destacados) · landing pública `/lista/[slug]` (JSON-LD `ItemList`
++ OG + corazón de guardado) · sección "Guías" en la home · `sitemap.ts`. **Typecheck limpio + 99 tests verdes
++ `next build` OK.** Detalle en el ítem (d) del backlog. **Falta:** commitear (backend s10 + presentation s11),
+pasar la migración por `db-migration-reviewer` antes del push a prod, y cargar las primeras guías reales.
+**Próximo paso concreto:** commit del bloque completo de Listas Curadas + (con OK) revisar la migración. La
+**Fase 2** (filtros OCCASION/EXPERIENCE → listas de ocasión) y el **go-to-market** (STRATEGY §5) siguen detrás.
+
+**Sesión previa:** 2026-06-24 (sesión 9 — **analítica + anti-scraping con visibilidad en IA**):
 **(1) GA4** — mapeados los 7 eventos custom (`lib/analytics.ts`): `sign_up`, `login`, `guardar_lugar`,
 `click_como_llegar`, `compartir_lugar`, `reportar_lugar`, `buscar`. GA4 solo lista los que ya se
 gatillaron (los faltantes aparecen solos). Recomendado marcar `click_como_llegar` como **Evento clave**
@@ -512,7 +521,55 @@ más adelante; requiere `RESEND_API_KEY` real + considerar rate-limit anti-bots.
   preparo el prompt/paquete por pantalla, el usuario genera la ref, recién ahí se implementa.
   **2026-06-15: arreglado el defecto inmediato** (5 categorías rompían la grilla de 4 + ícono faltante)
   para que no se vea roto mientras tanto; el rediseño completo es aparte.
-- **(d) Listas curadas de la home** — read-model "listar curadas" + seed (hoy diferido).
+- **(d) Listas curadas / landings de guía — MODELO CERRADO (2026-06-25), build pendiente.** Es el
+  prerequisito de ingeniería del go-to-market (STRATEGY §5 paso 3). Decisión: una lista curada =
+  **modelo dedicado `CuratedList`** (NO recargar `Collection`, que queda solo para listas manuales de
+  usuario) = **una "lista inteligente"**: regla guardada (los filtros del explorar) + chrome editorial
+  (`name`, `slug`, `description` [meta SEO], `intro` `@db.Text`, `coverImageUrl`, `kind` GUIDE|OCCASION,
+  `isPublished`+`publishedAt`, `sort` default score desc) + **`pinnedPlaceIds`** (destacados fijados a
+  mano que van primero; sin nota por pin). Se **resuelve al leerla** con `SearchPlacesUseCase(regla)` →
+  se mantiene completa sola a medida que se carga. Reemplaza el `GetCuratedCollectionUseCase`/
+  `findCuratedBySlug` actual (sin consumidor). **Coupling con tarea 2:** las listas de OCASIÓN ("primera
+  cita") son reglas sobre tags OCCASION → necesitan el filtro OCCASION/EXPERIENCE cableado; las guías
+  exhaustivas (Museos, Hamburgueserías) funcionan ya con categoría/comuna. **Build en 2 fases:**
+  Fase 1 = `CuratedList` de punta a punta (schema→dominio→app→admin `/admin/listas`→landing `/lista/[slug]`
+  con JSON-LD `ItemList`+OG→home→sitemap) → habilita las **guías** ya; Fase 2 = filtros OCCASION/EXPERIENCE
+  en search/explorar + sumarlos al vocabulario de la regla → habilita las **listas de ocasión** (= la
+  "tarea 2" que el usuario pidió después).
+  **🔄 BUILD EN CURSO (2026-06-25) — checkpoint que compila (99 tests verdes, typecheck limpio):**
+  Hecho: (1) **schema** — `CuratedList` + `CuratedListPin` + enum `CuratedListKind`; se limpiaron de
+  `Collection` los campos curated muertos (`isCurated`/`slug`) y `ownerId` pasó a obligatorio (las listas
+  manuales del usuario y las curadas ya son entidades separadas). (2) **migración** `add_curated_list`
+  **aplicada en local** + cliente Prisma regenerado (⚠️ revisar con `db-migration-reviewer` **antes del
+  push a prod** — incluye 2 drops de columna; en prod corre sola por `migrate deploy`). (3) **dominio**
+  `CuratedList` (entidad + VO `CuratedRule` con `isRuleEmpty` + errores); se borró el `GetCuratedCollectionUseCase`
+  viejo. **🔄 BACKEND COMPLETO (2026-06-25, sesión 10) — typecheck limpio + 99 tests verdes:** se construyó
+  toda la capa app + infra + wire-up: (4) **port** `CuratedListRepository` (+ read-models `CuratedListAdminRow`,
+  `CuratedListCardView`, `CuratedListPageView`) + `findCardsByIds` agregado a `PlaceRepository` (resuelve los
+  destacados, solo PUBLISHED). (5) **use cases** (`src/application/curatedList/`): `CuratedListWriteInput`,
+  `Create`, `Update` (conservan slug/createdAt; `publishedAt` se fija al publicar y se conserva), `GetForEdit`,
+  `ListForAdmin`, `Delete`, `ListPublished` (home) y el central `GetCuratedListBySlug` (resuelve la regla vía
+  `SearchService` con `ruleToSearchParams`, antepone los destacados, excluye sus ids del resto, borrador →
+  `CuratedListNotFoundError`). (6) **infra** `PrismaCuratedListRepository` (`save` = upsert + reemplazo de pins
+  en `$transaction`; `parseRule`/`ruleToJson` defensivos para el campo Json). (7) **container** cableado (repo
+  + 7 getters). **✅ PRESENTATION COMPLETA (2026-06-25, sesión 11) — typecheck limpio + 99 tests verdes + `next
+  build` OK (todas las rutas compilan):** (8) **admin `/admin/listas`** — tabla (nombre · tipo · nº destacados ·
+  estado borrador/publicada) con acciones por fila (editar · ver ↗ · eliminar con modal de confirmación), `nuevo`
+  y `[id]`; el **form** (`CuratedListForm`) tiene editorial (nombre · tipo GUIDE/OCCASION · descripción meta SEO ·
+  intro · **portada** con subir/traer reusando el pipeline de Blob), **editor de regla** (decisión: se alimenta de
+  `getFacets()` → habla en SLUGS, mismo vocabulario que el explorar, evita el problema de que las form-options no
+  llevan slug; single-selects para categoría/sub/comuna/barrio/línea-metro + chips multi para precio/¿con quién?/
+  ambiente/acceso + check "sin reserva"; avisa si la regla queda vacía) y **destacados** (picker de lugares +
+  bajada + reordenar ↑↓ + quitar). (9) **landing `/lista/[slug]`** — cover + eyebrow + H1 + intro + destacados
+  ricos (PlaceCard + blurb) + grilla del resto, **corazón de guardado** cableado (como la home), JSON-LD
+  `ItemList` + OG/canonical, borrador → `notFound()`. (10) **home** — sección "Guías para explorar" (read-model
+  `listPublished`, reemplazó el placeholder) + **`sitemap.ts`** suma las landings (nuevo use case
+  `ListCuratedListSitemapEntriesUseCase` + getter). CSS nuevo en `globals.css` (`.curated-page*`, `.curated-pin*`,
+  `.home-guides*`, `.guide-card*`). **Nav de admin** ahora lleva "Listas". **PENDIENTE:** (a) **sin commit
+  todavía** — falta commitear todo el bloque (backend sesión 10 + presentation sesión 11); (b) antes del push a
+  prod, pasar la migración `add_curated_list` por **`db-migration-reviewer`** (incluye 2 drops de columna; en
+  prod corre sola por `migrate deploy`); (c) cargar las primeras guías reales por el admin. **Fase 2** (filtros
+  OCCASION/EXPERIENCE → habilita listas de ocasión) sigue aparte.
 - **(v) Abierto/Cerrado en la tarjeta (post-MVP, ANOTADO 2026-06-14)** — mostrar en la `PlaceCard` un
   indicador "Abierto ahora / Cerrado" al explorar (info muy útil para decidir). **Depende de horario
   estructurado:** hoy `Place.schedule` es **texto libre**, no se puede calcular abierto/cerrado. Requiere

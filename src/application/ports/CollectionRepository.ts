@@ -9,15 +9,6 @@ export interface CollectionSummary {
   coverUrl?: string
 }
 
-// Lista curada resuelta para su landing SEO (incluye las tarjetas de lugares).
-export interface CuratedCollectionView {
-  id: string
-  slug: string
-  name: string
-  description?: string
-  places: PlaceCardView[]
-}
-
 // Detalle de una lista privada del usuario con sus lugares (vista de "abrir la lista").
 export interface UserCollectionDetailView {
   id: string
@@ -44,7 +35,4 @@ export interface CollectionRepository {
   // Ids de los lugares que el usuario tiene guardados en CUALQUIERA de sus listas.
   // Alimenta el estado "ya guardado" del corazón en ficha/explorar/home.
   findSavedPlaceIds(ownerId: string): Promise<string[]>
-
-  // Landing SEO de una lista curada (ownerId null)
-  findCuratedBySlug(slug: string): Promise<CuratedCollectionView | null>
 }

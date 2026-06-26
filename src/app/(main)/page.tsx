@@ -67,10 +67,11 @@ export default async function HomePage() {
 
   // Recomendados (orden por reputación) + catálogo de categorías + facetas (para los
   // chips sociales). El corazón de la tarjeta necesita las colecciones del usuario.
-  const [recommended, categories, facets] = await Promise.all([
+  const [recommended, categories, facets, curatedLists] = await Promise.all([
     container.getSearchPlacesUseCase().execute({ limit: 12 }),
     container.getGetCategoriesUseCase().execute(),
     container.getGetPlaceFacetsUseCase().execute(),
+    container.getListPublishedCuratedListsUseCase().execute(),
   ])
 
   let save: SaveContext = {
@@ -164,9 +165,32 @@ export default async function HomePage() {
         </section>
       )}
 
-      {/* Listas curadas (brief §5, opcional): diferidas — falta un read-model
-          "listar curadas" (hoy solo GetCuratedCollection by slug) y data sembrada.
-          Fast-follow SEO post-4E. */}
+      {/* ── Guías curadas — landings editoriales (SEO + descubrimiento) ── */}
+      {curatedLists.length > 0 && (
+        <section className="home-guides container">
+          <div className="home-sec__head">
+            <h2 className="home-sec__title">Guías para explorar</h2>
+          </div>
+          <div className="home-guides__grid">
+            {curatedLists.map((l) => (
+              <Link key={l.slug} href={`/lista/${l.slug}`} className="guide-card">
+                <span className="guide-card__media">
+                  {l.coverImageUrl ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img src={l.coverImageUrl} alt={l.name} />
+                  ) : (
+                    <span className="placeholder-stripe" style={{ width: '100%', height: '100%' }} />
+                  )}
+                </span>
+                <span className="guide-card__body">
+                  <span className="guide-card__name">{l.name}</span>
+                  {l.description && <span className="guide-card__desc">{l.description}</span>}
+                </span>
+              </Link>
+            ))}
+          </div>
+        </section>
+      )}
 
     </div>
   )

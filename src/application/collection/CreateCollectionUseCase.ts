@@ -16,7 +16,6 @@ export class CreateCollectionUseCase {
       id: createId(),
       name: input.name,
       ownerId: input.ownerId,
-      isCurated: false,
       items: [],
       createdAt: now,
       updatedAt: now,

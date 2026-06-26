@@ -107,6 +107,11 @@ export interface PlaceRepository {
   getDetailBySlug(slug: string): Promise<PlaceDetailView | null>
   findRelated(placeId: string, limit: number): Promise<PlaceCardView[]>
 
+  // Tarjetas de los lugares PUBLICADOS cuyos ids se piden (para resolver los
+  // destacados de una lista curada). Solo publicados: un destacado archivado no
+  // aparece. Sin orden garantizado — el caller reordena según su criterio.
+  findCardsByIds(ids: string[]): Promise<PlaceCardView[]>
+
   // Slugs publicados + fecha de edición, para armar el sitemap.xml.
   listPublishedForSitemap(): Promise<{ slug: string; updatedAt: Date }[]>
 

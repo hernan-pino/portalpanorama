@@ -6,7 +6,6 @@ function makeProps(overrides: Partial<CollectionProps> = {}): CollectionProps {
     id: 'col_1',
     name: 'Favoritos',
     ownerId: 'user_1',
-    isCurated: false,
     items: [],
     createdAt: new Date('2026-01-01'),
     updatedAt: new Date('2026-01-01'),
@@ -60,12 +59,6 @@ describe('Collection.assertOwnership', () => {
   it('lanza si otro usuario intenta operar la lista (defensa anti-IDOR)', () => {
     expect(() =>
       Collection.create(makeProps({ ownerId: 'user_1' })).assertOwnership('user_2'),
-    ).toThrow(UnauthorizedCollectionAccessError)
-  })
-
-  it('una lista curada (sin dueño) no pertenece a ningún usuario', () => {
-    expect(() =>
-      Collection.create(makeProps({ ownerId: undefined, isCurated: true })).assertOwnership('user_1'),
     ).toThrow(UnauthorizedCollectionAccessError)
   })
 })

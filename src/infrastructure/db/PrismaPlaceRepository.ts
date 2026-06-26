@@ -431,6 +431,15 @@ export class PrismaPlaceRepository implements PlaceRepository {
     return ranked.slice(0, limit).map((r) => r.card)
   }
 
+  async findCardsByIds(ids: string[]): Promise<PlaceCardView[]> {
+    if (ids.length === 0) return []
+    const rows = await this.prisma.place.findMany({
+      where: { id: { in: ids }, status: $Enums.PlaceStatus.PUBLISHED },
+      select: placeCardArgs.select,
+    })
+    return rows.map(toPlaceCardView)
+  }
+
   // C del bayesiano: promedio de la nota de Google en todo el catálogo con rating.
   async globalAverageRating(): Promise<number> {
     const agg = await this.prisma.place.aggregate({

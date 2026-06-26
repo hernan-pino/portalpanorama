@@ -26,7 +26,6 @@ export class SaveToDefaultCollectionUseCase {
         id: createId(),
         name: Collection.DEFAULT_NAME,
         ownerId: input.userId,
-        isCurated: false,
         items: [],
         createdAt: now,
         updatedAt: now,

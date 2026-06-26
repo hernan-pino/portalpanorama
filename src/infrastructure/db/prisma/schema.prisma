@@ -109,6 +109,14 @@ enum EventStatus {
   ARCHIVED
 }
 
+// Tipo de lista curada (landing SEO). GUIDE = guía exhaustiva por categoría/comuna
+// ("Museos de Santiago"); OCCASION = lista por intención/ocasión ("Para una primera
+// cita"), regla sobre tags OCCASION. Solo cambia copy/template, no el mecanismo.
+enum CuratedListKind {
+  GUIDE
+  OCCASION
+}
+
 // ─── Auth.js adapter models ───────────────────────────────────────────────────
 // Requeridos por @auth/prisma-adapter. MVP: email + contraseña (passwordHash).
 // Google/Apple post-MVP entran por `Account` (OAuth) sin tocar el schema.
@@ -421,6 +429,7 @@ model Place {
   tags            PlaceTag[]
   events          Event[]
   collectionItems CollectionItem[]
+  curatedPins     CuratedListPin[]
   visitHistory    VisitHistory[]
   reports         Report[]
 
@@ -529,20 +538,63 @@ model Event {
 
 // ─── Colecciones — una entidad para listas de usuario Y listas curadas ──────────
 
+// Lista MANUAL del usuario (guardar lugares). Las listas curadas públicas YA NO
+// viven acá: son `CuratedList` (regla guardada + landing SEO). `ownerId` es
+// obligatorio: toda Collection pertenece a un usuario.
 model Collection {
   id          String   @id
   name        String
-  ownerId     String? // null = lista curada (pública, del admin)
-  isCurated   Boolean  @default(false)
-  slug        String?  @unique // solo curadas (landing SEO)
+  ownerId     String
   description String?  @db.Text
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
-  owner User?            @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  owner User             @relation(fields: [ownerId], references: [id], onDelete: Cascade)
   items CollectionItem[]
 
   @@index([ownerId])
+}
+
+// ─── Lista curada = "lista inteligente" (landing SEO de guía/ocasión) ────────────
+// NO es una lista de lugares elegidos a mano: es una REGLA guardada (los filtros del
+// explorar, en `rule`) que se resuelve al leerla con SearchService → se mantiene
+// completa sola a medida que se carga el catálogo. Encima, chrome editorial (intro
+// tipo blog, portada) + destacados fijados a mano (`pins`) que van primero con su
+// propia bajada. Decisión: PLAN.md backlog (d) (2026-06-25).
+model CuratedList {
+  id            String          @id
+  slug          String          @unique // landing: /lista/[slug]
+  name          String // <h1> de la landing
+  kind          CuratedListKind @default(GUIDE)
+  description   String?         @db.Text // bajada corta = meta description (SEO)
+  intro         String?         @db.Text // cuerpo editorial tipo blog (texto propio = SEO)
+  coverImageUrl String? // hero + imagen de OG al compartir
+  rule          Json // subset de SearchParams: { categorySlug?, communeSlug?, priceRanges?, ... }
+  sort          String          @default("score_desc") // orden del resto (reservado; hoy solo score desc)
+  isPublished   Boolean         @default(false) // borrador = no visible / no indexable
+  publishedAt   DateTime?
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
+
+  pins CuratedListPin[]
+
+  @@index([isPublished])
+}
+
+// Destacado de una lista: lugar fijado a mano que va ARRIBA del resultado de la regla,
+// con su bajada editorial ("qué es / qué esperar"). El resto de los datos (foto,
+// horario, metro, rating) se leen del Place al vuelo, no se guardan acá.
+model CuratedListPin {
+  listId    String
+  placeId   String
+  blurb     String? @db.Text // "qué es / qué esperar" (texto propio = SEO)
+  sortOrder Int     @default(0)
+
+  list  CuratedList @relation(fields: [listId], references: [id], onDelete: Cascade)
+  place Place       @relation(fields: [placeId], references: [id], onDelete: Cascade)
+
+  @@id([listId, placeId])
+  @@index([placeId])
 }
 
 model CollectionItem {

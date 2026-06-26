@@ -4,6 +4,7 @@ import { prisma } from './db'
 import { PrismaUserRepository } from '@infrastructure/db/PrismaUserRepository'
 import { PrismaPlaceRepository } from '@infrastructure/db/PrismaPlaceRepository'
 import { PrismaBrandRepository } from '@infrastructure/db/PrismaBrandRepository'
+import { PrismaCuratedListRepository } from '@infrastructure/db/PrismaCuratedListRepository'
 import { PrismaCategoryRepository } from '@infrastructure/db/PrismaCategoryRepository'
 import { PrismaTagRepository } from '@infrastructure/db/PrismaTagRepository'
 import { PrismaCollectionRepository } from '@infrastructure/db/PrismaCollectionRepository'
@@ -44,6 +45,14 @@ import { CreateBrandUseCase } from '@application/brand/CreateBrandUseCase'
 import { UpdateBrandUseCase } from '@application/brand/UpdateBrandUseCase'
 import { GetBrandForEditUseCase } from '@application/brand/GetBrandForEditUseCase'
 import { ListBrandsForAdminUseCase } from '@application/brand/ListBrandsForAdminUseCase'
+import { CreateCuratedListUseCase } from '@application/curatedList/CreateCuratedListUseCase'
+import { UpdateCuratedListUseCase } from '@application/curatedList/UpdateCuratedListUseCase'
+import { GetCuratedListForEditUseCase } from '@application/curatedList/GetCuratedListForEditUseCase'
+import { ListCuratedListsForAdminUseCase } from '@application/curatedList/ListCuratedListsForAdminUseCase'
+import { DeleteCuratedListUseCase } from '@application/curatedList/DeleteCuratedListUseCase'
+import { GetCuratedListBySlugUseCase } from '@application/curatedList/GetCuratedListBySlugUseCase'
+import { ListPublishedCuratedListsUseCase } from '@application/curatedList/ListPublishedCuratedListsUseCase'
+import { ListCuratedListSitemapEntriesUseCase } from '@application/curatedList/ListCuratedListSitemapEntriesUseCase'
 import { UploadPlaceImageUseCase } from '@application/place/UploadPlaceImageUseCase'
 import { ImportImageFromUrlUseCase } from '@application/place/ImportImageFromUrlUseCase'
 import { CreateReportUseCase } from '@application/place/CreateReportUseCase'
@@ -54,7 +63,6 @@ import { ListSuggestionsForAdminUseCase } from '@application/suggestion/ListSugg
 import { SetSuggestionStatusUseCase } from '@application/suggestion/SetSuggestionStatusUseCase'
 import { DeleteSuggestionUseCase } from '@application/suggestion/DeleteSuggestionUseCase'
 import { GetCategoriesUseCase } from '@application/catalog/GetCategoriesUseCase'
-import { GetCuratedCollectionUseCase } from '@application/collection/GetCuratedCollectionUseCase'
 import { CreateCollectionUseCase } from '@application/collection/CreateCollectionUseCase'
 import { RenameCollectionUseCase } from '@application/collection/RenameCollectionUseCase'
 import { DeleteCollectionUseCase } from '@application/collection/DeleteCollectionUseCase'
@@ -78,6 +86,7 @@ import { DeleteUserUseCase } from '@application/user/DeleteUserUseCase'
 const userRepo = new PrismaUserRepository(prisma)
 const placeRepo = new PrismaPlaceRepository(prisma)
 const brandRepo = new PrismaBrandRepository(prisma)
+const curatedListRepo = new PrismaCuratedListRepository(prisma)
 const categoryRepo = new PrismaCategoryRepository(prisma)
 const tagRepo = new PrismaTagRepository(prisma)
 const collectionRepo = new PrismaCollectionRepository(prisma)
@@ -111,10 +120,6 @@ export const container = {
 
   getGetCategoriesUseCase() {
     return new GetCategoriesUseCase(categoryRepo)
-  },
-
-  getGetCuratedCollectionUseCase() {
-    return new GetCuratedCollectionUseCase(collectionRepo)
   },
 
   getGetSitemapEntriesUseCase() {
@@ -262,6 +267,39 @@ export const container = {
 
   getListBrandsForAdminUseCase() {
     return new ListBrandsForAdminUseCase(brandRepo)
+  },
+
+  // ── Listas curadas (landings de guía/ocasión) ───────────────────────
+  getCreateCuratedListUseCase() {
+    return new CreateCuratedListUseCase(curatedListRepo)
+  },
+
+  getUpdateCuratedListUseCase() {
+    return new UpdateCuratedListUseCase(curatedListRepo)
+  },
+
+  getGetCuratedListForEditUseCase() {
+    return new GetCuratedListForEditUseCase(curatedListRepo)
+  },
+
+  getListCuratedListsForAdminUseCase() {
+    return new ListCuratedListsForAdminUseCase(curatedListRepo)
+  },
+
+  getDeleteCuratedListUseCase() {
+    return new DeleteCuratedListUseCase(curatedListRepo)
+  },
+
+  getGetCuratedListBySlugUseCase() {
+    return new GetCuratedListBySlugUseCase(curatedListRepo, placeRepo, searchService)
+  },
+
+  getListPublishedCuratedListsUseCase() {
+    return new ListPublishedCuratedListsUseCase(curatedListRepo)
+  },
+
+  getListCuratedListSitemapEntriesUseCase() {
+    return new ListCuratedListSitemapEntriesUseCase(curatedListRepo)
   },
 
   // Lazy: el adapter de Blob exige BLOB_READ_WRITE_TOKEN; se instancia recién al subir.

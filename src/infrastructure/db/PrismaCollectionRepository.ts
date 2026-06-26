@@ -3,7 +3,6 @@ import { Collection } from '@domain/collection/Collection'
 import {
   CollectionRepository,
   CollectionSummary,
-  CuratedCollectionView,
   UserCollectionDetailView,
 } from '@application/ports/CollectionRepository'
 import { placeCardArgs, toPlaceCardView } from './placeCardView'
@@ -17,9 +16,7 @@ function toCollectionDomain(row: CollectionRow): Collection {
   return Collection.create({
     id: row.id,
     name: row.name,
-    ownerId: row.ownerId ?? undefined,
-    isCurated: row.isCurated,
-    slug: row.slug ?? undefined,
+    ownerId: row.ownerId,
     description: row.description ?? undefined,
     items: row.items.map((it) => ({ placeId: it.placeId, sortOrder: it.sortOrder })),
     createdAt: row.createdAt,
@@ -43,9 +40,7 @@ export class PrismaCollectionRepository implements CollectionRepository {
   async save(collection: Collection): Promise<void> {
     const header = {
       name: collection.name,
-      ownerId: collection.ownerId ?? null,
-      isCurated: collection.isCurated,
-      slug: collection.slug ?? null,
+      ownerId: collection.ownerId,
       description: collection.description ?? null,
       updatedAt: collection.updatedAt,
     }
@@ -137,29 +132,5 @@ export class PrismaCollectionRepository implements CollectionRepository {
       select: { placeId: true },
     })
     return rows.map((r) => r.placeId)
-  }
-
-  async findCuratedBySlug(slug: string): Promise<CuratedCollectionView | null> {
-    const row = await this.prisma.collection.findUnique({
-      where: { slug },
-      select: {
-        id: true,
-        slug: true,
-        name: true,
-        description: true,
-        items: {
-          orderBy: { sortOrder: 'asc' },
-          select: { place: placeCardArgs },
-        },
-      },
-    })
-    if (!row || row.slug == null) return null
-    return {
-      id: row.id,
-      slug: row.slug,
-      name: row.name,
-      description: row.description ?? undefined,
-      places: row.items.map((it) => toPlaceCardView(it.place)),
-    }
   }
 }

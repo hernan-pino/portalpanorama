@@ -18,6 +18,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
           <NavLink href="/admin/lugares">Lugares</NavLink>
           <NavLink href="/admin/lugares/nuevo">Nuevo lugar</NavLink>
           <NavLink href="/admin/marcas">Marcas</NavLink>
+          <NavLink href="/admin/listas">Listas</NavLink>
           <NavLink href="/admin/usuarios">Usuarios</NavLink>
           <NavLink href="/admin/reportes">Reportes</NavLink>
           <NavLink href="/admin/cobertura">Cobertura</NavLink>

@@ -1,7 +1,8 @@
 import { DomainError } from '@domain/shared/DomainError'
 
-// Una sola entidad para listas privadas de usuario Y listas curadas públicas
-// (entregable 2). `ownerId` null ⇒ curada (del admin), con `slug` para SEO.
+// Lista MANUAL del usuario (guardar lugares). Las listas curadas públicas ya NO
+// viven acá: son su propio agregado `CuratedList` (regla guardada + landing SEO).
+// Toda Collection pertenece a un usuario (`ownerId` obligatorio).
 
 export class UnauthorizedCollectionAccessError extends DomainError {
   readonly code = 'UNAUTHORIZED_COLLECTION_ACCESS'
@@ -18,9 +19,7 @@ export interface CollectionItem {
 export interface CollectionProps {
   readonly id: string
   readonly name: string
-  readonly ownerId?: string // null/undefined = curada (pública)
-  readonly isCurated: boolean
-  readonly slug?: string // solo curadas (landing SEO)
+  readonly ownerId: string
   readonly description?: string
   readonly items: ReadonlyArray<CollectionItem>
   readonly createdAt: Date
@@ -36,9 +35,7 @@ export class Collection {
 
   readonly id: string
   readonly name: string
-  readonly ownerId?: string
-  readonly isCurated: boolean
-  readonly slug?: string
+  readonly ownerId: string
   readonly description?: string
   readonly items: ReadonlyArray<CollectionItem>
   readonly createdAt: Date
@@ -48,8 +45,6 @@ export class Collection {
     this.id = props.id
     this.name = props.name
     this.ownerId = props.ownerId
-    this.isCurated = props.isCurated
-    this.slug = props.slug
     this.description = props.description
     this.items = props.items
     this.createdAt = props.createdAt
@@ -94,8 +89,6 @@ export class Collection {
       id: this.id,
       name: this.name,
       ownerId: this.ownerId,
-      isCurated: this.isCurated,
-      slug: this.slug,
       description: this.description,
       items: this.items,
       createdAt: this.createdAt,
