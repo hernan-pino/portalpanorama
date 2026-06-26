@@ -64,4 +64,77 @@ export const CURATED_LISTS: SeedCuratedList[] = [
       },
     ],
   },
+  {
+    slug: 'las-mejores-cafeterias-de-santiago',
+    name: 'Las mejores cafeterías de especialidad de Santiago',
+    kind: 'GUIDE',
+    description:
+      'Las cafeterías de especialidad mejor evaluadas de Santiago: dónde tomarse el mejor café, con rating real de Google.',
+    intro:
+      'El café de especialidad explotó en Santiago y hoy hay un rincón para cada gusto: tostadurías propias, cafés de barrio para trabajar tranquilo y hasta experiencias temáticas. Esta es nuestra selección de los mejores, ordenados por reputación.',
+    rule: { subcategorySlug: 'cafe-cafeteria' },
+    sort: 'score_desc',
+    isPublished: true,
+    pins: [
+      {
+        placeSlug: 'teluz-coffee',
+        blurb:
+          'El **mejor evaluado** de esta lista, y con razón: un café de especialidad **chico e íntimo** en Antonio Varas, con un concepto claro —origen cuidado y método V60— que enamora a quienes saben de café.\n\nEs el típico lugar para **trabajar tranquilo** o tomarse un cortado en paz, con terraza para los días buenos. Queda prácticamente sobre el **metro Manuel Montt (Línea 1)**. Abre de **lunes a viernes de 7:30 a 18:30** y el sábado hasta las 14:00; **domingo cierra**.\n\nOjo: cierra temprano, así que es plan de mañana o media tarde, no de after.',
+      },
+      {
+        placeSlug: 'casa-salvo-cafe',
+        blurb:
+          'Pocas cafeterías pueden decir que **cultivan, tuestan y sirven su propio café** sin intermediarios. Casa Salvo, en pleno **Barrio Italia**, sí —y se nota en la taza. Pero además tiene brunch contundente y sándwiches con personalidad (prueba el Pollo-Mex).\n\nLo mejor es su **horario amplio**: abre a las **8 de la mañana y cierra a las 22 h** entre semana, así que sirve para desayuno, almuerzo y after office con café. Es **pet friendly** y queda a pasos del **metro Baquedano (Líneas 1 y 5)**.\n\nUn local chico y cálido, con clientela fija de barrio y mucho trabajo remoto.',
+      },
+      {
+        placeSlug: 'entre-sabores-cafe',
+        blurb:
+          'La cafetería que **puso de moda el café en taza de galleta comestible** —lo que suena a truco de Instagram resulta ser una combinación real que dejó huella en **Vitacura**. Más de **3.000 reseñas en Google** con 4.9 hablan de un lugar que funciona parejo.\n\nLa propuesta de brunch es completa: pancakes, huevos, tostadas, croissants y tortas, con el café en galleta como sello. Queda en **Av. Manquehue Norte 1788**, en el corazón de Vitacura.\n\nIdeal para un desayuno largo de fin de semana o para llevar a alguien de visita que quiera la foto.',
+      },
+      {
+        placeSlug: 'pace-coffee-roasters-chile',
+        blurb:
+          'Si lo tuyo es **llevarte un buen café a la casa**, esta tostaduría de **Barrio Italia** es la parada. Organizan sus granos en líneas temáticas —Enjoy, Focus, Boost, Level Up— pensadas para distintos momentos del día, y el equipo te guía en la elección.\n\nEs un local para **conocer la propuesta de primera mano** y probar antes de comprar. Está en Girardi 1236, cerca del **metro Baquedano (Líneas 1 y 5)**. Horario acotado: **de miércoles a domingo, 10:30 a 19:00** —lunes y martes cierra—, así que conviene planificarlo.\n\nMás tostaduría que café de quedarse, pero vale la visita por la calidad del grano.',
+      },
+      {
+        placeSlug: 'yeongi-coffee',
+        blurb:
+          'La cafetería más **distinta** de la lista: un café **temático de K-pop** en Av. Providencia, con bebidas que llevan nombres de grupos, baños con escenografía idol, lightsticks en la barra y máquina de photocards aleatorias.\n\nNo es un café de paso —**la experiencia es el motivo**—, pensado para la comunidad K-pop chilena que viene a sacarse fotos y compartir. Queda a pasos del **metro Pedro de Valdivia (Línea 1)** y abre **todos los días de 11:30 a 19:30**.\n\nAunque no seas fan, el café de especialidad es de verdad; y si lo eres, es parada obligada.',
+      },
+    ],
+  },
+  {
+    slug: 'las-mejores-librerias-de-santiago',
+    name: 'Las mejores librerías independientes de Santiago',
+    kind: 'GUIDE',
+    description:
+      'Las librerías independientes mejor evaluadas de Santiago: de barrio, de viejo y de autor, con rating real de Google.',
+    intro:
+      'Más allá de las grandes cadenas, Santiago guarda un circuito de librerías independientes con alma: de barrio, de libros usados, de editoriales que no llegan a las vitrinas grandes. Esta es nuestra selección, ordenada por reputación.',
+    rule: { subcategorySlug: 'libreria' },
+    sort: 'score_desc',
+    isPublished: true,
+    pins: [
+      {
+        placeSlug: 'libreria-lolita',
+        blurb:
+          'La **librería de barrio** mejor evaluada de Santiago, abierta en 2014 por el escritor Francisco Mouat. Más de **37.000 volúmenes** entre narrativa, poesía, infantil, cine y los títulos de su propia editorial, **Lolita Editores**.\n\nEl trato es lo que la hace única: acá te invitan a **hojear, conversar y recomendar**. El barrio la quiere tanto que durante la pandemia los vecinos crearon un «Bono Lolita» para salvarla. Queda en República de Cuba 1724, cerca del **metro Manuel Montt (Línea 1)**, y **abre todos los días** de 10 a 14 y de 15 a 20 h.\n\nHacen talleres de lectura y encuentros con autores —vale la pena seguir su agenda.',
+      },
+      {
+        placeSlug: 'la-tienda-nacional',
+        blurb:
+          'Más que una librería, **la tienda de la cultura chilena independiente**. Desde 2011 en **Barrio Lastarria**, junta bajo un mismo techo libros de autores nacionales, vinilos y CDs de música chilena, cine documental y diseño con identidad local.\n\nEs el lugar para **regalar (o regalarse) algo con sello chileno de verdad**, lejos del souvenir genérico —Lonely Planet la destacó como una de las tiendas emblemáticas de Santiago. Está en Merced 369, a pasos del **metro Bellas Artes (Línea 5)**, y abre de **lunes a viernes de 11 a 19 h** y sábado hasta las 20.\n\nTiene una segunda sede en el Museo de la Memoria, por si andas por ese lado.',
+      },
+      {
+        placeSlug: 'takk',
+        blurb:
+          'Para el lector que ya leyó todo lo que llega a las cadenas: cerca del **90% de sus más de 20.000 títulos son ejemplares únicos**, traídos de editoriales pequeñas e independientes que no llegarían solas a Chile.\n\nEstá en la mítica **Galería Drugstore** de Providencia, cerca del **metro Pedro de Valdivia (Línea 1)**, y el segundo piso está dedicado a infantil y juvenil. El equipo, de libreros de oficio, **te recomienda y conversa** —nada de algoritmos. Abre de **lunes a sábado de 10 a 19 h**; domingo cierra.\n\nSi buscas algo que nadie más tiene, parte por acá.',
+      },
+      {
+        placeSlug: 'el-cid-campeador',
+        blurb:
+          'El paraíso del **libro usado y de anticuario**: más de **30 años** en Barrio Lastarria y unos 35.000 volúmenes apilados en estantes, cajas y mesas. Su dueño selecciona cada título a mano por mérito literario —nada de bestsellers.\n\nEl encanto está en la búsqueda: **primeras ediciones, ejemplares firmados por Neruda o Mistral**, tomos que no encontrarás en ningún otro lado. También restauran libros dañados. Queda en Merced 345, a pasos del **metro Bellas Artes (Línea 5)**, abierto de **lunes a viernes de 12:30 a 19** y sábado hasta las 17.\n\nUn dato clave: **no aceptan tarjeta, lleva efectivo.**',
+      },
+    ],
+  },
 ]
