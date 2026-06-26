@@ -4,7 +4,7 @@
 priorizado. Se actualiza cada vez que avanzamos. Liviano a propósito — para retomar rápido.
 
 - **Qué es el producto / por qué (norte permanente):** [PRD.md](PRD.md) · **Estrategia post-MVP:** [STRATEGY.md](STRATEGY.md)
-- **Modelo de datos:** [SCHEMA.md](SCHEMA.md) · **Capas:** [ARCHITECTURE.md](ARCHITECTURE.md) · **Marca:** [BRAND_SPEC.md](BRAND_SPEC.md)
+- **Modelo de datos:** [SCHEMA.md](SCHEMA.md) · **Capas:** [ARCHITECTURE.md](ARCHITECTURE.md) · **Marca:** [BRAND_SPEC.md](BRAND_SPEC.md) · **Cuenta de negocio + reclamo (🅿️ parqueado, Fase C):** [BUSINESS_ACCOUNTS_SPEC.md](BUSINESS_ACCOUNTS_SPEC.md)
 - **Bitácora del rediseño (historia + razonamiento de las decisiones):** [PLAN_FASE9.md](PLAN_FASE9.md) · **Histórico (docs superados):** [docs/historico/](docs/historico/)
 
 **Última actualización:** 2026-06-26 (sesión 13 — **Guías en código + push de Listas Curadas a prod**):
@@ -252,6 +252,10 @@ lo decidido:
   (hipótesis: Eventos). **Fase C** = encender monetización de oferta sobre la audiencia ya construida.
 - **Próximo paso concreto:** aterrizar el **go-to-market** (STRATEGY §5) en acciones — objetivo medible,
   canal a atacar primero, calendario, qué se mide en GA4.
+- **Idea parqueada (2026-06-26):** sistema de **reclamo de ficha + cuenta de negocio** (User +
+  BusinessProfile 1:1, reclamo de Place o Brand, verificación por admin). Diseño completo anotado en
+  [BUSINESS_ACCOUNTS_SPEC.md](BUSINESS_ACCOUNTS_SPEC.md). **NO construir hasta Fase C** (es la base del
+  self-service de oferta; depende de tener audiencia). Solo quedó documentado, sin código.
 
 ---
 
