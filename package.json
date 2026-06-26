@@ -4,13 +4,14 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "prisma migrate deploy && next build",
+    "build": "prisma migrate deploy && npx tsx scripts/seed-curated-lists.ts && next build",
     "start": "next start",
     "lint": "next lint",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "test:watch": "vitest",
     "db:seed": "npx tsx src/infrastructure/db/prisma/seed.ts",
+    "db:seed:lists": "npx tsx scripts/seed-curated-lists.ts",
     "postinstall": "prisma generate"
   },
   "prisma": {
