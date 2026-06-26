@@ -7,7 +7,24 @@ priorizado. Se actualiza cada vez que avanzamos. Liviano a propósito — para r
 - **Modelo de datos:** [SCHEMA.md](SCHEMA.md) · **Capas:** [ARCHITECTURE.md](ARCHITECTURE.md) · **Marca:** [BRAND_SPEC.md](BRAND_SPEC.md)
 - **Bitácora del rediseño (historia + razonamiento de las decisiones):** [PLAN_FASE9.md](PLAN_FASE9.md) · **Histórico (docs superados):** [docs/historico/](docs/historico/)
 
-**Última actualización:** 2026-06-26 (sesión 12 — **Listas Curadas: formato editorial + 1ª guía**): se rediseñó
+**Última actualización:** 2026-06-26 (sesión 13 — **Guías en código + push de Listas Curadas a prod**):
+se construyó el sistema de **guías definidas en código** (la idea del usuario: "yo te pido la guía, tú la
+armas, se sube sola; no a mano"). **Fuente de verdad:** `scripts/curated-lists.data.ts` (las guías, con sus
+lugares por **slug** y los textos de los destacados). **Seed:** `scripts/seed-curated-lists.ts` resuelve
+slugs→IDs y crea la guía en la BD destino; cableado al `build` de `package.json` **después** de `prisma
+migrate deploy` → cada `git push` deja las guías nuevas en prod solas. **Modo decidido: "admin manda tras
+crear" (first-write-wins)** — el código CREA la lista la 1ª vez; una vez creada, el dueño es el admin y sus
+ediciones a mano en `/admin/listas` quedan (el seed NO la vuelve a tocar). Consecuencia: editar en el archivo
+una guía YA creada no se propaga (se edita en el admin, o se borra ahí y el deploy la recrea). Conservador:
+nunca toca listas que no estén en el archivo. **Decisión: sin límite de destacados** (criterio editorial,
+rango sano 3-7; los no-destacados salen igual como tarjetas, automático). **Chequeo de migración OK** (prod:
+`Collection.ownerId` nulos = **0** → `ALTER ... SET NOT NULL` seguro). **Commit `3c0f964` + PUSH a prod
+(`24e5c57..3c0f964`).** **Verificado en vivo ✅:** `portalpanorama.cl/lista/los-mejores-museos-de-santiago`
+carga la guía (h1 + 3 destacados con texto + grilla); el build corrió la migración `add_curated_list` y el
+seed creó la guía en prod. Typecheck limpio. **Próximo paso:** ir pidiendo guías nuevas (las agrego al
+archivo de datos → push → aparecen). **Fase 2** (filtros OCCASION/EXPERIENCE → listas de ocasión) sigue detrás.
+
+**Sesión previa:** 2026-06-26 (sesión 12 — **Listas Curadas: formato editorial + 1ª guía**): se rediseñó
 la landing `/lista/[slug]` al formato **guía-revista**: los destacados son **artículos** (imagen al lado +
 recomendación hablada en párrafos con **negrita** escaneable + data importante [rating · línea de metro ·
 horario] + link "Ver ficha completa"); el resto de la regla queda como grilla de tarjetas debajo. Backend:
