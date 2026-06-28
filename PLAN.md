@@ -20,10 +20,20 @@ hay lugares para cumpleaños infantiles vs. celebraciones en general). Sincroniz
 activos reversibles · Filters.tsx con 2 secciones nuevas · seed · SKILL.md). Typecheck limpio + 99 tests verdes.
 **Verificado e2e en local:** `?ocasion=cita`→80, `?experiencia=terraza`→26; los 3 tags nuevos dan 0 y la faceta
 los **oculta hasta etiquetar contenido** (por diseño). **✅ PUSHEADO A PROD (2026-06-28):** `git push`
-(`138197c..9e2ee68`, 3 commits: `e6032ac` spec + `ae61a21` feat + `9e2ee68` docs) → Vercel redeploya y el seed
-del build reseedea los 3 tags nuevos en prod (aditivos, sin migración destructiva). **Próximo paso:** ir
-etiquetando fichas con los tags nuevos para que poblen el rail (hoy dan 0; la faceta los oculta hasta que haya
-contenido). **Scope aparte anotado:**
+(`138197c..9e2ee68`, 3 commits: `e6032ac` spec + `ae61a21` feat + `9e2ee68` docs) → Vercel redeployó (aditivo,
+sin migración destructiva). **⚠️ Corrección:** el build de Vercel corre `prisma migrate deploy &&
+seed-curated-lists && next build` — **NO corre el seed de catálogos** (`src/infrastructure/db/prisma/seed.ts`),
+así que el push **no** creó los 3 tags nuevos en prod ni los etiquetó. **Etiquetado de prod hecho a mano
+(2026-06-28)** con un script aditivo e idempotente: crea los 3 tags + asigna PlaceTags por subcategoría primaria
+sobre los PUBLISHED. Mapeo: **Naturaleza/áreas verdes** = toda la categoría *Naturaleza y aire libre* (22) ·
+**Bajo techo** = subcats indoor de Arte/cultura + Juegos + Vida nocturna + Locales/tiendas, **gastronomía
+excluida** del bulk por zona gris de terrazas (103) · **Para días de lluvia** = cultura + juegos + mall (51).
+Corrido **local primero** (verificado), luego **prod** vía `PROD_DB_URL` temporal en `.env.local` (borrada tras
+correr). Verificado en vivo: los 3 chips aparecen y filtran en `portalpanorama.cl/explorar`. **Gotcha
+registrado:** agregar un tag/categoría al seed NO viaja solo con el push; hay que sembrarlo en prod a mano (o
+cablear el seed de catálogos al build, pendiente decidir). **Próximo paso:** afinar a mano la gastronomía indoor
+para "Bajo techo" y seguir poblando con contenido nuevo (la skill `ficha-lugar` ya nace con estos tags).
+**Scope aparte anotado:**
 habilitar OCCASION/EXPERIENCE también como **regla de listas curadas** (para armar "Para una primera cita"
 automática) — toca el dominio `CuratedRule`, no se hizo. La **Fase 2** (listas de ocasión) ahora está desbloqueada
 del lado del filtro.
