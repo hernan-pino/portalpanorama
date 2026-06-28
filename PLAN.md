@@ -7,7 +7,26 @@ priorizado. Se actualiza cada vez que avanzamos. Liviano a propósito — para r
 - **Modelo de datos:** [SCHEMA.md](SCHEMA.md) · **Capas:** [ARCHITECTURE.md](ARCHITECTURE.md) · **Marca:** [BRAND_SPEC.md](BRAND_SPEC.md) · **Cuenta de negocio + reclamo (🅿️ parqueado, Fase C):** [BUSINESS_ACCOUNTS_SPEC.md](BUSINESS_ACCOUNTS_SPEC.md)
 - **Bitácora del rediseño (historia + razonamiento de las decisiones):** [PLAN_FASE9.md](PLAN_FASE9.md) · **Histórico (docs superados):** [docs/historico/](docs/historico/)
 
-**Última actualización:** 2026-06-26 (sesión 13 — **Guías en código + push de Listas Curadas a prod**):
+**Última actualización:** 2026-06-28 (sesión 14 — **Filtros OCCASION/EXPERIENCE activados en /explorar**):
+se activó el segundo bullet de la **Fase A** de [STRATEGY.md](STRATEGY.md) (afilar el core barato): las capas de
+tags **OCCASION ("Ideal para")** y **EXPERIENCE ("Experiencia")** ahora son **facetas de filtro reales** en el
+rail de `/explorar` (antes vivían solo en la ficha). Mismo mecanismo que el resto (AND de `some` por slug);
+claves de URL `ocasion=`/`experiencia=` (CSV). **Vocabulario curado con research** (blogs/guías de panoramas):
+3 tags nuevos **aditivos** (sin migración) — OCCASION **"Para días de lluvia"**; EXPERIENCE **"Naturaleza /
+áreas verdes"** y **"Bajo techo"**. Cumpleaños y Celebración se dejaron **separados** (decisión del usuario:
+hay lugares para cumpleaños infantiles vs. celebraciones en general). Sincronizado en **seed** (reseed local OK:
+10 occasion · 12 experience) **+ skill `ficha-lugar`** (para que el contenido nuevo nazca con estos tags).
+**7 archivos** (port SearchService · PostgresFTSSearchService · parseSearchParams · explorar/page.tsx con chips
+activos reversibles · Filters.tsx con 2 secciones nuevas · seed · SKILL.md). Typecheck limpio + 99 tests verdes.
+**Verificado e2e en local:** `?ocasion=cita`→80, `?experiencia=terraza`→26; los 3 tags nuevos dan 0 y la faceta
+los **oculta hasta etiquetar contenido** (por diseño). **Commit `ae61a21` — SIN PUSH.** **`main` quedó 2 commits
+adelante de prod** (`ae61a21` + `e6032ac`, el doc del spec). **Próximo paso:** push a prod (Vercel reseedea los
+3 tags en el build) + ir etiquetando fichas con los tags nuevos para que poblen el rail. **Scope aparte anotado:**
+habilitar OCCASION/EXPERIENCE también como **regla de listas curadas** (para armar "Para una primera cita"
+automática) — toca el dominio `CuratedRule`, no se hizo. La **Fase 2** (listas de ocasión) ahora está desbloqueada
+del lado del filtro.
+
+**Sesión previa:** 2026-06-26 (sesión 13 — **Guías en código + push de Listas Curadas a prod**):
 se construyó el sistema de **guías definidas en código** (la idea del usuario: "yo te pido la guía, tú la
 armas, se sube sola; no a mano"). **Fuente de verdad:** `scripts/curated-lists.data.ts` (las guías, con sus
 lugares por **slug** y los textos de los destacados). **Seed:** `scripts/seed-curated-lists.ts` resuelve
