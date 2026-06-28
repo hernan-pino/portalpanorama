@@ -48,12 +48,14 @@ function FiltersInner({ facets }: Props) {
 
   // nº de filtros activos por sección (badge en la cabecera del acordeón).
   const socialN = getMulti('con').length
+  const ocasionN = getMulti('ocasion').length
   const precioN = getMulti('precio').length
   const dondeN = [get('comuna'), get('barrio'), get('metro')].filter(Boolean).length
   const ambienteN = getMulti('ambiente').length
+  const experienciaN = getMulti('experiencia').length
   const accesoN = getMulti('acceso').length
   const reservaN = get('sinreserva') === '1' ? 1 : 0
-  const totalN = socialN + precioN + dondeN + ambienteN + accesoN + reservaN
+  const totalN = socialN + ocasionN + precioN + dondeN + ambienteN + experienciaN + accesoN + reservaN
 
   const body = (
     <div className="filters__body" data-pending={isPending || undefined}>
@@ -62,6 +64,14 @@ function FiltersInner({ facets }: Props) {
           options={facets.social}
           isActive={(v) => getMulti('con').includes(v)}
           onToggle={(v) => toggleMulti('con', v)}
+        />
+      </Section>
+
+      <Section title="Ideal para" count={ocasionN} defaultOpen={ocasionN > 0}>
+        <ChipSet
+          options={facets.occasion}
+          isActive={(v) => getMulti('ocasion').includes(v)}
+          onToggle={(v) => toggleMulti('ocasion', v)}
         />
       </Section>
 
@@ -108,6 +118,14 @@ function FiltersInner({ facets }: Props) {
           options={facets.vibe}
           isActive={(v) => getMulti('ambiente').includes(v)}
           onToggle={(v) => toggleMulti('ambiente', v)}
+        />
+      </Section>
+
+      <Section title="Experiencia" count={experienciaN} defaultOpen={experienciaN > 0}>
+        <ChipSet
+          options={facets.experience}
+          isActive={(v) => getMulti('experiencia').includes(v)}
+          onToggle={(v) => toggleMulti('experiencia', v)}
         />
       </Section>
 

@@ -158,9 +158,9 @@ const CATEGORIES: {
 // Métodos de pago NO son tag (Place.paymentMethods String[]). Lluvia = enum RainPolicy.
 // Horario NO es tag (se deriva del horario cargado). Presupuesto = PriceRange.
 const TAGS_AUDIENCE = ['En pareja', 'Con familia', 'Con niños pequeños', 'Con amigos', 'Solo/a', 'Adultos mayores', 'Todo público', 'LGBT+ friendly']
-const TAGS_OCCASION = ['Cita', 'Cumpleaños', 'Celebración', 'Junta de amigos', 'Reunión de trabajo', 'Trabajo remoto / Estudiar', 'Carrete / Salida nocturna', 'Panorama familiar', 'Afteroffice']
+const TAGS_OCCASION = ['Cita', 'Cumpleaños', 'Celebración', 'Junta de amigos', 'Reunión de trabajo', 'Trabajo remoto / Estudiar', 'Carrete / Salida nocturna', 'Panorama familiar', 'Afteroffice', 'Para días de lluvia']
 const TAGS_VIBE = ['Tranquilo', 'Animado', 'Íntimo / Romántico', 'Relajado', 'Casual', 'Elegante', 'Bohemio', 'Acogedor', 'De barrio', 'Trendy', 'Especial / Único', 'Cultural', 'Aventurero', 'Fiestero']
-const TAGS_EXPERIENCE = ['Al aire libre', 'Terraza', 'Rooftop', 'Vista panorámica', 'Música en vivo', 'Vida nocturna', 'Fotogénico / Instagrameable', 'Atardecer', 'Interactivo', 'Degustaciones']
+const TAGS_EXPERIENCE = ['Al aire libre', 'Terraza', 'Rooftop', 'Vista panorámica', 'Música en vivo', 'Vida nocturna', 'Fotogénico / Instagrameable', 'Atardecer', 'Interactivo', 'Degustaciones', 'Naturaleza / áreas verdes', 'Bajo techo']
 const TAGS_SERVICE = ['Cerca del metro', 'Accesible en micro', 'Requiere auto', 'Estacionamiento propio', 'Estacionamiento cercano', 'Bicicletero', 'Acceso silla de ruedas', 'Baño disponible', 'Cambiador de pañales', 'Zona de lactancia', 'Pet friendly', 'WiFi', 'Aire acondicionado', 'Para llevar', 'Delivery']
 
 // Específicos (condicionales por categoría). Primer paso, refinable. Solo las 4

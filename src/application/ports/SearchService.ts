@@ -1,9 +1,9 @@
 import { PriceRange } from '@domain/place/PriceRange'
 import { PlaceCardView } from './PlaceRepository'
 
-// Filtros vivos del MVP (entregable 4): contexto social · gasto · dónde
-// (comuna/barrio/metro) · accesibilidad · ambiente. El orden por defecto SIEMPRE
-// es score desc (reputación). El filtro "Sin reserva" se deriva de reservation.
+// Filtros vivos del MVP: contexto social · gasto · dónde (comuna/barrio/metro) ·
+// accesibilidad · ambiente · ideal para (ocasión) · experiencia. El orden por
+// defecto SIEMPRE es score desc (reputación). "Sin reserva" se deriva de reservation.
 export interface SearchParams {
   query?: string
   categorySlug?: string
@@ -16,6 +16,8 @@ export interface SearchParams {
   socialTagSlugs?: string[]
   accessTagSlugs?: string[]
   vibeTagSlugs?: string[]
+  occasionTagSlugs?: string[] // "Ideal para" (OCCASION)
+  experienceTagSlugs?: string[] // "Experiencia" (EXPERIENCE)
   walkInOnly?: boolean // "Sin reserva"
   page?: number
   limit?: number
@@ -49,6 +51,8 @@ export interface PlaceFacets {
   social: FacetCount[]
   access: FacetCount[]
   vibe: FacetCount[]
+  occasion: FacetCount[] // "Ideal para" (OCCASION)
+  experience: FacetCount[] // "Experiencia" (EXPERIENCE)
 }
 
 // Sugerencia de autocompletado (la barra de búsqueda). Shape liviano: solo lo que

@@ -85,11 +85,12 @@ Topes solo en las 3 capas subjetivas; las objetivas van sin tope ("más info = m
 - **AUDIENCE — ¿Con quién? (máx 4):** En pareja · Con familia · Con niños pequeños · Con amigos · Solo/a ·
   Adultos mayores · Todo público · LGBT+ friendly
 - **OCCASION — Ideal para (máx 3):** Cita · Cumpleaños · Celebración · Junta de amigos · Reunión de trabajo ·
-  Trabajo remoto / Estudiar · Carrete / Salida nocturna · Panorama familiar · Afteroffice
+  Trabajo remoto / Estudiar · Carrete / Salida nocturna · Panorama familiar · Afteroffice · Para días de lluvia
 - **VIBE — Ambiente (máx 3):** Tranquilo · Animado · Íntimo / Romántico · Relajado · Casual · Elegante ·
   Bohemio · Acogedor · De barrio · Trendy · Especial / Único · Cultural · Aventurero · Fiestero
 - **EXPERIENCE — Qué ofrece (sin tope):** Al aire libre · Terraza · Rooftop · Vista panorámica ·
-  Música en vivo · Vida nocturna · Fotogénico / Instagrameable · Atardecer · Interactivo · Degustaciones
+  Música en vivo · Vida nocturna · Fotogénico / Instagrameable · Atardecer · Interactivo · Degustaciones ·
+  Naturaleza / áreas verdes · Bajo techo
 - **SERVICE — Servicios y acceso (sin tope):** Cerca del metro · Accesible en micro · Requiere auto ·
   Estacionamiento propio · Estacionamiento cercano · Bicicletero · Acceso silla de ruedas · Baño disponible ·
   Cambiador de pañales · Zona de lactancia · Pet friendly · WiFi · Aire acondicionado · Para llevar · Delivery

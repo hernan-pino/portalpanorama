@@ -92,6 +92,8 @@ export class PostgresFTSSearchService implements SearchService {
       ...(params.socialTagSlugs ?? []),
       ...(params.accessTagSlugs ?? []),
       ...(params.vibeTagSlugs ?? []),
+      ...(params.occasionTagSlugs ?? []),
+      ...(params.experienceTagSlugs ?? []),
     ]
     if (tagSlugs.length) {
       where.AND = tagSlugs.map((slug) => ({ tags: { some: { tag: { slug } } } }))
@@ -122,6 +124,8 @@ export class PostgresFTSSearchService implements SearchService {
       social: tags.social,
       access: tags.access,
       vibe: tags.vibe,
+      occasion: tags.occasion,
+      experience: tags.experience,
     }
   }
 
@@ -259,13 +263,16 @@ export class PostgresFTSSearchService implements SearchService {
     social: FacetCount[]
     access: FacetCount[]
     vibe: FacetCount[]
+    occasion: FacetCount[]
+    experience: FacetCount[]
   }> {
+    const empty = { social: [], access: [], vibe: [], occasion: [], experience: [] }
     const groups = await this.prisma.placeTag.groupBy({
       by: ['tagId'],
       where: { place: { status: PUBLISHED } },
       _count: { _all: true },
     })
-    if (groups.length === 0) return { social: [], access: [], vibe: [] }
+    if (groups.length === 0) return empty
     const tags = await this.prisma.tag.findMany({
       where: { id: { in: groups.map((g) => g.tagId) } },
       select: { id: true, slug: true, name: true, layer: true },
@@ -275,6 +282,8 @@ export class PostgresFTSSearchService implements SearchService {
     const social: FacetCount[] = []
     const access: FacetCount[] = []
     const vibe: FacetCount[] = []
+    const occasion: FacetCount[] = []
+    const experience: FacetCount[] = []
     for (const g of groups) {
       const t = meta.get(g.tagId)
       if (!t) continue
@@ -282,14 +291,16 @@ export class PostgresFTSSearchService implements SearchService {
       if (t.layer === $Enums.TagLayer.AUDIENCE) social.push(fc)
       else if (t.layer === $Enums.TagLayer.SERVICE) access.push(fc)
       else if (t.layer === $Enums.TagLayer.VIBE) vibe.push(fc)
-      // OCCASION/EXPERIENCE viven en la ficha pero aún no son faceta de filtro
-      // (pendiente: sumar "Ideal para" y "Experiencia" al FilterRail). SPECIFIC =
-      // condicional por categoría, tampoco es faceta universal.
+      else if (t.layer === $Enums.TagLayer.OCCASION) occasion.push(fc)
+      else if (t.layer === $Enums.TagLayer.EXPERIENCE) experience.push(fc)
+      // SPECIFIC = condicional por categoría, no es faceta universal del rail.
     }
     social.sort(byCountThenLabel)
     access.sort(byCountThenLabel)
     vibe.sort(byCountThenLabel)
-    return { social, access, vibe }
+    occasion.sort(byCountThenLabel)
+    experience.sort(byCountThenLabel)
+    return { social, access, vibe, occasion, experience }
   }
 
   // ── Texto tolerante (MVP, ≤100 lugares → en la app, no en SQL) ──

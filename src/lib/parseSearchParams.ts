@@ -17,6 +17,8 @@ export interface RawSearchParams {
   estacion?: string
   ambiente?: string // tags de vibe (csv)
   acceso?: string // tags de accesibilidad (csv)
+  ocasion?: string // tags "Ideal para" / OCCASION (csv)
+  experiencia?: string // tags de experiencia / EXPERIENCE (csv)
   sinreserva?: string // '1'
   pagina?: string
   view?: string
@@ -35,6 +37,8 @@ export interface ParsedSearchParams {
   metroStationSlug?: string
   vibeTagSlugs?: string[]
   accessTagSlugs?: string[]
+  occasionTagSlugs?: string[]
+  experienceTagSlugs?: string[]
   walkInOnly?: boolean
   page: number
   view: 'grid' | 'lista'
@@ -86,6 +90,8 @@ export function parseSearchParams(raw: RawSearchParams): ParsedSearchParams {
     metroStationSlug: slug(raw.estacion),
     vibeTagSlugs: slugList(raw.ambiente),
     accessTagSlugs: slugList(raw.acceso),
+    occasionTagSlugs: slugList(raw.ocasion),
+    experienceTagSlugs: slugList(raw.experiencia),
     walkInOnly: raw.sinreserva === '1' ? true : undefined,
     page,
     view: raw.view === 'lista' ? 'lista' : 'grid',

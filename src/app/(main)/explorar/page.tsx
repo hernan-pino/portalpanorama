@@ -35,6 +35,8 @@ export default async function ExplorarPage({ searchParams }: PageProps) {
       socialTagSlugs: f.socialTagSlugs,
       accessTagSlugs: f.accessTagSlugs,
       vibeTagSlugs: f.vibeTagSlugs,
+      occasionTagSlugs: f.occasionTagSlugs,
+      experienceTagSlugs: f.experienceTagSlugs,
       walkInOnly: f.walkInOnly,
       page: f.page,
       limit: 24,
@@ -72,6 +74,8 @@ export default async function ExplorarPage({ searchParams }: PageProps) {
   const metroLabels = labelOf(facets.metroLines)
   const vibeLabels = labelOf(facets.vibe)
   const accessLabels = labelOf(facets.access)
+  const occasionLabels = labelOf(facets.occasion)
+  const experienceLabels = labelOf(facets.experience)
 
   const activeCategory = categories.find((c) => c.slug === f.categorySlug)
   // Subcategorías del rubro activo que tengan lugares (contador > 0).
@@ -127,8 +131,12 @@ export default async function ExplorarPage({ searchParams }: PageProps) {
   if (f.communeSlug) activeChips.push({ label: communeLabels.get(f.communeSlug) ?? f.communeSlug, href: removeSingle('comuna') })
   if (f.neighborhoodSlug) activeChips.push({ label: hoodLabels.get(f.neighborhoodSlug) ?? f.neighborhoodSlug, href: removeSingle('barrio') })
   if (f.metroLineCode) activeChips.push({ label: metroLabels.get(f.metroLineCode) ?? f.metroLineCode, href: removeSingle('metro') })
+  for (const slug of f.occasionTagSlugs ?? [])
+    activeChips.push({ label: occasionLabels.get(slug) ?? slug, href: removeFromMulti('ocasion', slug) })
   for (const slug of f.vibeTagSlugs ?? [])
     activeChips.push({ label: vibeLabels.get(slug) ?? slug, href: removeFromMulti('ambiente', slug) })
+  for (const slug of f.experienceTagSlugs ?? [])
+    activeChips.push({ label: experienceLabels.get(slug) ?? slug, href: removeFromMulti('experiencia', slug) })
   for (const slug of f.accessTagSlugs ?? [])
     activeChips.push({ label: accessLabels.get(slug) ?? slug, href: removeFromMulti('acceso', slug) })
   if (f.walkInOnly) activeChips.push({ label: 'Sin reserva', href: removeSingle('sinreserva') })
