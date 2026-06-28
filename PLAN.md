@@ -19,9 +19,11 @@ hay lugares para cumpleaños infantiles vs. celebraciones en general). Sincroniz
 **7 archivos** (port SearchService · PostgresFTSSearchService · parseSearchParams · explorar/page.tsx con chips
 activos reversibles · Filters.tsx con 2 secciones nuevas · seed · SKILL.md). Typecheck limpio + 99 tests verdes.
 **Verificado e2e en local:** `?ocasion=cita`→80, `?experiencia=terraza`→26; los 3 tags nuevos dan 0 y la faceta
-los **oculta hasta etiquetar contenido** (por diseño). **Commit `ae61a21` — SIN PUSH.** **`main` quedó 2 commits
-adelante de prod** (`ae61a21` + `e6032ac`, el doc del spec). **Próximo paso:** push a prod (Vercel reseedea los
-3 tags en el build) + ir etiquetando fichas con los tags nuevos para que poblen el rail. **Scope aparte anotado:**
+los **oculta hasta etiquetar contenido** (por diseño). **✅ PUSHEADO A PROD (2026-06-28):** `git push`
+(`138197c..9e2ee68`, 3 commits: `e6032ac` spec + `ae61a21` feat + `9e2ee68` docs) → Vercel redeploya y el seed
+del build reseedea los 3 tags nuevos en prod (aditivos, sin migración destructiva). **Próximo paso:** ir
+etiquetando fichas con los tags nuevos para que poblen el rail (hoy dan 0; la faceta los oculta hasta que haya
+contenido). **Scope aparte anotado:**
 habilitar OCCASION/EXPERIENCE también como **regla de listas curadas** (para armar "Para una primera cita"
 automática) — toca el dominio `CuratedRule`, no se hizo. La **Fase 2** (listas de ocasión) ahora está desbloqueada
 del lado del filtro.
