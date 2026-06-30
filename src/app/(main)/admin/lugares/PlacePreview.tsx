@@ -70,6 +70,7 @@ export function PlacePreview({ values, options, onClose }: PlacePreviewProps) {
       vibe: byLayer('VIBE'),
       experience: byLayer('EXPERIENCE'),
       specific: byLayer('SPECIFIC'),
+      cuisine: byLayer('CUISINE'),
       service: byLayer('SERVICE'),
       rating: Number.isFinite(rating) ? rating : undefined,
       reviews: Number.isFinite(reviews) ? reviews : undefined,
@@ -209,9 +210,10 @@ export function PlacePreview({ values, options, onClose }: PlacePreviewProps) {
             </div>
 
             {/* ambiente y detalles (tags secundarios, tras los datos prácticos) */}
-            {(v.vibe.length || v.experience.length || v.specific.length) ? (
+            {(v.vibe.length || v.experience.length || v.specific.length || v.cuisine.length) ? (
               <div className="ficha__section">
                 <h2 className="ficha__sec-h">Ambiente y detalles</h2>
+                <TagGroup label="Tipo de comida" tags={v.cuisine} />
                 <TagGroup label="Vibe" tags={v.vibe} />
                 <TagGroup label="Experiencia" tags={v.experience} />
                 <TagGroup label="Lo que ofrece" tags={v.specific} />

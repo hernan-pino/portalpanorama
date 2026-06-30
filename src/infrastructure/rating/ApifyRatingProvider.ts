@@ -20,13 +20,20 @@ const TIMEOUT_MS = 120_000 // un run puede tardar; ~2 min de margen
 const MAX_PHOTOS = 10
 
 export class ApifyRatingProvider implements PlaceRatingProvider {
-  private readonly token: string
+  // Una o más cuentas de Apify, en orden de uso. Permite doblar el free tier: cuando
+  // la primera agota su cuota mensual (o el token es rechazado), rota sola a la
+  // siguiente. `tokenIndex` recuerda en cuál vamos para no re-pegarle a una agotada.
+  private readonly tokens: string[]
+  private tokenIndex = 0
 
-  constructor(token = process.env.APIFY_TOKEN) {
-    if (!token) {
+  constructor(tokens?: string[]) {
+    const list = (tokens ?? [process.env.APIFY_TOKEN, process.env.APIFY_TOKEN_2])
+      .map((t) => t?.trim())
+      .filter((t): t is string => !!t)
+    if (list.length === 0) {
       throw new RatingLookupError('Falta APIFY_TOKEN en el entorno.')
     }
-    this.token = token
+    this.tokens = list
   }
 
   async lookup(query: RatingQuery): Promise<RatingResult | null> {
@@ -55,28 +62,49 @@ export class ApifyRatingProvider implements PlaceRatingProvider {
   }
 
   private async runActor(input: Record<string, unknown>): Promise<ApifyPlaceItem[]> {
-    let res: Response
-    try {
-      res = await fetch(`${ENDPOINT}?token=${encodeURIComponent(this.token)}`, {
-        method: 'POST',
-        headers: { 'content-type': 'application/json' },
-        body: JSON.stringify(input),
-        signal: AbortSignal.timeout(TIMEOUT_MS),
-      })
-    } catch {
-      throw new RatingLookupError('No se pudo conectar con Apify (timeout o red).')
+    let lastError: RatingLookupError | null = null
+    // Arranca desde la cuenta actual; si una agota cuota (402) o rechaza el token
+    // (401/403), avanza el puntero y prueba la siguiente. No reintenta las ya agotadas.
+    for (let idx = this.tokenIndex; idx < this.tokens.length; idx++) {
+      let res: Response
+      try {
+        res = await fetch(`${ENDPOINT}?token=${encodeURIComponent(this.tokens[idx])}`, {
+          method: 'POST',
+          headers: { 'content-type': 'application/json' },
+          body: JSON.stringify(input),
+          signal: AbortSignal.timeout(TIMEOUT_MS),
+        })
+      } catch {
+        // Timeout/red: no es problema de la cuenta, no tiene sentido rotar.
+        throw new RatingLookupError('No se pudo conectar con Apify (timeout o red).')
+      }
+
+      // Token rechazado (401/403) o cuota/plan agotado (402): rota a la siguiente cuenta.
+      if (res.status === 401 || res.status === 403 || res.status === 402) {
+        this.tokenIndex = idx + 1
+        lastError = new RatingLookupError(
+          `Apify cuenta #${idx + 1}: token rechazado o cuota agotada (HTTP ${res.status}).`,
+        )
+        if (this.tokenIndex < this.tokens.length) {
+          console.warn(`⚠️  ${lastError.message} → cambiando a la cuenta #${idx + 2}.`)
+        }
+        continue
+      }
+      if (!res.ok) {
+        throw new RatingLookupError(`Apify respondió con error (HTTP ${res.status}).`)
+      }
+      const body = (await res.json()) as unknown
+      if (!Array.isArray(body)) {
+        throw new RatingLookupError('Respuesta inesperada de Apify (no es una lista).')
+      }
+      this.tokenIndex = idx // pega a la cuenta que funcionó para las siguientes llamadas
+      return body as ApifyPlaceItem[]
     }
-    if (res.status === 401 || res.status === 403) {
-      throw new RatingLookupError('Apify rechazó el token (revisa APIFY_TOKEN).')
-    }
-    if (!res.ok) {
-      throw new RatingLookupError(`Apify respondió con error (HTTP ${res.status}).`)
-    }
-    const body = (await res.json()) as unknown
-    if (!Array.isArray(body)) {
-      throw new RatingLookupError('Respuesta inesperada de Apify (no es una lista).')
-    }
-    return body as ApifyPlaceItem[]
+
+    throw (
+      lastError ??
+      new RatingLookupError('Todas las cuentas de Apify agotaron su cuota o fueron rechazadas.')
+    )
   }
 
   // Mapea el item del actor a nuestro contrato. Lee varios nombres de campo de forma

@@ -163,12 +163,29 @@ const TAGS_VIBE = ['Tranquilo', 'Animado', 'Íntimo / Romántico', 'Relajado', '
 const TAGS_EXPERIENCE = ['Al aire libre', 'Terraza', 'Rooftop', 'Vista panorámica', 'Música en vivo', 'Vida nocturna', 'Fotogénico / Instagrameable', 'Atardecer', 'Interactivo', 'Degustaciones', 'Naturaleza / áreas verdes', 'Bajo techo']
 const TAGS_SERVICE = ['Cerca del metro', 'Accesible en micro', 'Requiere auto', 'Estacionamiento propio', 'Estacionamiento cercano', 'Bicicletero', 'Acceso silla de ruedas', 'Baño disponible', 'Cambiador de pañales', 'Zona de lactancia', 'Pet friendly', 'WiFi', 'Aire acondicionado', 'Para llevar', 'Delivery']
 
+// Tipo de comida (capa CUISINE, condicional a Gastronomía). Mezcla COCINA (por país)
+// y PLATO/especialidad, porque la gente busca por antojo ("pizza", "ramen", "sushi"),
+// no por nacionalidad. Las "Cocina X" salieron de SPECIFIC (mismo slug → no se pierden
+// las asignaciones existentes; reseedear las re-asigna a esta capa). El filtro visible
+// ("Tipo de comida") en /explorar es un build aparte; esto solo deja el dato born-tagged.
+const TAGS_CUISINE = [
+  // Cocinas (por país / región)
+  'Cocina chilena', 'Cocina peruana', 'Cocina italiana', 'Cocina japonesa', 'Cocina china',
+  'Cocina árabe', 'Cocina mexicana', 'Cocina tailandesa', 'Cocina coreana', 'Cocina vietnamita',
+  'Cocina india', 'Cocina española', 'Cocina francesa', 'Cocina venezolana', 'Cocina mediterránea',
+  'Fusión asiática',
+  // Platos / especialidad
+  'Pizza', 'Hamburguesas', 'Completos', 'Sushi', 'Ramen', 'Sándwiches', 'Empanadas',
+  'Ceviche', 'Parrilla / Carnes', 'Mariscos', 'Pastas', 'Brunch / Desayuno',
+]
+
 // Específicos (condicionales por categoría). Primer paso, refinable. Solo las 4
 // categorías activas; los específicos de las event-only se seedearán al encender eventos.
 // Los que se promovieron a capas universales (Terraza, Música en vivo, Vista panorámica,
-// Para llevar, Delivery) salieron de acá para no duplicar slug.
+// Para llevar, Delivery) salieron de acá para no duplicar slug. Las "Cocina X" pasaron a
+// la capa CUISINE (ver TAGS_CUISINE).
 const TAGS_SPECIFIC: Record<string, string[]> = {
-  'Gastronomía': ['Happy hour', 'Menú del día', 'Menú infantil', 'Opciones veganas', 'Vegetariano', 'Sin gluten', 'Pantalla deportes', 'Sillas para bebés', 'Cocina chilena', 'Cocina peruana', 'Cocina italiana', 'Cocina japonesa', 'Cocina china', 'Cocina árabe', 'Cocina mexicana'],
+  'Gastronomía': ['Happy hour', 'Menú del día', 'Menú infantil', 'Opciones veganas', 'Vegetariano', 'Sin gluten', 'Pantalla deportes', 'Sillas para bebés'],
   'Naturaleza y aire libre': ['Dificultad baja', 'Dificultad media', 'Dificultad alta', 'Con zona de picnic', 'Con sombra', 'Señal de celular', 'Apto coche guagua', 'Solo verano', 'Abierto todo el año'],
   'Arte y cultura': ['Visita guiada disponible', 'Audioguía', 'Fotografía permitida', 'Cafetería interna', 'Tienda interna', 'Exposición permanente', 'Exposición temporal', 'Talleres asociados'],
   'Locales y tiendas': ['Solo para llevar', 'Con zona de estar', 'Productos nacionales', 'Productos importados', 'Artesanal / Local', 'Envío disponible'],
@@ -268,7 +285,7 @@ async function main() {
   console.log(`  ✓ ${CATEGORIES.length} categorías + subcategorías`)
 
   // ── Tags ──
-  type Layer = 'AUDIENCE' | 'OCCASION' | 'VIBE' | 'EXPERIENCE' | 'SERVICE' | 'SPECIFIC'
+  type Layer = 'AUDIENCE' | 'OCCASION' | 'VIBE' | 'EXPERIENCE' | 'SERVICE' | 'SPECIFIC' | 'CUISINE'
   async function upsertTag(name: string, layer: Layer, categoryId: string | null) {
     const slug = slugify(name)
     await prisma.tag.upsert({
@@ -287,7 +304,10 @@ async function main() {
     const categoryId = categoryIdByName[catName]
     for (const name of tags) { await upsertTag(name, 'SPECIFIC', categoryId); specificCount++ }
   }
-  console.log(`  ✓ tags: ${TAGS_AUDIENCE.length} audience · ${TAGS_OCCASION.length} occasion · ${TAGS_VIBE.length} vibe · ${TAGS_EXPERIENCE.length} experience · ${TAGS_SERVICE.length} service · ${specificCount} específicos`)
+  // Tipo de comida (CUISINE): condicional a Gastronomía.
+  const gastronomiaId = categoryIdByName['Gastronomía'] ?? null
+  for (const name of TAGS_CUISINE) await upsertTag(name, 'CUISINE', gastronomiaId)
+  console.log(`  ✓ tags: ${TAGS_AUDIENCE.length} audience · ${TAGS_OCCASION.length} occasion · ${TAGS_VIBE.length} vibe · ${TAGS_EXPERIENCE.length} experience · ${TAGS_SERVICE.length} service · ${specificCount} específicos · ${TAGS_CUISINE.length} cuisine`)
 
   // ── Admin ──
   const passwordHash = await bcrypt.hash('admin1234', 10)

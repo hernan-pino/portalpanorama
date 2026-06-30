@@ -79,7 +79,7 @@ Son **6** las asignables hoy (reorg 2026-06-20). Cada una con sus subcategorías
 > **Apagadas en el MVP** (no las uses): *Shows y espectáculos*, *Talleres y actividades*, *Ferias y mercados*
 > (son event-only; volverán con Eventos).
 
-### Tags — 6 capas (usa el vocabulario exacto)
+### Tags — 7 capas (usa el vocabulario exacto)
 Topes solo en las 3 capas subjetivas; las objetivas van sin tope ("más info = mejor").
 
 - **AUDIENCE — ¿Con quién? (máx 4):** En pareja · Con familia · Con niños pequeños · Con amigos · Solo/a ·
@@ -94,9 +94,17 @@ Topes solo en las 3 capas subjetivas; las objetivas van sin tope ("más info = m
 - **SERVICE — Servicios y acceso (sin tope):** Cerca del metro · Accesible en micro · Requiere auto ·
   Estacionamiento propio · Estacionamiento cercano · Bicicletero · Acceso silla de ruedas · Baño disponible ·
   Cambiador de pañales · Zona de lactancia · Pet friendly · WiFi · Aire acondicionado · Para llevar · Delivery
+- **CUISINE — Tipo de comida (solo Gastronomía, sin tope):** mezcla **cocina** (por país) y **plato/especialidad**,
+  porque la gente busca por antojo. Asigna TODAS las que apliquen (una hamburguesería italiana de autor puede ser
+  `Hamburguesas`; un nikkei `Cocina japonesa` + `Cocina peruana`).
+  - *Cocinas:* Cocina chilena · Cocina peruana · Cocina italiana · Cocina japonesa · Cocina china · Cocina árabe ·
+    Cocina mexicana · Cocina tailandesa · Cocina coreana · Cocina vietnamita · Cocina india · Cocina española ·
+    Cocina francesa · Cocina venezolana · Cocina mediterránea · Fusión asiática
+  - *Platos / especialidad:* Pizza · Hamburguesas · Completos · Sushi · Ramen · Sándwiches · Empanadas · Ceviche ·
+    Parrilla / Carnes · Mariscos · Pastas · Brunch / Desayuno
 - **SPECIFIC — Atributos por categoría (sin tope, solo los que apliquen):**
   - *Gastronomía:* Happy hour · Menú del día · Menú infantil · Opciones veganas · Vegetariano · Sin gluten ·
-    Pantalla deportes · Sillas para bebés · Cocina chilena / peruana / italiana / japonesa / china / árabe / mexicana
+    Pantalla deportes · Sillas para bebés
   - *Naturaleza:* Dificultad baja / media / alta · Con zona de picnic · Con sombra · Señal de celular ·
     Apto coche guagua · Solo verano · Abierto todo el año
   - *Arte y cultura:* Visita guiada disponible · Audioguía · Fotografía permitida · Cafetería interna ·
@@ -223,6 +231,7 @@ distintos. Decide cuál usar **alineado con el modelo padre-hijo del directorio*
 - 🎭 Ambiente (máx 3): ...
 - ✨ Experiencia: ...
 - ♿ Servicios y acceso: ...
+- 🍽️ Tipo de comida (solo Gastronomía): ...
 - 🏷️ Específicos: ...
 
 **Spots sin ficha** (si aplica): nombre — descripción · ...
@@ -271,7 +280,7 @@ distintos. Decide cuál usar **alineado con el modelo padre-hijo del directorio*
   "reputacion_google": { "estrellas": null, "n_resenas": null, "place_id": null },
   "tags": {
     "audience": [], "occasion": [], "vibe": [],
-    "experience": [], "service": [], "specific": []
+    "experience": [], "service": [], "cuisine": [], "specific": []
   },
   "spots": [ { "nombre": "", "descripcion": null } ],
   "imagenes": [ { "url": "", "alt": "", "credito": null, "portada": true } ],

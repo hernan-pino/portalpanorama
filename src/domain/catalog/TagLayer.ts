@@ -10,4 +10,5 @@ export enum TagLayer {
   EXPERIENCE = 'EXPERIENCE', // qué ofrece de destacable (rooftop, vista, vida nocturna…)
   SERVICE = 'SERVICE', // servicios y acceso (estacionamiento, wifi, accesible, pet friendly…)
   SPECIFIC = 'SPECIFIC', // atributos específicos condicionales por categoría
+  CUISINE = 'CUISINE', // tipo de comida (cocina + plato), condicional a Gastronomía — sin tope
 }

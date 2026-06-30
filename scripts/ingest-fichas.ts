@@ -66,7 +66,7 @@ interface FichaJSON {
     redes_extra?: { red: string; url: string }[] | null
   }
   reputacion_google?: { estrellas?: number | null; n_resenas?: number | null; place_id?: string | null }
-  tags?: Partial<Record<'audience' | 'occasion' | 'vibe' | 'experience' | 'service' | 'specific', string[]>>
+  tags?: Partial<Record<'audience' | 'occasion' | 'vibe' | 'experience' | 'service' | 'specific' | 'cuisine', string[]>>
   spots?: { nombre: string; descripcion?: string | null }[]
   imagenes?: { url: string; alt?: string | null; credito?: string | null; portada?: boolean }[]
   // Señal de la skill para no publicar automáticamente (cerrado temporal/permanente,

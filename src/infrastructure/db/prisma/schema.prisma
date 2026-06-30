@@ -68,6 +68,7 @@ enum TagLayer {
   EXPERIENCE // qué ofrece de destacable: rooftop, vista, vida nocturna… (sin tope)
   SERVICE // servicios y acceso: estacionamiento, wifi, accesible, pet friendly… (sin tope)
   SPECIFIC // atributos específicos condicionales por categoría (sin tope)
+  CUISINE // tipo de comida (cocina + plato), condicional a Gastronomía (sin tope)
 }
 
 // Objetivo reseñado extensible (2.4): hoy PLACE; DISH/EVENT entran sin tocar el schema.

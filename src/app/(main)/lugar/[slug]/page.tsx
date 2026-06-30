@@ -132,6 +132,7 @@ export default async function LugarPage({ params }: PageProps) {
   const vibe = place.tags.filter((t) => t.layer === 'VIBE')
   const experience = place.tags.filter((t) => t.layer === 'EXPERIENCE')
   const specific = place.tags.filter((t) => t.layer === 'SPECIFIC')
+  const cuisine = place.tags.filter((t) => t.layer === 'CUISINE')
   const service = place.tags.filter((t) => t.layer === 'SERVICE')
 
   const hasContact = !!(
@@ -315,9 +316,10 @@ export default async function LugarPage({ params }: PageProps) {
         </div>
 
         {/* ambiente y detalles (tags secundarios, tras los datos prácticos) */}
-        {(vibe.length > 0 || experience.length > 0 || specific.length > 0) && (
+        {(vibe.length > 0 || experience.length > 0 || specific.length > 0 || cuisine.length > 0) && (
           <div className="ficha__section">
             <h2 className="ficha__sec-h">Ambiente y detalles</h2>
+            <TagGroup label="Tipo de comida" tags={cuisine} />
             <TagGroup label="Vibe" tags={vibe} />
             <TagGroup label="Experiencia" tags={experience} />
             <TagGroup label="Lo que ofrece" tags={specific} />
