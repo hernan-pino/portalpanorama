@@ -119,6 +119,11 @@ ingreso.
 
 ## 5. Go-to-market (Fase A — plan aterrizado 2026-06-24)
 
+> **Plan de ejecución a 3 meses (calendario + tablero de metas + checklist vivo de carga):
+> [GO_TO_MARKET.md](GO_TO_MARKET.md).** Esta sección queda con el **porqué/la decisión**; el
+> **cómo/cuándo** vive en ese doc (actualizado 2026-06-28 tras el cambio de disponibilidad del
+> usuario a ~10 h/semana).
+
 **Canal #1 elegido:** **contenido (guías/listas) + comunidades.** Decisión del usuario. El SEO ya está
 cableado (JSON-LD, sitemap, robots con visibilidad en IA) pero es lento (meses); con validación a ~1
 mes hace falta un canal rápido. El contenido sirve de puente: rápido (compartible) y lento (SEO) a la
@@ -174,6 +179,10 @@ primero y se carga **hacia** él → el mismo esfuerzo produce densidad + asset 
 
 ## Changelog
 
+- **2026-06-28** (sesión 15) — Go-to-market aterrizado en plan ejecutable a 3 meses
+  ([GO_TO_MARKET.md](GO_TO_MARKET.md)) tras el cambio de disponibilidad del usuario (~10 h/sem,
+  keyboard-first). Eje de carga: categoría × todo Santiago; ~300 (jul) → ~400/mes (2 cuentas Apify);
+  mapa /explorar y skill de difusión diferidos a Mes 2-3.
 - **2026-06-24** — Documento creado. Sintetiza el "punto C" (reevaluación post-MVP) conversado en la
   sesión 9: cadena del ingreso, demanda vs. oferta, secuencia A/B/C, y recordatorio del modelo de
   monetización ya definido. Go-to-market queda como sección a aterrizar.

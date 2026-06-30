@@ -7,7 +7,41 @@ priorizado. Se actualiza cada vez que avanzamos. Liviano a propósito — para r
 - **Modelo de datos:** [SCHEMA.md](SCHEMA.md) · **Capas:** [ARCHITECTURE.md](ARCHITECTURE.md) · **Marca:** [BRAND_SPEC.md](BRAND_SPEC.md) · **Cuenta de negocio + reclamo (🅿️ parqueado, Fase C):** [BUSINESS_ACCOUNTS_SPEC.md](BUSINESS_ACCOUNTS_SPEC.md)
 - **Bitácora del rediseño (historia + razonamiento de las decisiones):** [PLAN_FASE9.md](PLAN_FASE9.md) · **Histórico (docs superados):** [docs/historico/](docs/historico/)
 
-**Última actualización:** 2026-06-28 (sesión 14 — **Filtros OCCASION/EXPERIENCE activados en /explorar**):
+**Última actualización:** 2026-06-29 (sesión 16 — **Guía "Para una primera cita" + tier de menciones honoríficas + navegación**):
+se construyó la **primera lista de ocasión** del go-to-market (el quick win de la Semana 1 de julio). **(1) Regla por ocasión:**
+`CuratedRule` ahora soporta `occasionTagSlugs`/`experienceTagSlugs` → las listas de ocasión se expresan como **regla viva** (la de
+cita usa `occasion=cita`; cualquier lugar nuevo etiquetado entra solo). Desbloquea la **Fase 2** de listas de ocasión. **(2) Tier
+"Menciones honoríficas":** nivel intermedio nuevo en las guías (`CuratedPinKind` FEATURED/MENTION) — banda compacta con nota de una
+línea, entre los destacados (artículo) y la grilla. Migración **aditiva** `add_curated_pin_kind` (enum + columna con default).
+Admin actualizado (chips ocasión/experiencia + toggle destacado/mención). **(3) Guía "Para una primera cita"** (publicada, **81
+lugares**): 10 destacados ordenados de gratis/barato → apuesta cara + 5 menciones (GAM · Parque Metropolitano · Sky Costanera ·
+Matucana 100 · **MUT**). **(4) MUT creado**: ficha nueva vía skill `ficha-lugar` + **enriquecida con Apify** (match exacto, rating
+4.7/7.049, coords, 3 fotos de Google rehospedadas). **(5) Navegación/UI:** paginador **client-side** del resto de la guía (12/pág,
+sin recargar); **página pública `/guias`** (índice) + link en header/móvil + sitemap; **botón scroll-to-top** global (oculto en
+`/lugar`); pager más visible (hover oscuro); **sombra sutil** en tarjetas de lugar y guía. **Typecheck limpio + 99 tests verdes +
+páginas en HTTP 200 (verificado e2e en local).** Commit `b9d4360` (feature). **Solo local — falta push a prod.** **⚠️ Gotcha:** el
+**MUT solo existe en local** → en el deploy la guía se crea con 10 destacados + **4** menciones y el MUT se **salta** hasta crearlo
+en prod (ingest + enrich con `PROD_DB_URL`, como el resto del contenido); la guía, `/guias` y la migración sí viajan con el push.
+**Próximo paso:** push a prod (+ crear MUT en prod), o seguir la Semana 1 (Lote 1 hamburguesas + crear redes).
+
+**Sesión previa:** 2026-06-28 (sesión 15 — **Plan de ejecución a 3 meses aterrizado (Fase A / go-to-market)**):
+se aterrizó el go-to-market en un plan trimestral con objetivo único, tablero de metas, ritmo semanal y
+calendario mes a mes → vive en **[GO_TO_MARKET.md](GO_TO_MARKET.md)** (el cómo/cuándo; STRATEGY.md queda con el
+porqué). **Contexto nuevo:** el usuario empezó un trabajo → **~10 h/semana** en bloques de ~50 min/día,
+keyboard-first (cargar + escribir guías), difusión liviana (anuncios puntuales en foros + redes creadas).
+**Objetivo a 3 meses:** cerrar Fase A y desbloquear la decisión de Fase B (¿Eventos?) con datos de GA4.
+**Eje de carga decidido:** por **categoría × todo Santiago** (no solo comunas densas) → cada barrido produce
+guía SEO + expande comunas; las comunas se "gradúan" a guía propia en Mes 2-3. **Volumen:** ~300 lugares en
+julio, ~400/mes en meses 2-3 (con **2 cuentas de Apify** para doblar el free tier; el techo real pasa a ser el
+tiempo de revisión en el admin). **Mes 1 (julio):** hamburgueserías → pizzerías → plazas/parques city-wide +
+quick win lista **"Para una primera cita"** (ya hay ~80 con `ocasion=cita`) + crear redes. **Diferido a Mes 2-3:**
+vista mapa en /explorar (espera densidad + señal de GA4; coords ya backfilleadas) y skill **`redactar-difusion`**
+(drafts human-in-the-loop, solo si el canal manual valida). **Sin código nuevo esta sesión** — solo se escribieron
+los docs (GO_TO_MARKET.md nuevo + pointers en STRATEGY.md). **Próximo paso:** ejecutar la **Semana 1 de julio**
+(checklist vivo en [GO_TO_MARKET.md](GO_TO_MARKET.md)): publicar la lista "Para una primera cita" o arrancar el
+Lote 1 de hamburgueserías.
+
+**Sesión previa:** 2026-06-28 (sesión 14 — **Filtros OCCASION/EXPERIENCE activados en /explorar**):
 se activó el segundo bullet de la **Fase A** de [STRATEGY.md](STRATEGY.md) (afilar el core barato): las capas de
 tags **OCCASION ("Ideal para")** y **EXPERIENCE ("Experiencia")** ahora son **facetas de filtro reales** en el
 rail de `/explorar` (antes vivían solo en la ficha). Mismo mecanismo que el resto (AND de `some` por slug);
