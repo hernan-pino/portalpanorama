@@ -7,7 +7,33 @@ priorizado. Se actualiza cada vez que avanzamos. Liviano a propósito — para r
 - **Modelo de datos:** [SCHEMA.md](SCHEMA.md) · **Capas:** [ARCHITECTURE.md](ARCHITECTURE.md) · **Marca:** [BRAND_SPEC.md](BRAND_SPEC.md) · **Cuenta de negocio + reclamo (🅿️ parqueado, Fase C):** [BUSINESS_ACCOUNTS_SPEC.md](BUSINESS_ACCOUNTS_SPEC.md)
 - **Bitácora del rediseño (historia + razonamiento de las decisiones):** [PLAN_FASE9.md](PLAN_FASE9.md) · **Histórico (docs superados):** [docs/historico/](docs/historico/)
 
-**Última actualización:** 2026-06-30 (sesión 17 — **Capa CUISINE + fallback de Apify + PUSH A PROD de las sesiones 16-17**):
+**Última actualización:** 2026-06-30 (sesión 18 — **Footer Instagram + Microsoft Clarity + Dashboard de analítica en el admin**):
+**(1) Footer:** Instagram pasó de botón "coming soon" a **link real `@portalpanorama.cl`** (la cuenta definitiva); TikTok/Facebook
+siguen sin cuenta (mantienen el aviso, con copy nuevo que invita a Instagram). Commit `32a2cba`, **pusheado a prod**. **(2) Microsoft
+Clarity** (heatmaps + grabaciones de sesión) integrado: componente `MicrosoftClarity.tsx` gated por `NEXT_PUBLIC_CLARITY_ID`
+(apagado si no está la env var), montado en el layout junto a GA4; `/privacidad` actualizada para declarar GA4 + Clarity (medición
+agregada, sin uso publicitario; Clarity excluye campos sensibles). **Project ID = `xf9k6ta2t0`**, env var cargada en Vercel. Commit
+`ad0bd2b`, **pusheado a prod** → ya grabando. **Ojo:** Clarity NO tiene API para traer heatmaps/grabaciones al admin → para verlas se
+entra a `clarity.microsoft.com` (su UI es simple). **(3) Dashboard `/admin/analytics`** sobre la **Google Analytics Data API**
+(arquitectura hexagonal: port `AnalyticsReportService` en application + use case `GetAdminAnalyticsUseCase` + adapter
+`GoogleAnalyticsDataService` en infrastructure, el SDK de Google nunca sale de su capa). **Todo filtrado a Chile** (el tráfico extranjero
+que se veía en GA4 —Germany/Poland/Isle of Man— es **ruido de bots/VPN**, valor cero; se filtra en el dashboard, no se tocan las
+búsquedas del sitio). Métricas: KPIs (usuarios activos/nuevos, sesiones, páginas vistas, sesión promedio, engagement); **conversiones del
+producto** (registros, logins, "cómo llegar", guardados, compartidos, búsquedas, reportes); canales de adquisición; páginas/lugares más
+vistos; **dispositivo** (móvil/escritorio); **ciudades dentro de Chile**; usuarios activos por día; selector de rango 7/28/90 días.
+Degrada con gracia si faltan credenciales. **Verificado contra GA4 real** (filtrado a Chile: **9 usuarios en Santiago**; eventos sí se
+guardan — "cómo llegar" 2, guardados 3, búsquedas 3, compartidos 1; registros/logins 0 porque nadie se registró en el rango, no es bug).
+Typecheck limpio + 99 tests verdes. **Credenciales:** cuenta de servicio `ga4-reader@portal-panorama-500320.iam.gserviceaccount.com`
+(rol Lector en la propiedad GA4 `543054176`); en **local** vía `GA4_KEY_FILE=./ga4-sa.json` (el JSON **gitignored**, nunca al repo); en
+**Vercel** vía `GA4_PROPERTY_ID=543054176` + `GA4_SA_CREDENTIALS` (JSON en base64, Sensitive). El secreto **nunca pasó por el chat**
+(se copió a base64 directo al portapapeles con `Set-Clipboard`). Commit `29f3fc0`, **pusheado a prod** (env vars ya cargadas → debería
+salir con datos en el redeploy). **Decisión registrada:** **multilenguaje parqueado** — la audiencia son chilenos en Santiago, el
+tráfico extranjero es bots, y lo caro es traducir 250 fichas + guías; se reevalúa en Fase B+ solo con datos que muestren turistas
+reales. **Próximo paso (sesión 19):** verificar el dashboard en vivo tras el redeploy + arrancar el **Lote 2** de contenido
+(hamburgueserías otras comunas / pizzerías; carga en local → sync a prod con `scripts/prod-sync.ts`). Pendiente menor: contadores de
+visitas/guardados en la lista de `/admin/lugares` (idea original del ítem #3, quedó fuera de esta sesión).
+
+**Sesión previa:** 2026-06-30 (sesión 17 — **Capa CUISINE + fallback de Apify + PUSH A PROD de las sesiones 16-17**):
 **(1) Capa de tags CUISINE** (tipo de comida): nueva capa de dominio condicional a **Gastronomía**, sin tope. Las "Cocina X" se
 movieron de SPECIFIC a CUISINE (**mismo slug → no se pierden asignaciones**); +12 platos (Pizza, Hamburguesas, Completos, Sushi,
 Ramen, Ceviche, Parrilla, Pastas, Brunch…) y +9 cocinas (thai, coreana…). Migración **aditiva** `add_cuisine_tag_layer`
