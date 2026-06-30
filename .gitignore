@@ -5,6 +5,8 @@ node_modules
 .env.local
 .env*.local
 .env.vercel
+# Credenciales de la cuenta de servicio de GA4 (secreto, jamás al repo)
+ga4-sa.json
 screenshots/
 datosNegoios/
 

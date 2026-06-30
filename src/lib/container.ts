@@ -21,6 +21,7 @@ import { VercelBlobStorageService } from '@infrastructure/storage/VercelBlobStor
 import { SharpImageProcessor } from '@infrastructure/storage/SharpImageProcessor'
 import { SafeHttpImageFetcher } from '@infrastructure/storage/SafeHttpImageFetcher'
 import { ApifyRatingProvider } from '@infrastructure/rating/ApifyRatingProvider'
+import { GoogleAnalyticsDataService } from '@infrastructure/analytics/GoogleAnalyticsDataService'
 
 // ── Use cases ───────────────────────────────────────────────────────────
 import { SearchPlacesUseCase } from '@application/place/SearchPlacesUseCase'
@@ -79,6 +80,7 @@ import { ChangePasswordUseCase } from '@application/user/ChangePasswordUseCase'
 import { GetUserDashboardUseCase } from '@application/user/GetUserDashboardUseCase'
 import { RecordVisitUseCase } from '@application/user/RecordVisitUseCase'
 import { ListUsersForAdminUseCase } from '@application/user/ListUsersForAdminUseCase'
+import { GetAdminAnalyticsUseCase } from '@application/analytics/GetAdminAnalyticsUseCase'
 import { SetUserRoleUseCase } from '@application/user/SetUserRoleUseCase'
 import { DeleteUserUseCase } from '@application/user/DeleteUserUseCase'
 
@@ -229,6 +231,12 @@ export const container = {
 
   getDeleteUserUseCase() {
     return new DeleteUserUseCase(userRepo)
+  },
+
+  // ── Admin (analítica de audiencia) ──────────────────────────────────
+  // Lazy: el adapter lee las credenciales de GA4 del entorno recién al consultar.
+  getGetAdminAnalyticsUseCase() {
+    return new GetAdminAnalyticsUseCase(new GoogleAnalyticsDataService())
   },
 
   // ── Admin (CRUD de lugares) ─────────────────────────────────────────
