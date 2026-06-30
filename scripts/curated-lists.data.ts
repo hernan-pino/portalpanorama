@@ -225,4 +225,66 @@ export const CURATED_LISTS: SeedCuratedList[] = [
       },
     ],
   },
+  {
+    slug: 'las-mejores-hamburgueserias-de-santiago',
+    name: 'Las mejores hamburgueserías de Santiago',
+    kind: 'GUIDE',
+    description:
+      'Las hamburgueserías mejor evaluadas de Santiago: smash, gourmet y de barrio, comuna por comuna, con rating real de Google.',
+    intro:
+      'La hamburguesa dejó de ser comida rápida y se volvió oficio: masa de carne molida en el momento, panes de verdad y locales chicos que la gente cruza la ciudad para probar. Esta es nuestra selección de las mejores de Santiago —de las smash crocantes a las gourmet de pan brioche, repartidas por toda la ciudad—, ordenadas por reputación. Se mantiene al día sola: cada hamburguesería nueva que cargamos entra acá.',
+    rule: { cuisineTagSlugs: ['hamburguesas'] },
+    sort: 'score_desc',
+    isPublished: true,
+    pins: [
+      {
+        placeSlug: 'gaspyburgers',
+        blurb:
+          'La **mejor evaluada** de esta lista, y eso que está lejos de los circuitos de moda: un local chico en **Pudahuel** que se ganó un **4.9 en Google** a punta de hamburguesas hechas con cariño y clientela fiel de barrio.\n\nEs de esos lugares que no salen en las guías pero que la gente del sector defiende como tesoro. No hay metro cerca, así que **se llega mejor en auto** —pero quienes van, vuelven.',
+      },
+      {
+        placeSlug: 'casa-aldea',
+        blurb:
+          'La historia más bonita de la lista: el **chef que renunció a Boragó** —el restaurante más premiado de Chile— para abrir una **hamburguesería de barrio en Pudahuel**. El resultado es técnica de alta cocina puesta al servicio de algo simple y honesto.\n\nCon **4.8 en Google**, Casa Aldea demuestra que una gran hamburguesa no depende de la comuna ni del precio. Queda en **Sargento Aldea 970**; ándate con tiempo, porque es chica y se llena.',
+      },
+      {
+        placeSlug: 'beasty-butchers',
+        blurb:
+          'Una de las más **consolidadas** de Santiago: **más de 1.600 reseñas con 4.7**, en pleno **Vitacura**. Acá la hamburguesa se toma en serio —carne de buena hebra, punto cuidado— y se acompaña de una **carta de coctelería** que la convierte en plan de noche, no solo de almuerzo.\n\nQueda en **Av. Vitacura 3456**. Es de las que sirven para llevar a alguien que "no creía" en las hamburguesas y dejarlo convertido.',
+      },
+      {
+        placeSlug: 'mendoza-burgers',
+        blurb:
+          'Si lo tuyo es la **smash** —esa hamburguesa aplastada en la plancha, de bordes crocantes y queso derretido— esta es de las mejores de la ciudad: **4.9 en Google** en plena **Providencia**, cerca del **metro Los Leones (Líneas 1 y 6)**.\n\nLocal compacto, foco en lo que importa: la carne y el pan. Ideal para un almuerzo rápido pero de verdad bueno en el centro de Providencia.',
+      },
+      {
+        placeSlug: 'strauch-burgers',
+        blurb:
+          'La prueba de que **Renca tiene cocina de primer nivel**: un local de barrio con un **4.9 en Google** que compite de igual a igual con las del barrio alto. Hamburguesas gourmet, generosas, hechas con dedicación.\n\nQueda en **Av. Condell 1547**. No es zona de metro, pero es justo el tipo de lugar que vale el viaje —y que demuestra que el mapa de la buena hamburguesa en Santiago es mucho más ancho de lo que parece.',
+      },
+      {
+        placeSlug: 'la-maestranza-sandwich-burger-bar',
+        blurb:
+          'La **más reseñada** de toda la lista: **más de 3.000 opiniones en Google** con un sólido 4.5. Un **burger bar** consagrado en **Vitacura** (Av. Vitacura 5468), de esos que llevan años funcionando parejo y que ya son punto de referencia.\n\nCarta amplia entre hamburguesas y sándwiches, ambiente de bar y cocina que no falla. Cuando quieres ir a la segura con un grupo, esta es la apuesta.',
+      },
+    ],
+    mentions: [
+      {
+        placeSlug: 'streat-burger-salvador',
+        note: 'La **cadena** que partió de cero y hoy suma más de 20 locales en Chile: smash consistente, esta sucursal en **Av. Salvador, Ñuñoa**.',
+      },
+      {
+        placeSlug: 'ryge-burger',
+        note: 'Smash de **4.9** en **Providencia** (Miguel Claro 25), a pasos del **metro Manuel Montt** —chica, precisa y muy querida.',
+      },
+      {
+        placeSlug: 'the-crust',
+        note: 'Casi **1.900 reseñas con 4.6** en **Vitacura**: una de las smash con más hinchada del sector oriente.',
+      },
+      {
+        placeSlug: 'bross-saez',
+        note: 'Otra joya de **Renca** con **4.9**: gourmet de barrio, hecha a pulso y sin pretensiones.',
+      },
+    ],
+  },
 ]

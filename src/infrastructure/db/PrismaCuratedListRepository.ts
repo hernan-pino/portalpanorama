@@ -36,6 +36,7 @@ function parseRule(value: Prisma.JsonValue | null | undefined): CuratedRule {
     vibeTagSlugs: strArr(r.vibeTagSlugs),
     occasionTagSlugs: strArr(r.occasionTagSlugs),
     experienceTagSlugs: strArr(r.experienceTagSlugs),
+    cuisineTagSlugs: strArr(r.cuisineTagSlugs),
     walkInOnly: typeof r.walkInOnly === 'boolean' ? r.walkInOnly : undefined,
   }
 }

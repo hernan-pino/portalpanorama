@@ -18,6 +18,7 @@ export interface SearchParams {
   vibeTagSlugs?: string[]
   occasionTagSlugs?: string[] // "Ideal para" (OCCASION)
   experienceTagSlugs?: string[] // "Experiencia" (EXPERIENCE)
+  cuisineTagSlugs?: string[] // "Tipo de comida" (CUISINE) — usado por reglas de listas
   walkInOnly?: boolean // "Sin reserva"
   page?: number
   limit?: number

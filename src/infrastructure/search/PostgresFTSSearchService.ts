@@ -94,6 +94,7 @@ export class PostgresFTSSearchService implements SearchService {
       ...(params.vibeTagSlugs ?? []),
       ...(params.occasionTagSlugs ?? []),
       ...(params.experienceTagSlugs ?? []),
+      ...(params.cuisineTagSlugs ?? []),
     ]
     if (tagSlugs.length) {
       where.AND = tagSlugs.map((slug) => ({ tags: { some: { tag: { slug } } } }))

@@ -84,6 +84,7 @@ function ruleToSearchParams(rule: CuratedRule): SearchParams {
     vibeTagSlugs: rule.vibeTagSlugs ? [...rule.vibeTagSlugs] : undefined,
     occasionTagSlugs: rule.occasionTagSlugs ? [...rule.occasionTagSlugs] : undefined,
     experienceTagSlugs: rule.experienceTagSlugs ? [...rule.experienceTagSlugs] : undefined,
+    cuisineTagSlugs: rule.cuisineTagSlugs ? [...rule.cuisineTagSlugs] : undefined,
     walkInOnly: rule.walkInOnly,
   }
 }

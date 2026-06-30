@@ -21,6 +21,7 @@ export interface CuratedRule {
   readonly vibeTagSlugs?: ReadonlyArray<string>
   readonly occasionTagSlugs?: ReadonlyArray<string>
   readonly experienceTagSlugs?: ReadonlyArray<string>
+  readonly cuisineTagSlugs?: ReadonlyArray<string> // "Tipo de comida" (CUISINE)
   readonly walkInOnly?: boolean
 }
 
@@ -40,6 +41,7 @@ export function isRuleEmpty(rule: CuratedRule): boolean {
     (rule.vibeTagSlugs?.length ?? 0) === 0 &&
     (rule.occasionTagSlugs?.length ?? 0) === 0 &&
     (rule.experienceTagSlugs?.length ?? 0) === 0 &&
+    (rule.cuisineTagSlugs?.length ?? 0) === 0 &&
     !rule.walkInOnly
   )
 }

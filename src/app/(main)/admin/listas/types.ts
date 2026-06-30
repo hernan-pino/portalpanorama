@@ -18,6 +18,9 @@ export interface CuratedRuleValues {
   vibeTagSlugs: string[]
   occasionTagSlugs: string[]
   experienceTagSlugs: string[]
+  // CUISINE ("Tipo de comida"): sin editor visible aún (la faceta se difirió), pero se
+  // preserva en el form para no descartar la regla al editar una guía que la usa.
+  cuisineTagSlugs: string[]
   walkInOnly: boolean
 }
 
@@ -57,6 +60,7 @@ export const EMPTY_RULE: CuratedRuleValues = {
   vibeTagSlugs: [],
   occasionTagSlugs: [],
   experienceTagSlugs: [],
+  cuisineTagSlugs: [],
   walkInOnly: false,
 }
 
@@ -75,6 +79,7 @@ export function isRuleEmptyValues(r: CuratedRuleValues): boolean {
     r.vibeTagSlugs.length === 0 &&
     r.occasionTagSlugs.length === 0 &&
     r.experienceTagSlugs.length === 0 &&
+    r.cuisineTagSlugs.length === 0 &&
     !r.walkInOnly
   )
 }

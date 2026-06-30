@@ -55,6 +55,7 @@ function fromInitial(l: CuratedListEditView): CuratedListFormValues {
       vibeTagSlugs: r.vibeTagSlugs ? [...r.vibeTagSlugs] : [],
       occasionTagSlugs: r.occasionTagSlugs ? [...r.occasionTagSlugs] : [],
       experienceTagSlugs: r.experienceTagSlugs ? [...r.experienceTagSlugs] : [],
+      cuisineTagSlugs: r.cuisineTagSlugs ? [...r.cuisineTagSlugs] : [],
       walkInOnly: r.walkInOnly ?? false,
     },
     pins: l.pins.map((p) => ({ placeId: p.placeId, pinKind: p.pinKind, blurb: p.blurb ?? '' })),

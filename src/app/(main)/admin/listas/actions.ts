@@ -36,6 +36,7 @@ const ruleSchema = z.object({
   vibeTagSlugs: z.array(z.string().trim().min(1)).optional().default([]),
   occasionTagSlugs: z.array(z.string().trim().min(1)).optional().default([]),
   experienceTagSlugs: z.array(z.string().trim().min(1)).optional().default([]),
+  cuisineTagSlugs: z.array(z.string().trim().min(1)).optional().default([]),
   walkInOnly: z.boolean().optional().default(false),
 })
 
@@ -83,6 +84,7 @@ function toRule(r: ParsedList['rule']): CuratedRule {
     vibeTagSlugs: r.vibeTagSlugs.length ? r.vibeTagSlugs : undefined,
     occasionTagSlugs: r.occasionTagSlugs.length ? r.occasionTagSlugs : undefined,
     experienceTagSlugs: r.experienceTagSlugs.length ? r.experienceTagSlugs : undefined,
+    cuisineTagSlugs: r.cuisineTagSlugs.length ? r.cuisineTagSlugs : undefined,
     walkInOnly: r.walkInOnly || undefined,
   }
 }
