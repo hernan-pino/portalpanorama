@@ -6,7 +6,7 @@ export const metadata: Metadata = {
 }
 
 // Fecha de última revisión del texto. Actualizar al editar el contenido legal.
-const VIGENCIA = '15 de junio de 2026'
+const VIGENCIA = '30 de junio de 2026'
 const CONTACTO = 'hola@portalpanorama.cl'
 
 export default function PrivacidadPage() {
@@ -45,8 +45,15 @@ export default function PrivacidadPage() {
           </li>
           <li>
             <strong>Datos técnicos:</strong> cookies estrictamente necesarias para mantener tu sesión
-            iniciada. Si en el futuro incorporamos analítica, te lo informaremos y pediremos tu
-            consentimiento cuando corresponda.
+            iniciada.
+          </li>
+          <li>
+            <strong>Datos de analítica:</strong> usamos herramientas de medición para entender cómo se
+            usa el sitio y mejorarlo. <strong>Google Analytics</strong> recopila datos de uso de forma
+            agregada (páginas vistas, origen del tráfico, tipo de dispositivo) y <strong>Microsoft
+            Clarity</strong> genera mapas de calor y grabaciones anónimas de la navegación (clics y
+            desplazamientos), que excluyen automáticamente lo que escribes en campos sensibles como las
+            contraseñas. Estos datos no se usan para identificarte personalmente.
           </li>
         </ul>
       </section>
@@ -66,8 +73,9 @@ export default function PrivacidadPage() {
         <h2>4. Cookies</h2>
         <p>
           Usamos cookies estrictamente necesarias para autenticarte y mantener tu sesión. Sin ellas,
-          el inicio de sesión no funciona. No usamos cookies de publicidad. Si más adelante sumamos
-          herramientas de medición, actualizaremos esta política y solicitaremos tu consentimiento.
+          el inicio de sesión no funciona. No usamos cookies de publicidad. Nuestras herramientas de
+          analítica (Google Analytics y Microsoft Clarity) pueden usar cookies o identificadores para
+          medir el uso del sitio de forma agregada; nunca con fines publicitarios.
         </p>
       </section>
 
@@ -75,8 +83,8 @@ export default function PrivacidadPage() {
         <h2>5. Con quién compartimos datos</h2>
         <p>
           Compartimos datos únicamente con proveedores que nos permiten operar el servicio (por
-          ejemplo, alojamiento del sitio y envío de correos), quienes los tratan por nuestra cuenta y
-          bajo confidencialidad. Las calificaciones y reseñas de lugares que ves provienen de Google y
+          ejemplo, alojamiento del sitio, envío de correos y analítica de uso —Google Analytics y
+          Microsoft Clarity—), quienes los tratan por nuestra cuenta y bajo confidencialidad. Las calificaciones y reseñas de lugares que ves provienen de Google y
           se muestran con fines informativos.
         </p>
       </section>
