@@ -27,17 +27,23 @@ export class GetCuratedListBySlugUseCase {
     const list = await this.listRepo.findBySlug(slug)
     if (!list || !list.isPublished) throw new CuratedListNotFoundError(slug)
 
-    // Destacados primero (en su orden), resueltos a tarjeta. Solo publicados:
-    // findCardsByIds filtra los archivados, así que un pin caído no rompe la landing.
+    // Fijados a mano primero (destacados + menciones), resueltos a tarjeta. Solo
+    // publicados: findCardsByIds filtra los archivados, así que un pin caído no rompe
+    // la landing. Una sola query trae ambos niveles; luego se reparten por kind.
     const pinnedIds = list.pinnedPlaceIds()
     const pinnedCards = await this.placeRepo.findCardsByIds(pinnedIds)
     const byId = new Map(pinnedCards.map((c) => [c.id, c]))
-    const pinned = list.pins
+    const live = list.pins
       .filter((p) => byId.has(p.placeId))
       .sort((a, b) => a.sortOrder - b.sortOrder)
+    const pinned = live
+      .filter((p) => p.kind === 'FEATURED')
       .map((p) => ({ blurb: p.blurb, place: byId.get(p.placeId)! }))
+    const mentions = live
+      .filter((p) => p.kind === 'MENTION')
+      .map((p) => ({ note: p.blurb, place: byId.get(p.placeId)! }))
 
-    // El resto: la regla resuelta, sin los destacados (ya van arriba).
+    // El resto: la regla resuelta, sin los fijados a mano (ya van arriba).
     const result = await this.search.search({
       ...ruleToSearchParams(list.rule),
       page: 1,
@@ -54,8 +60,9 @@ export class GetCuratedListBySlugUseCase {
       intro: list.intro,
       coverImageUrl: list.coverImageUrl,
       pinned,
+      mentions,
       rest,
-      total: pinned.length + rest.length,
+      total: pinned.length + mentions.length + rest.length,
     }
   }
 }
@@ -75,6 +82,8 @@ function ruleToSearchParams(rule: CuratedRule): SearchParams {
     socialTagSlugs: rule.socialTagSlugs ? [...rule.socialTagSlugs] : undefined,
     accessTagSlugs: rule.accessTagSlugs ? [...rule.accessTagSlugs] : undefined,
     vibeTagSlugs: rule.vibeTagSlugs ? [...rule.vibeTagSlugs] : undefined,
+    occasionTagSlugs: rule.occasionTagSlugs ? [...rule.occasionTagSlugs] : undefined,
+    experienceTagSlugs: rule.experienceTagSlugs ? [...rule.experienceTagSlugs] : undefined,
     walkInOnly: rule.walkInOnly,
   }
 }

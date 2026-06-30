@@ -3,7 +3,7 @@
 // con Zod. La regla habla en SLUGS (mismo vocabulario que el explorar/SearchParams),
 // no en ids: así una lista se resuelve igual que un filtro de búsqueda.
 
-import type { CuratedListKind } from '@domain/curatedList/CuratedList'
+import type { CuratedListKind, CuratedPinKind } from '@domain/curatedList/CuratedList'
 
 // La regla = subconjunto de filtros del explorar. Single-selects vacíos = "sin filtro".
 export interface CuratedRuleValues {
@@ -16,13 +16,16 @@ export interface CuratedRuleValues {
   socialTagSlugs: string[]
   accessTagSlugs: string[]
   vibeTagSlugs: string[]
+  occasionTagSlugs: string[]
+  experienceTagSlugs: string[]
   walkInOnly: boolean
 }
 
-// Destacado: lugar fijado a mano (va arriba) + su bajada editorial. El orden en el
-// array define el sortOrder.
+// Fijado a mano: lugar que va arriba + su bajada/nota editorial. `pinKind` define el
+// nivel (destacado-artículo o mención honorífica). El orden en el array define el sortOrder.
 export interface CuratedPinValues {
   placeId: string
+  pinKind: CuratedPinKind
   blurb: string
 }
 
@@ -52,6 +55,8 @@ export const EMPTY_RULE: CuratedRuleValues = {
   socialTagSlugs: [],
   accessTagSlugs: [],
   vibeTagSlugs: [],
+  occasionTagSlugs: [],
+  experienceTagSlugs: [],
   walkInOnly: false,
 }
 
@@ -68,6 +73,8 @@ export function isRuleEmptyValues(r: CuratedRuleValues): boolean {
     r.socialTagSlugs.length === 0 &&
     r.accessTagSlugs.length === 0 &&
     r.vibeTagSlugs.length === 0 &&
+    r.occasionTagSlugs.length === 0 &&
+    r.experienceTagSlugs.length === 0 &&
     !r.walkInOnly
   )
 }

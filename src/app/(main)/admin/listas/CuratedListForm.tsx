@@ -12,6 +12,7 @@ import {
 } from './actions'
 import {
   CuratedListFormValues,
+  CuratedPinValues,
   CuratedRuleValues,
   EMPTY_RULE,
   KIND_OPTIONS,
@@ -52,9 +53,11 @@ function fromInitial(l: CuratedListEditView): CuratedListFormValues {
       socialTagSlugs: r.socialTagSlugs ? [...r.socialTagSlugs] : [],
       accessTagSlugs: r.accessTagSlugs ? [...r.accessTagSlugs] : [],
       vibeTagSlugs: r.vibeTagSlugs ? [...r.vibeTagSlugs] : [],
+      occasionTagSlugs: r.occasionTagSlugs ? [...r.occasionTagSlugs] : [],
+      experienceTagSlugs: r.experienceTagSlugs ? [...r.experienceTagSlugs] : [],
       walkInOnly: r.walkInOnly ?? false,
     },
-    pins: l.pins.map((p) => ({ placeId: p.placeId, blurb: p.blurb ?? '' })),
+    pins: l.pins.map((p) => ({ placeId: p.placeId, pinKind: p.pinKind, blurb: p.blurb ?? '' })),
     isPublished: l.isPublished,
   }
 }
@@ -79,7 +82,7 @@ export function CuratedListForm({ facets, places, initial }: Props) {
   function setRule<K extends keyof CuratedRuleValues>(key: K, value: CuratedRuleValues[K]) {
     setValues((v) => ({ ...v, rule: { ...v.rule, [key]: value } }))
   }
-  function toggleRuleMulti(key: 'priceRanges' | 'socialTagSlugs' | 'accessTagSlugs' | 'vibeTagSlugs', val: string) {
+  function toggleRuleMulti(key: 'priceRanges' | 'socialTagSlugs' | 'accessTagSlugs' | 'vibeTagSlugs' | 'occasionTagSlugs' | 'experienceTagSlugs', val: string) {
     setValues((v) => {
       const cur = v.rule[key]
       const next = cur.includes(val) ? cur.filter((x) => x !== val) : [...cur, val]
@@ -123,12 +126,17 @@ export function CuratedListForm({ facets, places, initial }: Props) {
     const id = pinToAdd
     if (!id) return
     setValues((v) =>
-      v.pins.some((p) => p.placeId === id) ? v : { ...v, pins: [...v.pins, { placeId: id, blurb: '' }] },
+      v.pins.some((p) => p.placeId === id)
+        ? v
+        : { ...v, pins: [...v.pins, { placeId: id, pinKind: 'FEATURED', blurb: '' }] },
     )
     setPinToAdd('')
   }
   function updatePinBlurb(i: number, blurb: string) {
     setValues((v) => ({ ...v, pins: v.pins.map((p, idx) => (idx === i ? { ...p, blurb } : p)) }))
+  }
+  function setPinKind(i: number, pinKind: CuratedPinValues['pinKind']) {
+    setValues((v) => ({ ...v, pins: v.pins.map((p, idx) => (idx === i ? { ...p, pinKind } : p)) }))
   }
   function removePin(i: number) {
     setValues((v) => ({ ...v, pins: v.pins.filter((_, idx) => idx !== i) }))
@@ -263,6 +271,10 @@ export function CuratedListForm({ facets, places, initial }: Props) {
           selected={values.rule.priceRanges} onToggle={(v) => toggleRuleMulti('priceRanges', v)} />
         <RuleChips label="¿Con quién?" options={facets.social}
           selected={values.rule.socialTagSlugs} onToggle={(v) => toggleRuleMulti('socialTagSlugs', v)} />
+        <RuleChips label="Ideal para (ocasión)" options={facets.occasion}
+          selected={values.rule.occasionTagSlugs} onToggle={(v) => toggleRuleMulti('occasionTagSlugs', v)} />
+        <RuleChips label="Experiencia" options={facets.experience}
+          selected={values.rule.experienceTagSlugs} onToggle={(v) => toggleRuleMulti('experienceTagSlugs', v)} />
         <RuleChips label="Ambiente" options={facets.vibe}
           selected={values.rule.vibeTagSlugs} onToggle={(v) => toggleRuleMulti('vibeTagSlugs', v)} />
         <RuleChips label="Accesibilidad" options={facets.access}
@@ -283,10 +295,12 @@ export function CuratedListForm({ facets, places, initial }: Props) {
 
       {/* ── Destacados ── */}
       <section className="admin-form__section">
-        <h3 className="admin-form__legend">Destacados (opcional)</h3>
+        <h3 className="admin-form__legend">Destacados y menciones (opcional)</h3>
         <p className="admin-form__hint">
-          Lugares fijados a mano que van <strong>arriba</strong> del resto, en este orden, como
-          <strong> artículos</strong> (imagen + recomendación). Solo aparecen los que estén publicados.
+          Lugares fijados a mano que van <strong>arriba</strong> del resto, en este orden. Cada uno
+          puede ser un <strong>destacado</strong> (artículo: imagen + recomendación larga) o una
+          <strong> mención honorífica</strong> (banda compacta + nota de una línea). Solo aparecen
+          los que estén publicados.
         </p>
 
         <div className="admin-form__repeat-row">
@@ -305,14 +319,25 @@ export function CuratedListForm({ facets, places, initial }: Props) {
               <strong style={{ flex: 1 }}>
                 {i + 1}. {placeById.get(pin.placeId) ?? '(lugar no encontrado)'}
               </strong>
+              <select className="form-input" style={{ width: 'auto' }} value={pin.pinKind}
+                onChange={(e) => setPinKind(i, e.target.value as CuratedPinValues['pinKind'])} aria-label="Nivel">
+                <option value="FEATURED">Destacado</option>
+                <option value="MENTION">Mención</option>
+              </select>
               <button type="button" className="btn btn--ghost btn--sm" onClick={() => movePin(i, -1)} disabled={i === 0} aria-label="Subir">↑</button>
               <button type="button" className="btn btn--ghost btn--sm" onClick={() => movePin(i, 1)} disabled={i === values.pins.length - 1} aria-label="Bajar">↓</button>
               <button type="button" className="btn btn--ghost btn--sm" onClick={() => removePin(i)}>Quitar</button>
             </div>
-            <textarea className="form-input" value={pin.blurb} rows={5}
-              placeholder="Recomendación tipo artículo: cuenta qué es, por qué ir, qué pedir/ver, y menciona datos útiles (cerca de qué metro, horario, si es gratis…). Separa párrafos con una línea en blanco."
+            <textarea className="form-input" value={pin.blurb} rows={pin.pinKind === 'MENTION' ? 2 : 5}
+              placeholder={pin.pinKind === 'MENTION'
+                ? 'Nota de una línea: por qué destaca / qué tiene cerca (ej: “Un edificio entero de restaurantes y terrazas en Providencia”).'
+                : 'Recomendación tipo artículo: cuenta qué es, por qué ir, qué pedir/ver, y menciona datos útiles (cerca de qué metro, horario, si es gratis…). Separa párrafos con una línea en blanco.'}
               onChange={(e) => updatePinBlurb(i, e.target.value)} />
-            <p className="admin-form__hint">Se muestra en párrafos. Tono hablado, en chileno.</p>
+            <p className="admin-form__hint">
+              {pin.pinKind === 'MENTION'
+                ? 'Una sola frase. Tono hablado, en chileno.'
+                : 'Se muestra en párrafos. Tono hablado, en chileno.'}
+            </p>
           </div>
         ))}
       </section>

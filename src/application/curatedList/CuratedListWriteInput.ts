@@ -1,4 +1,4 @@
-import { CuratedListKind } from '@domain/curatedList/CuratedList'
+import { CuratedListKind, CuratedPinKind } from '@domain/curatedList/CuratedList'
 import { CuratedRule } from '@domain/curatedList/CuratedRule'
 
 // Forma de escritura de una lista curada (admin). Compartida por create y update;
@@ -11,7 +11,8 @@ export interface CuratedListWriteInput {
   intro?: string
   coverImageUrl?: string
   rule: CuratedRule
-  // Destacados, en el orden en que deben aparecer (índice = sortOrder).
-  pins: { placeId: string; blurb?: string }[]
+  // Fijados a mano (destacados + menciones), en el orden en que deben aparecer
+  // (índice = sortOrder). `pinKind` por defecto FEATURED si no viene.
+  pins: { placeId: string; pinKind?: CuratedPinKind; blurb?: string }[]
   isPublished: boolean
 }

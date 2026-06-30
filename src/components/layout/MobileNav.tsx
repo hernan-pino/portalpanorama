@@ -38,6 +38,7 @@ export function MobileNav({ isAuthenticated, role }: MobileNavProps) {
           <div className="mobile-nav-panel">
             <nav className="mobile-nav-links" aria-label="Menú principal">
               <Link href="/explorar" onClick={close}>Explorar</Link>
+              <Link href="/guias" onClick={close}>Guías</Link>
             </nav>
 
             <div className="mobile-nav-divider" />

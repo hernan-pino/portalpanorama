@@ -11,11 +11,18 @@ export type CuratedListKind = 'GUIDE' | 'OCCASION'
 // `score_desc` (reputación), igual que el explorar.
 export type CuratedListSort = 'score_desc'
 
-// Destacado: lugar fijado a mano que va ARRIBA del resultado de la regla, con su
-// bajada editorial ("qué es / qué esperar"). El resto de los datos del lugar
-// (foto/horario/metro/rating) se leen al vuelo, no se guardan acá.
+// Nivel de un lugar fijado a mano:
+// - FEATURED = destacado: artículo completo (foto + recomendación larga) arriba de todo.
+// - MENTION  = mención honorífica: banda compacta (nombre + nota de una línea) entre
+//   los destacados y la grilla. Para lugares notorios que no piden un ensayo.
+export type CuratedPinKind = 'FEATURED' | 'MENTION'
+
+// Lugar fijado a mano que va ARRIBA del resultado de la regla, con su bajada editorial
+// ("qué es / qué esperar"). El nivel (`kind`) decide cómo se renderiza. El resto de los
+// datos del lugar (foto/horario/metro/rating) se leen al vuelo, no se guardan acá.
 export interface CuratedListPin {
   readonly placeId: string
+  readonly kind: CuratedPinKind
   readonly blurb?: string
   readonly sortOrder: number
 }
@@ -103,5 +110,5 @@ function dedupePins(pins: ReadonlyArray<CuratedListPin>): CuratedListPin[] {
       seen.add(p.placeId)
       return true
     })
-    .map((p, i) => ({ placeId: p.placeId, blurb: p.blurb, sortOrder: i }))
+    .map((p, i) => ({ placeId: p.placeId, kind: p.kind, blurb: p.blurb, sortOrder: i }))
 }

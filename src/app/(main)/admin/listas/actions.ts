@@ -34,11 +34,14 @@ const ruleSchema = z.object({
   socialTagSlugs: z.array(z.string().trim().min(1)).optional().default([]),
   accessTagSlugs: z.array(z.string().trim().min(1)).optional().default([]),
   vibeTagSlugs: z.array(z.string().trim().min(1)).optional().default([]),
+  occasionTagSlugs: z.array(z.string().trim().min(1)).optional().default([]),
+  experienceTagSlugs: z.array(z.string().trim().min(1)).optional().default([]),
   walkInOnly: z.boolean().optional().default(false),
 })
 
 const pinSchema = z.object({
   placeId: z.string().trim().min(1),
+  pinKind: z.enum(['FEATURED', 'MENTION']).optional().default('FEATURED'),
   blurb: optionalText,
 })
 
@@ -78,6 +81,8 @@ function toRule(r: ParsedList['rule']): CuratedRule {
     socialTagSlugs: r.socialTagSlugs.length ? r.socialTagSlugs : undefined,
     accessTagSlugs: r.accessTagSlugs.length ? r.accessTagSlugs : undefined,
     vibeTagSlugs: r.vibeTagSlugs.length ? r.vibeTagSlugs : undefined,
+    occasionTagSlugs: r.occasionTagSlugs.length ? r.occasionTagSlugs : undefined,
+    experienceTagSlugs: r.experienceTagSlugs.length ? r.experienceTagSlugs : undefined,
     walkInOnly: r.walkInOnly || undefined,
   }
 }
@@ -90,7 +95,7 @@ function toWriteInput(d: ParsedList): CuratedListWriteInput {
     intro: d.intro,
     coverImageUrl: d.coverImageUrl,
     rule: toRule(d.rule),
-    pins: d.pins.map((p) => ({ placeId: p.placeId, blurb: p.blurb })),
+    pins: d.pins.map((p) => ({ placeId: p.placeId, pinKind: p.pinKind, blurb: p.blurb })),
     isPublished: d.isPublished,
   }
 }

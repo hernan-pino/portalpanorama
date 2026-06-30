@@ -1,4 +1,4 @@
-import { CuratedListKind } from '@domain/curatedList/CuratedList'
+import { CuratedListKind, CuratedPinKind } from '@domain/curatedList/CuratedList'
 import { CuratedRule } from '@domain/curatedList/CuratedRule'
 import { CuratedListNotFoundError } from '@domain/curatedList/errors/CuratedListNotFoundError'
 import { CuratedListRepository } from '../ports/CuratedListRepository'
@@ -14,7 +14,7 @@ export interface CuratedListEditView {
   intro?: string
   coverImageUrl?: string
   rule: CuratedRule
-  pins: { placeId: string; blurb?: string }[]
+  pins: { placeId: string; pinKind: CuratedPinKind; blurb?: string }[]
   isPublished: boolean
 }
 
@@ -36,7 +36,7 @@ export class GetCuratedListForEditUseCase {
       rule: list.rule,
       pins: [...list.pins]
         .sort((a, b) => a.sortOrder - b.sortOrder)
-        .map((p) => ({ placeId: p.placeId, blurb: p.blurb })),
+        .map((p) => ({ placeId: p.placeId, pinKind: p.kind, blurb: p.blurb })),
       isPublished: list.isPublished,
     }
   }

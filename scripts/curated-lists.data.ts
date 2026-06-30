@@ -30,8 +30,10 @@ export interface SeedCuratedList {
   rule: CuratedRule
   sort?: string
   isPublished: boolean
-  /** Destacados, en el orden en que aparecen (el índice define el sortOrder). */
+  /** Destacados (artículo completo), en orden. Van primero. */
   pins: { placeSlug: string; blurb?: string }[]
+  /** Menciones honoríficas (banda compacta + nota de una línea), en orden. Van después. */
+  mentions?: { placeSlug: string; note?: string }[]
 }
 
 export const CURATED_LISTS: SeedCuratedList[] = [
@@ -134,6 +136,92 @@ export const CURATED_LISTS: SeedCuratedList[] = [
         placeSlug: 'el-cid-campeador',
         blurb:
           'El paraíso del **libro usado y de anticuario**: más de **30 años** en Barrio Lastarria y unos 35.000 volúmenes apilados en estantes, cajas y mesas. Su dueño selecciona cada título a mano por mérito literario —nada de bestsellers.\n\nEl encanto está en la búsqueda: **primeras ediciones, ejemplares firmados por Neruda o Mistral**, tomos que no encontrarás en ningún otro lado. También restauran libros dañados. Queda en Merced 345, a pasos del **metro Bellas Artes (Línea 5)**, abierto de **lunes a viernes de 12:30 a 19** y sábado hasta las 17.\n\nUn dato clave: **no aceptan tarjeta, lleva efectivo.**',
+      },
+    ],
+  },
+  {
+    slug: 'para-una-primera-cita',
+    name: 'Para una primera cita',
+    kind: 'OCCASION',
+    description:
+      'Los mejores panoramas para una primera cita en Santiago: de lo gratis y barato a la apuesta más cara, pensados para conversar y conocer a la otra persona.',
+    intro:
+      'Una primera cita no se trata del lugar más caro, sino del que deja conversar. Acá van nuestras recomendaciones ordenadas de lo más accesible —museos gratis, un helado, un café sin presión— hasta la apuesta para lucirse, con rating real de Google. Elige según el plan que quieras: bajo riesgo, paseo al aire libre, cena íntima o tragos.',
+    rule: { occasionTagSlugs: ['cita'] },
+    sort: 'score_desc',
+    isPublished: true,
+    pins: [
+      {
+        placeSlug: 'museo-nacional-de-bellas-artes',
+        blurb:
+          'La mejor primera cita **no cuesta un peso**. Recorres la pintura y escultura chilena del museo más antiguo del país, metido en un palacio neoclásico de 1910 con cúpula de vidrio que **ya es tema de conversación apenas entras**. Las muestras temporales cambian seguido, así que revisa su Instagram antes de ir.\n\nEl truco para una cita: el museo está **en pleno Parque Forestal**, así que después de la vuelta —una hora tranquila— sales a caminar entre los árboles y sigues la conversación rumbo a Lastarria o Bellavista. Abre de **martes a domingo, 10 a 18:30**; los lunes cierra, y queda a una cuadra del **metro Bellas Artes (Línea 5)**.',
+      },
+      {
+        placeSlug: 'cerro-santa-lucia',
+        blurb:
+          'Caminar juntos **rompe el hielo mejor que estar sentados mirándose**, y el Santa Lucía es perfecto para eso: 69 metros de jardines, fuentes y escaleras de piedra en pleno centro, **gratis**. Subes sin apuro, te detienes en la Terraza Neptuno y rematas en la cima con **vista limpia del centro, el San Cristóbal y la Cordillera**.\n\nDa para 40 minutos o dos horas, según cuánto se distraigan conversando. Queda a pasos del **metro Santa Lucía (Línea 1)** y pegado a Lastarria, así que es fácil de encadenar con un café o un helado después. **Ojo:** son escaleras empinadas y puede cerrar antes si llueve.',
+      },
+      {
+        placeSlug: 'emporio-la-rosa',
+        blurb:
+          'Un helado es la cita **de bajo riesgo por excelencia**: barata, corta si no fluye, larga si sí. Y esta heladería de Lastarria —más de 20 años, elegida entre las 25 mejores del mundo— es la parada obligada. Sabores de fruta chilena que rotan con la temporada y porciones generosas, por **menos de $5.000**.\n\nLa gracia es no quedarse sentado: pides tu bola en **Merced 291** y **sales a caminar el Parque Forestal** con el helado en la mano. Abre todos los días desde las 9:30 (sí, sirve hasta para un helado de mañana), a pasos del **metro Baquedano (Líneas 1 y 5)**.',
+      },
+      {
+        placeSlug: 'persa-victor-manuel',
+        blurb:
+          'La cita **distinta y barata** que deja temas de conversación para rato. El persa más cuidado del **Barrio Franklin**: 8 galpones con antigüedades, vinilos, cómics, ropa vintage y plantas alrededor de una plaza con música en vivo, todo bajo **murales de Mono González**. Cada puesto es una excusa para descubrir qué le gusta al otro.\n\nPasean sin rumbo, comen algo (hay buena oferta gastronómica) y se quedan toda la tarde. **Solo abre sábados, domingos y festivos, de 9 a 18 h** —tiene baños, guardias y mejor orden que el resto del persa—, a pasos del **metro Franklin (Líneas 2 y 6)**.',
+      },
+      {
+        placeSlug: 'cafe-calderon',
+        blurb:
+          'El clásico **café de día sin presión**: si la cosa fluye, se alarga; si no, se corta sin drama. Cafetería de especialidad con tres ambientes —interior, terraza y barra de cócteles—, así que **el mismo lugar se transforma según la hora**: parte como café tranquilo y, si la conversación engancha, te quedas a la coctelería de la tarde.\n\nPet friendly y con carta propia (los pancake bites y el brunch para dos son seguros). Queda en Diego de Velásquez 2103, cerca del **metro Pedro de Valdivia (Línea 1)**. **De martes a viernes abre hasta las 22**; conviene reservar el fin de semana porque se llena.',
+      },
+      {
+        placeSlug: 'la-chascona-casa-museo-pablo-neruda',
+        blurb:
+          'Pocas citas tienen una **historia de amor incorporada**: Neruda construyó esta casa en 1953 como refugio para sus encuentros secretos con Matilde Urrutia, a quien apodó «La Chascona». La arquitectura caprichosa, las máscaras africanas y el comedor original dan conversación sola, y la audioguía marca el ritmo sin que tengas que llenar silencios.\n\nToma de media hora a una hora, y como está **en pleno Bellavista**, el plan se completa solo: visita + café + cena por el mismo barrio. **Martes a domingo, 10 a 18 h** (verano hasta 19); reserva en temporada alta. Metro **Baquedano (Líneas 1 y 5)**.',
+      },
+      {
+        placeSlug: 'ritrovo',
+        blurb:
+          'Para la cita que ya pide **una cena como corresponde** sin gastar una fortuna. Pizzas y pastas artesanales en un espacio chico e íntimo a pasos de **Plaza Ñuñoa**: masa fresca, ñoquis de papa, ravioles de champiñón y ricota. Con **4.9 en Google**, es de esos lugares que quien va, repite.\n\nEl formato pequeño juega a favor: **íntimo, conversado, sin el bullicio de una trattoria grande**. Cena en pareja, una copa de vino, y si la cosa va bien, Plaza Ñuñoa tiene dónde seguir. Cerca del **metro Ñuñoa (Línea 3)**.',
+      },
+      {
+        placeSlug: 'thelonious-lugar-de-jazz',
+        blurb:
+          'Cuando quieres **un plan que dé de qué hablar**, el jazz en vivo gana. El club de referencia de Santiago desde 2003, en Bellavista: 120 personas, ninguna mesa lejos del escenario, **dos sets en vivo cada noche** con músicos distintos. La música llena los silencios y te da algo que comentar entre tema y tema.\n\nAmbiente íntimo y bohemio, con coctelería decente y hasta una biblioteca de libros usados en un rincón. El cover ronda los **$6.000** según el artista. **Martes a sábado desde las 20:30**; reserva mesa si vas el fin de semana. Metro **Baquedano (Líneas 1 y 5)**.',
+      },
+      {
+        placeSlug: 'chipe-libre',
+        blurb:
+          'Cuando la cita ya pide **tragos y terraza**, esta es la apuesta segura en **Lastarria**: la "república independiente del pisco", en una casona de los años 40 con una **barra de 18 metros** donde ves a los bartenders trabajar. Una de las cartas de pisco más completas de la ciudad y cócteles de autor que no son decorativos.\n\nLa terraza interior es un oasis para conversar horas. Pides un ceviche para compartir —el plato insignia— y dejas que la cosa fluya. **De jueves a sábado el ambiente sube**; cierra los domingos. A pasos del **metro Bellas Artes (Línea 5)**.',
+      },
+      {
+        placeSlug: 'bocanariz',
+        blurb:
+          'La cita para **subir la apuesta** y tener algo que contar: el primer wine bar de Chile (2012), en Lastarria, con una carta de casi **400 etiquetas chilenas** elegida entre las mejores del mundo por Wine Spectator diez años seguidos. El sótano con cava visitable hace que hasta la espera entre copas sea parte del plan.\n\nNo hace falta saber de vino: el equipo te guía y **las copas de entrada son accesibles** (la cuenta sube solo si eliges premium). Hay cocina de autor para acompañar. **Reserva con anticipación los fines de semana.** Metro **Bellas Artes (Línea 5)**.',
+      },
+    ],
+    mentions: [
+      {
+        placeSlug: 'centro-cultural-gabriela-mistral-gam',
+        note: 'Gratis y enorme: café, librería, terrazas y muestras — **un barrio entero de plan** en un edificio, pegado a Lastarria.',
+      },
+      {
+        placeSlug: 'parque-metropolitano-de-santiago',
+        note: 'El paseo XL: funicular, teleférico, zoo, jardines y miradores. Para una **cita de día completo** al aire libre.',
+      },
+      {
+        placeSlug: 'sky-costanera',
+        note: 'La cita "wow": el **mirador más alto de la ciudad** al atardecer, para impresionar en grande.',
+      },
+      {
+        placeSlug: 'centro-cultural-matucana-100',
+        note: 'Polo cultural en Estación Central: **varias salas, cine y teatro** bajo un mismo techo.',
+      },
+      {
+        placeSlug: 'mut-mercado-urbano-tobalaba',
+        note: 'Un **edificio entero de restaurantes, bares y terrazas** en Providencia: si no se ponen de acuerdo en qué comer, eligen sobre la marcha.',
       },
     ],
   },

@@ -25,7 +25,12 @@ export class UpdateCuratedListUseCase {
       sort: existing.sort,
       isPublished: input.isPublished,
       publishedAt: input.isPublished ? (existing.publishedAt ?? new Date()) : undefined,
-      pins: input.pins.map((p, i) => ({ placeId: p.placeId, blurb: p.blurb, sortOrder: i })),
+      pins: input.pins.map((p, i) => ({
+        placeId: p.placeId,
+        kind: p.pinKind ?? 'FEATURED',
+        blurb: p.blurb,
+        sortOrder: i,
+      })),
       createdAt: existing.createdAt,
       updatedAt: new Date(),
     })

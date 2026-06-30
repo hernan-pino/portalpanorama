@@ -7,7 +7,8 @@ import { container } from '@lib/container'
 import type { CuratedListPageView } from '@application/ports/CuratedListRepository'
 import { CuratedListNotFoundError } from '@domain/curatedList/errors/CuratedListNotFoundError'
 import { Collection } from '@domain/collection/Collection'
-import { PlaceCard, type SaveContext } from '@components/place/PlaceCard'
+import { type SaveContext } from '@components/place/PlaceCard'
+import { PaginatedRest } from './PaginatedRest'
 import { curatedListJsonLd } from './jsonLd'
 
 interface PageProps {
@@ -158,15 +159,44 @@ export default async function ListaPage({ params }: PageProps) {
         </section>
       )}
 
-      {/* Resto de la regla */}
+      {/* Menciones honoríficas: nivel intermedio (notorios, sin ensayo). Banda compacta. */}
+      {list.mentions.length > 0 && (
+        <section className="curated-page__section">
+          <h2 className="curated-page__sec-h">Menciones honoríficas</h2>
+          <ul className="curated-mentions">
+            {list.mentions.map(({ place, note }) => (
+              <li key={place.id} className="curated-mention">
+                <Link href={`/lugar/${place.slug}`} className="curated-mention__thumb" aria-label={`Ver ficha de ${place.name}`}>
+                  {place.coverUrl ? (
+                    <Image src={place.coverUrl} alt={place.name} fill sizes="72px" style={{ objectFit: 'cover' }} />
+                  ) : (
+                    <span className="placeholder-stripe" style={{ width: '100%', height: '100%' }} />
+                  )}
+                </Link>
+                <div className="curated-mention__body">
+                  <h3 className="curated-mention__name">
+                    <Link href={`/lugar/${place.slug}`}>{place.name}</Link>
+                    {place.googleRating != null && (
+                      <span className="curated-mention__rating">
+                        <StarGlyph />
+                        <span className="num">{place.googleRating.toFixed(1)}</span>
+                      </span>
+                    )}
+                  </h3>
+                  {note && <p className="curated-mention__note">{renderInline(note)}</p>}
+                </div>
+                <Link href={`/lugar/${place.slug}`} className="curated-mention__cta" aria-hidden="true">→</Link>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
+
+      {/* Resto de la regla — paginado client-side (sin recargar; la data ya está acá) */}
       {list.rest.length > 0 && (
         <section className="curated-page__section">
-          {list.pinned.length > 0 && <h2 className="curated-page__sec-h">Más lugares</h2>}
-          <div className="results-grid">
-            {list.rest.map((place) => (
-              <PlaceCard key={place.id} place={place} save={save} />
-            ))}
-          </div>
+          {(list.pinned.length > 0 || list.mentions.length > 0) && <h2 className="curated-page__sec-h">Más lugares</h2>}
+          <PaginatedRest places={list.rest} save={save} />
         </section>
       )}
 

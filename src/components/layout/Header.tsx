@@ -23,6 +23,7 @@ export async function Header() {
               404); vuelve cuando se enciendan los eventos. */}
           <nav className="topbar__nav" aria-label="Navegación principal">
             <Link href="/explorar">Explorar</Link>
+            <Link href="/guias">Guías</Link>
           </nav>
 
           {/* Actions */}

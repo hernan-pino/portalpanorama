@@ -5,8 +5,9 @@ import { PriceRange } from '@domain/place/PriceRange'
 // se mantiene completa sola. Es un objeto de datos (sin FK a application): la
 // aplicación lo mapea a `SearchParams` y la infra lo persiste como JSON.
 //
-// Nota: OCCASION/EXPERIENCE entran en la Fase 2 (cuando esos tags sean filtrables);
-// hoy las listas de ocasión aún no se pueden expresar como regla.
+// OCCASION ("Ideal para") y EXPERIENCE ("Experiencia") ya son filtrables (sesión 14),
+// así que una lista de ocasión —"Para una primera cita"— se expresa como regla y se
+// mantiene viva sola a medida que se etiqueta contenido.
 export interface CuratedRule {
   readonly categorySlug?: string
   readonly subcategorySlug?: string
@@ -18,6 +19,8 @@ export interface CuratedRule {
   readonly socialTagSlugs?: ReadonlyArray<string>
   readonly accessTagSlugs?: ReadonlyArray<string>
   readonly vibeTagSlugs?: ReadonlyArray<string>
+  readonly occasionTagSlugs?: ReadonlyArray<string>
+  readonly experienceTagSlugs?: ReadonlyArray<string>
   readonly walkInOnly?: boolean
 }
 
@@ -35,6 +38,8 @@ export function isRuleEmpty(rule: CuratedRule): boolean {
     (rule.socialTagSlugs?.length ?? 0) === 0 &&
     (rule.accessTagSlugs?.length ?? 0) === 0 &&
     (rule.vibeTagSlugs?.length ?? 0) === 0 &&
+    (rule.occasionTagSlugs?.length ?? 0) === 0 &&
+    (rule.experienceTagSlugs?.length ?? 0) === 0 &&
     !rule.walkInOnly
   )
 }

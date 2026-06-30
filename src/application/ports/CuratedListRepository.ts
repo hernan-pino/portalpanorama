@@ -42,8 +42,9 @@ export interface CuratedListRepository {
 }
 
 // Read-model de la landing /lista/[slug]: chrome editorial + destacados (con su
-// bajada y la card del lugar ya resuelta) + el resto de la regla. Lo arma el use
-// case GetCuratedListBySlug (no el repo), componiendo CuratedList + SearchService.
+// bajada y la card del lugar ya resuelta) + menciones honoríficas (nota de una línea,
+// nivel intermedio) + el resto de la regla. Lo arma el use case GetCuratedListBySlug
+// (no el repo), componiendo CuratedList + SearchService.
 export interface CuratedListPageView {
   slug: string
   name: string
@@ -52,6 +53,7 @@ export interface CuratedListPageView {
   intro?: string
   coverImageUrl?: string
   pinned: { blurb?: string; place: FeaturedPlaceView }[]
+  mentions: { note?: string; place: FeaturedPlaceView }[]
   rest: PlaceCardView[]
   total: number
 }

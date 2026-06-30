@@ -411,6 +411,7 @@ a { color: inherit; text-decoration: none; }
   border: 1px solid var(--surface-line-soft);
   border-radius: var(--r-md);
   overflow: hidden;
+  box-shadow: var(--shadow-2);
   text-decoration: none; color: inherit;
   transition: transform var(--d-normal) var(--ease-out),
               border-color var(--d-fast) var(--ease-out),
@@ -1016,7 +1017,25 @@ main:has(.explorar) + .footer { margin-top: 0; }
 
 /* paginación */
 .pager { display: flex; gap: var(--s-2); justify-content: center; align-items: center; margin-top: var(--s-10); }
-.pager__pos { font-size: var(--t-body-sm); color: var(--fg-muted); padding: 0 var(--s-3); }
+/* Botones del pager: más visibles que un ghost (fondo elevado + texto fuerte) y, al
+   pasar el cursor, se oscurecen (fondo tinta + texto claro). Aplica a los dos pagers. */
+.pager .btn { background: var(--bg-raised); border-color: var(--surface-line); font-weight: 600; }
+.pager .btn:not(:disabled):hover { background: var(--ink-100); color: var(--paper-00); border-color: var(--ink-100); }
+.pager .btn:disabled { opacity: 0.4; cursor: default; }
+.pager__pos { font-size: var(--t-body-sm); font-weight: 600; color: var(--fg-strong, var(--ink-100)); padding: 0 var(--s-3); }
+
+/* Botón flotante "volver arriba": círculo oscuro abajo a la derecha, aparece al bajar. */
+.scroll-top {
+  position: fixed; right: var(--s-5); bottom: var(--s-5); z-index: 40;
+  width: 44px; height: 44px; border-radius: 50%; border: none;
+  display: grid; place-items: center; cursor: pointer;
+  background: var(--ink-100); color: var(--paper-00);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.18);
+  animation: scroll-top-in 0.18s ease-out;
+}
+.scroll-top:hover { background: var(--accent-70); }
+@keyframes scroll-top-in { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+@media (max-width: 640px) { .scroll-top { right: var(--s-4); bottom: var(--s-4); width: 40px; height: 40px; } }
 
 /* estado vacío */
 .results-empty { text-align: center; padding-block: var(--s-16); }
@@ -1406,15 +1425,46 @@ button.ficha__hero-img { cursor: zoom-in; }
   .curated-feature__body { gap: var(--s-6); }
 }
 
+/* Menciones honoríficas: nivel intermedio entre los destacados (artículo) y la grilla.
+   Banda compacta: thumb chico + nombre/rating + nota de una línea + flecha a la ficha. */
+.curated-mentions { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: var(--s-2); }
+.curated-mention {
+  display: grid; grid-template-columns: 72px 1fr auto; gap: var(--s-4); align-items: center;
+  padding: var(--s-3); border: 1px solid var(--surface-line); border-radius: var(--r-md);
+  background: var(--bg-raised);
+}
+.curated-mention__thumb {
+  position: relative; display: block; width: 72px; height: 72px;
+  border-radius: var(--r-sm, 8px); overflow: hidden; background: var(--bg-sunken);
+}
+.curated-mention__body { min-width: 0; display: flex; flex-direction: column; gap: 4px; }
+.curated-mention__name {
+  display: flex; align-items: baseline; gap: var(--s-3); flex-wrap: wrap;
+  font-family: var(--font-display); font-size: var(--t-h5, 1.05rem); line-height: 1.25; margin: 0;
+}
+.curated-mention__name a { color: inherit; text-decoration: none; text-underline-offset: 3px; }
+.curated-mention__name a:hover { text-decoration: underline; }
+.curated-mention__rating { display: inline-flex; align-items: center; gap: 4px; font-size: var(--t-mono); color: var(--fg-muted); }
+.curated-mention__rating .num { font-weight: 600; color: var(--fg-strong, var(--ink-100)); }
+.curated-mention__note { margin: 0; font-size: var(--t-sm, 0.9rem); line-height: 1.55; color: var(--fg-muted); }
+.curated-mention__note strong { font-weight: 650; color: var(--ink-100); }
+.curated-mention__cta { color: var(--accent, var(--accent-60)); font-size: 1.25rem; text-decoration: none; padding-inline: var(--s-2); }
+@media (max-width: 860px) {
+  .curated-mention { grid-template-columns: 56px 1fr; }
+  .curated-mention__thumb { width: 56px; height: 56px; }
+  .curated-mention__cta { display: none; }
+}
+
 /* ── Guías curadas en la home ── */
 .home-guides { padding-block: var(--s-8) var(--s-10); }
 .home-guides__grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--grid-gutter); }
 .guide-card {
   display: flex; flex-direction: column; border-radius: var(--r-lg); overflow: hidden;
   border: 1px solid var(--surface-line); background: var(--bg-raised);
+  box-shadow: var(--shadow-2);
   text-decoration: none; color: inherit; transition: transform .15s ease, box-shadow .15s ease;
 }
-.guide-card:hover { transform: translateY(-2px); box-shadow: var(--shadow-md, 0 8px 24px rgba(0,0,0,.08)); }
+.guide-card:hover { transform: translateY(-2px); box-shadow: var(--shadow-3); }
 .guide-card__media { position: relative; display: block; width: 100%; aspect-ratio: 16 / 9; overflow: hidden; background: var(--bg-sunken); }
 .guide-card__media img { width: 100%; height: 100%; object-fit: cover; }
 .guide-card__body { display: flex; flex-direction: column; gap: var(--s-1); padding: var(--s-4); }

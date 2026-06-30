@@ -34,6 +34,8 @@ function parseRule(value: Prisma.JsonValue | null | undefined): CuratedRule {
     socialTagSlugs: strArr(r.socialTagSlugs),
     accessTagSlugs: strArr(r.accessTagSlugs),
     vibeTagSlugs: strArr(r.vibeTagSlugs),
+    occasionTagSlugs: strArr(r.occasionTagSlugs),
+    experienceTagSlugs: strArr(r.experienceTagSlugs),
     walkInOnly: typeof r.walkInOnly === 'boolean' ? r.walkInOnly : undefined,
   }
 }
@@ -64,7 +66,7 @@ type CuratedListRow = {
   publishedAt: Date | null
   createdAt: Date
   updatedAt: Date
-  pins: { placeId: string; blurb: string | null; sortOrder: number }[]
+  pins: { placeId: string; kind: $Enums.CuratedPinKind; blurb: string | null; sortOrder: number }[]
 }
 
 function toDomain(row: CuratedListRow): CuratedList {
@@ -82,6 +84,7 @@ function toDomain(row: CuratedListRow): CuratedList {
     publishedAt: row.publishedAt ?? undefined,
     pins: row.pins.map((p) => ({
       placeId: p.placeId,
+      kind: p.kind as 'FEATURED' | 'MENTION',
       blurb: p.blurb ?? undefined,
       sortOrder: p.sortOrder,
     })),
@@ -129,6 +132,7 @@ export class PrismaCuratedListRepository implements CuratedListRepository {
     }
     const pins = list.pins.map((p) => ({
       placeId: p.placeId,
+      kind: p.kind as $Enums.CuratedPinKind,
       blurb: p.blurb ?? null,
       sortOrder: p.sortOrder,
     }))

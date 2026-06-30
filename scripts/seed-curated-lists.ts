@@ -47,8 +47,14 @@ async function seedList(list: SeedCuratedList): Promise<'created' | 'exists'> {
   })
   if (existing) return 'exists'
 
+  // Fijados a mano = destacados (FEATURED) primero, luego menciones (MENTION). El
+  // orden combinado define el sortOrder; el read-model los reparte por kind.
+  const featured = list.pins.map((p) => ({ placeSlug: p.placeSlug, kind: 'FEATURED' as const, blurb: p.blurb }))
+  const mentions = (list.mentions ?? []).map((m) => ({ placeSlug: m.placeSlug, kind: 'MENTION' as const, blurb: m.note }))
+  const allPins = [...featured, ...mentions]
+
   // Resolver lugares por slug (los que falten se saltan con aviso).
-  const slugs = list.pins.map((p) => p.placeSlug)
+  const slugs = allPins.map((p) => p.placeSlug)
   const places = await prisma.place.findMany({
     where: { slug: { in: slugs } },
     select: { id: true, slug: true },
@@ -58,9 +64,9 @@ async function seedList(list: SeedCuratedList): Promise<'created' | 'exists'> {
   if (missing.length > 0) {
     console.warn(`  ⚠️  "${list.slug}": lugares no encontrados (se saltan): ${missing.join(', ')}`)
   }
-  const pins = list.pins
+  const pins = allPins
     .filter((p) => idBySlug.has(p.placeSlug))
-    .map((p, i) => ({ placeId: idBySlug.get(p.placeSlug)!, blurb: p.blurb ?? null, sortOrder: i }))
+    .map((p, i) => ({ placeId: idBySlug.get(p.placeSlug)!, kind: p.kind, blurb: p.blurb ?? null, sortOrder: i }))
 
   const id = createId()
   await prisma.curatedList.create({
