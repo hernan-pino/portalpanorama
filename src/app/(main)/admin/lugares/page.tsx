@@ -16,6 +16,8 @@ export default async function LugaresPage() {
     categoryName: p.categoryName,
     communeName: p.communeName,
     googleRating: p.googleRating,
+    visitCount: p.visitCount,
+    saveCount: p.saveCount,
   }))
 
   return (

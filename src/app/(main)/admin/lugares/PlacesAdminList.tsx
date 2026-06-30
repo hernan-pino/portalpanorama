@@ -3,6 +3,7 @@ import { useMemo, useState } from 'react'
 import Link from 'next/link'
 import { STATUS_LABELS } from './types'
 import { PlaceRowActions } from './PlaceRowActions'
+import { AdminPager, usePagination } from '../_lib/pagination'
 
 // Fila que necesita la tabla del admin (subconjunto serializable de PlaceAdminRow).
 export interface AdminRow {
@@ -12,6 +13,8 @@ export interface AdminRow {
   categoryName: string
   communeName: string
   googleRating?: number
+  visitCount: number
+  saveCount: number
 }
 
 // Filtro de estado. "ACTIVOS" = todo lo que no está archivado (el default): así los
@@ -57,6 +60,8 @@ export function PlacesAdminList({ places }: { places: AdminRow[] }) {
       return matchesStatus && matchesCategory && matchesQuery
     })
   }, [places, status, category, query])
+
+  const { pageItems, page, pageCount, goTo, topRef } = usePagination(filtered)
 
   return (
     <>
@@ -105,7 +110,7 @@ export function PlacesAdminList({ places }: { places: AdminRow[] }) {
       {filtered.length === 0 ? (
         <p className="admin-empty">No hay lugares que coincidan con el filtro.</p>
       ) : (
-        <div className="admin-table">
+        <div className="admin-table" ref={topRef}>
           <table>
             <thead>
               <tr>
@@ -113,12 +118,14 @@ export function PlacesAdminList({ places }: { places: AdminRow[] }) {
                 <th>Categoría</th>
                 <th>Comuna</th>
                 <th>Google</th>
+                <th title="Visitas de usuarios registrados">Visitas</th>
+                <th title="Veces guardado en una lista">Guardados</th>
                 <th>Estado</th>
                 <th aria-label="Acciones" />
               </tr>
             </thead>
             <tbody>
-              {filtered.map((p) => (
+              {pageItems.map((p) => (
                 <tr key={p.id}>
                   <td>
                     <Link href={`/admin/lugares/${p.id}`} className="admin-table__name">{p.name}</Link>
@@ -126,6 +133,8 @@ export function PlacesAdminList({ places }: { places: AdminRow[] }) {
                   <td>{p.categoryName}</td>
                   <td>{p.communeName}</td>
                   <td>{p.googleRating != null ? `★ ${p.googleRating.toFixed(1)}` : '—'}</td>
+                  <td>{p.visitCount > 0 ? p.visitCount : '—'}</td>
+                  <td>{p.saveCount > 0 ? p.saveCount : '—'}</td>
                   <td>
                     <span className={`admin-badge admin-badge--${p.status.toLowerCase()}`}>
                       {STATUS_LABELS[p.status] ?? p.status}
@@ -138,6 +147,7 @@ export function PlacesAdminList({ places }: { places: AdminRow[] }) {
               ))}
             </tbody>
           </table>
+          <AdminPager page={page} pageCount={pageCount} onChange={goTo} />
         </div>
       )}
     </>

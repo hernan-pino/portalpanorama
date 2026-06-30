@@ -1,11 +1,19 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import { container } from '@lib/container'
+import { BrandsAdminList, type BrandAdminRow } from './BrandsAdminList'
 
 export const metadata: Metadata = { title: 'Marcas — Admin' }
 
 export default async function MarcasPage() {
   const brands = await container.getListBrandsForAdminUseCase().execute()
+
+  const rows: BrandAdminRow[] = brands.map((b) => ({
+    id: b.id,
+    name: b.name,
+    slug: b.slug,
+    placeCount: b.placeCount,
+  }))
 
   return (
     <div className="admin-page">
@@ -18,37 +26,12 @@ export default async function MarcasPage() {
         <Link href="/admin/marcas/nuevo" className="btn btn--primary">+ Nueva marca</Link>
       </header>
 
-      {brands.length === 0 ? (
+      {rows.length === 0 ? (
         <p className="admin-empty">
           Todavía no hay marcas. <Link href="/admin/marcas/nuevo">Crea la primera</Link>.
         </p>
       ) : (
-        <div className="admin-table">
-          <table>
-            <thead>
-              <tr>
-                <th>Nombre</th>
-                <th>Locales</th>
-                <th aria-label="Ver" />
-              </tr>
-            </thead>
-            <tbody>
-              {brands.map((b) => (
-                <tr key={b.id}>
-                  <td>
-                    <Link href={`/admin/marcas/${b.id}`} className="admin-table__name">{b.name}</Link>
-                  </td>
-                  <td>{b.placeCount}</td>
-                  <td>
-                    <Link href={`/marca/${b.slug}`} className="btn btn--ghost btn--sm" target="_blank" rel="noopener noreferrer">
-                      Ver página ↗
-                    </Link>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+        <BrandsAdminList brands={rows} />
       )}
     </div>
   )

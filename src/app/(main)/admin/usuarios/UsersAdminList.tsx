@@ -2,6 +2,7 @@
 import { useMemo, useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
 import { setUserRoleAction, deleteUserAction } from './actions'
+import { AdminPager, usePagination } from '../_lib/pagination'
 
 // Read-model serializable que recibe la tabla (Date ya es ISO string).
 export interface AdminUserRowView {
@@ -64,6 +65,8 @@ export function UsersAdminList({
     })
   }, [users, filter, query])
 
+  const { pageItems, page, pageCount, goTo, topRef } = usePagination(filtered)
+
   function confirmChange() {
     if (!pending) return
     const change = pending
@@ -125,7 +128,7 @@ export function UsersAdminList({
       {filtered.length === 0 ? (
         <p className="admin-empty">No hay usuarios que coincidan con el filtro.</p>
       ) : (
-        <div className="admin-table">
+        <div className="admin-table" ref={topRef}>
           <table>
             <thead>
               <tr>
@@ -139,7 +142,7 @@ export function UsersAdminList({
               </tr>
             </thead>
             <tbody>
-              {filtered.map((u) => {
+              {pageItems.map((u) => {
                 const isSelf = u.id === currentUserId
                 return (
                   <tr key={u.id}>
@@ -197,6 +200,7 @@ export function UsersAdminList({
               })}
             </tbody>
           </table>
+          <AdminPager page={page} pageCount={pageCount} onChange={goTo} />
         </div>
       )}
 

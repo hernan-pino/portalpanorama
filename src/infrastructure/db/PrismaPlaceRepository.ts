@@ -331,6 +331,7 @@ export class PrismaPlaceRepository implements PlaceRepository {
         updatedAt: true,
         category: { select: { name: true } },
         commune: { select: { name: true } },
+        _count: { select: { visitHistory: true, collectionItems: true } },
       },
     })
     return rows.map((r) => ({
@@ -343,6 +344,8 @@ export class PrismaPlaceRepository implements PlaceRepository {
       googleRating: r.googleRating ?? undefined,
       score: r.score,
       updatedAt: r.updatedAt,
+      visitCount: r._count.visitHistory,
+      saveCount: r._count.collectionItems,
     }))
   }
 

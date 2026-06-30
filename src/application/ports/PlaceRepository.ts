@@ -97,6 +97,10 @@ export interface PlaceAdminRow {
   googleRating?: number
   score: number
   updatedAt: Date
+  // Engagement: visitas de usuarios logueados (VisitHistory) y veces guardado
+  // (CollectionItem, en cualquier lista). Las páginas vistas anónimas viven en GA4.
+  visitCount: number
+  saveCount: number
 }
 
 export interface PlaceRepository {
