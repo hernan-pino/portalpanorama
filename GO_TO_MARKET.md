@@ -114,7 +114,7 @@ suficientes reseñas). Lo nuevo/dudoso queda en PENDING_REVIEW, no se publica po
 **Semana 1**
 - [x] Publicar lista **"Para una primera cita"** ✅ (2026-06-29) — 10 destacados + 5 menciones honoríficas (incl. MUT). Regla `occasion=cita` viva. **✅ En prod completa (2026-06-30): 5 menciones, MUT incluido** (se sincronizó el MUT + su pin de mención). De paso: tier de menciones, paginador, página `/guias`, scroll-to-top.
 - [x] Lote 1 — Hamburgueserías ✅ (**30** PUBLISHED, born-tagged `cuisine=hamburguesas`, enriquecidas) cubriendo núcleo + Maipú, La Florida, Puente Alto, etc. **✅ Sincronizado a prod (2026-06-30)** con `scripts/prod-sync.ts` (los 30 + MUT + 28 tags CUISINE; prod = local, 250 lugares).
-- [ ] Crear/reservar redes (una sola vez)
+- [x] Crear/reservar redes ✅ (2026-06-30) — **Instagram creado**. Se tienen **dos cuentas**: **`@portalpanorama.cl`** (la que se usará, calza con el dominio) + **`@portal_panorama`** (reservada como respaldo, por si pasa algo). **Falta:** cablear el handle real en el footer de la app (hoy dice *"coming soon"*; el campo `instagram` ya existe) — hacerlo una sola vez con `@portalpanorama.cl`. Otras redes (TikTok/Facebook) más adelante.
 
 **Semana 2**
 - [ ] Lote 2 — Hamburgueserías, más comunas (Est. Central, San Miguel, Puente Alto, Macul, Recoleta) → ~25 → **total ~50**

@@ -39,8 +39,15 @@ CUISINE, MUT presente)**; el pin de **mención del MUT** se agregó aparte (la g
 burgers (`/lugar/streat-burger-la-florida`, `/lugar/uncle-fletch-nunoa`), `/lista/para-una-primera-cita` (con MUT) y
 `/explorar?cuisine=hamburguesas`. **Conexión a prod vía `PROD_DB_URL` temporal en `.env.local` (cliente Prisma explícito por adapter,
 nunca el `prisma` local) → borrar la línea tras el sync.** Patrón nuevo registrado: **el contenido se carga en local y se sincroniza
-a prod con `prod-sync.ts`** (los datos NO viajan con `git push`; solo código + migraciones). **Próximo paso:** Semana 1 — crear redes
-+ arrancar el Lote 2 (más hamburgueserías) o saltar a pizzerías.
+a prod con `prod-sync.ts`** (los datos NO viajan con `git push`; solo código + migraciones).
+
+**Cierre de la sesión 17 + Instagram (2026-06-30):** se **crearon las redes** (Semana 1 ✅). Hay **dos cuentas de Instagram**:
+**`@portalpanorama.cl`** (la que se usará — calza con el dominio) y **`@portal_panorama`** (reservada de respaldo). **Próximo paso
+(sesión 18):** **(1) cablear el handle real `@portalpanorama.cl` en el footer** (hoy los íconos dicen *"coming soon"*; el campo
+`instagram` ya existe en el modelo y en el footer → cambio chico, **una sola vez** con el handle definitivo, va a prod con `git push`).
+**(2) Lote 2 — más hamburgueserías** (otras comunas) → al llegar a ~50 publicar la **guía "Hamburgueserías de Santiago"** + anunciar
+en foros; o saltar a **pizzerías**. Recordar: el contenido se carga en **local** y se sincroniza a prod con `scripts/prod-sync.ts`
+(+ `PROD_DB_URL` temporal en `.env.local`, borrar tras usar).
 
 **Sesión previa:** 2026-06-29 (sesión 16 — **Guía "Para una primera cita" + tier de menciones honoríficas + navegación**):
 se construyó la **primera lista de ocasión** del go-to-market (el quick win de la Semana 1 de julio). **(1) Regla por ocasión:**
