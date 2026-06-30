@@ -112,8 +112,8 @@ suficientes reseñas). Lo nuevo/dudoso queda en PENDING_REVIEW, no se publica po
 **Semana a semana:**
 
 **Semana 1**
-- [x] Publicar lista **"Para una primera cita"** ✅ (2026-06-29) — 10 destacados + 5 menciones honoríficas (incl. MUT, creado con Apify); regla `occasion=cita` viva. **✅ Pusheada a prod (2026-06-30)**; en prod sale con **4** menciones hasta crear el MUT aparte. De paso: tier de menciones, paginador, página `/guias`, scroll-to-top.
-- [ ] Lote 1 — Hamburgueserías, núcleo + 2-3 comunas nuevas (Maipú, La Florida) → ~25
+- [x] Publicar lista **"Para una primera cita"** ✅ (2026-06-29) — 10 destacados + 5 menciones honoríficas (incl. MUT). Regla `occasion=cita` viva. **✅ En prod completa (2026-06-30): 5 menciones, MUT incluido** (se sincronizó el MUT + su pin de mención). De paso: tier de menciones, paginador, página `/guias`, scroll-to-top.
+- [x] Lote 1 — Hamburgueserías ✅ (**30** PUBLISHED, born-tagged `cuisine=hamburguesas`, enriquecidas) cubriendo núcleo + Maipú, La Florida, Puente Alto, etc. **✅ Sincronizado a prod (2026-06-30)** con `scripts/prod-sync.ts` (los 30 + MUT + 28 tags CUISINE; prod = local, 250 lugares).
 - [ ] Crear/reservar redes (una sola vez)
 
 **Semana 2**

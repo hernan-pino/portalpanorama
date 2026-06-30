@@ -25,6 +25,23 @@ visible), pero **antes de cargar hamburgueserías con `cuisine=` a prod hay que 
 aditivo + `PROD_DB_URL`, como se hizo con OCCASION/EXPERIENCE en la s14). **Próximo paso:** seguir la **Semana 1** (Lote 1
 hamburgueserías + crear redes) o cerrar los 2 gotchas de prod (MUT + tags CUISINE).
 
+**✅ SYNC DE CONTENIDO A PROD HECHO (2026-06-30, misma sesión 17).** Se cerraron los 2 gotchas + se sincronizó el Lote 1 (que ya
+estaba **completo en local**: 30 hamburgueserías PUBLISHED, born-tagged `cuisine=hamburguesas`, enriquecidas). Diagnóstico previo:
+local 250 / prod 219 → faltaban **31** (30 burgers + MUT); tags CUISINE en prod = **0**; 78 cuisine-tagged en local (48 ya en prod,
+30 no). Se construyó **tooling reutilizable** (queda en `scripts/`, para los próximos lotes): **`prod-sync-diag.ts`** (read-only,
+compara local vs prod por slug) y **`prod-sync.ts`** (`--dry` primero) que (1) upserta catálogo por **clave natural/slug** —incluidos
+los 28 tags CUISINE, reclasificando las "Cocina X" SPECIFIC→CUISINE sin perder asignaciones—, (2) crea los lugares faltantes con
+imágenes/tags/rating/coords resueltos contra prod, (3) agrega tags CUISINE **aditivamente** a los que ya estaban. **Garantías:**
+resuelve FKs contra prod por slug (nunca reusa IDs locales), **no toca usuarios** (no resetea el admin), **nunca quita** tags
+(no pisa OCCASION/EXPERIENCE de la s14), idempotente. **Resultado:** **31/31 creados**, prod ahora **= local (250 places, 28 tags
+CUISINE, MUT presente)**; el pin de **mención del MUT** se agregó aparte (la guía se creó en el build sin el MUT → 14 pins; ahora
+**15 = 10 destacados + 5 menciones**, idéntica a local). **Verificado en vivo (HTTP 200 + contenido real):** `/lugar/mut-…` (4.7★),
+burgers (`/lugar/streat-burger-la-florida`, `/lugar/uncle-fletch-nunoa`), `/lista/para-una-primera-cita` (con MUT) y
+`/explorar?cuisine=hamburguesas`. **Conexión a prod vía `PROD_DB_URL` temporal en `.env.local` (cliente Prisma explícito por adapter,
+nunca el `prisma` local) → borrar la línea tras el sync.** Patrón nuevo registrado: **el contenido se carga en local y se sincroniza
+a prod con `prod-sync.ts`** (los datos NO viajan con `git push`; solo código + migraciones). **Próximo paso:** Semana 1 — crear redes
++ arrancar el Lote 2 (más hamburgueserías) o saltar a pizzerías.
+
 **Sesión previa:** 2026-06-29 (sesión 16 — **Guía "Para una primera cita" + tier de menciones honoríficas + navegación**):
 se construyó la **primera lista de ocasión** del go-to-market (el quick win de la Semana 1 de julio). **(1) Regla por ocasión:**
 `CuratedRule` ahora soporta `occasionTagSlugs`/`experienceTagSlugs` → las listas de ocasión se expresan como **regla viva** (la de
