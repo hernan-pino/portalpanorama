@@ -7,7 +7,28 @@ priorizado. Se actualiza cada vez que avanzamos. Liviano a propósito — para r
 - **Modelo de datos:** [SCHEMA.md](SCHEMA.md) · **Capas:** [ARCHITECTURE.md](ARCHITECTURE.md) · **Marca:** [BRAND_SPEC.md](BRAND_SPEC.md) · **Cuenta de negocio + reclamo (🅿️ parqueado, Fase C):** [BUSINESS_ACCOUNTS_SPEC.md](BUSINESS_ACCOUNTS_SPEC.md)
 - **Bitácora del rediseño (historia + razonamiento de las decisiones):** [PLAN_FASE9.md](PLAN_FASE9.md) · **Histórico (docs superados):** [docs/historico/](docs/historico/)
 
-**Última actualización:** 2026-06-30 (sesión 18 — **Footer Instagram + Microsoft Clarity + Dashboard de analítica en el admin**):
+**Última actualización:** 2026-06-30 (sesión 19 — **Lote 2 de hamburgueserías (30) + guía "Las mejores hamburgueserías de Santiago" + paginado/contadores en admin**):
+**(1) Admin:** **paginado client-side** (25/pág, helper compartido `_lib/pagination.tsx` = hook `usePagination` + `AdminPager`, reutiliza la
+clase `.pager`) en las 4 tablas: lugares, marcas, listas, usuarios (marcas y listas pasaron a client components `BrandsAdminList`/
+`CuratedListsAdminList`). Además **contadores de Visitas** (`VisitHistory` de usuarios registrados) y **Guardados** (`CollectionItem`) en la
+tabla de `/admin/lugares`, vía un `_count` en la query del admin (port `PlaceAdminRow` → adapter → page → tabla). Commit `1692f80`.
+**(2) Lote 2 — 30 hamburgueserías** (Vitacura, Macul, La Cisterna, Pudahuel, Huechuraba, Renca, Providencia, Ñuñoa, Puente Alto,
+Independencia, San Joaquín, San Bernardo, San Miguel): 5 tandas paralelas del agente `investigador-lugares` con place_id provistos →
+`ingest-fichas` (28 PUBLISHED + 2 PENDING_REVIEW luego publicadas) → `enrich --with-photos` (rating + coords + 3 fotos c/u, exacto por
+place_id). **Prod pasó de 30 → 60 hamburgueserías** (`cuisine=hamburguesas`), sincronizadas con `scripts/prod-sync.ts` (30/30 creadas,
+verificado en vivo). Total BD: **280 lugares**. **(3) 2ª cuenta de Apify** cableada: `APIFY_TOKEN_2` en `.env.local` (la 1ª estaba agotada;
+la rotación saltó sola a la 2ª y completó el enrich). **(4) Guía "Las mejores hamburgueserías de Santiago"** (`/lista/las-mejores-hamburgueserias-de-santiago`,
+6 destacados + 4 menciones + 50 en grilla): para armarla se **cableó la capa CUISINE como regla de listas y faceta de búsqueda**
+(`cuisineTagSlugs` en `CuratedRule` + `SearchParams`, aplicado en `PostgresFTSSearchService.buildWhere`, mapeado en el use case y el repo;
+admin de listas lo preserva al editar) — mismo patrón que OCCASION/EXPERIENCE. **El filtro visible "Tipo de comida" en /explorar sigue
+diferido**; esto solo habilita el camino regla→búsqueda. Commit `b7de292`. **Typecheck limpio + 99 tests verdes.** **✅ PUSHEADO A PROD**
+(`8bb73b4..b7de292`): el build corrió `seed-curated-lists` → creó la guía en prod (las 60 burgers y el tag ya estaban allá); verificado en
+vivo (HTTP 200, título + 6 destacados + "60 lugares"). **Pendientes menores (próxima sesión):** barrios reales al seed (Los Leones/Gabriela/
+Pudahuel Sur, omitidos en la ingesta) + reasignar; **rotar la contraseña de Neon prod** (quedó visible en el chat al leer `.env.local`).
+**Próximo paso (sesión 20):** seguir el Lote 3 (más hamburgueserías otras comunas para densificar, o **pizzerías** como 2ª vertical de cocina)
+→ carga en local → sync a prod. Recordatorio: `PROD_DB_URL` temporal en `.env.local`, borrar tras el sync (ya borrada).
+
+**Sesión previa:** 2026-06-30 (sesión 18 — **Footer Instagram + Microsoft Clarity + Dashboard de analítica en el admin**):
 **(1) Footer:** Instagram pasó de botón "coming soon" a **link real `@portalpanorama.cl`** (la cuenta definitiva); TikTok/Facebook
 siguen sin cuenta (mantienen el aviso, con copy nuevo que invita a Instagram). Commit `32a2cba`, **pusheado a prod**. **(2) Microsoft
 Clarity** (heatmaps + grabaciones de sesión) integrado: componente `MicrosoftClarity.tsx` gated por `NEXT_PUBLIC_CLARITY_ID`
