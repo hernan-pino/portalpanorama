@@ -22,11 +22,16 @@ las burgers): regla `cuisineTagSlugs: ['pizza']`, sort `score_desc`, **6 destaca
 · Pícara Pájara — mezcla de joyas top-score + instituciones más reseñadas, repartidas por la ciudad) **+ 4 menciones** (Locura · Roccko's · La
 Dominga · Espacio Pizza — periferia: Peñalolén/Maipú/Quilicura/La Cisterna). Escrita en `scripts/curated-lists.data.ts` + **reseed local OK**
 (la guía se creó, resuelve 32). **Typecheck limpio. BD local: 310 places.** Fichas archivadas en `tmp/fichas-lote3-pizza/` (30/30).
-**⚠️ TODO SOLO EN LOCAL — falta prod (sin OK/credencial todavía):** **(a)** `prod-sync.ts` (con `PROD_DB_URL` temporal) → crea las 13 pizzerías
-nuevas + agrega `pizza` a Bar Flama ×2 (aditivo) + replica los 3 barrios nuevos (Los Leones, Pudahuel Sur, Gabriela); **(b)** commit + push de
-`curated-lists.data.ts` + `seed.ts` + `investigador-lugares.md` + `PLAN.md` → el build corre `seed-curated-lists` y **crea la guía en prod**
-(orden: sync **antes** del push, para que los slugs resuelvan). Pendiente menor de s19: **rotar la contraseña de Neon prod**. **Próximo paso:**
-hacer el prod-sync + push cuando el usuario dé el OK y habilite `PROD_DB_URL`.
+**✅ SYNC A PROD + PUSH COMPLETO (misma sesión):** `prod-sync.ts` (`--dry` primero, luego real) creó los **30 lugares** nuevos en prod +
+agregó `pizza` aditivo a Bar Flama ×2 + sincronizó el catálogo (incluidos los 3 barrios nuevos). Los **3 lugares que ya estaban en prod con
+barrio `null`** (HOPE→Pudahuel Sur, Los Negros→Gabriela, Mendoza Burgers→Los Leones) se **reasignaron con un script puntual por `googlePlaceId`**
+(prod-sync no toca fichas existentes salvo tags aditivos). **Prod = local: 305 PUBLISHED / 310 total, 32 `cuisine=pizza`.** Luego `git push`
+(`73f0796..1be75e0`) → el build corrió `seed-curated-lists` y **creó la guía en prod**. **Verificado en vivo (HTTP 200):**
+`portalpanorama.cl/lista/las-mejores-pizzerias-de-santiago` → título correcto, "32 lugares", los 6 destacados + menciones + intro renderizan.
+Conexión a prod vía `PROD_DB_URL` temporal en `.env.local` (adapter explícito, nunca el `prisma` local). **Pendiente del usuario:** decidió
+**NO rotar la contraseña de Neon prod todavía** (la deja hasta cerrar toda la carga de contenido; `PROD_DB_URL` quedó en `.env.local` para los
+próximos lotes) → **rotar + borrar `PROD_DB_URL` al final de la campaña de carga.** **Próximo paso (sesión 22):** siguiente vertical de cocina
+(¿otra categoría city-wide?) o densificar comunas, mismo flujo: cargar en local → `prod-sync` → push.
 
 **Sesión previa:** 2026-07-03 (sesión 20 — **Barrios omitidos arreglados + Lote 3 de pizzerías (17/30 city-wide, en local)**):
 **(1) Barrios omitidos del Lote 2 arreglados:** los 3 que la ingesta dejó sin barrio (`neighborhoodId=null`) → agregados al seed
