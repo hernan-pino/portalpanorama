@@ -31,7 +31,10 @@ es lo que consume el script de ingesta. Por cada lugar:
 4. **Imágenes:** da URLs directas y **estables** (Wikimedia, sitio oficial, Unsplash) por
    sobre Instagram/Maps con firma (esos fallan al rehospedarse). Marca `portada: true`.
 5. Escribe cada ficha en `tmp/fichas/<slug>.json` (un archivo por lugar). Crea la carpeta
-   si no existe.
+   si no existe. **Escribe el JSON APENAS termines de investigar ese lugar, antes de pasar
+   al siguiente** — nunca acumules las fichas para escribirlas todas al final. Así, si la
+   corrida se interrumpe (límite de sesión, cierre del proceso), lo ya investigado queda
+   persistido en disco y no hay que rehacerlo.
 
 ## Reglas
 - **⛔ Español de Chile (tuteo), NUNCA voseo argentino** en toda descripción que escribas (lugar y marca):

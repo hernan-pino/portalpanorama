@@ -7,7 +7,49 @@ priorizado. Se actualiza cada vez que avanzamos. Liviano a propósito — para r
 - **Modelo de datos:** [SCHEMA.md](SCHEMA.md) · **Capas:** [ARCHITECTURE.md](ARCHITECTURE.md) · **Marca:** [BRAND_SPEC.md](BRAND_SPEC.md) · **Cuenta de negocio + reclamo (🅿️ parqueado, Fase C):** [BUSINESS_ACCOUNTS_SPEC.md](BUSINESS_ACCOUNTS_SPEC.md)
 - **Bitácora del rediseño (historia + razonamiento de las decisiones):** [PLAN_FASE9.md](PLAN_FASE9.md) · **Histórico (docs superados):** [docs/historico/](docs/historico/)
 
-**Última actualización:** 2026-06-30 (sesión 19 — **Lote 2 de hamburgueserías (30) + guía "Las mejores hamburgueserías de Santiago" + paginado/contadores en admin**):
+**Última actualización:** 2026-07-03 (sesión 21 — **Lote 3 de pizzerías COMPLETO (32 en local) + guía "Las mejores pizzerías de Santiago"**):
+se cerraron las **13 pizzerías que faltaban** del Lote 3 (tras el reset del límite de sesión). **(1) Investigación:** 3 tandas paralelas
+del agente `investigador-lugares` (grupos A/B/C = 5+4+4) → 13/13 fichas escritas (escritura incremental, ninguna se perdió). **(2) Ingesta:**
+`ingest-fichas` → 12 PUBLISHED + 1 PENDING_REVIEW (St. Giovanni's, duda de sucursal en Las Condes); 4 marcas nuevas (Da Dino, Domani, La
+Argentina, St. Giovanni's). **(3) Enrich** (`--force --with-photos`, por los 13 ids internos, sin tocar los otros): **13/13 con rating real
+de Google + coords + fotos**, match exacto por `place_id`, 0 sin match; **Apify #1 agotada (402) → rotó sola a la #2**. El `place_id` de St.
+Giovanni's resolvió a **Rafael Sanzio 209** → confirmó la sucursal y **despejó el PENDING_REVIEW**. **(4) Publicados los 3 PENDING_REVIEW**
+con su dato real (vía `PublishPlaceUseCase`): La Toscana (4.5/569), La Bonn'a (4.4/641), St. Giovanni's (4.7/669). **(5) Alcance de la guía —
+decisión del usuario:** **Golfo di Napoli** y **Piccola Italia** son *cocina italiana que vende pizza* (trattorias) → **NO** son pizzerías,
+quedan fuera (siguen `cocina-italiana`); **Bar Flama ×2** *sí es pizzería* → se le agregó el tag `cuisine=pizza` (aditivo, idempotente).
+**Total: 32 lugares con `cuisine=pizza`.** **(6) Guía "Las mejores pizzerías de Santiago"** (`las-mejores-pizzerias-de-santiago`, molde de
+las burgers): regla `cuisineTagSlugs: ['pizza']`, sort `score_desc`, **6 destacados** (Fina Pizza · Pratola · Segreta · La Argentina · Tiramisú
+· Pícara Pájara — mezcla de joyas top-score + instituciones más reseñadas, repartidas por la ciudad) **+ 4 menciones** (Locura · Roccko's · La
+Dominga · Espacio Pizza — periferia: Peñalolén/Maipú/Quilicura/La Cisterna). Escrita en `scripts/curated-lists.data.ts` + **reseed local OK**
+(la guía se creó, resuelve 32). **Typecheck limpio. BD local: 310 places.** Fichas archivadas en `tmp/fichas-lote3-pizza/` (30/30).
+**⚠️ TODO SOLO EN LOCAL — falta prod (sin OK/credencial todavía):** **(a)** `prod-sync.ts` (con `PROD_DB_URL` temporal) → crea las 13 pizzerías
+nuevas + agrega `pizza` a Bar Flama ×2 (aditivo) + replica los 3 barrios nuevos (Los Leones, Pudahuel Sur, Gabriela); **(b)** commit + push de
+`curated-lists.data.ts` + `seed.ts` + `investigador-lugares.md` + `PLAN.md` → el build corre `seed-curated-lists` y **crea la guía en prod**
+(orden: sync **antes** del push, para que los slugs resuelvan). Pendiente menor de s19: **rotar la contraseña de Neon prod**. **Próximo paso:**
+hacer el prod-sync + push cuando el usuario dé el OK y habilite `PROD_DB_URL`.
+
+**Sesión previa:** 2026-07-03 (sesión 20 — **Barrios omitidos arreglados + Lote 3 de pizzerías (17/30 city-wide, en local)**):
+**(1) Barrios omitidos del Lote 2 arreglados:** los 3 que la ingesta dejó sin barrio (`neighborhoodId=null`) → agregados al seed
+([seed.ts](src/infrastructure/db/prisma/seed.ts) `NEIGHBORHOODS`) + creados en BD local + 3 lugares reasignados por `googlePlaceId`
+(exacto): **Los Leones** (Providencia → Mendoza Burgers), **Pudahuel Sur** (Pudahuel → Hope), **Gabriela** (Puente Alto → Los Negros
+Sanguechería). **⚠️ Falta replicar en prod:** esos 3 lugares en prod tienen barrio `null` y los 3 barrios no existen allá → va con el
+`prod-sync` del Lote 3 o script puntual (`PROD_DB_URL` temporal). **(2) Lote 3 — pizzerías (city-wide):** el usuario aportó una lista
+de **30 pizzerías con `place_id`** repartidas por comuna (≥4.3★, excluyendo cadenas industriales y las ya cargadas —Golfo di Napoli,
+Bar Flama ×2, Piccola Italia—). Dedup verificado (0 duplicados por `place_id`). **17/30 cargadas + enriquecidas en local:** 5 tandas
+paralelas del agente `investigador-lugares` (Sonnet); **4 de 5 toparon el límite de sesión, pero gracias a la escritura incremental por
+negocio** (recién cableada en el agente) **se salvaron 17 fichas en disco** (vs 0 la primera vez, que se acumulaban para el final). Flujo:
+`ingest-fichas` (15 PUBLISHED + 2 PENDING_REVIEW: La Toscana, La Bonn'a) → `enrich --force --with-photos` (17/17 con rating real de Google
++ coords + fotos, match exacto por `place_id`, 0 mismatches; **Apify rotó sola a la cuenta #2** al agotarse la #1). 5 marcas nuevas
+creadas. Los 2 PENDING_REVIEW eran los del conflicto de rating → **resuelto con el dato real** (La Toscana 4.5/569; La Bonn'a 4.4/641),
+listos para publicar. **Total BD: 280 → 297 places.** Fichas archivadas en `tmp/fichas-lote3-pizza/`. **(3) Faltan 13** (bloqueadas por
+el límite de sesión, **resetea 00:40 Santiago**): tanda 1 completa (Verace, Da Dino, Pratola, Alleria, Domani, La Argentina) + 5 de la 2
+(Oro y Carbón, Pizzerino, La Rústica, Fina, St. Giovanni's) + Roma y La Pizzarra de la 3. **(4) Regla de flujo confirmada + grabada:**
+escritura incremental de fichas (por negocio, en el agente) + **ingesta por tanda** (memoria `feedback_carga_incremental`), para no perder
+research si se corta (sensibilidad del usuario a los tokens). **Próximo paso (sesión 20 cont.):** re-lanzar los 13 tras el reset → `ingest`
+→ `enrich` → con las 30 completas, publicar los PENDING_REVIEW + armar la guía **"Las mejores pizzerías de Santiago"** (molde de las burgers)
++ `prod-sync` (incluye replicar los 3 barrios nuevos en prod). Pendiente menor de s19: **rotar la contraseña de Neon prod**.
+
+**Sesión previa:** 2026-06-30 (sesión 19 — **Lote 2 de hamburgueserías (30) + guía "Las mejores hamburgueserías de Santiago" + paginado/contadores en admin**):
 **(1) Admin:** **paginado client-side** (25/pág, helper compartido `_lib/pagination.tsx` = hook `usePagination` + `AdminPager`, reutiliza la
 clase `.pager`) en las 4 tablas: lugares, marcas, listas, usuarios (marcas y listas pasaron a client components `BrandsAdminList`/
 `CuratedListsAdminList`). Además **contadores de Visitas** (`VisitHistory` de usuarios registrados) y **Guardados** (`CollectionItem`) en la
