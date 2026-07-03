@@ -101,6 +101,9 @@ const NEIGHBORHOODS: { name: string; communeNames: string[] }[] = [
   { name: 'Alonso de Córdova', communeNames: ['Vitacura'] },
   { name: 'La Dehesa', communeNames: ['Lo Barnechea'] },
   { name: 'Pedro de Valdivia Norte', communeNames: ['Providencia'] },
+  { name: 'Los Leones', communeNames: ['Providencia'] },
+  { name: 'Pudahuel Sur', communeNames: ['Pudahuel'] },
+  { name: 'Gabriela', communeNames: ['Puente Alto'] },
 ]
 
 // ─── Categorías (9) + subcategorías (B.4 / doc 04) ───────────────────────────────

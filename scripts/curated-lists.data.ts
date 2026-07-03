@@ -287,4 +287,66 @@ export const CURATED_LISTS: SeedCuratedList[] = [
       },
     ],
   },
+  {
+    slug: 'las-mejores-pizzerias-de-santiago',
+    name: 'Las mejores pizzerías de Santiago',
+    kind: 'GUIDE',
+    description:
+      'Las pizzerías mejor evaluadas de Santiago: napolitana, romana, a la piedra y de barrio, comuna por comuna, con rating real de Google.',
+    intro:
+      'La pizza en Santiago dejó de ser delivery genérico para volverse oficio: masa fermentada por días, hornos que pasan los 400°C y maestros pizzeros que discuten en serio sobre napolitana, romana o masa madre. Esta es nuestra selección de las mejores de la ciudad —de la napolitana de borde inflado a la romana crocante al corte, repartidas de Vitacura a San Miguel—, ordenadas por reputación. Se mantiene al día sola: cada pizzería nueva que cargamos entra acá.',
+    rule: { cuisineTagSlugs: ['pizza'] },
+    sort: 'score_desc',
+    isPublished: true,
+    pins: [
+      {
+        placeSlug: 'fina-pizza',
+        blurb:
+          'La **mejor evaluada** de la guía: un **4.9 en Google** en **Ñuñoa** para una pizza que sus propios dueños definen como **contemporánea de autor**, más que napolitana de manual. Masa cuidada, ingredientes bien elegidos y un local chico donde se nota que cada pizza importa.\n\nQueda en **Los Aliaga 809** y abre sobre todo de tarde-noche. De esas que valen el desvío aunque no te queden de paso.',
+      },
+      {
+        placeSlug: 'pratola',
+        blurb:
+          '**Cinco estrellas redondas en Google** —caso rarísimo— para esta romana **al taglio** (al corte, de bandeja) en pleno **Barrio Lastarria**. Masa alta y aireada, crocante abajo, que se vende por porción y al peso como en las panaderías de Roma.\n\nEstá en **Monjitas 385**, a pasos del **metro Bellas Artes (Línea 5)**: ideal para picar algo de verdad bueno antes o después de un panorama en el centro.',
+      },
+      {
+        placeSlug: 'segreta-pizzeria',
+        blurb:
+          'La napolitana consolidada del sector oriente: **más de 2.000 reseñas con 4.8** en **Alonso de Córdova, Vitacura**. Horno a leña, masa de fermentación larga y el borde (cornicione) inflado como manda la escuela de Nápoles.\n\nQueda en **Alonso de Córdova 3080**. Es de las que sirven para quedar bien: ambiente cuidado y una pizza que aguanta cualquier comparación.',
+      },
+      {
+        placeSlug: 'la-argentina-pizzeria',
+        blurb:
+          'La **más reseñada** de la guía por lejos: **más de 8.000 opiniones** y una tradición que arranca en **1949**. Su especialidad es la pizza **a la piedra** —masa fina y crocante, bien cargada de queso—, un clásico transversal que cruza generaciones.\n\nEsta sede está en **Av. Italia 989, Barrio Italia (Providencia)**, cerca del **metro Santa Isabel (Línea 5)**. Cuando quieres ir a la segura con un nombre que nunca falla, es esta.',
+      },
+      {
+        placeSlug: 'pizzeria-tiramisu',
+        blurb:
+          'Una **institución** de Las Condes: **más de 13.000 reseñas** avalan años de cocina italiana pareja en **Isidora Goyenechea 3141**, a pasos del **metro El Golf (Línea 1)**. Pizza de horno, pastas y ambiente de trattoria en pleno barrio financiero.\n\nEs la apuesta clásica para un almuerzo largo o una cena sin sorpresas: sabes exactamente lo que vas a recibir, y es bueno.',
+      },
+      {
+        placeSlug: 'picara-pajara-pizzeria',
+        blurb:
+          'La prueba de que **el sur también tiene napolitana de primera**: **4.7 con más de 1.100 reseñas** en **San Miguel**, cerca del **metro Ciudad del Niño (Línea 2)**. Masa de fermentación larga y un local que se ganó a sus fieles por mérito propio.\n\nQueda en **Octava Avenida 1201**. De las que demuestran que el mapa de la buena pizza en Santiago es mucho más ancho que el barrio alto.',
+      },
+    ],
+    mentions: [
+      {
+        placeSlug: 'locura-pizzeria-ex-chelenko',
+        note: 'Pizza de **masa madre** con **4.9** en **Peñalolén** (ex Chelenko, Av. Tobalaba 13949): fermentación lenta y sabor de verdad en el oriente-sur.',
+      },
+      {
+        placeSlug: 'rocckos-pizza',
+        note: '**4.8** en **Maipú** (Parque Central): una de las mejores del sector poniente, hecha a pulso y muy querida por el barrio.',
+      },
+      {
+        placeSlug: 'la-dominga-pizzeria',
+        note: 'Buena pizza al norte de la capital: **4.7** en **Quilicura** (Santa Luisa 537), de esas de barrio que la gente defiende.',
+      },
+      {
+        placeSlug: 'espacio-pizza',
+        note: '**4.8 con 400 reseñas** en **La Cisterna** (Av. Fernández Albano 811): calidad de pizzería seria en una comuna donde no abunda.',
+      },
+    ],
+  },
 ]
