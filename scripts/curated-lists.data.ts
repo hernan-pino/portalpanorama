@@ -349,4 +349,66 @@ export const CURATED_LISTS: SeedCuratedList[] = [
       },
     ],
   },
+  {
+    slug: 'las-mejores-sushilerias-de-santiago',
+    name: 'Las mejores sushilerías de Santiago',
+    kind: 'GUIDE',
+    description:
+      'Las mejores sushilerías de Santiago: nikkei de autor, barras de barrio y clásicos del delivery, comuna por comuna, con rating real de Google.',
+    intro:
+      'El sushi es, probablemente, la comida que más se pide a domicilio en Santiago —y detrás de tanto delivery genérico hay sushilerías que valen de verdad: nikkei de autor, barras de barrio con años de oficio e instituciones con miles de reseñas. Esta es nuestra selección de las mejores de la ciudad, de Vitacura a Puente Alto, ordenadas por reputación. Se mantiene al día sola: cada sushilería nueva que cargamos entra acá.',
+    rule: { cuisineTagSlugs: ['sushi'] },
+    sort: 'score_desc',
+    isPublished: true,
+    pins: [
+      {
+        placeSlug: 'koari-sushi',
+        blurb:
+          'La **mejor evaluada** de la guía: **4.9 en Google con más de 880 reseñas** para esta cocina **nikkei de autor** en pleno **Tenderini**, a pasos del Teatro Municipal. Rolls flambeados, entradas con toque tropical y coctelería —está pensada más para una comida de evento que para un pedido de trámite.\n\nQueda en **Tenderini 171**, prácticamente sobre el **metro Universidad de Chile (Líneas 1 y 3)**. De las que valen sentarse a la mesa en vez de pedir a domicilio.',
+      },
+      {
+        placeSlug: 'katai-sushi-y-sandwich',
+        blurb:
+          'La prueba de que **el sur profundo también hace sushi de primera**: **4.9 en Google** en **Puente Alto**, con la particularidad de juntar dos antojos en una carta —**sushi y sándwiches**— para no tener que elegir. Rolls por el lado clásico (panko, camarón apanado, queso crema) y opciones más contundentes tipo colación.\n\nEstá en **Av. Concha y Toro 2760**. Funciona sobre todo para pedir a domicilio o retirar, y quienes lo prueban repiten.',
+      },
+      {
+        placeSlug: 'sushi-hoy',
+        blurb:
+          'El **delivery de barrio** mejor evaluado de la guía: **4.8 con más de 550 reseñas** en una calle tranquila de **Ñuñoa**. Rolls fusión, abundantes y bien cargados —piña caramelizada, queso crema, tempura—, más en la línea del sushi para compartir en casa que del tradicional.\n\nQueda cerca del **metro Monseñor Eyzaguirre (Línea 3)** y tiene también sucursal en La Florida. Del tipo que pides un viernes en la noche a la segura.',
+      },
+      {
+        placeSlug: 'sushi-la-reina',
+        blurb:
+          'El clásico del **oriente para pedir a la casa**: **4.8 con más de 500 reseñas** en **La Reina**. Carta amplia de rolls —california, hot roll, veggie, oriental sin arroz, nikkei— pensada para compartir en familia o con amigos, a precio accesible.\n\nEstá en **Lynch Sur 17**. Una propuesta sencilla y pareja, de esas que el barrio tiene fichadas.',
+      },
+      {
+        placeSlug: 'restaurante-okita',
+        blurb:
+          'La **más reseñada** de la guía por lejos: **más de 2.500 opiniones con 4.6** en **San Miguel**. Uno de los referentes de fusión **peruano-japonesa** del sector sur, con el sushi acevichado y los ceviches casi obligados, en un local amplio de dos pisos.\n\nQueda en **Av. La Marina 1190**, cerca del **metro Lo Vial (Línea 2)**; los **martes hacen tenedor libre**. Cuando quieres ir a la segura con un grupo, esta es la apuesta.',
+      },
+      {
+        placeSlug: 'tanaka-vitacura',
+        blurb:
+          'El **nikkei consolidado del barrio alto**: **4.6 con más de 1.200 reseñas** en pleno **Alonso de Córdova, Vitacura**. Sede original de Tanaka, mezcla técnica japonesa con condimentos peruanos —sushi de autor, ceviches, tiraditos, pulpo al olivo— apostando por la frescura.\n\nAmbiente acogedor y cuidado, de los que sirven para quedar bien. De las pocas de esta guía pensadas para sentarse con calma en el oriente.',
+      },
+    ],
+    mentions: [
+      {
+        placeSlug: 'sushinikkei17',
+        note: 'Nikkei con casa propia de dos pisos en **Los Piñones**, a pasos de **Bellavista (Providencia)** y del **metro Pedro de Valdivia**: **4.6 con 370+ reseñas**, tiraditos y ceviches de chefs peruanos.',
+      },
+      {
+        placeSlug: 'kaizen-sushi',
+        note: '**Sushi de autor con 4.7** en **Maipú** (Av. 4 Poniente 383): rolls que se salen de la fórmula genérica de barrio, con buena relación calidad-precio en el poniente.',
+      },
+      {
+        placeSlug: 'haruko-sushi-ramen',
+        note: 'Un japonés **de verdad** en Patio Macul (**Macul**, metro Camino Agrícola): **4.7** con ramen tonkotsu de caldo denso, karaage y guiños nikkei —más que una sushilería.',
+      },
+      {
+        placeSlug: 'sushi-hoy-la-florida',
+        note: 'La sucursal de **Sushi Hoy** en **La Florida** (Walker Martínez 315, metro Vicuña Mackenna): **4.9 con 86 reseñas**, con ceviche, gohan y temaki además de los rolls.',
+      },
+    ],
+  },
 ]
