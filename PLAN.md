@@ -7,7 +7,30 @@ priorizado. Se actualiza cada vez que avanzamos. Liviano a propósito — para r
 - **Modelo de datos:** [SCHEMA.md](SCHEMA.md) · **Capas:** [ARCHITECTURE.md](ARCHITECTURE.md) · **Marca:** [BRAND_SPEC.md](BRAND_SPEC.md) · **Cuenta de negocio + reclamo (🅿️ parqueado, Fase C):** [BUSINESS_ACCOUNTS_SPEC.md](BUSINESS_ACCOUNTS_SPEC.md)
 - **Bitácora del rediseño (historia + razonamiento de las decisiones):** [PLAN_FASE9.md](PLAN_FASE9.md) · **Histórico (docs superados):** [docs/historico/](docs/historico/)
 
-**Última actualización:** 2026-07-03 (sesión 21 — **Lote 3 de pizzerías COMPLETO (32 en local) + guía "Las mejores pizzerías de Santiago"**):
+**Última actualización:** 2026-07-05 (sesión 22 — **Lote 4 de sushi (31 en local) + guía "Las mejores sushilerías de Santiago" — carga AUTÓNOMA, prod pendiente de OK**):
+el usuario eligió **sushi** como 3ª vertical de comida (tras burgers y pizza), aportó una lista de **31 sushilerías con `place_id`** repartidas por
+**14 comunas** (≥4.3★, excluyendo delivery industrial y los 6 japoneses premium ya cargados —Osaka/Naoki/Fukasawa/Tengu/Katō/Bar Jardín Secreto,
+que tienen `cocina-japonesa` pero no el tag `sushi` de plato), y **se tuvo que ir → Claude siguió el flujo local en autónomo y PARÓ antes del push.**
+**(1) Dedup** por `place_id`: **0 duplicados, 31 nuevos**. **(2) Research:** 6 tandas paralelas del agente `investigador-lugares` (A-F =
+6+5+5+5+5+5); **2 (C, F) se cayeron al inicio por error de conexión de la API** (transitorio, no límite) → re-lanzadas; **escritura incremental →
+0 fichas perdidas**, 31/31 escritas con el tag `cuisine=Sushi` **obligatorio** en todas (la instrucción clave del lote). **(3) Ingest** en 2 tandas
+vía carpeta *staging* (el ingest **no es idempotente** → se archiva lo ingestado para no re-procesar): **28 PUBLISHED + 3 PENDING_REVIEW** (K Sushi
+Ñuñoa, Tensei, Oroshi) + **7 marcas de cadena** creadas (Inari, Sushi Hoy, Tanaka, K Sushi, Everyday, Haruki, Koari). Fichas archivadas en
+`tmp/fichas-lote4-sushi/`. **(4) Enrich** `--force --with-photos` por los 31 ids: **31/31 match exacto por place_id, 0 sin match**, rating real de
+Google + **29 coords nuevas** + fotos rehospedadas; **Apify #1 agotada (402) → rotó sola a la #2**. **(5) PENDING_REVIEW dejados para el usuario**
+(estaba fuera; el place_id confirmó la identidad de las 3): **reco — K Sushi (4.5/499) publicar** (duda Kyo/K Sushi despejada, ficha sólida); **Tensei
+(4.7/26) borderline**; **Oroshi (5.0/77) NO así** (ficha con dirección vacía). La guía es regla viva → las incluye solas al publicarlas. **(6) Guía
+"Las mejores sushilerías de Santiago"** (`las-mejores-sushilerias-de-santiago`, molde burgers/pizzas): regla `cuisineTagSlugs: ['sushi']`, sort
+`score_desc`, **6 destacados** (Koari 4.9/883 Centro · Katai 4.9/313 Puente Alto · Sushi Hoy Ñuñoa 4.8/550 · Sushi La Reina 4.8/517 · Okita 4.6/2595
+San Miguel · Tanaka 4.6/1245 Vitacura — mezcla joyas top-score + instituciones más reseñadas) **+ 4 menciones** (Sushinikkei17 Providencia · Kaizen
+Maipú · Haruko Macul · Sushi Hoy La Florida) → **10 comunas cubiertas**. Escrita en `scripts/curated-lists.data.ts` + **reseed local OK** (creada,
+resuelve las 28 publicadas; crece a 31 al publicar los PENDING). **Typecheck limpio. BD local: 310 → 341 places.** **⏸️ PENDIENTE DE OK DEL USUARIO:**
+**(a)** revisar/publicar los 3 PENDING_REVIEW; **(b)** `prod-sync` (crea los nuevos en prod + sincroniza catálogo/barrios) + `git push` (el build
+corre `seed-curated-lists` → crea la guía en prod). `PROD_DB_URL` sigue en `.env.local`. Recordatorio de siempre: **rotar contraseña de Neon prod +
+borrar `PROD_DB_URL`** al cerrar la campaña de carga. Progreso vivo en `tmp/LOTE4-SUSHI-PROGRESO.md`. **Próximo paso (sesión 22 cont.):** con tu OK,
+publicar PENDING + `prod-sync` + push (misma guía LIVE), o seguir con la siguiente vertical.
+
+**Sesión previa:** 2026-07-03 (sesión 21 — **Lote 3 de pizzerías COMPLETO (32 en local) + guía "Las mejores pizzerías de Santiago"**):
 se cerraron las **13 pizzerías que faltaban** del Lote 3 (tras el reset del límite de sesión). **(1) Investigación:** 3 tandas paralelas
 del agente `investigador-lugares` (grupos A/B/C = 5+4+4) → 13/13 fichas escritas (escritura incremental, ninguna se perdió). **(2) Ingesta:**
 `ingest-fichas` → 12 PUBLISHED + 1 PENDING_REVIEW (St. Giovanni's, duda de sucursal en Las Condes); 4 marcas nuevas (Da Dino, Domani, La
