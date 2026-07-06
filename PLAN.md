@@ -7,10 +7,10 @@ priorizado. Se actualiza cada vez que avanzamos. Liviano a propósito — para r
 - **Modelo de datos:** [SCHEMA.md](SCHEMA.md) · **Capas:** [ARCHITECTURE.md](ARCHITECTURE.md) · **Marca:** [BRAND_SPEC.md](BRAND_SPEC.md) · **Cuenta de negocio + reclamo (🅿️ parqueado, Fase C):** [BUSINESS_ACCOUNTS_SPEC.md](BUSINESS_ACCOUNTS_SPEC.md)
 - **Bitácora del rediseño (historia + razonamiento de las decisiones):** [PLAN_FASE9.md](PLAN_FASE9.md) · **Histórico (docs superados):** [docs/historico/](docs/historico/)
 
-**Última actualización:** 2026-07-05 (sesión 22 — **Lote 4 de sushi (31 en local) + guía "Las mejores sushilerías de Santiago" — carga AUTÓNOMA, prod pendiente de OK**):
+**Última actualización:** 2026-07-05 (sesión 22 — **Lote 4 de sushi (31 cargadas, 29 en prod) + guía "Las mejores sushilerías de Santiago" LIVE**):
 el usuario eligió **sushi** como 3ª vertical de comida (tras burgers y pizza), aportó una lista de **31 sushilerías con `place_id`** repartidas por
 **14 comunas** (≥4.3★, excluyendo delivery industrial y los 6 japoneses premium ya cargados —Osaka/Naoki/Fukasawa/Tengu/Katō/Bar Jardín Secreto,
-que tienen `cocina-japonesa` pero no el tag `sushi` de plato), y **se tuvo que ir → Claude siguió el flujo local en autónomo y PARÓ antes del push.**
+que tienen `cocina-japonesa` pero no el tag `sushi` de plato), y **se tuvo que ir → Claude siguió el flujo en autónomo y, con el OK del usuario a distancia, completó también el prod-sync + push.**
 **(1) Dedup** por `place_id`: **0 duplicados, 31 nuevos**. **(2) Research:** 6 tandas paralelas del agente `investigador-lugares` (A-F =
 6+5+5+5+5+5); **2 (C, F) se cayeron al inicio por error de conexión de la API** (transitorio, no límite) → re-lanzadas; **escritura incremental →
 0 fichas perdidas**, 31/31 escritas con el tag `cuisine=Sushi` **obligatorio** en todas (la instrucción clave del lote). **(3) Ingest** en 2 tandas
@@ -24,11 +24,17 @@ Google + **29 coords nuevas** + fotos rehospedadas; **Apify #1 agotada (402) →
 `score_desc`, **6 destacados** (Koari 4.9/883 Centro · Katai 4.9/313 Puente Alto · Sushi Hoy Ñuñoa 4.8/550 · Sushi La Reina 4.8/517 · Okita 4.6/2595
 San Miguel · Tanaka 4.6/1245 Vitacura — mezcla joyas top-score + instituciones más reseñadas) **+ 4 menciones** (Sushinikkei17 Providencia · Kaizen
 Maipú · Haruko Macul · Sushi Hoy La Florida) → **10 comunas cubiertas**. Escrita en `scripts/curated-lists.data.ts` + **reseed local OK** (creada,
-resuelve las 28 publicadas; crece a 31 al publicar los PENDING). **Typecheck limpio. BD local: 310 → 341 places.** **⏸️ PENDIENTE DE OK DEL USUARIO:**
-**(a)** revisar/publicar los 3 PENDING_REVIEW; **(b)** `prod-sync` (crea los nuevos en prod + sincroniza catálogo/barrios) + `git push` (el build
-corre `seed-curated-lists` → crea la guía en prod). `PROD_DB_URL` sigue en `.env.local`. Recordatorio de siempre: **rotar contraseña de Neon prod +
-borrar `PROD_DB_URL`** al cerrar la campaña de carga. Progreso vivo en `tmp/LOTE4-SUSHI-PROGRESO.md`. **Próximo paso (sesión 22 cont.):** con tu OK,
-publicar PENDING + `prod-sync` + push (misma guía LIVE), o seguir con la siguiente vertical.
+resuelve las 28 publicadas; crece a 31 al publicar los PENDING). **Typecheck limpio. BD local: 310 → 341 places.** **✅ PROD-SYNC + PUSH COMPLETO
+(misma sesión):** con el OK del usuario a distancia se **publicó K Sushi** (4.5/499, duda Kyo/K Sushi despejada) → 29 publicadas; `prod-sync.ts`
+(`--dry` primero) creó los **29 lugares** en prod (saltó Tensei/Oroshi PENDING) + sincronizó catálogo/marcas/barrios (Fase 3 = 0, los 6 japoneses
+premium no se tocaron); `git push` (`ed93384..86b51a6`, 2 commits: `900fc34` guía + `86b51a6` docs) → el build corrió `seed-curated-lists` y
+**creó la guía en prod. Verificado en vivo (HTTP 200):** `portalpanorama.cl/lista/las-mejores-sushilerias-de-santiago` → título correcto,
+**"29 lugares"**, 6 destacados + mención renderizan. **Prod = 339 total / 334 PUBLISHED / 29 `cuisine=sushi`.** Conexión a prod vía `PROD_DB_URL`
+temporal en `.env.local` (adapter explícito, nunca el `prisma` local). **Pendiente del usuario (menor):** revisar los **2 PENDING_REVIEW** que quedaron
+—**Tensei** (4.7/26, borderline) y **Oroshi** (5.0/77, ficha con dirección vacía)— en `/admin/lugares`; la guía es regla viva → entran solos al
+publicarlos + un `prod-sync` posterior. Recordatorio de siempre: **rotar contraseña de Neon prod + borrar `PROD_DB_URL`** al cerrar la campaña de carga.
+**Próximo paso (sesión 23):** siguiente vertical de comida (¿**ramen** como seguimiento asiático?) u otra categoría city-wide, o densificar comunas,
+mismo flujo: cargar en local → `prod-sync` → push.
 
 **Sesión previa:** 2026-07-03 (sesión 21 — **Lote 3 de pizzerías COMPLETO (32 en local) + guía "Las mejores pizzerías de Santiago"**):
 se cerraron las **13 pizzerías que faltaban** del Lote 3 (tras el reset del límite de sesión). **(1) Investigación:** 3 tandas paralelas
