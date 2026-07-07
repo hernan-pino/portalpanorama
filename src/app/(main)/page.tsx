@@ -1,11 +1,12 @@
 import type { Metadata } from 'next'
-import type { ReactNode } from 'react'
+import { Suspense, type ReactNode } from 'react'
 import Link from 'next/link'
 import { auth } from '@lib/auth'
 import { container } from '@lib/container'
 import { SearchBar } from '@components/search/SearchBar'
 import { PlaceCard, type SaveContext } from '@components/place/PlaceCard'
 import { PlaceRail } from '@components/place/PlaceRail'
+import { GuideCard } from '@components/curated/GuideCard'
 import { Collection } from '@domain/collection/Collection'
 
 export const metadata: Metadata = {
@@ -61,7 +62,36 @@ const CATEGORY_ICON: Record<string, ReactNode> = {
   ),
 }
 
-export default async function HomePage() {
+// El hero es estático: sale en el primer flush del stream para que el LCP (el h1)
+// no espere a la BD. Todo lo que depende de sesión + queries baja por <Suspense>.
+export default function HomePage() {
+  return (
+    <div className="home page-enter">
+
+      {/* ── Hero editorial: título + búsqueda ── */}
+      <section className="home-hero container">
+        <h1 className="home-hero__title">
+          ¿Qué <em>hacer</em> hoy en Santiago?
+        </h1>
+        <p className="home-hero__sub">
+          Lugares reales de la ciudad para cualquier plan. Filtra por con quién vas hoy y ve directo a explorar.
+        </p>
+        <div className="home-hero__search">
+          <SearchBar />
+        </div>
+      </section>
+
+      {/* El fallback reserva la altura aproximada del contenido: sin él, el footer se
+          pinta pegado al hero y salta al llegar el stream (CLS ~0.5 medido). */}
+      <Suspense fallback={<div style={{ minHeight: '150vh' }} aria-hidden="true" />}>
+        <HomeContent />
+      </Suspense>
+
+    </div>
+  )
+}
+
+async function HomeContent() {
   const session = await auth()
   const userId = session?.user?.id ?? undefined
 
@@ -95,21 +125,7 @@ export default async function HomePage() {
   const places = recommended.items
 
   return (
-    <div className="home page-enter">
-
-      {/* ── Hero editorial: título + búsqueda ── */}
-      <section className="home-hero container">
-        <h1 className="home-hero__title">
-          ¿Qué <em>hacer</em> hoy en Santiago?
-        </h1>
-        <p className="home-hero__sub">
-          Lugares reales de la ciudad para cualquier plan. Filtra por con quién vas hoy y ve directo a explorar.
-        </p>
-        <div className="home-hero__search">
-          <SearchBar />
-        </div>
-      </section>
-
+    <>
       {/* ── ¿Con quién vas? — fila social (secundaria, lleva a explorar filtrado) ── */}
       {social.length > 0 && (
         <section className="home-social container">
@@ -173,26 +189,12 @@ export default async function HomePage() {
           </div>
           <div className="home-guides__grid">
             {curatedLists.map((l) => (
-              <Link key={l.slug} href={`/lista/${l.slug}`} className="guide-card">
-                <span className="guide-card__media">
-                  {l.coverImageUrl ? (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img src={l.coverImageUrl} alt={l.name} />
-                  ) : (
-                    <span className="placeholder-stripe" style={{ width: '100%', height: '100%' }} />
-                  )}
-                </span>
-                <span className="guide-card__body">
-                  <span className="guide-card__name">{l.name}</span>
-                  {l.description && <span className="guide-card__desc">{l.description}</span>}
-                </span>
-              </Link>
+              <GuideCard key={l.slug} list={l} />
             ))}
           </div>
         </section>
       )}
-
-    </div>
+    </>
   )
 }
 

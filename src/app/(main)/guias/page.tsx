@@ -1,6 +1,6 @@
 import type { Metadata } from 'next'
-import Link from 'next/link'
 import { container } from '@lib/container'
+import { GuideCard } from '@components/curated/GuideCard'
 
 // Índice público de guías + listas de ocasión. Reúne todas las listas curadas
 // publicadas en una sola página navegable (antes solo se llegaba desde el home).
@@ -37,20 +37,7 @@ export default async function GuiasPage() {
       {lists.length > 0 ? (
         <div className="home-guides__grid">
           {lists.map((l) => (
-            <Link key={l.slug} href={`/lista/${l.slug}`} className="guide-card">
-              <span className="guide-card__media">
-                {l.coverImageUrl ? (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img src={l.coverImageUrl} alt={l.name} />
-                ) : (
-                  <span className="placeholder-stripe" style={{ width: '100%', height: '100%' }} />
-                )}
-              </span>
-              <span className="guide-card__body">
-                <span className="guide-card__name">{l.name}</span>
-                {l.description && <span className="guide-card__desc">{l.description}</span>}
-              </span>
-            </Link>
+            <GuideCard key={l.slug} list={l} />
           ))}
         </div>
       ) : (
