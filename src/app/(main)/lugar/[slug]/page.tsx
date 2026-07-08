@@ -5,6 +5,7 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { auth } from '@lib/auth'
 import { container } from '@lib/container'
+import { getPlaceDetailCached } from '@lib/cachedReads'
 import type { PlaceDetailView, PlaceCardView } from '@application/ports/PlaceRepository'
 import type { SaveContextOutput } from '@application/collection/GetSaveContextUseCase'
 import { PlaceNotFoundError } from '@domain/place/errors/PlaceNotFoundError'
@@ -56,7 +57,8 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const { slug } = await params
   let place: PlaceDetailView
   try {
-    place = (await container.getGetPlaceBySlugUseCase().execute(slug)).place
+    // Cacheada + dedupeada: page comparte esta misma ejecución (React cache).
+    place = (await getPlaceDetailCached(slug)).place
   } catch {
     return { title: 'Lugar no encontrado' }
   }
@@ -100,7 +102,7 @@ export default async function LugarPage({ params }: PageProps) {
   let ctx: SaveContextOutput | null
   try {
     const [result, saveCtx] = await Promise.all([
-      container.getGetPlaceBySlugUseCase().execute(slug),
+      getPlaceDetailCached(slug),
       userId ? container.getGetSaveContextUseCase().execute(userId) : Promise.resolve(null),
     ])
     place = result.place

@@ -1,5 +1,5 @@
 import type { Metadata } from 'next'
-import { container } from '@lib/container'
+import { getPublishedCuratedListsCached } from '@lib/cachedReads'
 import { GuideCard } from '@components/curated/GuideCard'
 
 // Índice público de guías + listas de ocasión. Reúne todas las listas curadas
@@ -21,7 +21,7 @@ export const metadata: Metadata = {
 }
 
 export default async function GuiasPage() {
-  const lists = await container.getListPublishedCuratedListsUseCase().execute()
+  const lists = await getPublishedCuratedListsCached()
 
   return (
     <div className="container page-enter" style={{ paddingBlock: 'var(--s-10)' }}>

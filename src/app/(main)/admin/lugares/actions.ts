@@ -1,8 +1,9 @@
 'use server'
 import { z } from 'zod'
-import { revalidatePath } from 'next/cache'
+import { revalidatePath, revalidateTag } from 'next/cache'
 import { auth } from '@lib/auth'
 import { container } from '@lib/container'
+import { CACHE_TAGS } from '@lib/cachedReads'
 import { ALLOWED_IMAGE_HOSTS, isAllowedImageUrl } from '@lib/imageHosts'
 import { DomainError } from '@domain/shared/DomainError'
 import { ImageFetchError } from '@application/ports/ImageFetcher'
@@ -241,6 +242,13 @@ export async function importPlaceImageAction(
   }
 }
 
+// Invalida las lecturas públicas cacheadas (@lib/cachedReads): fichas, búsqueda
+// y facetas, y también las guías — su regla resuelve sobre lugares publicados.
+function revalidatePublicCaches() {
+  revalidateTag(CACHE_TAGS.places)
+  revalidateTag(CACHE_TAGS.curatedLists)
+}
+
 // ── Crear ──
 export async function createPlaceAction(
   values: PlaceFormValues,
@@ -253,6 +261,7 @@ export async function createPlaceAction(
   try {
     const { placeId } = await container.getCreatePlaceUseCase().execute(toWriteInput(parsed.data))
     revalidatePath('/admin/lugares')
+    revalidatePublicCaches()
     return { success: true, placeId }
   } catch (err) {
     return { error: toErrorMessage(err) }
@@ -273,6 +282,7 @@ export async function updatePlaceAction(
     await container.getUpdatePlaceUseCase().execute(placeId, toWriteInput(parsed.data))
     revalidatePath('/admin/lugares')
     revalidatePath(`/admin/lugares/${placeId}`)
+    revalidatePublicCaches()
     return { success: true }
   } catch (err) {
     return { error: toErrorMessage(err) }
@@ -285,6 +295,7 @@ export async function publishPlaceAction(placeId: string): Promise<ActionResult>
   try {
     await container.getPublishPlaceUseCase().execute(placeId)
     revalidatePath('/admin/lugares')
+    revalidatePublicCaches()
     return { success: true }
   } catch (err) {
     return { error: toErrorMessage(err) }
@@ -296,6 +307,7 @@ export async function archivePlaceAction(placeId: string): Promise<ActionResult>
   try {
     await container.getArchivePlaceUseCase().execute(placeId)
     revalidatePath('/admin/lugares')
+    revalidatePublicCaches()
     return { success: true }
   } catch (err) {
     return { error: toErrorMessage(err) }
@@ -308,6 +320,7 @@ export async function deletePlaceAction(placeId: string): Promise<ActionResult> 
   try {
     await container.getDeletePlaceUseCase().execute(placeId)
     revalidatePath('/admin/lugares')
+    revalidatePublicCaches()
     return { success: true }
   } catch (err) {
     return { error: toErrorMessage(err) }

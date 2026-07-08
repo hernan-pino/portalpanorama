@@ -3,6 +3,12 @@ import { Suspense, type ReactNode } from 'react'
 import Link from 'next/link'
 import { auth } from '@lib/auth'
 import { container } from '@lib/container'
+import {
+  getHomeRecommendedCached,
+  getCategoriesCached,
+  getPlaceFacetsCached,
+  getPublishedCuratedListsCached,
+} from '@lib/cachedReads'
 import { SearchBar } from '@components/search/SearchBar'
 import { PlaceCard, type SaveContext } from '@components/place/PlaceCard'
 import { PlaceRail } from '@components/place/PlaceRail'
@@ -98,10 +104,10 @@ async function HomeContent() {
   // Recomendados (orden por reputación) + catálogo de categorías + facetas (para los
   // chips sociales). El corazón de la tarjeta necesita las colecciones del usuario.
   const [recommended, categories, facets, curatedLists] = await Promise.all([
-    container.getSearchPlacesUseCase().execute({ limit: 12 }),
-    container.getGetCategoriesUseCase().execute(),
-    container.getGetPlaceFacetsUseCase().execute(),
-    container.getListPublishedCuratedListsUseCase().execute(),
+    getHomeRecommendedCached(),
+    getCategoriesCached(),
+    getPlaceFacetsCached(),
+    getPublishedCuratedListsCached(),
   ])
 
   let save: SaveContext = {
@@ -143,11 +149,11 @@ async function HomeContent() {
         </section>
       )}
 
-      {/* ── Explorá por categoría — el protagonista (banda + tarjetas grandes) ── */}
+      {/* ── Explora por categoría — el protagonista (banda + tarjetas grandes) ── */}
       <section className="home-cats">
         <div className="home-cats__inner container">
           <div className="home-cats__head">
-            <h2 className="home-cats__title">Explorá por categoría</h2>
+            <h2 className="home-cats__title">Explora por categoría</h2>
             <span className="home-cats__note">{categories.length} mundos</span>
           </div>
           <div className="home-cat-grid">

@@ -2361,3 +2361,20 @@ select.form-input { cursor: pointer; }
   justify-content: center;
   margin-top: var(--s-2);
 }
+
+/* ---------- Skeletons de carga (loading.tsx por ruta) ----------
+   Bloques que pintan al instante durante la navegación mientras el server
+   resuelve los datos. Cada loading.tsx replica el layout real de su página
+   para que el contenido no salte al llegar (CLS). */
+.skel {
+  background-color: var(--bg-sunken);
+  border-radius: var(--r-md);
+  animation: skelPulse 1.3s ease-in-out infinite;
+}
+@keyframes skelPulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.55; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .skel { animation: none; }
+}

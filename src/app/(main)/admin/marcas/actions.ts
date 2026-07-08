@@ -1,8 +1,9 @@
 'use server'
 import { z } from 'zod'
-import { revalidatePath } from 'next/cache'
+import { revalidatePath, revalidateTag } from 'next/cache'
 import { auth } from '@lib/auth'
 import { container } from '@lib/container'
+import { CACHE_TAGS } from '@lib/cachedReads'
 import { ALLOWED_IMAGE_HOSTS, isAllowedImageUrl } from '@lib/imageHosts'
 import { DomainError } from '@domain/shared/DomainError'
 import { ImageFetchError } from '@application/ports/ImageFetcher'
@@ -127,6 +128,7 @@ export async function createBrandAction(
   try {
     const { brandId } = await container.getCreateBrandUseCase().execute(toWriteInput(parsed.data))
     revalidatePath('/admin/marcas')
+    revalidateTag(CACHE_TAGS.places) // la ficha pública muestra la marca
     return { success: true, brandId }
   } catch (err) {
     return { error: toErrorMessage(err) }
@@ -147,6 +149,7 @@ export async function updateBrandAction(
     await container.getUpdateBrandUseCase().execute(brandId, toWriteInput(parsed.data))
     revalidatePath('/admin/marcas')
     revalidatePath(`/admin/marcas/${brandId}`)
+    revalidateTag(CACHE_TAGS.places) // la ficha pública muestra la marca
     return { success: true }
   } catch (err) {
     return { error: toErrorMessage(err) }

@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 import { auth } from '@lib/auth'
 import { container } from '@lib/container'
+import { getCategoriesCached, getPlaceFacetsCached } from '@lib/cachedReads'
 import { SearchBar } from '@components/search/SearchBar'
 import { Filters } from '@components/search/Filters'
 import { PlaceCard, type SaveContext } from '@components/place/PlaceCard'
@@ -41,8 +42,8 @@ export default async function ExplorarPage({ searchParams }: PageProps) {
       page: f.page,
       limit: 24,
     }),
-    container.getGetPlaceFacetsUseCase().execute(),
-    container.getGetCategoriesUseCase().execute(),
+    getPlaceFacetsCached(),
+    getCategoriesCached(),
   ])
 
   // Contexto de guardado (corazón de la tarjeta): listas + lugares ya guardados +

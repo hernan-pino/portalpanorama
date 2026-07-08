@@ -1,8 +1,9 @@
 'use server'
 import { z } from 'zod'
-import { revalidatePath } from 'next/cache'
+import { revalidatePath, revalidateTag } from 'next/cache'
 import { auth } from '@lib/auth'
 import { container } from '@lib/container'
+import { CACHE_TAGS } from '@lib/cachedReads'
 import { ALLOWED_IMAGE_HOSTS, isAllowedImageUrl } from '@lib/imageHosts'
 import { DomainError } from '@domain/shared/DomainError'
 import { PriceRange } from '@domain/place/PriceRange'
@@ -170,6 +171,7 @@ export async function createCuratedListAction(
       .getCreateCuratedListUseCase()
       .execute(toWriteInput(parsed.data))
     revalidatePath('/admin/listas')
+    revalidateTag(CACHE_TAGS.curatedLists)
     return { success: true, listId }
   } catch (err) {
     return { error: toErrorMessage(err) }
@@ -190,6 +192,7 @@ export async function updateCuratedListAction(
     await container.getUpdateCuratedListUseCase().execute(listId, toWriteInput(parsed.data))
     revalidatePath('/admin/listas')
     revalidatePath(`/admin/listas/${listId}`)
+    revalidateTag(CACHE_TAGS.curatedLists)
     return { success: true }
   } catch (err) {
     return { error: toErrorMessage(err) }
@@ -203,6 +206,7 @@ export async function deleteCuratedListAction(listId: string): Promise<ActionRes
   try {
     await container.getDeleteCuratedListUseCase().execute(listId)
     revalidatePath('/admin/listas')
+    revalidateTag(CACHE_TAGS.curatedLists)
     return { success: true }
   } catch (err) {
     return { error: toErrorMessage(err) }

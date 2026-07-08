@@ -4,7 +4,9 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { auth } from '@lib/auth'
 import { container } from '@lib/container'
+import { getCuratedListPageCached } from '@lib/cachedReads'
 import type { CuratedListPageView } from '@application/ports/CuratedListRepository'
+import type { SaveContextOutput } from '@application/collection/GetSaveContextUseCase'
 import { CuratedListNotFoundError } from '@domain/curatedList/errors/CuratedListNotFoundError'
 import { Collection } from '@domain/collection/Collection'
 import { type SaveContext } from '@components/place/PlaceCard'
@@ -21,7 +23,8 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const { slug } = await params
   let list: CuratedListPageView
   try {
-    list = await container.getGetCuratedListBySlugUseCase().execute(slug)
+    // Cacheada + dedupeada: page comparte esta misma ejecución (React cache).
+    list = await getCuratedListPageCached(slug)
   } catch {
     return { title: 'Lista no encontrada' }
   }
@@ -47,23 +50,28 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 export default async function ListaPage({ params }: PageProps) {
   const { slug } = await params
 
+  // La guía y el contexto de guardado (corazones) no dependen entre sí: van en
+  // paralelo (el contexto solo si hay sesión), igual que en la ficha de lugar.
+  const session = await auth()
+  const userId = session?.user?.id ?? undefined
+
   let list: CuratedListPageView
+  let ctx: SaveContextOutput | null
   try {
-    list = await container.getGetCuratedListBySlugUseCase().execute(slug)
+    ;[list, ctx] = await Promise.all([
+      getCuratedListPageCached(slug),
+      userId ? container.getGetSaveContextUseCase().execute(userId) : Promise.resolve(null),
+    ])
   } catch (error) {
     if (error instanceof CuratedListNotFoundError) notFound()
     throw error
   }
 
-  // Contexto de guardado (corazones), igual que la home: una sola resolución por página.
-  const session = await auth()
-  const userId = session?.user?.id ?? undefined
   let save: SaveContext = {
     isLoggedIn: !!userId, collections: [], savedPlaceIds: [],
     defaultCollectionId: null, defaultName: Collection.DEFAULT_NAME,
   }
-  if (userId) {
-    const ctx = await container.getGetSaveContextUseCase().execute(userId)
+  if (ctx) {
     save = {
       isLoggedIn: true,
       collections: ctx.collections.map((c) => ({ id: c.id, name: c.name, itemCount: c.itemCount })),
