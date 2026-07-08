@@ -104,6 +104,7 @@ const NEIGHBORHOODS: { name: string; communeNames: string[] }[] = [
   { name: 'Los Leones', communeNames: ['Providencia'] },
   { name: 'Pudahuel Sur', communeNames: ['Pudahuel'] },
   { name: 'Gabriela', communeNames: ['Puente Alto'] },
+  { name: 'Los Dominicos', communeNames: ['Las Condes'] },
 ]
 
 // ─── Categorías (9) + subcategorías (B.4 / doc 04) ───────────────────────────────

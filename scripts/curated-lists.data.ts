@@ -411,4 +411,66 @@ export const CURATED_LISTS: SeedCuratedList[] = [
       },
     ],
   },
+  {
+    slug: 'el-mejor-ramen-de-santiago',
+    name: 'El mejor ramen de Santiago',
+    kind: 'GUIDE',
+    description:
+      'Dónde comer el mejor ramen de Santiago: ramenerías de barra, cadenas con fideos hechos en casa y hasta lanzhou chino, con rating real de Google.',
+    intro:
+      'El ramen pasó de rareza a fenómeno en Santiago: hoy hay barras japonesas con filas en la vereda, cadenas que hacen sus propios fideos y hasta locales de lanzhou —el primo chino del ramen, con fideos estirados a mano—. Esta es nuestra selección de dónde tomarse el mejor caldo de la ciudad, de Providencia a Peñalolén, ordenada por reputación. Se mantiene al día sola: cada ramenería nueva que cargamos entra acá.',
+    rule: { cuisineTagSlugs: ['ramen'] },
+    sort: 'score_desc',
+    isPublished: true,
+    pins: [
+      {
+        placeSlug: 'ramen-kintaro',
+        blurb:
+          '**La institución del ramen chileno**, y la más reseñada de esta guía por paliza: **4.5 con más de 7.400 opiniones en Google**. La barra de **Monjitas 460** —a pasos del **metro Bellas Artes (Línea 5)**— lleva años haciendo fila en la vereda, con un formato japonés de verdad: espacio chico, rotación rápida y el caldo como protagonista.\n\nSi es tu primera vez en el mundo del ramen, **este es el punto de partida**. Anda temprano o fuera de hora punta, porque la fila es parte del rito.',
+      },
+      {
+        placeSlug: 'ramen-one-vivo-imperio',
+        blurb:
+          'El **mejor evaluado** de la guía: **4.9 con más de 930 reseñas** para esta sucursal en el patio de comidas del **Mall Vivo Imperio (Huérfanos 830)**, sobre el **metro Plaza de Armas (Líneas 3 y 5)**. Ramen One partió en 2019 y creció haciendo **sus propios fideos con máquina japonesa** —se nota en el bowl.\n\nQue no te engañe el formato patio de comidas: la gente viene por el ramen, no por el mall. De las apuestas más seguras del centro.',
+      },
+      {
+        placeSlug: 'ramen-ryoma-barrio-italia',
+        blurb:
+          'La **joya de Barrio Italia**: **4.9 con casi 700 reseñas** en **Condell 1298**, cerca del **metro Santa Isabel (Línea 5)**. Es la segunda casa de Ramen Ryoma —la original está en General Holley— y se ganó al barrio con caldos trabajados y un local más tranquilo que sus pares del sector oriente.\n\nBuen plan para combinar con una tarde de vitrineo por Barrio Italia; llega con hambre, que los bowls son contundentes.',
+      },
+      {
+        placeSlug: 'isekai-ramen',
+        blurb:
+          'El nombre lo dice: *isekai* es el género de anime de **"aparecer en otro mundo"**, y eso busca esta ramenería de **Girardi 1236, Providencia** —**4.8 con más de 1.300 reseñas**—. Ambiente joven, guiños otaku y ramen en serio, una combinación que lo volvió favorito de la comunidad fan del Japón pop.\n\nQueda cerca del **metro Santa Isabel (Línea 5)**, en la misma cuadra del circuito gastronómico de Girardi. De los que se llenan el fin de semana.',
+      },
+      {
+        placeSlug: 'momotaro-foods',
+        blurb:
+          'El ramen de **Patronato**: **4.7 con más de 700 reseñas** en **Loreto 158, Recoleta**. Es la casa matriz del grupo Momotaro —el mismo de Momotaro Los Leones— y mantiene el espíritu de local de barrio: sin pretensiones, bowls generosos y precios más amables que el promedio del rubro.\n\nA pasos del barrio comercial de Patronato y de La Vega, funciona perfecto como final de un paseo por el sector. ',
+      },
+      {
+        placeSlug: 'kame-house-sushi-ramen',
+        blurb:
+          'La prueba de que **el suroriente también tiene ramen del bueno**: **4.7 con más de 150 reseñas** en **Av. Consistorial 2351, Peñalolén**. La carta es mitad sushi, mitad ramen, pero las reseñas son claras: **el caldo es el fuerte de la casa** —y el nombre, un guiño a Dragon Ball que la clientela agradece.\n\nSi vives por Peñalolén o La Reina, te ahorra el viaje a Providencia. De los pocos del sector, y cumple con creces.',
+      },
+    ],
+    mentions: [
+      {
+        placeSlug: 'ramen-one-independencia',
+        note: 'La sucursal norte de **Ramen One** en el Mall Barrio Independencia: **4.8 con más de 1.200 reseñas**, el mejor bowl al norte del Mapocho.',
+      },
+      {
+        placeSlug: 'genki-ya-ramen-los-dominicos',
+        note: '**4.7 con 270+ reseñas** en el sector **Los Dominicos (Las Condes)**: la sede oriente de la cadena Genki Ya, para el antojo de ramen sin bajar de Apoquindo.',
+      },
+      {
+        placeSlug: 'mirai-food-lab',
+        note: 'Ramen de autor dentro de **Factoría Franklin** (metro Franklin): **4.7 con 420+ reseñas**, ideal para cerrar un sábado de Persa Bío Bío.',
+      },
+      {
+        placeSlug: 'ootoya-ramen-noodles-house',
+        note: 'El clásico de **Bellavista** (Constitución 125, metro Baquedano): **4.6 con casi 1.500 reseñas**, carta amplia de ramen y noodles para grupos.',
+      },
+    ],
+  },
 ]
