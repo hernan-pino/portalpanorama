@@ -7,7 +7,25 @@ priorizado. Se actualiza cada vez que avanzamos. Liviano a propósito — para r
 - **Modelo de datos:** [SCHEMA.md](SCHEMA.md) · **Capas:** [ARCHITECTURE.md](ARCHITECTURE.md) · **Marca:** [BRAND_SPEC.md](BRAND_SPEC.md) · **Cuenta de negocio + reclamo (🅿️ parqueado, Fase C):** [BUSINESS_ACCOUNTS_SPEC.md](BUSINESS_ACCOUNTS_SPEC.md)
 - **Bitácora del rediseño (historia + razonamiento de las decisiones):** [PLAN_FASE9.md](PLAN_FASE9.md) · **Histórico (docs superados):** [docs/historico/](docs/historico/)
 
-**Última actualización:** 2026-07-07 (sesión 23 — **Perf móvil de la home (LCP 7.4s→2.9s) + Lote 5 ramen (29 cargadas, 26 en prod) + guía "El mejor ramen de Santiago" LIVE**):
+**Última actualización:** 2026-07-08 (sesión 24 — **Perf de navegación en TODO el sitio: lecturas cacheadas + skeletons por ruta**):
+el usuario pausó la carga de contenido para atacar la lentitud al navegar (PageSpeed móvil: fichas/guías 68-76, LCP 5.9-7s; delay "congelado" al
+hacer clic). Diagnóstico: **todas las rutas menos la home eran SSR dinámico puro** — cada clic esperaba a Neon sin feedback visual (el único
+`loading.tsx` raíz no se activa entre rutas hermanas) y `generateMetadata` + page **corrían la misma query 2 veces por request** (fichas y guías).
+Fix en dos frentes: **(A) 4 `loading.tsx` con skeleton** que replican el layout real (lugar, lista, explorar, guias; clases `.skel` en globals.css)
+→ el clic pinta al instante y el contenido llega por streaming. **(B) `src/lib/cachedReads.ts`**: los read-models públicos (ficha+relacionados,
+guía por slug, índice de guías, categorías, facetas, recomendados de la home) van al **Data Cache de Next** con `revalidate: 300` + tags
+(`places`, `curated-lists`), envueltos en `cache()` de React (dedupe metadata+page). **Las actions del admin** (lugares/listas/marcas) hacen
+`revalidateTag` → las ediciones del admin se reflejan **al tiro**; los cambios por scripts externos (ingest/enrich/prod-sync escriben directo a
+la BD) demoran **≤5 min** en verse (trade-off explicado y aceptado por el usuario). El save-context (corazones) **nunca se cachea** (por sesión)
+y en `lista/[slug]` ahora va **en paralelo** con la query de la guía. **Medido en build local:** lista 2.6s→**0.05s**, ficha 2.1s→**0.04s**,
+home 2.9s→**0.04s** (caché tibio); explorar ~0.4s (la búsqueda sigue en vivo por diseño). Typecheck limpio + 99 tests verdes + contenido
+verificado (guía ramen "32 lugares", h1 de ficha OK). Fix volador: **"Explorá por categoría" → "Explora"** en la home (voseo, regla de idioma).
+Commit `200258d` + push a prod. **Pendientes que siguen de s23:** 5 PENDING_REVIEW en `/admin/lugares` · horario para KUNG-FU RAMEN y Genki ya
+Los Dominicos · portadas para las guías de sushi/pizza/ramen · rotar contraseña de Neon prod + borrar `PROD_DB_URL` al cerrar la campaña.
+**Próximo paso (sesión 25):** verificar PageSpeed en prod con el caché tibio y retomar la carga — siguiente vertical de comida (¿coreana?
+¿cevicherías? ¿brunch?), mismo flujo: local → `prod-sync` → push.
+
+**Sesión previa:** 2026-07-07 (sesión 23 — **Perf móvil de la home (LCP 7.4s→2.9s) + Lote 5 ramen (29 cargadas, 26 en prod) + guía "El mejor ramen de Santiago" LIVE**):
 **(A) Performance móvil** (PageSpeed móvil daba 73, lo pidió el usuario): el LCP de 7.4s era el **h1 del hero** — la home es SSR dinámico y el HTML no
 salía hasta resolver `auth()` + las 4 queries a Neon. Fix: **hero estático en el primer flush + resto por `<Suspense>`** (fallback con altura reservada
 para que el footer no salte: CLS 0.53→0) + **portadas de guías por `next/image`** (`GuideCard.tsx` compartida home+/guias; antes iban con `<img>` crudo
