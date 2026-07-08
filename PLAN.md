@@ -7,7 +7,37 @@ priorizado. Se actualiza cada vez que avanzamos. Liviano a propósito — para r
 - **Modelo de datos:** [SCHEMA.md](SCHEMA.md) · **Capas:** [ARCHITECTURE.md](ARCHITECTURE.md) · **Marca:** [BRAND_SPEC.md](BRAND_SPEC.md) · **Cuenta de negocio + reclamo (🅿️ parqueado, Fase C):** [BUSINESS_ACCOUNTS_SPEC.md](BUSINESS_ACCOUNTS_SPEC.md)
 - **Bitácora del rediseño (historia + razonamiento de las decisiones):** [PLAN_FASE9.md](PLAN_FASE9.md) · **Histórico (docs superados):** [docs/historico/](docs/historico/)
 
-**Última actualización:** 2026-07-05 (sesión 22 — **Lote 4 de sushi (31 cargadas, 29 en prod) + guía "Las mejores sushilerías de Santiago" LIVE**):
+**Última actualización:** 2026-07-07 (sesión 23 — **Perf móvil de la home (LCP 7.4s→2.9s) + Lote 5 ramen (29 cargadas, 26 en prod) + guía "El mejor ramen de Santiago" LIVE**):
+**(A) Performance móvil** (PageSpeed móvil daba 73, lo pidió el usuario): el LCP de 7.4s era el **h1 del hero** — la home es SSR dinámico y el HTML no
+salía hasta resolver `auth()` + las 4 queries a Neon. Fix: **hero estático en el primer flush + resto por `<Suspense>`** (fallback con altura reservada
+para que el footer no salte: CLS 0.53→0) + **portadas de guías por `next/image`** (`GuideCard.tsx` compartida home+/guias; antes iban con `<img>` crudo
+de ~1500px = 621 KiB de más). Lighthouse local: **59→92, LCP 7.0s→2.9s**. Commit `e461767`, pusheado y **verificado en prod**. Nota de contenido: las
+guías de **sushi, pizza y ramen no tienen imagen de portada** (placeholder en la home). **(B) Lote 5 — ramen (city-wide):** lista del usuario de **29
+ramenerías con `place_id`** en 10 comunas, anotadas ⚠ (pocas reseñas) y ◇ (lanzhou chino / foco mixto — se incluyen igual: la sopa de fideos es el plato
+principal). Dedup: **0 duplicados**. Research: 5 tandas paralelas del `investigador-lugares`; **el límite de sesión las cortó al inicio (0 fichas) → se
+REANUDARON con `SendMessage` conservando su contexto** y terminaron 29/29 (0 perdidas; el patrón "reanudar en vez de relanzar" queda validado). Ingest
+por tanda vía staging: **18 PUBLISHED + 11 PENDING_REVIEW** + **6 marcas nuevas** (Ramen One ×3 · Ramen Ryoma ×2 · Momotaro ×3 —Izakaya Momotaro es el
+mismo local de Los Leones en turno sábado noche— · Kintaro ×2 —mismo dueño Nobu Noda, confirmado en prensa— · Kansui ×2 · Genki Ya ×3). Enrich
+`--force --with-photos`: **29/29 match exacto por place_id** (1 reintento por 502 transitorio de Apify; la #1 agotada → rotó sola a la #2), 25 coords
+nuevas. El dato real **despejó las dudas de la ingesta**: se rellenaron 5 direcciones vacías/en conflicto (Genkiya Ramen Bar era **Santa Magdalena 180**,
+no Andrés Bello 2233). **Decisión del usuario sobre los 11 PENDING:** publicar 8 (los 7 con la duda resuelta + Izakaya Momotaro); **los 3 sin horario
+quedan en revisión** (Ramen Wow · Ramen Home · Speed Ramen — criterio nuevo: sin horario no se publica). Ojo: KUNG-FU RAMEN y Genki ya Los Dominicos
+quedaron publicados **sin horario** (aprobados en el primer grupo) — agregárselo en el admin. Barrio **Los Dominicos** (Las Condes) al seed + reasignado.
+**(C) Guía "El mejor ramen de Santiago"** (`el-mejor-ramen-de-santiago`, molde de las anteriores): regla `cuisineTagSlugs: ['ramen']`, sort `score_desc`
+— resuelve **32** (26 del lote + 6 de lotes previos que ya tenían el tag: BADA, Everyday, Duri, A Sushi, Haruko, Ichiban). **6 destacados** (Ramen
+Kintaro 4.5/7.427 la institución · Ramen One Vivo Imperio 4.9/933 · Ryoma Barrio Italia 4.9/695 · Isekai 4.8/1.321 · Momotaro foods 4.7/705 Patronato ·
+Kame House 4.7/151 Peñalolén) **+ 4 menciones** (Ramen One Independencia · Genki ya Los Dominicos · Mirai Food Lab/Factoría Franklin · Ootoya
+Bellavista). **✅ PROD-SYNC + PUSH (misma sesión):** `prod-sync.ts` (`--dry` primero) creó **26/26** en prod (saltó los 3 PENDING de ramen y
+Tensei/Oroshi de s22) + catálogo (barrio + marcas); commit `0b65316` + push → el build creó la guía. **Verificado en vivo (HTTP 200):**
+`portalpanorama.cl/lista/el-mejor-ramen-de-santiago` → título, **"32 lugares"**, destacados renderizan. **Local: 370 total / 360 PUBLISHED · Prod: 365
+total / 360 PUBLISHED / 32 ramen (prod = local en publicados; los 5 de diferencia son los PENDING que no viajan).** Typecheck limpio + 99 tests verdes.
+**Pendiente del usuario:** los **5 PENDING_REVIEW** acumulados en `/admin/lugares` (Ramen Wow/Home/Speed sin horario + Tensei/Oroshi de s22) — las guías
+son regla viva, entran solos al publicarlos (+ `prod-sync` después); horario para KUNG-FU y Genki ya Los Dominicos; portadas para las guías de
+sushi/pizza/ramen. Recordatorio de siempre: **rotar contraseña de Neon prod + borrar `PROD_DB_URL`** al cerrar la campaña de carga.
+**Próximo paso (sesión 24):** siguiente vertical de comida (¿coreana? ¿cevicherías/picadas? ¿café ya tiene guía — brunch?) u otra categoría city-wide,
+mismo flujo: cargar en local → `prod-sync` → push.
+
+**Sesión previa:** 2026-07-05 (sesión 22 — **Lote 4 de sushi (31 cargadas, 29 en prod) + guía "Las mejores sushilerías de Santiago" LIVE**):
 el usuario eligió **sushi** como 3ª vertical de comida (tras burgers y pizza), aportó una lista de **31 sushilerías con `place_id`** repartidas por
 **14 comunas** (≥4.3★, excluyendo delivery industrial y los 6 japoneses premium ya cargados —Osaka/Naoki/Fukasawa/Tengu/Katō/Bar Jardín Secreto,
 que tienen `cocina-japonesa` pero no el tag `sushi` de plato), y **se tuvo que ir → Claude siguió el flujo en autónomo y, con el OK del usuario a distancia, completó también el prod-sync + push.**
