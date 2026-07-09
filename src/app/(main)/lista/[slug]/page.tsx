@@ -30,7 +30,11 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   }
 
   const title = list.name
-  const description = list.description?.slice(0, 160) ?? `${list.total} lugares de Santiago en una guía curada.`
+  // SEO: la meta description parte con el título de la guía cuando el texto no lo trae.
+  const body = list.description?.replace(/\s+/g, ' ').trim()
+  const description = body
+    ? (body.toLowerCase().includes(list.name.toLowerCase()) ? body : `${list.name}: ${body}`).slice(0, 160)
+    : `${list.name}: ${list.total} lugares de Santiago en una guía curada.`
   const path = `/lista/${slug}`
 
   return {
@@ -203,7 +207,9 @@ export default async function ListaPage({ params }: PageProps) {
       {/* Resto de la regla — paginado client-side (sin recargar; la data ya está acá) */}
       {list.rest.length > 0 && (
         <section className="curated-page__section">
-          {(list.pinned.length > 0 || list.mentions.length > 0) && <h2 className="curated-page__sec-h">Más lugares</h2>}
+          {(list.pinned.length > 0 || list.mentions.length > 0) && (
+            <h2 className="curated-page__sec-h">{list.name}: más lugares</h2>
+          )}
           <PaginatedRest places={list.rest} save={save} />
         </section>
       )}

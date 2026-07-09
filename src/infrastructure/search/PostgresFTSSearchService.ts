@@ -8,7 +8,7 @@ import {
   SearchService,
 } from '@application/ports/SearchService'
 import { placeCardArgs, toPlaceCardView } from '../db/placeCardView'
-import { fuzzyScore, normalize, MATCH_THRESHOLD } from './fuzzy'
+import { fuzzyScore, normalize, tokenizeQuery, MATCH_THRESHOLD } from './fuzzy'
 
 const DEFAULT_LIMIT = 20
 const PUBLISHED = $Enums.PlaceStatus.PUBLISHED
@@ -304,8 +304,11 @@ export class PostgresFTSSearchService implements SearchService {
     return { social, access, vibe, occasion, experience }
   }
 
-  // ── Texto tolerante (MVP, ≤100 lugares → en la app, no en SQL) ──
-  // IDs de publicados cuyo nombre/rubro/tags/descripción matchean la consulta.
+  // ── Texto tolerante (MVP, catálogo chico → en la app, no en SQL) ──
+  // La consulta se separa en palabras significativas (sin "lugares/para/con"…) y
+  // CADA una debe matchear algo del lugar: nombre, rubro/tags, comuna/barrio o
+  // descripción. Así "ramen providencia" o "para ir con niños" funcionan; antes
+  // la frase completa se comparaba como un solo string y casi siempre daba 0.
   private async fuzzyMatchIds(query: string): Promise<string[]> {
     const rows = await this.prisma.place.findMany({
       where: { status: PUBLISHED },
@@ -315,20 +318,28 @@ export class PostgresFTSSearchService implements SearchService {
         description: true,
         category: { select: { name: true } },
         subcategory: { select: { name: true } },
+        commune: { select: { name: true } },
+        neighborhood: { select: { name: true } },
         tags: { select: { tag: { select: { name: true } } } },
       },
     })
-    const nq = normalize(query)
+    const tokens = tokenizeQuery(query)
+    if (tokens.length === 0) return rows.map((r) => r.id)
+
     return rows
       .filter((r) => {
         const rubro = [r.category.name, r.subcategory.name, ...r.tags.map((t) => t.tag.name)].join(' ')
-        const score = Math.max(
-          fuzzyScore(r.name, query),
-          fuzzyScore(rubro, query) * 0.85,
-          // La descripción es texto largo: solo substring (el fuzzy daría ruido).
-          r.description && normalize(r.description).includes(nq) ? 0.6 : 0,
+        const zona = [r.commune.name, r.neighborhood?.name ?? ''].join(' ')
+        const desc = r.description ? normalize(r.description) : ''
+        return tokens.every(
+          (tok) =>
+            fuzzyScore(r.name, tok) >= MATCH_THRESHOLD ||
+            fuzzyScore(rubro, tok) * 0.85 >= MATCH_THRESHOLD ||
+            fuzzyScore(zona, tok) >= MATCH_THRESHOLD ||
+            // La descripción es texto largo: solo substring y con palabras de 3+
+            // letras (el fuzzy o los términos cortos darían puro ruido).
+            (tok.length >= 3 && desc.includes(tok)),
         )
-        return score >= MATCH_THRESHOLD
       })
       .map((r) => r.id)
   }

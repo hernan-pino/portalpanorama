@@ -44,7 +44,7 @@ export const CURATED_LISTS: SeedCuratedList[] = [
     description:
       'Los museos imperdibles de Santiago: arte, historia y memoria, con rating real de Google.',
     intro:
-      'Santiago tiene una de las ofertas de museos más ricas de Chile. Esta es nuestra selección de los imperdibles —desde el arte precolombino hasta la memoria reciente del país— ordenados por reputación. Entrada liberada en varios de ellos.',
+      'Estos son los mejores museos de Santiago. La capital tiene una de las ofertas más ricas de Chile, y esta es nuestra selección de los imperdibles —desde el arte precolombino hasta la memoria reciente del país— ordenados por reputación. Entrada liberada en varios de ellos.',
     rule: { subcategorySlug: 'museo' },
     sort: 'score_desc',
     isPublished: true,
@@ -73,7 +73,7 @@ export const CURATED_LISTS: SeedCuratedList[] = [
     description:
       'Las cafeterías de especialidad mejor evaluadas de Santiago: dónde tomarse el mejor café, con rating real de Google.',
     intro:
-      'El café de especialidad explotó en Santiago y hoy hay un rincón para cada gusto: tostadurías propias, cafés de barrio para trabajar tranquilo y hasta experiencias temáticas. Esta es nuestra selección de los mejores, ordenados por reputación.',
+      'Estas son las mejores cafeterías de especialidad de Santiago. El café de especialidad explotó en la capital y hoy hay un rincón para cada gusto: tostadurías propias, cafés de barrio para trabajar tranquilo y hasta experiencias temáticas. Nuestra selección, ordenada por reputación.',
     rule: { subcategorySlug: 'cafe-cafeteria' },
     sort: 'score_desc',
     isPublished: true,
@@ -112,7 +112,7 @@ export const CURATED_LISTS: SeedCuratedList[] = [
     description:
       'Las librerías independientes mejor evaluadas de Santiago: de barrio, de viejo y de autor, con rating real de Google.',
     intro:
-      'Más allá de las grandes cadenas, Santiago guarda un circuito de librerías independientes con alma: de barrio, de libros usados, de editoriales que no llegan a las vitrinas grandes. Esta es nuestra selección, ordenada por reputación.',
+      'Estas son las mejores librerías independientes de Santiago. Más allá de las grandes cadenas, la ciudad guarda un circuito de librerías con alma: de barrio, de libros usados, de editoriales que no llegan a las vitrinas grandes. Nuestra selección, ordenada por reputación.',
     rule: { subcategorySlug: 'libreria' },
     sort: 'score_desc',
     isPublished: true,
@@ -146,7 +146,7 @@ export const CURATED_LISTS: SeedCuratedList[] = [
     description:
       'Los mejores panoramas para una primera cita en Santiago: de lo gratis y barato a la apuesta más cara, pensados para conversar y conocer a la otra persona.',
     intro:
-      'Una primera cita no se trata del lugar más caro, sino del que deja conversar. Acá van nuestras recomendaciones ordenadas de lo más accesible —museos gratis, un helado, un café sin presión— hasta la apuesta para lucirse, con rating real de Google. Elige según el plan que quieras: bajo riesgo, paseo al aire libre, cena íntima o tragos.',
+      'Una primera cita no se trata del lugar más caro, sino del que deja conversar. Acá van nuestros panoramas para una primera cita en Santiago, ordenados de lo más accesible —museos gratis, un helado, un café sin presión— hasta la apuesta para lucirse, con rating real de Google. Elige según el plan que quieras: bajo riesgo, paseo al aire libre, cena íntima o tragos.',
     rule: { occasionTagSlugs: ['cita'] },
     sort: 'score_desc',
     isPublished: true,
@@ -232,7 +232,7 @@ export const CURATED_LISTS: SeedCuratedList[] = [
     description:
       'Las hamburgueserías mejor evaluadas de Santiago: smash, gourmet y de barrio, comuna por comuna, con rating real de Google.',
     intro:
-      'La hamburguesa dejó de ser comida rápida y se volvió oficio: masa de carne molida en el momento, panes de verdad y locales chicos que la gente cruza la ciudad para probar. Esta es nuestra selección de las mejores de Santiago —de las smash crocantes a las gourmet de pan brioche, repartidas por toda la ciudad—, ordenadas por reputación. Se mantiene al día sola: cada hamburguesería nueva que cargamos entra acá.',
+      'La hamburguesa dejó de ser comida rápida y se volvió oficio: masa de carne molida en el momento, panes de verdad y locales chicos que la gente cruza la ciudad para probar. Esta es nuestra selección de las mejores hamburgueserías de Santiago —de las smash crocantes a las gourmet de pan brioche, repartidas por toda la ciudad—, ordenadas por reputación. Se mantiene al día sola: cada hamburguesería nueva que cargamos entra acá.',
     rule: { cuisineTagSlugs: ['hamburguesas'] },
     sort: 'score_desc',
     isPublished: true,
@@ -294,7 +294,7 @@ export const CURATED_LISTS: SeedCuratedList[] = [
     description:
       'Las pizzerías mejor evaluadas de Santiago: napolitana, romana, a la piedra y de barrio, comuna por comuna, con rating real de Google.',
     intro:
-      'La pizza en Santiago dejó de ser delivery genérico para volverse oficio: masa fermentada por días, hornos que pasan los 400°C y maestros pizzeros que discuten en serio sobre napolitana, romana o masa madre. Esta es nuestra selección de las mejores de la ciudad —de la napolitana de borde inflado a la romana crocante al corte, repartidas de Vitacura a San Miguel—, ordenadas por reputación. Se mantiene al día sola: cada pizzería nueva que cargamos entra acá.',
+      'La pizza en Santiago dejó de ser delivery genérico para volverse oficio: masa fermentada por días, hornos que pasan los 400°C y maestros pizzeros que discuten en serio sobre napolitana, romana o masa madre. Esta es nuestra selección de las mejores pizzerías de Santiago —de la napolitana de borde inflado a la romana crocante al corte, repartidas de Vitacura a San Miguel—, ordenadas por reputación. Se mantiene al día sola: cada pizzería nueva que cargamos entra acá.',
     rule: { cuisineTagSlugs: ['pizza'] },
     sort: 'score_desc',
     isPublished: true,
@@ -356,7 +356,7 @@ export const CURATED_LISTS: SeedCuratedList[] = [
     description:
       'Las mejores sushilerías de Santiago: nikkei de autor, barras de barrio y clásicos del delivery, comuna por comuna, con rating real de Google.',
     intro:
-      'El sushi es, probablemente, la comida que más se pide a domicilio en Santiago —y detrás de tanto delivery genérico hay sushilerías que valen de verdad: nikkei de autor, barras de barrio con años de oficio e instituciones con miles de reseñas. Esta es nuestra selección de las mejores de la ciudad, de Vitacura a Puente Alto, ordenadas por reputación. Se mantiene al día sola: cada sushilería nueva que cargamos entra acá.',
+      'El sushi es, probablemente, la comida que más se pide a domicilio en Santiago —y detrás de tanto delivery genérico hay sushilerías que valen de verdad: nikkei de autor, barras de barrio con años de oficio e instituciones con miles de reseñas. Esta es nuestra selección de las mejores sushilerías de Santiago, de Vitacura a Puente Alto, ordenadas por reputación. Se mantiene al día sola: cada sushilería nueva que cargamos entra acá.',
     rule: { cuisineTagSlugs: ['sushi'] },
     sort: 'score_desc',
     isPublished: true,
@@ -418,7 +418,7 @@ export const CURATED_LISTS: SeedCuratedList[] = [
     description:
       'Dónde comer el mejor ramen de Santiago: ramenerías de barra, cadenas con fideos hechos en casa y hasta lanzhou chino, con rating real de Google.',
     intro:
-      'El ramen pasó de rareza a fenómeno en Santiago: hoy hay barras japonesas con filas en la vereda, cadenas que hacen sus propios fideos y hasta locales de lanzhou —el primo chino del ramen, con fideos estirados a mano—. Esta es nuestra selección de dónde tomarse el mejor caldo de la ciudad, de Providencia a Peñalolén, ordenada por reputación. Se mantiene al día sola: cada ramenería nueva que cargamos entra acá.',
+      'El ramen pasó de rareza a fenómeno en Santiago: hoy hay barras japonesas con filas en la vereda, cadenas que hacen sus propios fideos y hasta locales de lanzhou —el primo chino del ramen, con fideos estirados a mano—. Esta es nuestra selección de dónde tomarse el mejor ramen de Santiago, de Providencia a Peñalolén, ordenada por reputación. Se mantiene al día sola: cada ramenería nueva que cargamos entra acá.',
     rule: { cuisineTagSlugs: ['ramen'] },
     sort: 'score_desc',
     isPublished: true,

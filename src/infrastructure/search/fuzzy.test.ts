@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { normalize, fuzzyScore, fuzzyMatches, MATCH_THRESHOLD } from './fuzzy'
+import { normalize, fuzzyScore, fuzzyMatches, tokenizeQuery, MATCH_THRESHOLD } from './fuzzy'
 
 describe('normalize', () => {
   it('baja a minúsculas, quita acentos y colapsa espacios', () => {
@@ -48,5 +48,28 @@ describe('fuzzyMatches', () => {
 
   it('no pasa el umbral sin relación', () => {
     expect(fuzzyMatches('piscina municipal', 'sushi')).toBe(false)
+  })
+})
+
+describe('tokenizeQuery — frases en lenguaje natural', () => {
+  it('descarta stopwords y genéricas del dominio', () => {
+    expect(tokenizeQuery('lugares para ir con niños')).toEqual(['ninos'])
+    expect(tokenizeQuery('panoramas para una primera cita')).toEqual(['primera', 'cita'])
+  })
+
+  it('conserva los términos con contenido (rubro + comuna)', () => {
+    expect(tokenizeQuery('ramen en Providencia')).toEqual(['ramen', 'providencia'])
+  })
+
+  it('normaliza acentos y mayúsculas en cada término', () => {
+    expect(tokenizeQuery('Café DE especialidad')).toEqual(['cafe', 'especialidad'])
+  })
+
+  it('si la consulta es puro relleno, cae a la frase normalizada entera', () => {
+    expect(tokenizeQuery('para la de')).toEqual(['para la de'])
+  })
+
+  it('consulta vacía devuelve []', () => {
+    expect(tokenizeQuery('   ')).toEqual([])
   })
 })

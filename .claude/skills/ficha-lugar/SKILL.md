@@ -350,6 +350,9 @@ Funde estos ángulos (no todos aplican a todo lugar; en prosa breve + bullets do
 - **Movimiento / eventos** — si rota exposiciones, hay música en vivo, ferias o temporadas, dilo y sugiere seguir su IG. Si es siempre igual, no fuerces nada.
 
 **Reglas:**
+- **Nombra el lugar una vez en la descripción** (idealmente en el primer párrafo), de forma natural:
+  "**Kintaro** lleva décadas sirviendo ramen en el centro…". Es SEO: el nombre debe aparecer en el
+  texto, no solo en el título de la ficha. Una vez basta — no lo repitas en cada frase.
 - **⛔ Español de Chile, NUNCA voseo argentino.** Usa tuteo chileno: "**Pasas** un rato", "**mira** su IG",
   "**puedes** llevar al perro", "si **quieres** algo tranquilo". JAMÁS rioplatense: nada de "pasás", "mirá",
   "podés", "querés", "tenés", "andá", "elegí", "disfrutá", "buscá". Si una frase suena a Buenos Aires, reescríbela.
@@ -363,7 +366,7 @@ Funde estos ángulos (no todos aplican a todo lugar; en prosa breve + bullets do
 **Mejor (humano, compacto, escaneable):** así se vería el campo `descripcion` (con saltos de línea y negrita):
 
 ```
-El **museo de arte más grande y antiguo del país**, en pleno Parque Forestal. Pasas una o dos horas entre pintura y escultura chilena, con muestras temporales que **rotan seguido** (mira su IG antes de ir).
+El Bellas Artes es el **museo de arte más grande y antiguo del país**, en pleno Parque Forestal. Pasas una o dos horas entre pintura y escultura chilena, con muestras temporales que **rotan seguido** (mira su IG antes de ir).
 
 El edificio neoclásico con cúpula de vidrio **ya vale la visita por sí solo**.
 

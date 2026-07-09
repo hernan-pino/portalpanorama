@@ -64,9 +64,14 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   }
 
   const title = `${place.name} · ${place.commune.name}`
-  const description =
-    place.description?.slice(0, 160) ??
-    `${place.category.name} en ${place.neighborhood?.name ?? place.commune.name}, Santiago.`
+  // SEO: la meta description parte con el nombre y la ubicación (el nombre debe
+  // aparecer fuera del <title>) y sigue con la descripción real, sin markdown.
+  const where = place.neighborhood?.name ?? place.commune.name
+  const lead = `${place.name} en ${where}, Santiago`
+  const body = place.description?.replace(/\*\*/g, '').replace(/\s+/g, ' ').trim()
+  const description = body
+    ? (body.toLowerCase().startsWith(place.name.toLowerCase()) ? body : `${lead}: ${body}`).slice(0, 160)
+    : `${lead} — ${place.category.name}.`
   const path = `/lugar/${place.slug}`
   const cover = place.images.find((i) => i.isPrimary)?.url ?? place.images[0]?.url
 
@@ -266,7 +271,7 @@ export default async function LugarPage({ params }: PageProps) {
 
         {/* datos prácticos */}
         <div className="ficha__section">
-          <h2 className="ficha__sec-h">Datos prácticos</h2>
+          <h2 className="ficha__sec-h">Datos prácticos de {place.name}</h2>
           <div className="ficha__card">
             {place.priceRange && (
               <DataRow icon={<WalletIcon />} k="Precio">
@@ -370,7 +375,7 @@ export default async function LugarPage({ params }: PageProps) {
         {/* relacionados */}
         {related.length > 0 && (
           <div className="ficha__section">
-            <h2 className="ficha__sec-h">También te puede gustar</h2>
+            <h2 className="ficha__sec-h">Similares a {place.name}</h2>
             <PlaceRail scrollClassName="ficha__rel" className="rail-wrap--ficha">
               {related.map((r) => <RelCard key={r.id} place={r} />)}
             </PlaceRail>

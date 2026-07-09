@@ -69,3 +69,25 @@ export function fuzzyScore(text: string, query: string): number {
 export function fuzzyMatches(text: string, query: string): boolean {
   return fuzzyScore(text, query) >= MATCH_THRESHOLD
 }
+
+// Palabras vacías del castellano + genéricas del dominio ("lugares para ir con
+// niños"): no aportan al match y se descartan antes de comparar por palabra.
+const STOPWORDS = new Set([
+  'de', 'del', 'la', 'las', 'el', 'los', 'lo', 'un', 'una', 'unos', 'unas', 'al', 'a',
+  'en', 'y', 'o', 'u', 'e', 'que', 'con', 'sin', 'para', 'por', 'se', 'es', 'son',
+  'mi', 'tu', 'su', 'me', 'te', 'ir', 'mas', 'muy', 'donde', 'adonde', 'como',
+  'cual', 'cuales', 'hay', 'este', 'esta', 'esto',
+  'lugar', 'lugares', 'sitio', 'sitios', 'panorama', 'panoramas', 'algo', 'plan', 'planes',
+])
+
+// Separa la consulta en palabras significativas: "lugares para ir con niños" →
+// ['ninos']. Si la consulta era puro relleno, devuelve la frase normalizada entera
+// como único término (mejor un intento literal que no buscar nada).
+export function tokenizeQuery(query: string): string[] {
+  const tokens = normalize(query)
+    .split(' ')
+    .filter((w) => w.length >= 2 && !STOPWORDS.has(w))
+  if (tokens.length > 0) return tokens
+  const whole = normalize(query)
+  return whole ? [whole] : []
+}
