@@ -1,7 +1,9 @@
 import Script from 'next/script'
 
-// Microsoft Clarity (heatmaps + grabaciones de sesión). Carga `afterInteractive`
-// para no bloquear el render. Si no hay Project ID configurado, no inyecta nada
+// Microsoft Clarity (heatmaps + grabaciones de sesión). Carga `lazyOnload`
+// (cuando el navegador queda ocioso) para no competir con el LCP móvil; su
+// snippet encola en c.clarity.q, así que no pierde nada mientras carga.
+// Si no hay Project ID configurado, no inyecta nada
 // (apagado por defecto). Se enciende poniendo NEXT_PUBLIC_CLARITY_ID en el entorno
 // (Vercel → Env Vars, Production). El ID se obtiene en clarity.microsoft.com.
 const clarityProjectId = process.env.NEXT_PUBLIC_CLARITY_ID
@@ -9,7 +11,7 @@ const clarityProjectId = process.env.NEXT_PUBLIC_CLARITY_ID
 export function MicrosoftClarity() {
   if (!clarityProjectId) return null
   return (
-    <Script id="ms-clarity-init" strategy="afterInteractive">
+    <Script id="ms-clarity-init" strategy="lazyOnload">
       {`
         (function(c,l,a,r,i,t,y){
           c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};

@@ -9,6 +9,7 @@
 import { PrismaClient } from '@prisma/client'
 import { PrismaPg } from '@prisma/adapter-pg'
 import { CURATED_LISTS } from './curated-lists.data'
+import { revalidateRemote } from './revalidate-remote'
 
 const DRY = process.argv.includes('--dry')
 const PROD = process.argv.includes('--prod')
@@ -46,6 +47,8 @@ async function main() {
     console.log(`  • ${list.slug} → actualizada (${[introChanged && 'intro', descChanged && 'description'].filter(Boolean).join(' + ')})`)
   }
   await prisma.$disconnect()
+  // Las guías se cachean 1 h en el sitio: invalidar para ver el cambio al tiro.
+  if (PROD && !DRY) await revalidateRemote()
 }
 
 main().catch((e) => {

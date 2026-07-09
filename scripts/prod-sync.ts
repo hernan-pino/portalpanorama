@@ -8,6 +8,7 @@
 // Requiere PROD_DB_URL (string DIRECTA del branch prod de Neon) + DATABASE_URL en .env.local.
 import { PrismaClient } from '@prisma/client'
 import { PrismaPg } from '@prisma/adapter-pg'
+import { revalidateRemote } from './revalidate-remote'
 
 const DRY = process.argv.includes('--dry')
 const PROD_URL = process.env.PROD_DB_URL
@@ -201,6 +202,10 @@ async function main() {
   log(`  ${tag} PlaceTags CUISINE agregados: ${added} en ${touched} lugares`)
 
   log(`\n========== ${DRY ? 'DRY-RUN listo (no se escribió nada)' : 'SYNC COMPLETO'} ==========\n`)
+
+  // El sitio cachea las lecturas públicas 1 h: tras escribir a la BD de prod
+  // hay que invalidar el caché para que el contenido nuevo se vea al tiro.
+  if (!DRY) await revalidateRemote()
 }
 
 main().catch((e) => { console.error(e); process.exit(1) }).finally(async () => { await local.$disconnect(); await prod.$disconnect() })

@@ -8,10 +8,12 @@ import { container } from './container'
 // byte (LCP de ~7s en móvil). Estos read-models son globales (no dependen de la
 // sesión — los corazones/save-context van aparte y nunca se cachean acá), así
 // que se sirven desde el caché y se refrescan:
-//   - por tiempo (`revalidate`): cubre los cambios que entran por fuera de la
-//     app (ingest/enrich/prod-sync escriben directo a la BD), y
-//   - por tag (`revalidateTag` en las actions del admin): las ediciones del
-//     admin se reflejan al tiro.
+//   - por tag (`revalidateTag`): las actions del admin lo llaman directo, y los
+//     scripts de carga (prod-sync/ingest/enrich) pegan a POST /api/revalidate
+//     al terminar → el contenido nuevo se ve al tiro, y
+//   - por tiempo (`revalidate`, 1 hora): red de seguridad para cualquier
+//     escritura externa que olvide invalidar. Con 5 min el caché estaba casi
+//     siempre frío (360+ fichas) y el TTFB de ficha llegaba a 1.8s en móvil.
 //
 // El wrapper exterior `cache()` (React) dedupea dentro del mismo request:
 // generateMetadata + page comparten una sola ejecución por render.
@@ -23,7 +25,7 @@ export const CACHE_TAGS = {
   curatedLists: 'curated-lists',
 } as const
 
-const FIVE_MINUTES = 300
+const ONE_HOUR = 3600
 
 // Ficha completa + relacionados. Errores (PlaceNotFoundError) no se cachean:
 // unstable_cache solo guarda resultados exitosos.
@@ -31,7 +33,7 @@ export const getPlaceDetailCached = cache((slug: string) =>
   unstable_cache(
     () => container.getGetPlaceBySlugUseCase().execute(slug),
     ['place-detail', slug],
-    { revalidate: FIVE_MINUTES, tags: [CACHE_TAGS.places] },
+    { revalidate: ONE_HOUR, tags: [CACHE_TAGS.places] },
   )(),
 )
 
@@ -41,7 +43,7 @@ export const getCuratedListPageCached = cache((slug: string) =>
   unstable_cache(
     () => container.getGetCuratedListBySlugUseCase().execute(slug),
     ['curated-list-page', slug],
-    { revalidate: FIVE_MINUTES, tags: [CACHE_TAGS.curatedLists, CACHE_TAGS.places] },
+    { revalidate: ONE_HOUR, tags: [CACHE_TAGS.curatedLists, CACHE_TAGS.places] },
   )(),
 )
 
@@ -50,7 +52,7 @@ export const getPublishedCuratedListsCached = cache(
   unstable_cache(
     () => container.getListPublishedCuratedListsUseCase().execute(),
     ['curated-lists-published'],
-    { revalidate: FIVE_MINUTES, tags: [CACHE_TAGS.curatedLists] },
+    { revalidate: ONE_HOUR, tags: [CACHE_TAGS.curatedLists] },
   ),
 )
 
@@ -59,7 +61,7 @@ export const getCategoriesCached = cache(
   unstable_cache(
     () => container.getGetCategoriesUseCase().execute(),
     ['categories'],
-    { revalidate: FIVE_MINUTES, tags: [CACHE_TAGS.places] },
+    { revalidate: ONE_HOUR, tags: [CACHE_TAGS.places] },
   ),
 )
 
@@ -68,7 +70,7 @@ export const getPlaceFacetsCached = cache(
   unstable_cache(
     () => container.getGetPlaceFacetsUseCase().execute(),
     ['place-facets'],
-    { revalidate: FIVE_MINUTES, tags: [CACHE_TAGS.places] },
+    { revalidate: ONE_HOUR, tags: [CACHE_TAGS.places] },
   ),
 )
 
@@ -77,6 +79,6 @@ export const getHomeRecommendedCached = cache(
   unstable_cache(
     () => container.getSearchPlacesUseCase().execute({ limit: 12 }),
     ['home-recommended'],
-    { revalidate: FIVE_MINUTES, tags: [CACHE_TAGS.places] },
+    { revalidate: ONE_HOUR, tags: [CACHE_TAGS.places] },
   ),
 )

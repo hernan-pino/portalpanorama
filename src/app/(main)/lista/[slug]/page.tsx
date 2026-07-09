@@ -95,7 +95,7 @@ export default async function ListaPage({ params }: PageProps) {
       <header className="curated-page__head">
         {list.coverImageUrl && (
           <div className="curated-page__cover">
-            <Image src={list.coverImageUrl} alt={list.name} fill sizes="(max-width: 900px) 100vw, 900px" style={{ objectFit: 'cover' }} priority />
+            <Image src={list.coverImageUrl} alt={list.name} fill sizes="(max-width: 900px) 100vw, 900px" style={{ objectFit: 'cover' }} priority fetchPriority="high" />
           </div>
         )}
         <div className="curated-page__head-body">

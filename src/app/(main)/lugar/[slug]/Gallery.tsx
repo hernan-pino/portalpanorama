@@ -41,7 +41,7 @@ export function Gallery({ images, name, actions }: Props) {
       <div className="ficha__hero">
         {cover ? (
           <button type="button" className="ficha__hero-img" onClick={() => openAt(0)} aria-label="Ampliar foto">
-            <Image src={cover.url} alt={cover.alt ?? name} fill priority sizes="100vw" style={{ objectFit: 'cover' }} />
+            <Image src={cover.url} alt={cover.alt ?? name} fill priority fetchPriority="high" sizes="100vw" style={{ objectFit: 'cover' }} />
           </button>
         ) : (
           <div className="ficha__hero-img">
