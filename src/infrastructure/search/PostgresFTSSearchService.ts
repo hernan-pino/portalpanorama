@@ -33,6 +33,22 @@ function byCountThenLabel(a: FacetCount, b: FacetCount): number {
   return b.count - a.count || a.label.localeCompare(b.label, 'es')
 }
 
+// Orden elegido por el usuario (sesión 27). El enum PriceRange está declarado de
+// menor a mayor → asc = más barato primero; los sin presupuesto van al final en
+// ambas direcciones. El score desempata el precio; el nombre desempata siempre.
+function buildOrderBy(sort: SearchParams['sort']): Prisma.PlaceOrderByWithRelationInput[] {
+  switch (sort) {
+    case 'name':
+      return [{ name: 'asc' }]
+    case 'price_asc':
+      return [{ priceRange: { sort: 'asc', nulls: 'last' } }, { score: 'desc' }, { name: 'asc' }]
+    case 'price_desc':
+      return [{ priceRange: { sort: 'desc', nulls: 'last' } }, { score: 'desc' }, { name: 'asc' }]
+    default:
+      return [{ score: 'desc' }, { name: 'asc' }]
+  }
+}
+
 export class PostgresFTSSearchService implements SearchService {
   constructor(private readonly prisma: PrismaClient) {}
 
@@ -46,7 +62,7 @@ export class PostgresFTSSearchService implements SearchService {
     const [rows, total] = await Promise.all([
       this.prisma.place.findMany({
         where,
-        orderBy: [{ score: 'desc' }, { name: 'asc' }],
+        orderBy: buildOrderBy(params.sort),
         skip,
         take: limit,
         ...placeCardArgs,

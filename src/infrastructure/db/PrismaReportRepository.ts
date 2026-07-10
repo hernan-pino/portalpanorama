@@ -48,6 +48,10 @@ export class PrismaReportRepository implements ReportRepository {
     }))
   }
 
+  async countOpen(): Promise<number> {
+    return this.prisma.report.count({ where: { status: ReportStatus.OPEN } })
+  }
+
   async setStatus(reportId: string, status: ReportStatus): Promise<void> {
     await this.prisma.report.update({
       where: { id: reportId },

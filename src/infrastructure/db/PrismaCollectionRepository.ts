@@ -125,12 +125,10 @@ export class PrismaCollectionRepository implements CollectionRepository {
     }
   }
 
-  async findSavedPlaceIds(ownerId: string): Promise<string[]> {
-    const rows = await this.prisma.collectionItem.findMany({
+  async findSavedItems(ownerId: string): Promise<{ collectionId: string; placeId: string }[]> {
+    return this.prisma.collectionItem.findMany({
       where: { collection: { ownerId } },
-      distinct: ['placeId'],
-      select: { placeId: true },
+      select: { collectionId: true, placeId: true },
     })
-    return rows.map((r) => r.placeId)
   }
 }

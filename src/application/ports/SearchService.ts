@@ -1,6 +1,10 @@
 import { PriceRange } from '@domain/place/PriceRange'
 import { PlaceCardView } from './PlaceRepository'
 
+// Orden de resultados (sesión 27). El default sigue siendo score desc (reputación);
+// alfabético y precio son opciones explícitas del usuario en /explorar.
+export type SearchSort = 'score' | 'name' | 'price_asc' | 'price_desc'
+
 // Filtros vivos del MVP: contexto social · gasto · dónde (comuna/barrio/metro) ·
 // accesibilidad · ambiente · ideal para (ocasión) · experiencia. El orden por
 // defecto SIEMPRE es score desc (reputación). "Sin reserva" se deriva de reservation.
@@ -20,6 +24,7 @@ export interface SearchParams {
   experienceTagSlugs?: string[] // "Experiencia" (EXPERIENCE)
   cuisineTagSlugs?: string[] // "Tipo de comida" (CUISINE) — usado por reglas de listas
   walkInOnly?: boolean // "Sin reserva"
+  sort?: SearchSort // default: 'score'
   page?: number
   limit?: number
 }

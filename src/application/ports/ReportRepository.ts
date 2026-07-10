@@ -25,6 +25,8 @@ export interface ReportRepository {
   create(report: NewReport): Promise<void>
   /** Buzón de admin: todos los reportes con su lugar, recientes primero. */
   listForAdmin(): Promise<ReportAdminRow[]>
+  /** Reportes OPEN (sin resolver) → badge "nuevo" en la navegación del admin. */
+  countOpen(): Promise<number>
   /** Cambia el estado de un reporte (resolver / descartar / reabrir). */
   setStatus(reportId: string, status: ReportStatus): Promise<void>
 }

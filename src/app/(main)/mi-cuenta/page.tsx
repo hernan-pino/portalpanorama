@@ -40,6 +40,7 @@ export default async function MiCuentaPage({
       isLoggedIn: true,
       collections: ctx.collections.map((c) => ({ id: c.id, name: c.name, itemCount: c.itemCount })),
       savedPlaceIds: ctx.savedPlaceIds,
+      savedItems: ctx.savedItems,
       defaultCollectionId: ctx.defaultCollectionId,
       defaultName: Collection.DEFAULT_NAME,
     }

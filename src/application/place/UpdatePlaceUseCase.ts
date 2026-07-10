@@ -9,7 +9,7 @@ import { assemblePlace } from './assemblePlace'
 import { assertCategoryConsistency } from './assertCategoryConsistency'
 
 // Edición de una ficha por el admin. Preserva id/slug/estado/fecha de creación;
-// recalcula el score con los nuevos valores de Google y el promedio global actual.
+// recalcula el score con los nuevos valores de Google y el prior actual de su categoría.
 export class UpdatePlaceUseCase {
   constructor(
     private readonly placeRepo: PlaceRepository,
@@ -30,15 +30,20 @@ export class UpdatePlaceUseCase {
       if (ancestors.includes(placeId)) throw new PlaceCycleError()
     }
 
-    const [tags, globalAverage, categories] = await Promise.all([
+    const [tags, globalAverage, categoryStats, categories] = await Promise.all([
       this.tagRepo.findByIds(input.tagIds),
       this.placeRepo.globalAverageRating(),
+      this.placeRepo.categoryRatingStats(),
       this.categoryRepo.listForForm(),
     ])
 
     assertCategoryConsistency(input, categories)
 
-    const score = Score.bayesian(input.googleRating, input.googleReviewCount, globalAverage)
+    const prior = Score.prior(
+      categoryStats.find((s) => s.categoryId === input.categoryId),
+      globalAverage,
+    )
+    const score = Score.bayesian(input.googleRating, input.googleReviewCount, prior)
 
     const updated = assemblePlace({
       id: existing.id,

@@ -73,9 +73,16 @@ export class EnrichPlaceRatingUseCase {
       enriched = enriched.withCoordinates(result.latitude!, result.longitude!)
     }
 
-    // Re-bate el score con el promedio global actual (prior C del bayesiano).
-    const globalAverage = await this.placeRepo.globalAverageRating()
-    const score = Score.bayesian(enriched.googleRating, enriched.googleReviewCount, globalAverage)
+    // Re-bate el score con el prior C actual (por categoría, con fallback al global).
+    const [globalAverage, categoryStats] = await Promise.all([
+      this.placeRepo.globalAverageRating(),
+      this.placeRepo.categoryRatingStats(),
+    ])
+    const prior = Score.prior(
+      categoryStats.find((s) => s.categoryId === place.categoryId),
+      globalAverage,
+    )
+    const score = Score.bayesian(enriched.googleRating, enriched.googleReviewCount, prior)
     if (!input.dryRun) {
       await this.placeRepo.save(enriched.withScore(score))
     }

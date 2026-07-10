@@ -72,7 +72,7 @@ export default async function ListaPage({ params }: PageProps) {
   }
 
   let save: SaveContext = {
-    isLoggedIn: !!userId, collections: [], savedPlaceIds: [],
+    isLoggedIn: !!userId, collections: [], savedPlaceIds: [], savedItems: [],
     defaultCollectionId: null, defaultName: Collection.DEFAULT_NAME,
   }
   if (ctx) {
@@ -80,6 +80,7 @@ export default async function ListaPage({ params }: PageProps) {
       isLoggedIn: true,
       collections: ctx.collections.map((c) => ({ id: c.id, name: c.name, itemCount: c.itemCount })),
       savedPlaceIds: ctx.savedPlaceIds,
+      savedItems: ctx.savedItems,
       defaultCollectionId: ctx.defaultCollectionId,
       defaultName: Collection.DEFAULT_NAME,
     }

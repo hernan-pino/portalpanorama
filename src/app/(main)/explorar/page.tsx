@@ -5,6 +5,7 @@ import { container } from '@lib/container'
 import { getCategoriesCached, getPlaceFacetsCached } from '@lib/cachedReads'
 import { SearchBar } from '@components/search/SearchBar'
 import { Filters } from '@components/search/Filters'
+import { SortSelect } from '@components/search/SortSelect'
 import { PlaceCard, type SaveContext } from '@components/place/PlaceCard'
 import { LoginEventTracker } from '@components/analytics/LoginEventTracker'
 import { Collection } from '@domain/collection/Collection'
@@ -38,7 +39,9 @@ export default async function ExplorarPage({ searchParams }: PageProps) {
       vibeTagSlugs: f.vibeTagSlugs,
       occasionTagSlugs: f.occasionTagSlugs,
       experienceTagSlugs: f.experienceTagSlugs,
+      cuisineTagSlugs: f.cuisineTagSlugs,
       walkInOnly: f.walkInOnly,
+      sort: f.sort,
       page: f.page,
       limit: 24,
     }),
@@ -49,7 +52,7 @@ export default async function ExplorarPage({ searchParams }: PageProps) {
   // Contexto de guardado (corazón de la tarjeta): listas + lugares ya guardados +
   // lista por defecto. Se trae una vez para todas las tarjetas.
   let save: SaveContext = {
-    isLoggedIn: !!userId, collections: [], savedPlaceIds: [],
+    isLoggedIn: !!userId, collections: [], savedPlaceIds: [], savedItems: [],
     defaultCollectionId: null, defaultName: Collection.DEFAULT_NAME,
   }
   if (userId) {
@@ -58,6 +61,7 @@ export default async function ExplorarPage({ searchParams }: PageProps) {
       isLoggedIn: true,
       collections: ctx.collections.map((c) => ({ id: c.id, name: c.name, itemCount: c.itemCount })),
       savedPlaceIds: ctx.savedPlaceIds,
+      savedItems: ctx.savedItems,
       defaultCollectionId: ctx.defaultCollectionId,
       defaultName: Collection.DEFAULT_NAME,
     }
@@ -140,6 +144,10 @@ export default async function ExplorarPage({ searchParams }: PageProps) {
     activeChips.push({ label: experienceLabels.get(slug) ?? slug, href: removeFromMulti('experiencia', slug) })
   for (const slug of f.accessTagSlugs ?? [])
     activeChips.push({ label: accessLabels.get(slug) ?? slug, href: removeFromMulti('acceso', slug) })
+  // CUISINE no está en las facetas del rail (filtro visible diferido): el label
+  // se deriva del slug, legible ("ramen", "cocina-peruana" → "cocina peruana").
+  for (const slug of f.cuisineTagSlugs ?? [])
+    activeChips.push({ label: slug.replace(/-/g, ' '), href: removeFromMulti('cocina', slug) })
   if (f.walkInOnly) activeChips.push({ label: 'Sin reserva', href: removeSingle('sinreserva') })
 
   return (
@@ -217,11 +225,14 @@ export default async function ExplorarPage({ searchParams }: PageProps) {
           <div className="results-bar">
             <div className="results-bar__count">
               <strong>{result.total}</strong> {result.total === 1 ? 'lugar' : 'lugares'}
-              {activeChips.length === 0 && <span className="results-bar__sort">ordenado por relevancia</span>}
             </div>
-            <div className="toggle-group" role="group" aria-label="Vista">
-              <Link href={viewHref('grid')} aria-pressed={f.view === 'grid'}><GridIcon /> Grid</Link>
-              <Link href={viewHref('lista')} aria-pressed={f.view === 'lista'}><ListIcon /> Lista</Link>
+            <div className="results-bar__controls">
+              <Link href="/como-ordenamos" className="results-bar__how">¿Cómo ordenamos?</Link>
+              <SortSelect />
+              <div className="toggle-group" role="group" aria-label="Vista">
+                <Link href={viewHref('grid')} aria-pressed={f.view === 'grid'}><GridIcon /> Grid</Link>
+                <Link href={viewHref('lista')} aria-pressed={f.view === 'lista'}><ListIcon /> Lista</Link>
+              </div>
             </div>
           </div>
 

@@ -38,6 +38,8 @@ function deps(place: Place | null, lookupResult: RatingResult | null) {
     findById: async () => place,
     save,
     globalAverageRating: async () => 4.2,
+    // Sin muestra por categoría → Score.prior cae al promedio global (4.2).
+    categoryRatingStats: async () => [],
   } as unknown as PlaceRepository
   const locationRepo: LocationRepository = {
     listCommunes: async () => [{ id: 'com_vitacura', name: 'Vitacura' }],

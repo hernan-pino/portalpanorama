@@ -7,6 +7,7 @@ import {
   createListAndSaveAction,
 } from '@/app/actions/collections'
 import { trackEvent } from '@lib/analytics'
+import { Toast } from '@components/ui/Toast'
 
 interface Collection {
   id: string
@@ -19,6 +20,8 @@ interface Props {
   placeName: string
   isLoggedIn: boolean
   isSaved: boolean
+  // Listas del usuario que YA contienen este lugar (check en el modal, s27).
+  savedInIds: string[]
   collections: Collection[]
   defaultCollectionId: string | null
   defaultName: string
@@ -28,13 +31,17 @@ interface Props {
 // entrar/registrarse (no redirección seca, decisión 4E §8.5). Usuario → modal con
 // sus listas + crear una nueva. "Favoritos" sale siempre fijada arriba y marcada
 // como predeterminada (se crea al vuelo la primera vez). El corazón arranca relleno
-// si el lugar ya está guardado en alguna lista (isSaved). El modal es fijo/centrado
-// para no recortarse dentro de la grilla. Reusa las acciones compartidas con la ficha.
+// si el lugar ya está guardado en alguna lista (isSaved); las listas que ya lo
+// tienen salen con check y sin acción. Guardar confirma con un toast (s27).
+// El modal es fijo/centrado para no recortarse dentro de la grilla. Reusa las
+// acciones compartidas con la ficha.
 export function SaveHeart({
-  placeId, placeName, isLoggedIn, isSaved, collections, defaultCollectionId, defaultName,
+  placeId, placeName, isLoggedIn, isSaved, savedInIds, collections, defaultCollectionId, defaultName,
 }: Props) {
   const [open, setOpen] = useState(false)
   const [saved, setSaved] = useState(isSaved)
+  const [inIds, setInIds] = useState(savedInIds)
+  const [toast, setToast] = useState<string | null>(null)
   const [newName, setNewName] = useState('')
   const [error, setError] = useState<string | null>(null)
   const [isPending, startTransition] = useTransition()
@@ -56,22 +63,38 @@ export function SaveHeart({
     setError(null)
   }
 
-  function run(action: () => Promise<{ error: string } | { success: true } | { success: true; collectionId: string }>) {
+  function run(
+    action: () => Promise<{ error: string } | { success: true } | { success: true; collectionId: string }>,
+    message: string,
+    collectionId?: string,
+  ) {
     setError(null)
     startTransition(async () => {
       const res = await action()
       if ('error' in res) { setError(res.error); return }
       trackEvent('guardar_lugar', { place_id: placeId, place_name: placeName, origen: 'tarjeta' })
       setSaved(true)
+      const savedId = collectionId ?? ('collectionId' in res ? res.collectionId : undefined)
+      if (savedId) setInIds((ids) => (ids.includes(savedId) ? ids : [...ids, savedId]))
+      setToast(message)
       close()
     })
   }
 
-  function saveDefault() { run(() => saveToDefaultCollectionAction(placeId)) }
-  function saveTo(collectionId: string) { run(() => saveToCollectionAction(placeId, collectionId)) }
+  function saveDefault() {
+    run(
+      () => saveToDefaultCollectionAction(placeId),
+      `Se agregó a ${defaultRow?.name ?? defaultName}`,
+      defaultCollectionId ?? undefined,
+    )
+  }
+  function saveTo(collectionId: string, name: string) {
+    run(() => saveToCollectionAction(placeId, collectionId), `Se agregó a ${name}`, collectionId)
+  }
   function createAndSave() {
-    if (!newName.trim()) return
-    run(() => createListAndSaveAction(placeId, newName))
+    const name = newName.trim()
+    if (!name) return
+    run(() => createListAndSaveAction(placeId, name), `Se creó ${name} y se agregó`)
   }
 
   return (
@@ -85,6 +108,8 @@ export function SaveHeart({
       >
         <HeartGlyph filled={saved} />
       </button>
+
+      {toast && <Toast message={toast} onDone={() => setToast(null)} />}
 
       {open && (
         <div
@@ -120,27 +145,26 @@ export function SaveHeart({
 
                 <div className="save-modal__list">
                   {/* Lista por defecto (siempre presente, marcada) */}
-                  <button
-                    type="button"
+                  <SaveRow
                     className="save-modal__item save-modal__item--default"
+                    name={defaultRow?.name ?? defaultName}
+                    badge="por defecto"
+                    count={defaultRow?.itemCount ?? 0}
+                    isIn={defaultCollectionId != null && inIds.includes(defaultCollectionId)}
                     disabled={isPending}
-                    onClick={saveDefault}
-                  >
-                    <span>{defaultRow?.name ?? defaultName}<span className="save-modal__badge">por defecto</span></span>
-                    <span className="count">{defaultRow?.itemCount ?? 0}</span>
-                  </button>
+                    onSave={saveDefault}
+                  />
 
                   {others.map((c) => (
-                    <button
+                    <SaveRow
                       key={c.id}
-                      type="button"
                       className="save-modal__item"
+                      name={c.name}
+                      count={c.itemCount}
+                      isIn={inIds.includes(c.id)}
                       disabled={isPending}
-                      onClick={() => saveTo(c.id)}
-                    >
-                      <span>{c.name}</span>
-                      <span className="count">{c.itemCount}</span>
-                    </button>
+                      onSave={() => saveTo(c.id, c.name)}
+                    />
                   ))}
                 </div>
 
@@ -171,6 +195,33 @@ export function SaveHeart({
         </div>
       )}
     </>
+  )
+}
+
+// Fila de lista en el modal. Si el lugar ya está en ella, muestra el check y no
+// vuelve a guardar (se quita desde Mi cuenta › la lista).
+function SaveRow({
+  className, name, badge, count, isIn, disabled, onSave,
+}: {
+  className: string
+  name: string
+  badge?: string
+  count: number
+  isIn: boolean
+  disabled: boolean
+  onSave: () => void
+}) {
+  return (
+    <button
+      type="button"
+      className={`${className}${isIn ? ' is-in' : ''}`}
+      disabled={disabled || isIn}
+      title={isIn ? 'Ya está en esta lista' : undefined}
+      onClick={onSave}
+    >
+      <span>{name}{badge && <span className="save-modal__badge">{badge}</span>}</span>
+      {isIn ? <span className="save-modal__check">✓ guardado</span> : <span className="count">{count}</span>}
+    </button>
   )
 }
 

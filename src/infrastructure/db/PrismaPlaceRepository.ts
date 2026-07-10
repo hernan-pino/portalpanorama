@@ -7,6 +7,7 @@ import { ReservationPolicy } from '@domain/place/ReservationPolicy'
 import { RainPolicy } from '@domain/place/RainPolicy'
 import { PlaceStatus } from '@domain/place/PlaceStatus'
 import {
+  CategoryRatingStat,
   PlaceAdminRow,
   PlaceCardView,
   PlaceDetailView,
@@ -453,18 +454,40 @@ export class PrismaPlaceRepository implements PlaceRepository {
     return agg._avg.googleRating ?? 0
   }
 
+  // Promedio + muestra por categoría (prior C por categoría). Misma población que
+  // el promedio global: todo lugar con rating, sin filtrar por estado.
+  async categoryRatingStats(): Promise<CategoryRatingStat[]> {
+    const rows = await this.prisma.place.groupBy({
+      by: ['categoryId'],
+      where: { googleRating: { not: null } },
+      _avg: { googleRating: true },
+      _count: { googleRating: true },
+    })
+    return rows.map((r) => ({
+      categoryId: r.categoryId,
+      average: r._avg.googleRating ?? 0,
+      ratedCount: r._count.googleRating,
+    }))
+  }
+
   async findRatingsForScoring(): Promise<PlaceRatingRow[]> {
     return this.prisma.place.findMany({
-      select: { id: true, googleRating: true, googleReviewCount: true },
+      select: { id: true, categoryId: true, googleRating: true, googleReviewCount: true },
     })
   }
 
+  // Un solo UPDATE con unnest: cientos de updates individuales en transacción
+  // exceden el timeout de Prisma contra Neon (y la atomicidad no importa acá —
+  // el batch es idempotente y re-corrible).
   async updateScores(scores: { id: string; score: number }[]): Promise<void> {
     if (scores.length === 0) return
-    await this.prisma.$transaction(
-      scores.map((s) =>
-        this.prisma.place.update({ where: { id: s.id }, data: { score: s.score } }),
-      ),
-    )
+    const ids = scores.map((s) => s.id)
+    const values = scores.map((s) => s.score)
+    await this.prisma.$executeRaw`
+      UPDATE "Place" AS p
+      SET "score" = s.score
+      FROM (SELECT unnest(${ids}::text[]) AS id, unnest(${values}::float8[]) AS score) AS s
+      WHERE p."id" = s.id
+    `
   }
 }

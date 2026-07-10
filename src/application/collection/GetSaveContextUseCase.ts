@@ -5,6 +5,8 @@ export interface SaveContextOutput {
   collections: CollectionSummary[]
   // Lugares ya guardados en alguna lista → estado "guardado" del corazón.
   savedPlaceIds: string[]
+  // Pares (lista, lugar) guardados → "en qué listas ya está" del selector (s27).
+  savedItems: { collectionId: string; placeId: string }[]
   // Id de la lista "Favoritos" si ya existe (null = se crea al primer guardado).
   defaultCollectionId: string | null
 }
@@ -17,11 +19,12 @@ export class GetSaveContextUseCase {
   constructor(private readonly collectionRepo: CollectionRepository) {}
 
   async execute(userId: string): Promise<SaveContextOutput> {
-    const [collections, savedPlaceIds] = await Promise.all([
+    const [collections, savedItems] = await Promise.all([
       this.collectionRepo.findByOwnerId(userId),
-      this.collectionRepo.findSavedPlaceIds(userId),
+      this.collectionRepo.findSavedItems(userId),
     ])
+    const savedPlaceIds = [...new Set(savedItems.map((i) => i.placeId))]
     const def = collections.find((c) => c.name === Collection.DEFAULT_NAME)
-    return { collections, savedPlaceIds, defaultCollectionId: def?.id ?? null }
+    return { collections, savedPlaceIds, savedItems, defaultCollectionId: def?.id ?? null }
   }
 }

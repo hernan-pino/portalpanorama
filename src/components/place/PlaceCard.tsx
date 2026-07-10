@@ -10,6 +10,8 @@ export interface SaveContext {
   isLoggedIn: boolean
   collections: { id: string; name: string; itemCount: number }[]
   savedPlaceIds: string[]
+  // Pares (lista, lugar) guardados → cada tarjeta deriva en qué listas está (s27).
+  savedItems: { collectionId: string; placeId: string }[]
   defaultCollectionId: string | null
   defaultName: string
 }
@@ -102,6 +104,7 @@ export function PlaceCard({ place, save, variant = 'grid' }: Props) {
           placeName={place.name}
           isLoggedIn={save.isLoggedIn}
           isSaved={save.savedPlaceIds.includes(place.id)}
+          savedInIds={save.savedItems.filter((i) => i.placeId === place.id).map((i) => i.collectionId)}
           collections={save.collections}
           defaultCollectionId={save.defaultCollectionId}
           defaultName={save.defaultName}

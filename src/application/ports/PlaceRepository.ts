@@ -81,8 +81,16 @@ export interface PlaceParentOption {
 // Fila mínima para el recálculo batch del score bayesiano.
 export interface PlaceRatingRow {
   id: string
+  categoryId: string
   googleRating: number | null
   googleReviewCount: number | null
+}
+
+// Promedio y muestra de rating por categoría (prior C por categoría, sesión 27).
+export interface CategoryRatingStat {
+  categoryId: string
+  average: number
+  ratedCount: number
 }
 
 // Fila de la tabla del admin (todos los estados, no solo PUBLISHED). Denormalizada
@@ -142,8 +150,11 @@ export interface PlaceRepository {
   findAncestorIds(placeId: string): Promise<string[]>
 
   // ── Reputación (decisión 2.5) ──
-  // Promedio global publicado (prior `C` del bayesiano).
+  // Promedio global de la nota de Google (fallback del prior `C` del bayesiano).
   globalAverageRating(): Promise<number>
+  // Promedio + muestra por categoría (prior `C` por categoría; Score.prior decide
+  // si la muestra alcanza o se cae al global).
+  categoryRatingStats(): Promise<CategoryRatingStat[]>
   // Todas las filas con rating para re-batir el score en batch.
   findRatingsForScoring(): Promise<PlaceRatingRow[]>
   updateScores(scores: { id: string; score: number }[]): Promise<void>

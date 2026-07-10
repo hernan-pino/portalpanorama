@@ -32,7 +32,7 @@ export interface CollectionRepository {
     ownerId: string,
   ): Promise<UserCollectionDetailView | null>
 
-  // Ids de los lugares que el usuario tiene guardados en CUALQUIERA de sus listas.
-  // Alimenta el estado "ya guardado" del corazón en ficha/explorar/home.
-  findSavedPlaceIds(ownerId: string): Promise<string[]>
+  // Pares (lista, lugar) de todo lo guardado por el usuario. Alimenta el estado
+  // "ya guardado" del corazón Y el "en qué listas está" del selector (sesión 27).
+  findSavedItems(ownerId: string): Promise<{ collectionId: string; placeId: string }[]>
 }

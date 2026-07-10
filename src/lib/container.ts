@@ -59,6 +59,7 @@ import { ImportImageFromUrlUseCase } from '@application/place/ImportImageFromUrl
 import { CreateReportUseCase } from '@application/place/CreateReportUseCase'
 import { ListReportsForAdminUseCase } from '@application/report/ListReportsForAdminUseCase'
 import { SetReportStatusUseCase } from '@application/report/SetReportStatusUseCase'
+import { GetAdminInboxCountsUseCase } from '@application/report/GetAdminInboxCountsUseCase'
 import { CreateSuggestionUseCase } from '@application/suggestion/CreateSuggestionUseCase'
 import { ListSuggestionsForAdminUseCase } from '@application/suggestion/ListSuggestionsForAdminUseCase'
 import { SetSuggestionStatusUseCase } from '@application/suggestion/SetSuggestionStatusUseCase'
@@ -201,6 +202,10 @@ export const container = {
 
   getSetReportStatusUseCase() {
     return new SetReportStatusUseCase(reportRepo)
+  },
+
+  getGetAdminInboxCountsUseCase() {
+    return new GetAdminInboxCountsUseCase(reportRepo, suggestionRepo)
   },
 
   // ── Sugerencias (footer) + buzón ────────────────────────────────────

@@ -23,6 +23,8 @@ export interface SuggestionRepository {
   create(suggestion: NewSuggestion): Promise<void>
   /** Buzón de admin: todas las sugerencias, recientes primero. */
   listForAdmin(): Promise<SuggestionAdminRow[]>
+  /** Sugerencias OPEN (sin revisar) → badge "nuevo" en la navegación del admin. */
+  countOpen(): Promise<number>
   /** Cambia el estado (resolver / reabrir). */
   setStatus(suggestionId: string, status: SuggestionStatus): Promise<void>
   /** Borrado duro (spam). */

@@ -1,4 +1,5 @@
 import { PriceRange } from '@domain/place/PriceRange'
+import type { SearchSort } from '@application/ports/SearchService'
 
 // Parser de los query params de /explorar → SearchParams del use case. No valida
 // contra catálogos en memoria (los slugs viven en BD): solo sanea forma y deja
@@ -19,7 +20,9 @@ export interface RawSearchParams {
   acceso?: string // tags de accesibilidad (csv)
   ocasion?: string // tags "Ideal para" / OCCASION (csv)
   experiencia?: string // tags de experiencia / EXPERIENCE (csv)
+  cocina?: string // tags de tipo de comida / CUISINE (csv)
   sinreserva?: string // '1'
+  orden?: string // alfabetico | precio-menor | precio-mayor (default: score)
   pagina?: string
   view?: string
   [key: string]: string | undefined
@@ -39,9 +42,18 @@ export interface ParsedSearchParams {
   accessTagSlugs?: string[]
   occasionTagSlugs?: string[]
   experienceTagSlugs?: string[]
+  cuisineTagSlugs?: string[]
   walkInOnly?: boolean
+  sort?: SearchSort
   page: number
   view: 'grid' | 'lista'
+}
+
+// Valores de `orden` en la URL (español) → SearchSort del use case.
+const SORT_BY_URL: Record<string, SearchSort> = {
+  alfabetico: 'name',
+  'precio-menor': 'price_asc',
+  'precio-mayor': 'price_desc',
 }
 
 // slug: minúsculas, números y guiones (forma, no existencia).
@@ -92,7 +104,9 @@ export function parseSearchParams(raw: RawSearchParams): ParsedSearchParams {
     accessTagSlugs: slugList(raw.acceso),
     occasionTagSlugs: slugList(raw.ocasion),
     experienceTagSlugs: slugList(raw.experiencia),
+    cuisineTagSlugs: slugList(raw.cocina),
     walkInOnly: raw.sinreserva === '1' ? true : undefined,
+    sort: raw.orden ? SORT_BY_URL[raw.orden.trim().toLowerCase()] : undefined,
     page,
     view: raw.view === 'lista' ? 'lista' : 'grid',
   }

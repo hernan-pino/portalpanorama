@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 import { auth } from '@lib/auth'
 import { redirect } from 'next/navigation'
+import { container } from '@lib/container'
 
 export const metadata: Metadata = { title: 'Admin — Portal Panorama' }
 
@@ -9,6 +10,10 @@ export default async function AdminLayout({ children }: { children: React.ReactN
   const session = await auth()
   if (!session?.user) redirect('/login?callbackUrl=/admin')
   if ((session.user as { role?: string }).role !== 'ADMIN') redirect('/mi-cuenta')
+
+  // Badge "nuevo" en Reportes: cuántos reportes + sugerencias siguen sin atender.
+  const inbox = await container.getGetAdminInboxCountsUseCase().execute()
+  const pending = inbox.openReports + inbox.openSuggestions
 
   return (
     <div className="admin-shell">
@@ -21,7 +26,14 @@ export default async function AdminLayout({ children }: { children: React.ReactN
           <NavLink href="/admin/listas">Listas</NavLink>
           <NavLink href="/admin/usuarios">Usuarios</NavLink>
           <NavLink href="/admin/analytics">Analítica</NavLink>
-          <NavLink href="/admin/reportes">Reportes</NavLink>
+          <NavLink href="/admin/reportes">
+            Reportes
+            {pending > 0 && (
+              <span className="admin-nav__badge" aria-label={`${pending} sin atender`}>
+                {pending}
+              </span>
+            )}
+          </NavLink>
           <NavLink href="/admin/cobertura">Cobertura</NavLink>
         </div>
       </nav>

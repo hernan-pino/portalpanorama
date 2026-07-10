@@ -36,6 +36,7 @@ export function Footer() {
               <ul>
                 <li><Link href="/terminos">Términos de uso</Link></li>
                 <li><Link href="/privacidad">Privacidad</Link></li>
+                <li><Link href="/como-ordenamos">Cómo ordenamos</Link></li>
               </ul>
             </div>
           </div>

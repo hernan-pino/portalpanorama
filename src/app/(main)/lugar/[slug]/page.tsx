@@ -122,10 +122,14 @@ export default async function LugarPage({ params }: PageProps) {
   let collections: { id: string; name: string; itemCount: number }[] = []
   let defaultCollectionId: string | null = null
   let isSaved = false
+  let savedInIds: string[] = []
   if (ctx) {
     collections = ctx.collections.map((c) => ({ id: c.id, name: c.name, itemCount: c.itemCount }))
     defaultCollectionId = ctx.defaultCollectionId
     isSaved = ctx.savedPlaceIds.includes(place.id)
+    savedInIds = ctx.savedItems
+      .filter((i) => i.placeId === place.id)
+      .map((i) => i.collectionId)
   }
 
   // Combustible IA (post-MVP): registrar la visita del usuario logueado SIN bloquear
@@ -170,6 +174,7 @@ export default async function LugarPage({ params }: PageProps) {
       placeId={place.id}
       isLoggedIn={!!userId}
       isSaved={isSaved}
+      savedInIds={savedInIds}
       collections={collections}
       defaultCollectionId={defaultCollectionId}
       defaultName={Collection.DEFAULT_NAME}
@@ -196,11 +201,21 @@ export default async function LugarPage({ params }: PageProps) {
 
         {/* encabezado */}
         <div className="ficha__head">
+          {/* Chips clickeables (sesión 27): llevan a /explorar ya filtrado. */}
           <div className="ficha__cats">
-            <span className="chip chip--accent">{place.category.name}</span>
-            <span className="chip">{place.subcategory.name}</span>
+            <Link href={`/explorar?categoria=${place.category.slug}`} className="chip chip--accent">
+              {place.category.name}
+            </Link>
+            <Link
+              href={`/explorar?categoria=${place.category.slug}&subcategoria=${place.subcategory.slug}`}
+              className="chip"
+            >
+              {place.subcategory.name}
+            </Link>
             {place.secondaryCategory && place.secondaryCategory.slug !== place.category.slug && (
-              <span className="chip">{place.secondaryCategory.name}</span>
+              <Link href={`/explorar?categoria=${place.secondaryCategory.slug}`} className="chip">
+                {place.secondaryCategory.name}
+              </Link>
             )}
           </div>
 
@@ -264,8 +279,8 @@ export default async function LugarPage({ params }: PageProps) {
         {(place.description || audience.length > 0 || occasion.length > 0) && (
           <div className="ficha__section">
             {place.description && <RichText text={place.description} className="ficha__lead" />}
-            <TagGroup label="Con quién" tags={audience} />
-            <TagGroup label="Ideal para" tags={occasion} />
+            <TagGroup label="Con quién" tags={audience} urlKey="con" />
+            <TagGroup label="Ideal para" tags={occasion} urlKey="ocasion" />
           </div>
         )}
 
@@ -308,7 +323,9 @@ export default async function LugarPage({ params }: PageProps) {
                 {place.accessDetail}
                 {service.length > 0 && (
                   <div className="ficha__tags" style={{ marginTop: place.accessDetail ? 8 : 2 }}>
-                    {service.map((t) => <span key={t.slug} className="chip">{t.name}</span>)}
+                    {service.map((t) => (
+                      <Link key={t.slug} href={`/explorar?acceso=${t.slug}`} className="chip">{t.name}</Link>
+                    ))}
                   </div>
                 )}
               </DataRow>
@@ -326,9 +343,9 @@ export default async function LugarPage({ params }: PageProps) {
         {(vibe.length > 0 || experience.length > 0 || specific.length > 0 || cuisine.length > 0) && (
           <div className="ficha__section">
             <h2 className="ficha__sec-h">Ambiente y detalles</h2>
-            <TagGroup label="Tipo de comida" tags={cuisine} />
-            <TagGroup label="Vibe" tags={vibe} />
-            <TagGroup label="Experiencia" tags={experience} />
+            <TagGroup label="Tipo de comida" tags={cuisine} urlKey="cocina" />
+            <TagGroup label="Vibe" tags={vibe} urlKey="ambiente" />
+            <TagGroup label="Experiencia" tags={experience} urlKey="experiencia" />
             <TagGroup label="Lo que ofrece" tags={specific} />
           </div>
         )}
@@ -402,13 +419,22 @@ export default async function LugarPage({ params }: PageProps) {
 
 /* ── Subcomponentes de presentación (server) ── */
 
-function TagGroup({ label, tags }: { label: string; tags: { slug: string; name: string }[] }) {
+// `urlKey` = clave del filtro en /explorar (con/ocasion/ambiente/…): con ella el
+// chip navega a la exploración filtrada; sin ella queda informativo (SPECIFIC no
+// es faceta de búsqueda).
+function TagGroup({ label, tags, urlKey }: { label: string; tags: { slug: string; name: string }[]; urlKey?: string }) {
   if (tags.length === 0) return null
   return (
     <div className="ficha__taggroup">
       <div className="ficha__taglabel">{label}</div>
       <div className="ficha__tags">
-        {tags.map((t) => <span key={t.slug} className="chip">{t.name}</span>)}
+        {tags.map((t) =>
+          urlKey ? (
+            <Link key={t.slug} href={`/explorar?${urlKey}=${t.slug}`} className="chip">{t.name}</Link>
+          ) : (
+            <span key={t.slug} className="chip">{t.name}</span>
+          ),
+        )}
       </div>
     </div>
   )

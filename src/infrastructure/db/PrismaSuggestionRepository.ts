@@ -47,6 +47,10 @@ export class PrismaSuggestionRepository implements SuggestionRepository {
     }))
   }
 
+  async countOpen(): Promise<number> {
+    return this.prisma.suggestion.count({ where: { status: SuggestionStatus.OPEN } })
+  }
+
   async setStatus(suggestionId: string, status: SuggestionStatus): Promise<void> {
     await this.prisma.suggestion.update({
       where: { id: suggestionId },
