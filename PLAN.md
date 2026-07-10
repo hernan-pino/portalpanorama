@@ -7,7 +7,35 @@ priorizado. Se actualiza cada vez que avanzamos. Liviano a propósito — para r
 - **Modelo de datos:** [SCHEMA.md](SCHEMA.md) · **Capas:** [ARCHITECTURE.md](ARCHITECTURE.md) · **Marca:** [BRAND_SPEC.md](BRAND_SPEC.md) · **Cuenta de negocio + reclamo (🅿️ parqueado, Fase C):** [BUSINESS_ACCOUNTS_SPEC.md](BUSINESS_ACCOUNTS_SPEC.md)
 - **Bitácora del rediseño (historia + razonamiento de las decisiones):** [PLAN_FASE9.md](PLAN_FASE9.md) · **Histórico (docs superados):** [docs/historico/](docs/historico/)
 
-**Última actualización:** 2026-07-09 (sesión 25 — **SEO on-page (fichas + guías) + buscador por palabras + 2ª pasada de perf móvil**):
+**Última actualización:** 2026-07-10 (sesión 26 — **Lote 6 de actividades (33 cargadas, 24 en prod) + guía "Panoramas de juegos y adrenalina" LIVE**):
+el usuario aportó **34 lugares con place_id** en 10 rubros de *Juegos y diversión* (karting, paintball, trampolines, minigolf, escape rooms,
+bowling, VR, karaoke, arcades, billar), con 3 rubros bajo cuota avisados (bowling/escape/karaoke: la oferta ≥4.3★ del Gran Santiago ya está
+casi toda cargada). **(1) Dedup:** 1 duplicado (Eleven Club ya existía) → 33 nuevos; Pirque/Lampa/Colina ya estaban en el catálogo de comunas.
+**(2) Research:** 6 tandas paralelas del `investigador-lugares`; **el límite de sesión cortó las 2 primeras al inicio (0 fichas) → se
+REANUDARON con SendMessage** tras el reset y las 6 completaron **33/33**. ⚠️ Gotcha nuevo del flujo: las tandas reanudadas **reescribieron
+fichas ya ingestadas** (las vieron "desaparecer" al archivarse) → hubo que separar 5 nuevas de 9 reescritas antes del 2º ingest para no
+duplicar (el ingest no es idempotente; **siempre compara contra lo ya ingestado al reanudar tandas**). **(3) Ingest** vía staging: **24
+PUBLISHED + 9 PENDING_REVIEW** (razones honestas: sin horario, cierres dudosos, B2B) + **7 marcas nuevas** (Cerogrado · Goolfy · Jumper Park
+· Jumpin · Lucid Dreams VR · Rally Kart · Trampoline Park). Hallazgos del research: **Breakout es B2B móvil** (no local walk-in), **Dream
+Match con señales de cierre definitivo 2022** (vs actividad 2024, sin resolver), **El Devorador es restaurante temático** (sin arcade
+confirmado, quedó en Gastronomía), **Boulevard Bellavista con duda de identidad** (varias marcas en la misma dirección). **(4) Enrich**
+`--force --with-photos`: **33/33 match exacto por place_id, 0 sin match, 32 coords nuevas**; despejó dudas (Master Pool con dirección real
++ 3 fotos; JuegaPaintball 4.9/190 + 3 fotos). **(5) Guía "Panoramas de juegos y adrenalina en Santiago"**
+(`panoramas-de-juegos-y-adrenalina-en-santiago`): **regla por categoría completa** (`categorySlug: juegos-y-diversion`, primera guía así),
+sort `score_desc` → resuelve **50** publicados y crece sola. **6 destacados = 6 rubros × 6 comunas** (FUGA 5.0/4.480 · Lucid Dreams VR
+Vespucio 5.0/890 · Trampoline Park Alameda 4.9 · Speed Park Karting 4.6/2.226 · Force Delta Paintball 4.7 · Entretenimientos Diana
+4.7/5.086) **+ 4 menciones** (GoKarts · Desafío Escape Room · Jumper Park · Goolfy Huechuraba). **✅ PROD-SYNC + PUSH (misma sesión):**
+`prod-sync` (`--dry` primero) creó **24/24** en prod + catálogo/marcas y **el caché se invalidó solo** (primera corrida real de
+`revalidate-remote` post-sync ✓); commit `d7cfe32` + push → el build creó la guía. **Verificado en vivo (HTTP 200):**
+`portalpanorama.cl/lista/panoramas-de-juegos-y-adrenalina-en-santiago` → título, **"50 lugares"**, 6 destacados. **LOCAL: 403 total / 384
+PUBLISHED · PROD: 389 total / 384 PUBLISHED / 50 juegos (prod = local en publicados).** Meta 500: faltan ~97 (local total).
+**Pendientes del usuario:** los **14 PENDING_REVIEW** acumulados en `/admin/lugares` (9 del lote 6 + Tensei/Oroshi/Speed Ramen/Ramen
+Wow/Ramen Home) — recomendaciones dadas en la sesión: publicar K-Box (prensa sólida) y JuegaPaintball (confirmando horario); borrar o
+descartar Breakout (B2B) y Dream Match (¿cerrado?); el resto espera horario. Portada para la guía nueva. Recordatorio: rotar contraseña
+Neon prod + borrar `PROD_DB_URL` al cerrar la campaña. **Próximo paso (sesión 27):** sesión de producto **cuentas de negocio + eventos**
+(scope mínimo pre-agosto, base `BUSINESS_ACCOUNTS_SPEC.md`) y/o siguiente vertical hacia los 500 (¿cevicherías? ¿brunch? ¿plazas/parques?).
+
+**Sesión previa:** 2026-07-09 (sesión 25 — **SEO on-page (fichas + guías) + buscador por palabras + 2ª pasada de perf móvil**):
 **(A) SEO de fichas** (pedido del usuario: el nombre del local casi no aparecía fuera del `<title>`): la meta description ahora parte con
 "{Nombre} en {barrio}, Santiago: …"; los h2 pasan a "Datos prácticos de {nombre}" y "Similares a {nombre}"; la skill `ficha-lugar` exige
 nombrar el lugar una vez en la descripción (contenido nuevo nace bien; las 360 existentes se cubren por plantilla, sin reescribirlas).
