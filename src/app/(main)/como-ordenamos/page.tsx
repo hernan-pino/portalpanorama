@@ -57,7 +57,7 @@ export default function ComoOrdenamosPage() {
       <section className="legal__section">
         <h2>3. Te comparamos con tus pares, no con todo el mundo</h2>
         <p>
-          Ese "promedio de los lugares como él" es el <strong>promedio de su categoría</strong>:
+          Ese “promedio de los lugares como él” es el <strong>promedio de su categoría</strong>:
           una sushilería nueva se compara con el resto de la gastronomía, y un karting con los
           demás panoramas de juegos. ¿Por qué importa? Porque hay rubros donde la gente califica
           más alto y otros donde es más exigente. Si comparáramos todo contra un único promedio
@@ -73,7 +73,7 @@ export default function ComoOrdenamosPage() {
         <h2>4. Qué NO influye en el orden</h2>
         <ul>
           <li>
-            <strong>La plata:</strong> no vendemos posiciones, no hay fichas "patrocinadas" y
+            <strong>La plata:</strong> no vendemos posiciones, no hay fichas “patrocinadas” y
             ningún lugar puede pagar para subir.
           </li>
           <li>
