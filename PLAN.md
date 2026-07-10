@@ -7,7 +7,34 @@ priorizado. Se actualiza cada vez que avanzamos. Liviano a propósito — para r
 - **Modelo de datos:** [SCHEMA.md](SCHEMA.md) · **Capas:** [ARCHITECTURE.md](ARCHITECTURE.md) · **Marca:** [BRAND_SPEC.md](BRAND_SPEC.md) · **Cuenta de negocio + reclamo (🅿️ parqueado, Fase C):** [BUSINESS_ACCOUNTS_SPEC.md](BUSINESS_ACCOUNTS_SPEC.md)
 - **Bitácora del rediseño (historia + razonamiento de las decisiones):** [PLAN_FASE9.md](PLAN_FASE9.md) · **Histórico (docs superados):** [docs/historico/](docs/historico/)
 
-**Última actualización:** 2026-07-08 (sesión 24 — **Perf de navegación en TODO el sitio: lecturas cacheadas + skeletons por ruta**):
+**Última actualización:** 2026-07-09 (sesión 25 — **SEO on-page (fichas + guías) + buscador por palabras + 2ª pasada de perf móvil**):
+**(A) SEO de fichas** (pedido del usuario: el nombre del local casi no aparecía fuera del `<title>`): la meta description ahora parte con
+"{Nombre} en {barrio}, Santiago: …"; los h2 pasan a "Datos prácticos de {nombre}" y "Similares a {nombre}"; la skill `ficha-lugar` exige
+nombrar el lugar una vez en la descripción (contenido nuevo nace bien; las 360 existentes se cubren por plantilla, sin reescribirlas).
+**(B) SEO de guías:** el h2 de la grilla repite el título ("{Título}: más lugares"), la meta description antepone el título si el texto no
+lo trae, y los **intros de las 8 guías se reescribieron** para que la primera frase incluya el título — aplicado en el archivo de datos
+**y en la BD (local + prod)** con el script one-off **`scripts/update-list-intros.ts`** (solo toca intro/description; el seed es
+first-write-wins y no actualiza listas existentes). **(C) Buscador tokenizado:** `tokenizeQuery` en fuzzy.ts (stopwords castellano +
+genéricas del dominio) y `fuzzyMatchIds` exige que **cada palabra** matchee nombre/rubro/tags/**comuna/barrio** (nuevos en el haystack)/
+descripción → "ramen providencia" 12, "lugares para ir con niños" 37, "café para trabajar" 25 (antes ~0). 104 tests verdes (5 nuevos).
+Commit `fdf5190` + push. **(D) Perf móvil, 2ª pasada** (el usuario midió PageSpeed 63; Lighthouse local contra prod dio ficha **56**
+[LCP 7.1s], lista 67, home 81): tres causas medidas → tres fixes (commit `c6cdb03` + push): **(1)** la imagen LCP no llevaba priority hint
+→ `fetchPriority="high"` en hero de ficha + portada de guía (ahora va en el `img` y el preload); **(2)** gtag (162KiB) + Clarity bloqueaban
+~550-710ms de TBT → ambos a `lazyOnload` y `trackEvent` ahora **encola en dataLayer** (no se pierden eventos previos a la carga);
+**(3)** el caché de 5 min estaba casi siempre frío con 360+ fichas (TTFB 1.8s) → **revalidate a 1 h** + endpoint **`POST /api/revalidate`**
+(secreto `REVALIDATE_SECRET`; en `.env.local` ✅, **falta cargarla en Vercel — usuario**) + helper `scripts/revalidate-remote.ts` que
+**prod-sync y update-list-intros llaman solos** al terminar → el contenido cargado se ve al tiro. **Medido post-deploy (Lighthouse local):**
+ficha 56→**66** (LCP 7.1→5.0s), lista 67→**80** (LCP 4.8→3.0s), TTFB de ficha **1.8s→0.32s**; home varía 75-81 entre corridas (ruido de
+medición local). **Frente restante:** TBT ~500ms (bundle JS: 65KiB sin uso + hidratación) — próxima pasada si el usuario lo pide.
+**(E) Lote 6 — actividades:** catálogo listo (categoría *Juegos y diversión* completa; paintball/karting/minigolf/trampolines en 0);
+se entregó al usuario el **prompt de investigación** (~40 lugares en 10 rubros con exclusiones de los 27 existentes); esperando su lista
+con place_ids. **Portadas de sushi/pizza/ramen: subidas por el usuario ✅.** **Pendientes:** `REVALIDATE_SECRET` en Vercel (usuario) ·
+5 PENDING_REVIEW en `/admin/lugares` · horario KUNG-FU RAMEN y Genki ya Los Dominicos · rotar contraseña Neon prod + borrar `PROD_DB_URL`
+al cerrar la campaña. **Próximo paso (sesión 26):** ingest del Lote 6 cuando llegue la lista (flujo de siempre + guía de actividades)
+**y/o sesión de producto** para el scope mínimo de cuentas de negocio + eventos (meta del usuario: antes de agosto; revisar Clarity antes
+de rediseñar home/ficha).
+
+**Sesión previa:** 2026-07-08 (sesión 24 — **Perf de navegación en TODO el sitio: lecturas cacheadas + skeletons por ruta**):
 el usuario pausó la carga de contenido para atacar la lentitud al navegar (PageSpeed móvil: fichas/guías 68-76, LCP 5.9-7s; delay "congelado" al
 hacer clic). Diagnóstico: **todas las rutas menos la home eran SSR dinámico puro** — cada clic esperaba a Neon sin feedback visual (el único
 `loading.tsx` raíz no se activa entre rutas hermanas) y `generateMetadata` + page **corrían la misma query 2 veces por request** (fichas y guías).
