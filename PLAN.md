@@ -39,7 +39,10 @@ al cerrar la campaña.
    "se creó y agregó") + mostrar en qué listas ya está guardado; (b) selector de **orden** en /explorar (score → alfabético/precio);
    (c) **badge de "nuevo"** en pestañas del admin (reportes/sugerencias sin leer); (d) **chips de categoría/tags clickeables en la
    ficha** → /explorar filtrado; (e) **página pública "cómo ordenamos"** explicando el score bayesiano en simple (la pidió el usuario;
-   linkeable desde las fichas/guías — transparencia + SEO).
+   linkeable desde las fichas/guías — transparencia + SEO); (f) **score con prior por CATEGORÍA** (duda del usuario al cierre de s26,
+   validada): el C global (~4.5) castiga a las categorías de nota alta (juegos ~4.7) y regala a las duras — cambiar a promedio de la
+   categoría **con guard** (si la categoría tiene <~15 lugares con rating, caer al global). Toca `Score.ts` + batch de recálculo +
+   tests; la página (e) se escribe acorde ("te comparamos con tus pares").
 2. **Sesión 28 — Producto: cuentas de negocio** (SOLO producto, sin código): scope mínimo pre-agosto sobre `BUSINESS_ACCOUNTS_SPEC.md`
    (registro negocio, crear su ficha, reclamar existente, cómo se monetiza). ⚠️ Decisión del usuario: **eventos va SEPARADO y mucho
    después** — en esta sesión solo se *define liviano* (qué es, qué no), el código de eventos NO se parte junto con cuentas de negocio.
