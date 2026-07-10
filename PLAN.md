@@ -27,7 +27,11 @@ AUDIENCE/OCCASION/VIBE/EXPERIENCE/CUISINE/SERVICE navegan a /explorar filtrado (
 y SaveButton, y **las listas que ya contienen el lugar salen con "✓ guardado" y sin acción** — el save-context ahora trae `savedItems`
 (pares lista-lugar; `findSavedItems` reemplazó a `findSavedPlaceIds` en el port). **(c) Badge en el admin:** contador de reportes +
 sugerencias OPEN en la pestaña Reportes (countOpen en ambos repos + `GetAdminInboxCountsUseCase`, corre en el layout del admin).
-**▶️ PENDIENTE INMEDIATO (esperando OK del usuario): `git push` a prod + `recalculate-scores --prod`.** Pendientes que siguen: portada guía
+**✅ PUSH + RECÁLCULO EN PROD (misma sesión, con OK del usuario):** push `79c9c76..9b4fad8` → Vercel redeploy;
+`recalculate-scores --prod` (`--dry` primero, consistente con local) → **390 scores re-batidos en prod + caché invalidado solo**. ⚠️ **Al
+cerrar la sesión el build de Vercel AÚN NO terminaba** (`/como-ordenamos` daba 404; la home seguía sirviendo el deploy anterior — es el
+build, NO el caché de 1 h, que ya se invalidó). **▶️ Primer paso de la s28: verificar el deploy en vivo** (`/como-ordenamos` 200 ·
+`/explorar?orden=alfabetico` · chips de una ficha; si el build falló, revisar el log en Vercel). Pendientes que siguen: portada guía
 de juegos · 5 PENDING antiguos de ramen · rotar contraseña Neon prod + borrar `PROD_DB_URL` al cerrar la campaña.
 
 **Sesión previa:** 2026-07-10 (sesión 26 — **Lote 6 de actividades (33 cargadas, 24 en prod) + guía "Panoramas de juegos y adrenalina" LIVE**):
