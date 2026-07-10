@@ -4,10 +4,29 @@
 priorizado. Se actualiza cada vez que avanzamos. Liviano a propósito — para retomar rápido.
 
 - **Qué es el producto / por qué (norte permanente):** [PRD.md](PRD.md) · **Estrategia post-MVP:** [STRATEGY.md](STRATEGY.md)
-- **Modelo de datos:** [SCHEMA.md](SCHEMA.md) · **Capas:** [ARCHITECTURE.md](ARCHITECTURE.md) · **Marca:** [BRAND_SPEC.md](BRAND_SPEC.md) · **Cuenta de negocio + reclamo (🅿️ parqueado, Fase C):** [BUSINESS_ACCOUNTS_SPEC.md](BUSINESS_ACCOUNTS_SPEC.md)
+- **Modelo de datos:** [SCHEMA.md](SCHEMA.md) · **Capas:** [ARCHITECTURE.md](ARCHITECTURE.md) · **Marca:** [BRAND_SPEC.md](BRAND_SPEC.md) · **Cuenta de negocio + reclamo (✅ scope MVP decidido s28, por construir):** [BUSINESS_ACCOUNTS_SPEC.md](BUSINESS_ACCOUNTS_SPEC.md)
 - **Bitácora del rediseño (historia + razonamiento de las decisiones):** [PLAN_FASE9.md](PLAN_FASE9.md) · **Histórico (docs superados):** [docs/historico/](docs/historico/)
 
-**Última actualización:** 2026-07-10 (sesión 27 — **Quick wins de UI: los 6 frentes acordados, implementados y verificados en local**):
+**Última actualización:** 2026-07-10 (sesión 28 — **Deploy de la s27 arreglado y verificado en vivo + scope MVP de cuentas de negocio DECIDIDO (sesión de producto)**):
+**(A) Deploy s27:** el build de Vercel estaba **fallando por lint** (`react/no-unescaped-entities`: 4 comillas rectas `"` en el JSX de
+`/como-ordenamos`; en local no se vio porque la s27 corrió typecheck + dev server, **no `next build`** — gotcha nuevo: correr `next build`
+o al menos el lint antes de pushear páginas nuevas). Fix `7b0de6d` (comillas tipográficas) + push → deploy **Ready**. **Verificado en
+vivo:** `/como-ordenamos` 200 · selector de orden + link "¿Cómo ordenamos?" presentes en /explorar · chips de ficha navegan a /explorar
+filtrado. Con el recálculo de scores ya hecho en la s27, **la sesión 27 quedó completa en prod**. Al paso: el usuario recuperó el acceso
+a Vercel (2FA resuelto con recovery code); ⚠️ quedaron expuestos en el chat **2 recovery codes de Vercel** (regenerarlos) y la **API key
+de Resend** (rotarla). **(B) Sesión 28 de producto (la acordada):** scope MVP de cuentas de negocio **decidido y escrito en
+[BUSINESS_ACCOUNTS_SPEC.md](BUSINESS_ACCOUNTS_SPEC.md) §6** — dos puertas (reclamo con CTA destacado en la ficha "¿Este negocio es
+tuyo?" + registro de negocio con creación de ficha siempre PENDING_REVIEW) · moderación total del admin + **correos transaccionales**
+(Resend) + guía/FAQ y ayudas por campo en el form · **landing pública "para negocios"** (qué es · qué incluye · gratis hoy · qué viene:
+publicidad interna declarada/premium) · **dashboard de negocio** (pestaña aparte del de consumidor: editar ficha moderada · fotos ·
+estadísticas básicas · reportes) · **todo gratis** (cobros recién en Fase C) + opt-in de correos de novedades. **Eventos: definición
+liviana cerrada, CERO build** (panorama con fecha; sin ticketing/pagos/agregador; va separado y después, con audiencia). Etapas de build
+acordadas: (1) schema `BusinessProfile`+`BusinessClaim` · (2) reclamo e2e + landing · (3) registro + crear ficha · (4) dashboard.
+**▶️ Próximo paso (s29): etapa 1 (schema, puerta barata ya diseñada en la spec §4) y seguir con la etapa 2 (reclamo end-to-end).**
+Pendientes que siguen: portada guía de juegos · 5 PENDING antiguos de ramen · rotar contraseña Neon prod + borrar `PROD_DB_URL` ·
+regenerar recovery codes de Vercel · rotar API key de Resend.
+
+**Sesión previa:** 2026-07-10 (sesión 27 — **Quick wins de UI: los 6 frentes acordados, implementados y verificados en local**):
 los 6 ítems del plan de la s26 quedaron en un solo commit (`137bac2`, 37 archivos; typecheck limpio + **109 tests verdes** + rutas verificadas
 e2e contra el dev server). **(f) Score con prior por CATEGORÍA:** `Score.prior(categoria, global)` con guard (`MIN_CATEGORY_SAMPLE = 15`
 lugares con rating; si la muestra no alcanza, cae al global); los 4 use cases que baten score (Create/Update/Enrich/Recalculate) usan el prior
@@ -62,7 +81,7 @@ Ramen/Ramen Wow/Ramen Home). **Pendientes del usuario:** portada para la guía n
 al cerrar la campaña.
 
 **▶️ PLAN ACORDADO PARA LAS PRÓXIMAS SESIONES (decidido 2026-07-10 al cierre de la s26):**
-1. ✅ **Sesión 27 — Quick wins de UI** (HECHA, misma fecha — ver "Última actualización"; falta solo push + recálculo prod): (a) feedback al guardar en lista ("se agregó a X" /
+1. ✅ **Sesión 27 — Quick wins de UI** (HECHA, misma fecha; en prod y verificada en vivo desde la s28): (a) feedback al guardar en lista ("se agregó a X" /
    "se creó y agregó") + mostrar en qué listas ya está guardado; (b) selector de **orden** en /explorar (score → alfabético/precio);
    (c) **badge de "nuevo"** en pestañas del admin (reportes/sugerencias sin leer); (d) **chips de categoría/tags clickeables en la
    ficha** → /explorar filtrado; (e) **página pública "cómo ordenamos"** explicando el score bayesiano en simple (la pidió el usuario;
@@ -70,11 +89,10 @@ al cerrar la campaña.
    validada): el C global (~4.5) castiga a las categorías de nota alta (juegos ~4.7) y regala a las duras — cambiar a promedio de la
    categoría **con guard** (si la categoría tiene <~15 lugares con rating, caer al global). Toca `Score.ts` + batch de recálculo +
    tests; la página (e) se escribe acorde ("te comparamos con tus pares").
-2. **Sesión 28 — Producto: cuentas de negocio** (SOLO producto, sin código): scope mínimo pre-agosto sobre `BUSINESS_ACCOUNTS_SPEC.md`
-   (registro negocio, crear su ficha, reclamar existente, cómo se monetiza). ⚠️ Decisión del usuario: **eventos va SEPARADO y mucho
-   después** — en esta sesión solo se *define liviano* (qué es, qué no), el código de eventos NO se parte junto con cuentas de negocio.
-3. **Después:** implementar el MVP de cuentas de negocio por etapas + seguir la carga hacia los 500 en paralelo (verticales candidatas:
-   cevicherías, brunch, plazas/parques).
+2. ✅ **Sesión 28 — Producto: cuentas de negocio** (HECHA 2026-07-10 — scope decidido y escrito en `BUSINESS_ACCOUNTS_SPEC.md` §6;
+   eventos definido liviano, cero build — ver "Última actualización" y la bitácora de PLAN_FASE9.md).
+3. **Después:** implementar el MVP de cuentas de negocio por etapas (1 schema · 2 reclamo e2e + landing · 3 registro + crear ficha ·
+   4 dashboard) + seguir la carga hacia los 500 en paralelo (verticales candidatas: cevicherías, brunch, plazas/parques).
 
 **Sesión previa:** 2026-07-09 (sesión 25 — **SEO on-page (fichas + guías) + buscador por palabras + 2ª pasada de perf móvil**):
 **(A) SEO de fichas** (pedido del usuario: el nombre del local casi no aparecía fuera del `<title>`): la meta description ahora parte con

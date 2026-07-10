@@ -1,9 +1,10 @@
 # Spec — Cuenta de negocio + Reclamo de ficha (self-service)
 
-**Estado:** 🅿️ **PARQUEADO — solo anotado, NADA construido.** Es la base del **self-service** del lado
-oferta, que la estrategia ubica en **Fase C** (después de tener audiencia). Se documenta acá para no
-perder el diseño ni obligarse a construirlo antes de tiempo.
-**Fecha de la nota:** 2026-06-26 · **Relacionado:** [BRAND_SPEC.md](BRAND_SPEC.md) §11 · [STRATEGY.md](STRATEGY.md) · [PRD.md](PRD.md) · [SCHEMA.md](SCHEMA.md)
+**Estado:** ✅ **SCOPE MVP DECIDIDO (sesión 28, 2026-07-10) — por construir en etapas, todo gratis (§6).**
+Se adelanta el lado **gratis** del self-service (reclamo + registro + dashboard de negocio); los
+**cobros** siguen esperando a la Fase C (audiencia). El diseño original está en §1–5; las decisiones
+de scope del MVP en §6.
+**Fecha de la nota:** 2026-06-26 · **Scope MVP decidido:** 2026-07-10 · **Relacionado:** [BRAND_SPEC.md](BRAND_SPEC.md) §11 · [STRATEGY.md](STRATEGY.md) · [PRD.md](PRD.md) · [SCHEMA.md](SCHEMA.md)
 
 ---
 
@@ -85,4 +86,48 @@ admin); `Place.claims` / `Brand.claims`.
 - **Flujo completo (Fase C):** lógica de aprobar el reclamo (setear `ownerId` + crear el BusinessProfile),
   verificación, panel de negocio, y recién después analíticas/comentarios/pagos/promociones/eventos.
 
-**No construir hasta tener audiencia (Fase C).** Prioridad actual: go-to-market (STRATEGY §5).
+~~No construir hasta tener audiencia (Fase C).~~ **Actualización 2026-07-10 (s28):** el usuario
+decidió adelantar el lado **gratis** (scope en §6); los **cobros** sí siguen esperando a la Fase C.
+
+## 6. Scope MVP decidido (sesión 28, 2026-07-10) — gratis, por etapas, meta pre-agosto
+
+**Dos puertas de entrada:**
+- **Reclamar ficha existente:** CTA **destacado** en cada ficha (banner/botón "¿Este negocio es
+  tuyo? Reclama tu ficha") → formulario de reclamo (rol, contacto, evidencia opcional) → el admin
+  revisa y aprueba a mano (§3). Al aprobar: setea `ownerId` + crea el `BusinessProfile`.
+- **Registro de negocio + crear ficha nueva:** para negocios que no están en el catálogo. La ficha
+  creada por el negocio nace **PENDING_REVIEW siempre**.
+
+**Landing pública "para negocios"** (ruta tipo `/para-negocios`): explica qué es la cuenta de
+negocio, qué incluye, el precio (**hoy: gratis**) y —con transparencia— lo que viene a futuro
+(publicidad interna declarada, plan premium). Linkeada desde el footer y desde los CTA de
+reclamo/registro.
+
+**Moderación: todo pasa por el admin.** Ficha nueva y ediciones del dueño quedan pendientes hasta
+aprobación. Acompañada de dos piezas (pedidas por el usuario en la s28):
+- **Comunicación por correo** (Resend ya cableado): reclamo recibido / aprobado / rechazado con
+  motivo · ficha aprobada · "necesitamos que corrijas X" — la revisión nunca es un hoyo negro.
+- **Guía en el formulario:** sección de recomendaciones + preguntas frecuentes al crear la ficha,
+  y ayudas por campo con mejores prácticas (qué hace buena una descripción, fotos, horario).
+
+**Dashboard de negocio** — pestaña **separada** del dashboard consumidor (mismo `User`; la pestaña
+aparece si tiene `BusinessProfile`). Adentro: editar su ficha (moderado) · gestionar fotos ·
+**estadísticas básicas** (visitas, guardados, clics en "cómo llegar" — los datos ya existen) ·
+ver/responder los reportes y sugerencias sobre su lugar. Futuro (no ahora): responder comentarios.
+
+**Cobros: cero.** Todo esto es el plan **Free**; la monetización se enciende en Fase C con tráfico.
+Lo único nuevo: **opt-in de correos al registrarse/reclamar** (checkbox de novedades) para poder
+anunciar funcionalidades nuevas. Pop-ups de novedades: idea anotada, fuera de scope.
+
+**Eventos: NO entra.** Definición liviana cerrada en la s28 (bitácora PLAN_FASE9.md): un evento es
+un **panorama con fecha** (el schema `Event` ya existe dormido); no es ticketing (solo link externo),
+no hay pagos, no es agregador scrapeado, no reemplaza la ficha. El `BusinessProfile` queda como el
+ancla donde eventos colgará *gated*, pero su build va **separado y después, con audiencia**.
+
+**Etapas de implementación (las próximas sesiones de código):**
+1. **Schema:** `BusinessProfile` + `BusinessClaim` + enum + migración aditiva (§4).
+2. **Reclamo end-to-end:** CTA en ficha → form → bandeja en el admin → aprobar setea `ownerId` y
+   crea el `BusinessProfile` → correos. Incluye la **landing "para negocios"** (la necesitan ambos
+   flujos).
+3. **Registro de negocio + crear ficha** (con la guía de mejores prácticas) → PENDING_REVIEW.
+4. **Dashboard de negocio:** editar ficha moderada + fotos + estadísticas + reportes.

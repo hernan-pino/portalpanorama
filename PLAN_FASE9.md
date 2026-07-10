@@ -1261,6 +1261,21 @@ Solo se tocan cuando la Etapa 1 está aprobada. Detalle en ROADMAP pasos 9.2-9.5
 ## Bitácora de decisiones
 _(registro de las decisiones de producto que vamos tomando — la fuente de verdad)_
 
+- **2026-07-10** — **Sesión 28 (producto): scope MVP de cuentas de negocio DECIDIDO + definición
+  liviana de eventos.** Detalle completo en [BUSINESS_ACCOUNTS_SPEC.md](BUSINESS_ACCOUNTS_SPEC.md)
+  §6 (nuevo). Lo esencial: **dos puertas** (reclamo de ficha existente con CTA destacado "¿Este
+  negocio es tuyo?" + registro de negocio con creación de ficha, siempre PENDING_REVIEW) ·
+  **moderación total del admin** acompañada de correos transaccionales (Resend) y guía/FAQ + ayudas
+  por campo en el formulario · **landing pública "para negocios"** (qué es · qué incluye · gratis
+  hoy · qué viene: publicidad interna declarada y premium) · **dashboard de negocio** como pestaña
+  separada del de consumidor (editar ficha moderada · fotos · estadísticas básicas · reportes) ·
+  **todo gratis** (los cobros siguen esperando a la Fase C) + opt-in de correos de novedades.
+  **Eventos:** definición liviana cerrada — un evento es un **panorama con fecha** (schema `Event`
+  ya dormido); sin ticketing/pagos/agregador; su build va **separado y mucho después, con
+  audiencia** (hipótesis Fase B se confirma con GA4). Etapas de build acordadas: (1) schema
+  `BusinessProfile`+`BusinessClaim`, (2) reclamo e2e + landing, (3) registro + crear ficha,
+  (4) dashboard. La decisión **adelanta el lado gratis** de la Fase C manteniendo el principio:
+  ningún cobro se enciende sin tráfico.
 - **2026-06-09** — **Etapa 4 arranca: 4A (domain) + 4B (application) COMPLETAS** (commit `750340c`).
   Refactor de demolición + reconstrucción (no rename): se botaron los subsistemas post-MVP completos
   (Listing/Flow/claims/feed/analytics/subscription, ~3.000 líneas) y se reescribió el núcleo
