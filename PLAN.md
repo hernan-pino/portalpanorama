@@ -773,6 +773,23 @@ Los hijos del padre se muestran solo si están PUBLISHED.
 
 ## 📋 Backlog (pendientes, no bloquean el lanzamiento salvo lo marcado)
 
+**Ideas del usuario usando la app (anotadas 2026-07-10, sesión 26 — triage de Claude):**
+- **Quick wins de UI (una sesión corta de código):**
+  - *Guardar en lista:* feedback claro al guardar ("se agregó a X" / "se creó X y se agregó") y
+    mostrar en qué listas YA está guardado un lugar (hoy no se ve).
+  - *Filtro de orden en /explorar:* hoy solo score; agregar alfabético y precio (selector chico).
+  - *Badge de "nuevo" en el admin:* pestañas Reportes/Sugerencias con contador de no-leídos.
+  - *Chips de categoría/tags clickeables en la ficha* → llevan a /explorar con ese filtro (decisión
+    de diseño pendiente: el usuario duda si quiere que naveguen fuera de la ficha).
+- **Features medianas (necesitan diseño/datos):**
+  - *Distancia "a X metros de ti" en las tarjetas* (permiso de geolocación; coords ya existen).
+  - *Búsqueda contextual/semántica* ("dónde comer helado con mi pareja" → recomienda): el buscador
+    tokenizado (s25) cubre parte; la versión completa es embeddings/LLM — evaluar en Fase B.
+  - *Reseñas desglosadas por tema* (atención, sabor, accesibilidad): grande — implica reviews propias
+    (hoy solo rating de Google) o minería de reseñas de Google. Va con la decisión de producto Fase B.
+  - *BD de estacionamientos:* ¿capa de datos nueva o tag "estacionamiento cerca"? Definir con el PRD.
+
+
 **Calidad / bloqueante de lanzamiento:**
 - **(p) Flujo de imágenes ✅ HECHO (2026-06-14)** — tres caminos para poner una foto, todos terminan
   rehospedados en **Vercel Blob** y comprimidos a `.webp` (`sharp`, ≤2000px, q80): (1) **subir archivo**
