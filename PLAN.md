@@ -22,9 +22,17 @@ publicidad interna declarada/premium) · **dashboard de negocio** (pestaña apar
 estadísticas básicas · reportes) · **todo gratis** (cobros recién en Fase C) + opt-in de correos de novedades. **Eventos: definición
 liviana cerrada, CERO build** (panorama con fecha; sin ticketing/pagos/agregador; va separado y después, con audiencia). Etapas de build
 acordadas: (1) schema `BusinessProfile`+`BusinessClaim` · (2) reclamo e2e + landing · (3) registro + crear ficha · (4) dashboard.
-**▶️ Próximo paso (s29): etapa 1 (schema, puerta barata ya diseñada en la spec §4) y seguir con la etapa 2 (reclamo end-to-end).**
-Pendientes que siguen: portada guía de juegos · 5 PENDING antiguos de ramen · rotar contraseña Neon prod + borrar `PROD_DB_URL` ·
-regenerar recovery codes de Vercel · rotar API key de Resend.
+**(C) Build etapa 1 HECHO (misma sesión, con OK del usuario):** migración **`20260710212727_add_business_accounts`** — enum
+`ClaimStatus` + tablas `BusinessProfile` (1:1 User, con `newsletterOptIn` para el opt-in de novedades de la s28) y `BusinessClaim`
+(place XOR brand, exclusión en dominio; Cascade en claimant/place/brand, SetNull en reviewedBy) + relaciones en User/Place/Brand.
+**Revisada por db-migration-reviewer (veredicto: 100% aditiva, segura) y aplicada en LOCAL** ✅; typecheck limpio + **109 tests
+verdes**. ⚠️ **Prod aún sin la migración** — viaja con el próximo `git push` (el build corre `migrate deploy`). **(D) Encargo de
+carga entregado al usuario:** lote **"complementos de cita"** (chocolaterías · florerías · tiendas de plantas; 0 cargadas, subcats
+ya existen en `locales-tiendas`) — alimenta el norte del **planificador IA del panorama completo**; estacionamientos re-triaged al
+backlog como dato de ficha, NO como fichas (ver backlog). **▶️ Próximo paso (s29): etapa 2 — reclamo end-to-end + landing "para
+negocios"** (CTA en ficha → form → bandeja admin → aprobar setea `ownerId` + crea BusinessProfile → correos Resend); y/o ingest del
+lote cuando llegue la lista con place_ids. Pendientes que siguen: portada guía de juegos · 5 PENDING antiguos de ramen · rotar
+contraseña Neon prod + borrar `PROD_DB_URL` · regenerar recovery codes de Vercel · rotar API key de Resend.
 
 **Sesión previa:** 2026-07-10 (sesión 27 — **Quick wins de UI: los 6 frentes acordados, implementados y verificados en local**):
 los 6 ítems del plan de la s26 quedaron en un solo commit (`137bac2`, 37 archivos; typecheck limpio + **109 tests verdes** + rutas verificadas
@@ -846,7 +854,17 @@ Los hijos del padre se muestran solo si están PUBLISHED.
     tokenizado (s25) cubre parte; la versión completa es embeddings/LLM — evaluar en Fase B.
   - *Reseñas desglosadas por tema* (atención, sabor, accesibilidad): grande — implica reviews propias
     (hoy solo rating de Google) o minería de reseñas de Google. Va con la decisión de producto Fase B.
-  - *BD de estacionamientos:* ¿capa de datos nueva o tag "estacionamiento cerca"? Definir con el PRD.
+  - *Estacionamientos cercanos (re-triaged s28):* **NO se cargan como fichas del catálogo** — un
+    estacionamiento no es un "lugar que vale la pena", diluiría score/explorar/guías. El valor es
+    "dónde estaciono cerca de X" (pagado o gratis) como **dato de la ficha** y, a futuro, insumo del
+    **planificador IA del panorama completo** (norte del usuario: la IA arma la cita entera — flores
+    → chocolates → restaurante → estacionamiento). Implementación candidata: Places API nearby en el
+    enrich o capa de datos aparte. Fase B+.
+  - *Complementos de cita como verticales de carga (idea s28, alimenta el mismo norte IA):*
+    chocolaterías · florerías · tiendas de plantas — las subcategorías ya existen en el catálogo
+    (`locales-tiendas/chocolateria`, `floreria`, `tienda-de-plantas`) y hay **0 cargadas**; encargo
+    de búsqueda entregado al usuario en la s28. Pastelerías (`gastronomia/pasteleria-panaderia`,
+    también en 0) como vertical hermana siguiente.
 
 
 **Calidad / bloqueante de lanzamiento:**

@@ -110,6 +110,13 @@ enum EventStatus {
   ARCHIVED
 }
 
+// Reclamo de ficha/marca por un negocio (BUSINESS_ACCOUNTS_SPEC.md §4).
+enum ClaimStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
 // Tipo de lista curada (landing SEO). GUIDE = guía exhaustiva por categoría/comuna
 // ("Museos de Santiago"); OCCASION = lista por intención/ocasión ("Para una primera
 // cita"), regla sobre tags OCCASION. Solo cambia copy/template, no el mecanismo.
@@ -184,20 +191,74 @@ model User {
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
 
-  homeCommune        Commune?            @relation("HomeCommune", fields: [homeCommuneId], references: [id])
-  collections        Collection[]
-  visitHistory       VisitHistory[]
-  reviews            Review[]
-  reports            Report[]
-  suggestions        Suggestion[]
-  topicSubscriptions TopicSubscription[]
-  ownedPlaces        Place[]             @relation("PlaceOwner")
-  ownedBrands        Brand[]             @relation("BrandOwner")
-  accounts           Account[]
-  sessions           Session[]
+  homeCommune         Commune?             @relation("HomeCommune", fields: [homeCommuneId], references: [id])
+  collections         Collection[]
+  visitHistory        VisitHistory[]
+  reviews             Review[]
+  reports             Report[]
+  suggestions         Suggestion[]
+  topicSubscriptions  TopicSubscription[]
+  ownedPlaces         Place[]              @relation("PlaceOwner")
+  ownedBrands         Brand[]              @relation("BrandOwner")
+  accounts            Account[]
+  sessions            Session[]
   passwordResetTokens PasswordResetToken[]
+  businessProfile     BusinessProfile?
+  claims              BusinessClaim[]      @relation("Claimant")
+  reviewedClaims      BusinessClaim[]      @relation("ClaimReviewer")
 
   @@index([homeCommuneId])
+}
+
+// ─── Cuenta de negocio (BUSINESS_ACCOUNTS_SPEC.md §4 + §6, sesión 28) ────────────
+// "El sombrero de negocio" de un User (1:1 opcional): un User normal no lo tiene;
+// lo obtiene al aprobarse su reclamo o al registrarse como negocio. No posee lugares
+// directamente — la propiedad vive en Place.ownerId / Brand.ownerId (→ User).
+
+model BusinessProfile {
+  id              String    @id
+  userId          String    @unique
+  legalName       String? // razón social (opcional, sin fricción)
+  rut             String? // opcional; se valida con el VO de dígito verificador al setear
+  contactEmail    String?
+  contactPhone    String?
+  // Opt-in de correos de novedades (s28): permite anunciar funcionalidades nuevas.
+  newsletterOptIn Boolean   @default(false)
+  verifiedAt      DateTime? // null = aún no verificado por el admin
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+// Un reclamo de propiedad sobre un Place (dueño de una sucursal) o una Brand
+// (cadena) — exactamente uno de los dos; la exclusión la cuida el dominio.
+// Al aprobar: se setea el ownerId correspondiente + se crea el BusinessProfile.
+model BusinessClaim {
+  id           String      @id
+  claimantId   String
+  placeId      String?
+  brandId      String?
+  claimantRole String? // dueño / representante / encargado
+  message      String?     @db.Text // evidencia en texto
+  evidenceUrl  String? // documento opcional
+  contactPhone String?
+  contactEmail String?
+  status       ClaimStatus @default(PENDING)
+  reviewedById String?
+  reviewNotes  String?     @db.Text
+  createdAt    DateTime    @default(now())
+  reviewedAt   DateTime?
+
+  claimant   User   @relation("Claimant", fields: [claimantId], references: [id], onDelete: Cascade)
+  place      Place? @relation(fields: [placeId], references: [id], onDelete: Cascade)
+  brand      Brand? @relation(fields: [brandId], references: [id], onDelete: Cascade)
+  reviewedBy User?  @relation("ClaimReviewer", fields: [reviewedById], references: [id], onDelete: SetNull)
+
+  @@index([status])
+  @@index([claimantId])
+  @@index([placeId])
+  @@index([brandId])
 }
 
 // Recuperar contraseña. Se guarda el HASH del token (no el token en claro): un
@@ -352,9 +413,10 @@ model Brand {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  owner  User?   @relation("BrandOwner", fields: [ownerId], references: [id])
+  owner  User?           @relation("BrandOwner", fields: [ownerId], references: [id])
   places Place[] // sucursales (real hoy)
   events Event[] // cartelera de la marca (reservado; Eventos apagado en MVP)
+  claims BusinessClaim[]
 
   @@index([slug])
   @@index([ownerId])
@@ -441,6 +503,7 @@ model Place {
   curatedPins     CuratedListPin[]
   visitHistory    VisitHistory[]
   reports         Report[]
+  claims          BusinessClaim[]
 
   @@index([status])
   @@index([categoryId, status])
