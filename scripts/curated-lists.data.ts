@@ -473,4 +473,66 @@ export const CURATED_LISTS: SeedCuratedList[] = [
       },
     ],
   },
+  {
+    slug: 'panoramas-de-juegos-y-adrenalina-en-santiago',
+    name: 'Panoramas de juegos y adrenalina en Santiago',
+    kind: 'GUIDE',
+    description:
+      'Los mejores panoramas de juegos y adrenalina en Santiago: karting, paintball, escape rooms, trampolines, realidad virtual y arcades, con rating real de Google.',
+    intro:
+      'Estos son los mejores panoramas de juegos y adrenalina en Santiago: karting, paintball, escape rooms, parques de trampolines, realidad virtual, karaoke, bowling y arcades, repartidos por toda la ciudad — de Huechuraba a Puente Alto. Nuestra selección ordenada por reputación, ideal para un plan con amigos o un cumpleaños distinto. Se mantiene al día sola: cada lugar nuevo que cargamos entra acá.',
+    rule: { categorySlug: 'juegos-y-diversion' },
+    sort: 'score_desc',
+    isPublished: true,
+    pins: [
+      {
+        placeSlug: 'fuga-escape-room',
+        blurb:
+          'El **escape room con la valoración más alta de Santiago**: 5.0 con **más de 4.400 reseñas** en Google, una unanimidad que casi no existe en este rubro. Entras con tu grupo a una sala temática y tienes **60 minutos** para resolver acertijos y escapar.\n\nEstá en **Rodó 1927, Providencia**, cerca del **metro Inés de Suárez**, y tiene una segunda sede en Ñuñoa. Las salas se reservan por horario, así que **compra online antes de ir**, sobre todo el fin de semana.\n\nEl plan seguro para un grupo de 3 a 6: competitivo, bajo techo y sin depender del clima.',
+      },
+      {
+        placeSlug: 'lucid-dreams-vr-plaza-vespucio',
+        blurb:
+          'Lucid Dreams VR es **la experiencia de realidad virtual mejor evaluada de la ciudad**: 5.0 con casi **900 reseñas**. Salas de VR de última generación para jugar en grupo — desde shooters cooperativos hasta experiencias de terror que se sienten demasiado reales.\n\nQueda en el **segundo piso de Mallplaza Vespucio** (La Florida), a pasos del **metro Bellavista de La Florida**, y abre **todos los días** (lunes a jueves 10:30–20:30, viernes y sábado hasta las 21:00). Tiene una segunda sede en Parque Arauco con el mismo 5.0.\n\nIdeal para sorprender a alguien que "ya lo probó todo": la sesión sale en el rango de **$5.000–15.000 por persona**.',
+      },
+      {
+        placeSlug: 'trampoline-park-alameda',
+        blurb:
+          'El parque de camas elásticas **mejor evaluado de Santiago** (4.9 con casi 500 reseñas): una cancha gigante de trampolines interconectados, piscina de espuma y zonas de clavados, a pasos del **metro San Alberto Hurtado** (Estación Central).\n\nAbre **todos los días de 10:00 a 21:00** y la entrada va por bloques de tiempo — **$5.000–15.000** según cuánto rato saltes. Lleva calcetines antideslizantes (los venden ahí si no tienes).\n\nEl panorama para quemar energía de verdad: funciona igual de bien con niños, adolescentes o un grupo de adultos que se cree en los 15.',
+      },
+      {
+        placeSlug: 'speed-park-karting',
+        blurb:
+          'La pista de karting indoor más grande y reseñada de Santiago: Speed Park suma **4.6 con más de 2.200 reseñas** en su recinto de **Av. El Salto 5300, Huechuraba** — el mismo complejo donde está el minigolf fluorescente Goolfy, así que puedes armar doble panorama.\n\nKarts rápidos de verdad, cronometraje por vuelta y carreras grupales. Abre **lunes a viernes de 12:00 a 22:00** y fines de semana **desde las 10:00**. Presupuesto: **$15.000–30.000** por carrera.\n\nEl favorito para cumpleaños y despedidas: la adrenalina de competir contra tus amigos con tiempos objetivos en pantalla.',
+      },
+      {
+        placeSlug: 'force-delta-paintball-chile',
+        blurb:
+          'El paintball **mejor evaluado dentro del anillo urbano**: Force Delta marca 4.7 entre canchas con escenografía militar en **Peñalolén** (Antupirén 10.122, a unos 10 minutos del metro Grecia).\n\nFunciona **todos los días de 10:00 a 20:00 por turnos** (10:00, 13:00, 16:00 y 18:00) y **se reserva por WhatsApp** — no llegues sin aviso, los grupos copan los cupos del fin de semana. Presupuesto **$15.000–30.000** con equipo incluido.\n\nEl clásico para grupos grandes: nada une (ni divide) tanto a un equipo como una emboscada bien ejecutada.',
+      },
+      {
+        placeSlug: 'entretenimientos-diana',
+        blurb:
+          '**Más de 90 años de historia y unas 150 máquinas** en un subterráneo de 800 m² a metros de la **Plaza de Armas** (Merced 839, metro Plaza de Armas): los Juegos Diana son patrimonio emocional de Santiago, con 4.7 y **más de 5.000 reseñas** que lo respaldan.\n\nPinballs clásicos, shooters, simuladores y maquinitas de la vieja guardia. Abre **todos los días** (semana desde las 13:30, fines de semana desde las 11:00) y es de lo más barato de esta guía: **menos de $5.000** para una buena sesión de nostalgia.\n\nEl panorama perfecto para el centro: barato, bajo techo y transversal — funciona igual con tu pareja, tus hijos o tus papás.',
+      },
+    ],
+    mentions: [
+      {
+        placeSlug: 'gokarts',
+        note: 'Karting **al aire libre** en la precordillera de **Las Condes** (Valenzuela Puelma 9.500): **4.6 con casi 1.900 reseñas**, abre todos los días de 10:00 a 21:00.',
+      },
+      {
+        placeSlug: 'desafio-escape-room',
+        note: 'El escape room de **Mallplaza Los Dominicos**: **4.8 con casi 1.300 reseñas**, salas para grupos y horario de mall (todos los días desde las 10:30).',
+      },
+      {
+        placeSlug: 'jumper-park',
+        note: 'El parque de trampolines **más reseñado de la zona sur** (4.5 con más de 2.500 reseñas), en Av. Concha y Toro 1184, **Puente Alto**.',
+      },
+      {
+        placeSlug: 'goolfy-chile-huechuraba',
+        note: '**Minigolf fluorescente de 18 hoyos** bajo luz negra, en el mismo recinto de Speed Park (Av. El Salto 5300, **Huechuraba**) — nuevo y todavía poco conocido.',
+      },
+    ],
+  },
 ]
