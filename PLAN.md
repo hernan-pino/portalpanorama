@@ -29,11 +29,22 @@ Vespucio 5.0/890 · Trampoline Park Alameda 4.9 · Speed Park Karting 4.6/2.226 
 `revalidate-remote` post-sync ✓); commit `d7cfe32` + push → el build creó la guía. **Verificado en vivo (HTTP 200):**
 `portalpanorama.cl/lista/panoramas-de-juegos-y-adrenalina-en-santiago` → título, **"50 lugares"**, 6 destacados. **LOCAL: 403 total / 384
 PUBLISHED · PROD: 389 total / 384 PUBLISHED / 50 juegos (prod = local en publicados).** Meta 500: faltan ~97 (local total).
-**Pendientes del usuario:** los **14 PENDING_REVIEW** acumulados en `/admin/lugares` (9 del lote 6 + Tensei/Oroshi/Speed Ramen/Ramen
-Wow/Ramen Home) — recomendaciones dadas en la sesión: publicar K-Box (prensa sólida) y JuegaPaintball (confirmando horario); borrar o
-descartar Breakout (B2B) y Dream Match (¿cerrado?); el resto espera horario. Portada para la guía nueva. Recordatorio: rotar contraseña
-Neon prod + borrar `PROD_DB_URL` al cerrar la campaña. **Próximo paso (sesión 27):** sesión de producto **cuentas de negocio + eventos**
-(scope mínimo pre-agosto, base `BUSINESS_ACCOUNTS_SPEC.md`) y/o siguiente vertical hacia los 500 (¿cevicherías? ¿brunch? ¿plazas/parques?).
+**PENDING del lote 6 resueltos (misma sesión, decisión del usuario):** **K-Box publicado** (→ prod vía prod-sync, guía en 51) y los
+**otros 8 ARCHIVADOS** (quedan en el admin por si los retoma; no viajan a prod). Quedan los 5 PENDING antiguos (Tensei/Oroshi/Speed
+Ramen/Ramen Wow/Ramen Home). **Pendientes del usuario:** portada para la guía nueva · rotar contraseña Neon prod + borrar `PROD_DB_URL`
+al cerrar la campaña.
+
+**▶️ PLAN ACORDADO PARA LAS PRÓXIMAS SESIONES (decidido 2026-07-10 al cierre de la s26):**
+1. **Sesión 27 — Quick wins de UI** (una sesión de código, cerrable de una): (a) feedback al guardar en lista ("se agregó a X" /
+   "se creó y agregó") + mostrar en qué listas ya está guardado; (b) selector de **orden** en /explorar (score → alfabético/precio);
+   (c) **badge de "nuevo"** en pestañas del admin (reportes/sugerencias sin leer); (d) **chips de categoría/tags clickeables en la
+   ficha** → /explorar filtrado; (e) **página pública "cómo ordenamos"** explicando el score bayesiano en simple (la pidió el usuario;
+   linkeable desde las fichas/guías — transparencia + SEO).
+2. **Sesión 28 — Producto: cuentas de negocio** (SOLO producto, sin código): scope mínimo pre-agosto sobre `BUSINESS_ACCOUNTS_SPEC.md`
+   (registro negocio, crear su ficha, reclamar existente, cómo se monetiza). ⚠️ Decisión del usuario: **eventos va SEPARADO y mucho
+   después** — en esta sesión solo se *define liviano* (qué es, qué no), el código de eventos NO se parte junto con cuentas de negocio.
+3. **Después:** implementar el MVP de cuentas de negocio por etapas + seguir la carga hacia los 500 en paralelo (verticales candidatas:
+   cevicherías, brunch, plazas/parques).
 
 **Sesión previa:** 2026-07-09 (sesión 25 — **SEO on-page (fichas + guías) + buscador por palabras + 2ª pasada de perf móvil**):
 **(A) SEO de fichas** (pedido del usuario: el nombre del local casi no aparecía fuera del `<title>`): la meta description ahora parte con
