@@ -7,7 +7,30 @@ priorizado. Se actualiza cada vez que avanzamos. Liviano a propósito — para r
 - **Modelo de datos:** [SCHEMA.md](SCHEMA.md) · **Capas:** [ARCHITECTURE.md](ARCHITECTURE.md) · **Marca:** [BRAND_SPEC.md](BRAND_SPEC.md) · **Cuenta de negocio + reclamo (🅿️ parqueado, Fase C):** [BUSINESS_ACCOUNTS_SPEC.md](BUSINESS_ACCOUNTS_SPEC.md)
 - **Bitácora del rediseño (historia + razonamiento de las decisiones):** [PLAN_FASE9.md](PLAN_FASE9.md) · **Histórico (docs superados):** [docs/historico/](docs/historico/)
 
-**Última actualización:** 2026-07-10 (sesión 26 — **Lote 6 de actividades (33 cargadas, 24 en prod) + guía "Panoramas de juegos y adrenalina" LIVE**):
+**Última actualización:** 2026-07-10 (sesión 27 — **Quick wins de UI: los 6 frentes acordados, implementados y verificados en local**):
+los 6 ítems del plan de la s26 quedaron en un solo commit (`137bac2`, 37 archivos; typecheck limpio + **109 tests verdes** + rutas verificadas
+e2e contra el dev server). **(f) Score con prior por CATEGORÍA:** `Score.prior(categoria, global)` con guard (`MIN_CATEGORY_SAMPLE = 15`
+lugares con rating; si la muestra no alcanza, cae al global); los 4 use cases que baten score (Create/Update/Enrich/Recalculate) usan el prior
+de la categoría del lugar (nuevo `categoryRatingStats()` en `PlaceRepository`, groupBy). **Nuevo `scripts/recalculate-scores.ts`**
+(`--dry`/`--prod`, imprime tabla de priores + top movers, invalida caché de prod solo) — **aplicado en local: 403 scores re-batidos,
+idempotente** (2º dry = 0 cambios). Dato real: las 6 categorías pasan el guard; Vida nocturna (prom. 4.350) baja y Locales y tiendas (4.617)
+sube — el sesgo que se quería corregir; ojo: **Juegos quedó en 4.556, BAJO el global 4.594** (la intuición de la s26 decía ~4.7 — el prior por
+categoría igual es lo correcto, solo que en la otra dirección). ⚠️ Fix de infra al paso: `updateScores` batía los 403 updates en UNA
+transacción interactiva → expiraba el timeout de 5s contra Neon; ahora es **un solo UPDATE con `unnest`**. **(e) Página `/como-ordenamos`:**
+transparencia del ranking en simple ("te comparamos con tus pares", nadie paga por subir), estilo páginas legales; linkeada en footer (Legal),
+sitemap y /explorar. **(b) Selector de orden en /explorar:** `SortSelect` (client, patrón Filters): Recomendados / A–Z / precio menor↔mayor;
+param `orden` (`alfabetico|precio-menor|precio-mayor`), el default (score) no ensucia la URL; precio con nulls al final y score de desempate;
+al lado, link "¿Cómo ordenamos?". De rebote se expuso **`cocina` como param URL** → `cuisineTagSlugs` (el backend lo soportaba desde s19;
+verificado `?cocina=ramen` → 32). **(d) Chips clickeables en la ficha:** categoría/subcategoría/secundaria y tags
+AUDIENCE/OCCASION/VIBE/EXPERIENCE/CUISINE/SERVICE navegan a /explorar filtrado (mapa capa→param); SPECIFIC queda informativo (no es faceta).
+**(a) Feedback al guardar:** toast de confirmación ("Se agregó a X" / "Se creó X y se agregó"; nuevo `components/ui/Toast.tsx`) en SaveHeart
+y SaveButton, y **las listas que ya contienen el lugar salen con "✓ guardado" y sin acción** — el save-context ahora trae `savedItems`
+(pares lista-lugar; `findSavedItems` reemplazó a `findSavedPlaceIds` en el port). **(c) Badge en el admin:** contador de reportes +
+sugerencias OPEN en la pestaña Reportes (countOpen en ambos repos + `GetAdminInboxCountsUseCase`, corre en el layout del admin).
+**▶️ PENDIENTE INMEDIATO (esperando OK del usuario): `git push` a prod + `recalculate-scores --prod`.** Pendientes que siguen: portada guía
+de juegos · 5 PENDING antiguos de ramen · rotar contraseña Neon prod + borrar `PROD_DB_URL` al cerrar la campaña.
+
+**Sesión previa:** 2026-07-10 (sesión 26 — **Lote 6 de actividades (33 cargadas, 24 en prod) + guía "Panoramas de juegos y adrenalina" LIVE**):
 el usuario aportó **34 lugares con place_id** en 10 rubros de *Juegos y diversión* (karting, paintball, trampolines, minigolf, escape rooms,
 bowling, VR, karaoke, arcades, billar), con 3 rubros bajo cuota avisados (bowling/escape/karaoke: la oferta ≥4.3★ del Gran Santiago ya está
 casi toda cargada). **(1) Dedup:** 1 duplicado (Eleven Club ya existía) → 33 nuevos; Pirque/Lampa/Colina ya estaban en el catálogo de comunas.
@@ -35,7 +58,7 @@ Ramen/Ramen Wow/Ramen Home). **Pendientes del usuario:** portada para la guía n
 al cerrar la campaña.
 
 **▶️ PLAN ACORDADO PARA LAS PRÓXIMAS SESIONES (decidido 2026-07-10 al cierre de la s26):**
-1. **Sesión 27 — Quick wins de UI** (una sesión de código, cerrable de una): (a) feedback al guardar en lista ("se agregó a X" /
+1. ✅ **Sesión 27 — Quick wins de UI** (HECHA, misma fecha — ver "Última actualización"; falta solo push + recálculo prod): (a) feedback al guardar en lista ("se agregó a X" /
    "se creó y agregó") + mostrar en qué listas ya está guardado; (b) selector de **orden** en /explorar (score → alfabético/precio);
    (c) **badge de "nuevo"** en pestañas del admin (reportes/sugerencias sin leer); (d) **chips de categoría/tags clickeables en la
    ficha** → /explorar filtrado; (e) **página pública "cómo ordenamos"** explicando el score bayesiano en simple (la pidió el usuario;
