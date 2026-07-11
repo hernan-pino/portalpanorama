@@ -1,5 +1,6 @@
 import Link from 'next/link'
 import { auth } from '@lib/auth'
+import { container } from '@lib/container'
 import { UserRole } from '@domain/user/UserRole'
 import { signOutAction } from '@/app/actions/auth'
 import { MobileNav } from './MobileNav'
@@ -8,6 +9,13 @@ export async function Header() {
   const session = await auth()
   const user = session?.user
   const role = (user as { role?: string } | undefined)?.role
+
+  // ¿Mostrar el acceso a "Mi negocio"? Solo si el usuario gestiona alguna ficha.
+  // Count liviano (indexado por ownerId); los no-dueños dan 0 y no ven el link.
+  const hasBusiness =
+    user?.id && role !== UserRole.ADMIN
+      ? (await container.getCountManagedPlacesUseCase().execute(user.id)) > 0
+      : false
 
   return (
     <header className="topbar">
@@ -31,7 +39,7 @@ export async function Header() {
           <div className="topbar__actions">
             <div className="topbar__auth">
               {user ? (
-                <AuthenticatedActions name={user.name ?? ''} role={role} />
+                <AuthenticatedActions name={user.name ?? ''} role={role} hasBusiness={hasBusiness} />
               ) : (
                 <GuestActions />
               )}
@@ -58,9 +66,11 @@ function GuestActions() {
 function AuthenticatedActions({
   name,
   role,
+  hasBusiness,
 }: {
   name: string
   role?: string
+  hasBusiness: boolean
 }) {
   const firstName = name.split(' ')[0]
 
@@ -78,6 +88,11 @@ function AuthenticatedActions({
   // CONSUMER
   return (
     <>
+      {hasBusiness && (
+        <Link href="/mi-negocio" className="btn btn--ghost btn--sm">
+          Mi negocio
+        </Link>
+      )}
       <Link href="/mi-cuenta" className="btn btn--ghost btn--sm">
         {firstName}
       </Link>

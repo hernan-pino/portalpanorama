@@ -63,14 +63,26 @@ marca se setea `Brand.ownerId`; sus sucursales cuelgan de ella. `BrandPageView` 
 (header desktop + móvil), además del footer. **(5) Color del bloque de verificación** suavizado (carta neutra, no el durazno).
 **⚠️ Creación de cuenta de negocio (registro + crear ficha) = etapa 3, NO construida aún** — hoy solo existe el RECLAMO de fichas/marcas
 existentes. **(6) FAQ local-vs-marca** agregado a la landing (qué hacer si reclamaste un local que era parte de una cadena).
-**🛑 DECISIÓN DEL USUARIO (cierre s28): NO pushear todavía.** El reclamo sin su contraparte (panel donde el dueño gestione tras ser
-aprobado) sería prometer algo que no existe — "van a reclamar una ficha pero aún no está el dashboard/cuenta de negocio". Todo el trabajo
-de negocios (etapas 1+2, 5 commits `bde307e..4ac0f18`) queda **en local, sin pushear**, hasta que el flujo sirva de punta a punta.
-**▶️ Próximo paso (s29): construir el PANEL DE NEGOCIO (etapa 4)** — que tras aprobar el reclamo el dueño tenga una pestaña separada
-donde ver SU ficha, editar su info (moderado) y ver estadísticas básicas (visitas/guardados/cómo llegar; datos ya existen). Refs
-visuales del usuario: 2ª imagen de Claude Design ("Mi negocio"/panel con stats + estado de ficha). Con reclamo + panel, se pushea TODO
-junto y el flujo tiene sentido. (Etapa 3 —registro + crear ficha desde cero— puede ir después; es independiente.) En paralelo: ingest
-del lote "complementos de cita" cuando llegue la lista. Pendientes que siguen: portada guía de juegos · 5 PENDING antiguos de ramen · rotar contraseña Neon
+**🛑 DECISIÓN DEL USUARIO (s28): NO pushear hasta que el flujo sirva de punta a punta** — el reclamo sin panel sería prometer algo que
+no existe. Por eso se construyó también la **etapa 4** en la misma sesión (ver abajo). Todo el trabajo de negocios queda **en local, sin
+pushear**, hasta que el usuario lo revise visualmente y dé el OK.
+
+**(G) PANEL DE NEGOCIO (etapa 4) CONSTRUIDO (s28-cont).** Decisión del usuario: **edición DIRECTA** (el dueño verificado edita sin
+esperar aprobación; el nombre/categoría/ubicación siguen siendo del admin). Lo hecho: **`/mi-negocio`** (dashboard: las fichas que
+gestiona —propias por `ownerId` **o** de sus marcas por `brand.ownerId`— con **estadísticas** de visitas + guardados + rating, estado y
+portada) · **`/mi-negocio/[slug]/editar`** (form de campos operacionales: descripción, horario, teléfono, web, Instagram, carta, precio,
+reserva; se publican al tiro, invalida caché con `revalidateTag`) · acceso **"Mi negocio"** en el header (solo si gestiona ≥1 ficha, via
+`CountManagedPlacesUseCase`) · el correo de aprobación ahora linkea al panel. **Capas:** dominio `UnauthorizedBusinessAccessError` +
+guard `assertManagesPlace` (application) aplicado en los use cases de lectura y escritura; 3 use cases + 4 métodos de repo
+(`countManagedByUser`/`findManagedByUser`/`findOwnerEditableBySlug`/`updateOwnerEditableFields`, este último acotado a campos seguros).
+**Seguridad:** `architecture-guardian` limpio; el **e2e local probó el IDOR bloqueado en lectura Y edición** + que el update no toca lo
+estructural; **XSS cerrado** (website/menuUrl con `refine` http(s) en la action + `withProtocol` en el render de la carta —antes
+`menuUrl` iba a href crudo). ⚠️ El `security-reviewer` se cortó por límite de sesión antes de terminar — **relanzarlo al reabrir** para
+cerrar la auditoría formal. Bug evitado al paso: el update NO borra las redes extra (socialLinks salió del alcance del dueño). **127
+tests verdes** (5 nuevos del guard), typecheck + lint OK. Commits de negocios: `bde307e..` (etapas 1+2) + los de la etapa 4 (este bloque).
+**▶️ Próximo paso (s29):** (1) revisión visual del usuario del panel + reclamo; (2) **relanzar security-reviewer**; (3) con el OK,
+**pushear TODO junto** (etapas 1+2+4; la migración viaja en el build) y probar en prod. Etapa 3 (registro + crear ficha) después. En
+paralelo: ingest del lote "complementos de cita" cuando llegue la lista. Pendientes que siguen: portada guía de juegos · 5 PENDING antiguos de ramen · rotar contraseña Neon
 prod + borrar `PROD_DB_URL` · regenerar recovery codes de Vercel · rotar API key de Resend.
 
 **Sesión previa:** 2026-07-10 (sesión 27 — **Quick wins de UI: los 6 frentes acordados, implementados y verificados en local**):

@@ -1,0 +1,120 @@
+'use client'
+import { useState, useTransition } from 'react'
+import Link from 'next/link'
+import { updateOwnedPlaceAction } from './actions'
+
+const PRICE_OPTIONS = [
+  { value: '', label: 'Sin especificar' },
+  { value: 'FREE', label: 'Gratis' },
+  { value: 'UNDER_5000', label: 'Menos de $5.000' },
+  { value: 'FROM_5000_TO_15000', label: '$5.000 – $15.000' },
+  { value: 'FROM_15000_TO_30000', label: '$15.000 – $30.000' },
+  { value: 'OVER_30000', label: 'Más de $30.000' },
+]
+
+const RESERVATION_OPTIONS = [
+  { value: '', label: 'Sin especificar' },
+  { value: 'WALK_IN', label: 'Sin reserva (llegar nomás)' },
+  { value: 'RECOMMENDED', label: 'Reserva recomendada' },
+  { value: 'REQUIRED', label: 'Reserva obligatoria' },
+]
+
+export interface EditInitial {
+  description: string
+  schedule: string
+  phone: string
+  website: string
+  instagram: string
+  menuUrl: string
+  priceRange: string
+  reservation: string
+}
+
+export function EditPlaceForm({ slug, initial }: { slug: string; initial: EditInitial }) {
+  const [error, setError] = useState<string | null>(null)
+  const [saved, setSaved] = useState(false)
+  const [isPending, startTransition] = useTransition()
+
+  function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault()
+    const formData = new FormData(e.currentTarget)
+    setError(null)
+    setSaved(false)
+    startTransition(async () => {
+      const res = await updateOwnedPlaceAction(formData)
+      if ('error' in res) { setError(res.error); return }
+      setSaved(true)
+    })
+  }
+
+  return (
+    <form
+      onSubmit={handleSubmit}
+      style={{ display: 'flex', flexDirection: 'column', gap: 'var(--s-4)', maxWidth: 560 }}
+    >
+      <input type="hidden" name="slug" value={slug} />
+
+      <div>
+        <label className="form-label" htmlFor="f-description">Descripción</label>
+        <textarea id="f-description" name="description" className="form-input" rows={5}
+          defaultValue={initial.description} maxLength={4000}
+          placeholder="Cuenta qué hace especial a tu local…" />
+      </div>
+
+      <div>
+        <label className="form-label" htmlFor="f-schedule">Horario</label>
+        <textarea id="f-schedule" name="schedule" className="form-input" rows={3}
+          defaultValue={initial.schedule} maxLength={2000}
+          placeholder="Ej: Lun a Vie 9:00–19:00 · Sáb 10:00–14:00" />
+      </div>
+
+      <div>
+        <label className="form-label" htmlFor="f-phone">Teléfono</label>
+        <input id="f-phone" name="phone" type="tel" className="form-input"
+          defaultValue={initial.phone} maxLength={40} placeholder="+56 9 …" />
+      </div>
+
+      <div>
+        <label className="form-label" htmlFor="f-website">Sitio web</label>
+        <input id="f-website" name="website" type="url" className="form-input"
+          defaultValue={initial.website} placeholder="https://…" />
+      </div>
+
+      <div>
+        <label className="form-label" htmlFor="f-instagram">Instagram</label>
+        <input id="f-instagram" name="instagram" className="form-input"
+          defaultValue={initial.instagram} maxLength={120} placeholder="@tu_local o el enlace" />
+      </div>
+
+      <div>
+        <label className="form-label" htmlFor="f-menu">Carta / menú (enlace)</label>
+        <input id="f-menu" name="menuUrl" type="url" className="form-input"
+          defaultValue={initial.menuUrl} placeholder="https://…" />
+      </div>
+
+      <div>
+        <label className="form-label" htmlFor="f-price">Rango de precio</label>
+        <select id="f-price" name="priceRange" className="form-input" defaultValue={initial.priceRange}>
+          {PRICE_OPTIONS.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
+        </select>
+      </div>
+
+      <div>
+        <label className="form-label" htmlFor="f-reservation">¿Reserva?</label>
+        <select id="f-reservation" name="reservation" className="form-input" defaultValue={initial.reservation}>
+          {RESERVATION_OPTIONS.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
+        </select>
+      </div>
+
+      {error && <p style={{ color: 'var(--error)', fontSize: 'var(--t-body-sm)', margin: 0 }}>{error}</p>}
+      {saved && <p style={{ color: 'var(--accent-70)', fontSize: 'var(--t-body-sm)', margin: 0 }}>✓ Cambios guardados. Ya se ven en tu ficha.</p>}
+
+      <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--s-3)' }}>
+        <button type="submit" className="btn btn--primary" disabled={isPending}>
+          {isPending ? 'Guardando…' : 'Guardar cambios'}
+        </button>
+        <Link href="/mi-negocio" className="btn btn--ghost">Volver</Link>
+      </div>
+    </form>
+  )
+}

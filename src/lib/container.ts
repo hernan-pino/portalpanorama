@@ -87,6 +87,10 @@ import { CreateBusinessClaimUseCase } from '@application/business/CreateBusiness
 import { ApproveBusinessClaimUseCase } from '@application/business/ApproveBusinessClaimUseCase'
 import { RejectBusinessClaimUseCase } from '@application/business/RejectBusinessClaimUseCase'
 import { ListBusinessClaimsForAdminUseCase } from '@application/business/ListBusinessClaimsForAdminUseCase'
+import { GetBusinessDashboardUseCase } from '@application/business/GetBusinessDashboardUseCase'
+import { CountManagedPlacesUseCase } from '@application/business/CountManagedPlacesUseCase'
+import { GetOwnedPlaceForEditUseCase } from '@application/business/GetOwnedPlaceForEditUseCase'
+import { UpdateOwnedPlaceInfoUseCase } from '@application/business/UpdateOwnedPlaceInfoUseCase'
 import { SetUserRoleUseCase } from '@application/user/SetUserRoleUseCase'
 import { DeleteUserUseCase } from '@application/user/DeleteUserUseCase'
 
@@ -229,6 +233,24 @@ export const container = {
 
   getListBusinessClaimsForAdminUseCase() {
     return new ListBusinessClaimsForAdminUseCase(businessClaimRepo)
+  },
+
+  // ── Panel de negocio (dueño verificado) ─────────────────────────────
+  getGetBusinessDashboardUseCase() {
+    return new GetBusinessDashboardUseCase(placeRepo)
+  },
+
+  // Liviano: ¿el usuario gestiona algún negocio? (acceso al panel en el header).
+  getCountManagedPlacesUseCase() {
+    return new CountManagedPlacesUseCase(placeRepo)
+  },
+
+  getGetOwnedPlaceForEditUseCase() {
+    return new GetOwnedPlaceForEditUseCase(placeRepo)
+  },
+
+  getUpdateOwnedPlaceInfoUseCase() {
+    return new UpdateOwnedPlaceInfoUseCase(placeRepo)
   },
 
   // ── Sugerencias (footer) + buzón ────────────────────────────────────

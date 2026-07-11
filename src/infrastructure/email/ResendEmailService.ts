@@ -62,8 +62,8 @@ export class ResendEmailService implements EmailService {
       bodyHtml:
         paragraph(`Hola <strong>${escapeHtml(name)}</strong>,`) +
         paragraph(`¡Buenas noticias! Aprobamos tu reclamo y la ficha de <strong>${escapeHtml(targetName)}</strong> quedó asociada a tu cuenta.`) +
-        paragraph('Estamos construyendo el panel de negocio (editar tu ficha, subir fotos y ver estadísticas de visitas). Te avisaremos por este correo cuando esté disponible; mientras tanto, si necesitas corregir algo de tu ficha, responde este correo y lo actualizamos nosotros.'),
-      button: { label: 'Ver mi ficha', url: 'https://portalpanorama.cl/mi-cuenta' },
+        paragraph('Ya puedes entrar a tu panel de negocio para mantener tu información al día (horario, teléfono, descripción y más) y ver cuánta gente visita y guarda tu ficha.'),
+      button: { label: 'Ir a mi panel de negocio', url: 'https://portalpanorama.cl/mi-negocio' },
     })
     await this.client().emails.send({
       from: this.from,

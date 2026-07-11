@@ -365,7 +365,7 @@ export default async function LugarPage({ params }: PageProps) {
                 <ContactRow icon={<InstagramIcon />} k="Instagram" v={place.instagram} href={instagramHref(place.instagram)} />
               )}
               {place.menuUrl && (
-                <ContactRow icon={<MenuIcon />} k="Menú" v="Ver la carta" href={place.menuUrl} />
+                <ContactRow icon={<MenuIcon />} k="Menú" v="Ver la carta" href={withProtocol(place.menuUrl)} />
               )}
               {place.socialLinks.map((s) => (
                 <ContactRow key={s.url} icon={<GlobeIcon />} k={s.network} v="Ver perfil" href={withProtocol(s.url)} />

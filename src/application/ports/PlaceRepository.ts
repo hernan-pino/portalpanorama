@@ -1,4 +1,6 @@
 import { Place } from '@domain/place/Place'
+import { PriceRange } from '@domain/place/PriceRange'
+import { ReservationPolicy } from '@domain/place/ReservationPolicy'
 
 // Tarjeta de lugar para grillas/relacionados. Denormalizada (nombres resueltos),
 // no es el agregado de dominio: es un read-model para la UI.
@@ -111,6 +113,47 @@ export interface PlaceAdminRow {
   saveCount: number
 }
 
+// ── Panel de negocio (dueño verificado) ──────────────────────────────────────
+// Fila del panel del dueño: su ficha + engagement (mismo _count que el admin).
+export interface OwnedPlaceRow {
+  id: string
+  slug: string
+  name: string
+  status: string
+  categoryName: string
+  communeName: string
+  coverUrl?: string
+  googleRating?: number
+  visitCount: number
+  saveCount: number
+}
+
+// Campos que el DUEÑO verificado puede editar directo (info operacional, no
+// estructural). El nombre, categoría, ubicación, rating, tags y las redes EXTRA
+// (socialLinks) los controla el admin. El Instagram principal sí lo edita el dueño.
+export interface OwnerEditableFields {
+  description?: string
+  schedule?: string
+  phone?: string
+  website?: string
+  instagram?: string
+  menuUrl?: string
+  priceRange?: PriceRange
+  reservation?: ReservationPolicy
+}
+
+// Vista para poblar el form de edición del dueño + los ids de propiedad para el
+// guard de autorización (gestiona si es su owner directo o dueño de su marca).
+export interface OwnerEditablePlaceView extends OwnerEditableFields {
+  id: string
+  slug: string
+  name: string
+  categoryName: string
+  communeName: string
+  ownerId: string | null
+  brandOwnerId: string | null
+}
+
 export interface PlaceRepository {
   // ── Agregado de dominio (CRUD admin + scoring) ──
   findById(id: string): Promise<Place | null>
@@ -158,4 +201,17 @@ export interface PlaceRepository {
   // Todas las filas con rating para re-batir el score en batch.
   findRatingsForScoring(): Promise<PlaceRatingRow[]>
   updateScores(scores: { id: string; score: number }[]): Promise<void>
+
+  // ── Panel de negocio (dueño verificado) ──
+  // ¿Cuántas fichas gestiona el usuario? (liviano, para mostrar el acceso al panel).
+  countManagedByUser(userId: string): Promise<number>
+  // Fichas que gestiona un usuario: las que posee directo (ownerId) + las de las
+  // marcas que posee (brand.ownerId). Con engagement, para el dashboard.
+  findManagedByUser(userId: string): Promise<OwnedPlaceRow[]>
+  // Ficha para el form de edición del dueño (campos editables + ids de propiedad
+  // para el guard). Null si no existe.
+  findOwnerEditableBySlug(slug: string): Promise<OwnerEditablePlaceView | null>
+  // Aplica SOLO los campos operacionales editables por el dueño (no toca
+  // nombre/categoría/ubicación/rating/score/estado/tags).
+  updateOwnerEditableFields(placeId: string, fields: OwnerEditableFields): Promise<void>
 }

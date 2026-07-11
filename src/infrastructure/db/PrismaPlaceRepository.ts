@@ -8,6 +8,9 @@ import { RainPolicy } from '@domain/place/RainPolicy'
 import { PlaceStatus } from '@domain/place/PlaceStatus'
 import {
   CategoryRatingStat,
+  OwnedPlaceRow,
+  OwnerEditableFields,
+  OwnerEditablePlaceView,
   PlaceAdminRow,
   PlaceCardView,
   PlaceDetailView,
@@ -489,5 +492,106 @@ export class PrismaPlaceRepository implements PlaceRepository {
       FROM (SELECT unnest(${ids}::text[]) AS id, unnest(${values}::float8[]) AS score) AS s
       WHERE p."id" = s.id
     `
+  }
+
+  // ── Panel de negocio (dueño verificado) ──
+  async countManagedByUser(userId: string): Promise<number> {
+    return this.prisma.place.count({
+      where: { OR: [{ ownerId: userId }, { brand: { ownerId: userId } }] },
+    })
+  }
+
+  // Fichas que gestiona el usuario: propias (ownerId) O de una marca suya (brand.ownerId).
+  async findManagedByUser(userId: string): Promise<OwnedPlaceRow[]> {
+    const rows = await this.prisma.place.findMany({
+      where: { OR: [{ ownerId: userId }, { brand: { ownerId: userId } }] },
+      orderBy: { name: 'asc' },
+      select: {
+        id: true,
+        slug: true,
+        name: true,
+        status: true,
+        googleRating: true,
+        category: { select: { name: true } },
+        commune: { select: { name: true } },
+        images: {
+          where: { isPrimary: true },
+          take: 1,
+          select: { url: true },
+        },
+        _count: { select: { visitHistory: true, collectionItems: true } },
+      },
+    })
+    return rows.map((r) => ({
+      id: r.id,
+      slug: r.slug,
+      name: r.name,
+      status: r.status,
+      categoryName: r.category.name,
+      communeName: r.commune.name,
+      coverUrl: r.images[0]?.url,
+      googleRating: r.googleRating ?? undefined,
+      visitCount: r._count.visitHistory,
+      saveCount: r._count.collectionItems,
+    }))
+  }
+
+  async findOwnerEditableBySlug(slug: string): Promise<OwnerEditablePlaceView | null> {
+    const r = await this.prisma.place.findUnique({
+      where: { slug },
+      select: {
+        id: true,
+        slug: true,
+        name: true,
+        description: true,
+        schedule: true,
+        phone: true,
+        website: true,
+        instagram: true,
+        menuUrl: true,
+        priceRange: true,
+        reservation: true,
+        ownerId: true,
+        category: { select: { name: true } },
+        commune: { select: { name: true } },
+        brand: { select: { ownerId: true } },
+      },
+    })
+    if (!r) return null
+    return {
+      id: r.id,
+      slug: r.slug,
+      name: r.name,
+      categoryName: r.category.name,
+      communeName: r.commune.name,
+      description: r.description ?? undefined,
+      schedule: r.schedule ?? undefined,
+      phone: r.phone ?? undefined,
+      website: r.website ?? undefined,
+      instagram: r.instagram ?? undefined,
+      menuUrl: r.menuUrl ?? undefined,
+      priceRange: (r.priceRange as PriceRange | null) ?? undefined,
+      reservation: (r.reservation as ReservationPolicy | null) ?? undefined,
+      ownerId: r.ownerId,
+      brandOwnerId: r.brand?.ownerId ?? null,
+    }
+  }
+
+  // Solo los campos operacionales editables por el dueño. NO toca nombre/categoría/
+  // ubicación/rating/score/estado/tags/ownerId. El score no depende de estos campos.
+  async updateOwnerEditableFields(placeId: string, fields: OwnerEditableFields): Promise<void> {
+    await this.prisma.place.update({
+      where: { id: placeId },
+      data: {
+        description: fields.description ?? null,
+        schedule: fields.schedule ?? null,
+        phone: fields.phone ?? null,
+        website: fields.website ?? null,
+        instagram: fields.instagram ?? null,
+        menuUrl: fields.menuUrl ?? null,
+        priceRange: (fields.priceRange as $Enums.PriceRange | undefined) ?? null,
+        reservation: (fields.reservation as $Enums.ReservationPolicy | undefined) ?? null,
+      },
+    })
   }
 }
