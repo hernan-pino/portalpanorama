@@ -399,6 +399,25 @@ export default async function LugarPage({ params }: PageProps) {
           </div>
         )}
 
+        {/* reclamo de negocio (s28: CTA destacado, decisión del usuario) */}
+        <aside className="ficha__claim">
+          <div>
+            <p className="ficha__claim-title">¿Este negocio es tuyo?</p>
+            <p className="ficha__claim-sub">
+              Reclama tu ficha gratis: mantén tu información al día y accede a las
+              herramientas para negocios que estamos construyendo.
+            </p>
+          </div>
+          <div className="ficha__claim-actions">
+            <Link href={`/reclamar/${slug}`} className="btn btn--primary btn--sm">
+              Reclamar esta ficha
+            </Link>
+            <Link href="/para-negocios" className="btn btn--ghost btn--sm">
+              Saber más
+            </Link>
+          </div>
+        </aside>
+
         {/* reportar */}
         <div className="ficha__report">
           <div className="ficha__report-hr" />

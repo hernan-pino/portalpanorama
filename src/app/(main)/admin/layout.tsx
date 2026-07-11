@@ -11,7 +11,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
   if (!session?.user) redirect('/login?callbackUrl=/admin')
   if ((session.user as { role?: string }).role !== 'ADMIN') redirect('/mi-cuenta')
 
-  // Badge "nuevo" en Reportes: cuántos reportes + sugerencias siguen sin atender.
+  // Badges "nuevo": reportes + sugerencias sin atender, y reclamos de negocio pendientes.
   const inbox = await container.getGetAdminInboxCountsUseCase().execute()
   const pending = inbox.openReports + inbox.openSuggestions
 
@@ -31,6 +31,14 @@ export default async function AdminLayout({ children }: { children: React.ReactN
             {pending > 0 && (
               <span className="admin-nav__badge" aria-label={`${pending} sin atender`}>
                 {pending}
+              </span>
+            )}
+          </NavLink>
+          <NavLink href="/admin/reclamos">
+            Reclamos
+            {inbox.pendingClaims > 0 && (
+              <span className="admin-nav__badge" aria-label={`${inbox.pendingClaims} pendientes`}>
+                {inbox.pendingClaims}
               </span>
             )}
           </NavLink>

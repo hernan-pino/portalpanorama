@@ -10,6 +10,7 @@ import { PrismaTagRepository } from '@infrastructure/db/PrismaTagRepository'
 import { PrismaCollectionRepository } from '@infrastructure/db/PrismaCollectionRepository'
 import { PrismaVisitHistoryRepository } from '@infrastructure/db/PrismaVisitHistoryRepository'
 import { PrismaReportRepository } from '@infrastructure/db/PrismaReportRepository'
+import { PrismaBusinessClaimRepository } from '@infrastructure/db/PrismaBusinessClaimRepository'
 import { PrismaSuggestionRepository } from '@infrastructure/db/PrismaSuggestionRepository'
 import { PrismaLocationRepository } from '@infrastructure/db/PrismaLocationRepository'
 import { PostgresFTSSearchService } from '@infrastructure/search/PostgresFTSSearchService'
@@ -82,6 +83,10 @@ import { GetUserDashboardUseCase } from '@application/user/GetUserDashboardUseCa
 import { RecordVisitUseCase } from '@application/user/RecordVisitUseCase'
 import { ListUsersForAdminUseCase } from '@application/user/ListUsersForAdminUseCase'
 import { GetAdminAnalyticsUseCase } from '@application/analytics/GetAdminAnalyticsUseCase'
+import { CreateBusinessClaimUseCase } from '@application/business/CreateBusinessClaimUseCase'
+import { ApproveBusinessClaimUseCase } from '@application/business/ApproveBusinessClaimUseCase'
+import { RejectBusinessClaimUseCase } from '@application/business/RejectBusinessClaimUseCase'
+import { ListBusinessClaimsForAdminUseCase } from '@application/business/ListBusinessClaimsForAdminUseCase'
 import { SetUserRoleUseCase } from '@application/user/SetUserRoleUseCase'
 import { DeleteUserUseCase } from '@application/user/DeleteUserUseCase'
 
@@ -95,6 +100,7 @@ const tagRepo = new PrismaTagRepository(prisma)
 const collectionRepo = new PrismaCollectionRepository(prisma)
 const historyRepo = new PrismaVisitHistoryRepository(prisma)
 const reportRepo = new PrismaReportRepository(prisma)
+const businessClaimRepo = new PrismaBusinessClaimRepository(prisma)
 const suggestionRepo = new PrismaSuggestionRepository(prisma)
 const locationRepo = new PrismaLocationRepository(prisma)
 const searchService = new PostgresFTSSearchService(prisma)
@@ -205,7 +211,24 @@ export const container = {
   },
 
   getGetAdminInboxCountsUseCase() {
-    return new GetAdminInboxCountsUseCase(reportRepo, suggestionRepo)
+    return new GetAdminInboxCountsUseCase(reportRepo, suggestionRepo, businessClaimRepo)
+  },
+
+  // ── Reclamos de negocio ("¿Este negocio es tuyo?") ──────────────────
+  getCreateBusinessClaimUseCase() {
+    return new CreateBusinessClaimUseCase(businessClaimRepo, emailService)
+  },
+
+  getApproveBusinessClaimUseCase() {
+    return new ApproveBusinessClaimUseCase(businessClaimRepo, emailService)
+  },
+
+  getRejectBusinessClaimUseCase() {
+    return new RejectBusinessClaimUseCase(businessClaimRepo, emailService)
+  },
+
+  getListBusinessClaimsForAdminUseCase() {
+    return new ListBusinessClaimsForAdminUseCase(businessClaimRepo)
   },
 
   // ── Sugerencias (footer) + buzón ────────────────────────────────────

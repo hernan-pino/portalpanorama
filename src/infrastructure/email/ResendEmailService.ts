@@ -39,6 +39,57 @@ export class ResendEmailService implements EmailService {
     })
   }
 
+  async sendClaimReceived(to: string, name: string, targetName: string): Promise<void> {
+    const html = renderEmail({
+      preheader: 'Recibimos tu reclamo. Lo revisamos a mano y te avisamos por este correo.',
+      bodyHtml:
+        paragraph(`Hola <strong>${escapeHtml(name)}</strong>,`) +
+        paragraph(`Recibimos tu solicitud para reclamar la ficha de <strong>${escapeHtml(targetName)}</strong> en Portal Panorama.`) +
+        paragraph('Revisamos cada reclamo a mano para proteger a los negocios: puede que te contactemos al teléfono o correo que dejaste para confirmar que eres parte del equipo del local.') +
+        muted('Te avisaremos por este mismo correo apenas tengamos una respuesta. No necesitas hacer nada más.'),
+    })
+    await this.client().emails.send({
+      from: this.from,
+      to,
+      subject: `Recibimos tu reclamo de ${targetName} — Portal Panorama`,
+      html,
+    })
+  }
+
+  async sendClaimApproved(to: string, name: string, targetName: string): Promise<void> {
+    const html = renderEmail({
+      preheader: 'Tu reclamo fue aprobado: la ficha ya está asociada a tu cuenta.',
+      bodyHtml:
+        paragraph(`Hola <strong>${escapeHtml(name)}</strong>,`) +
+        paragraph(`¡Buenas noticias! Aprobamos tu reclamo y la ficha de <strong>${escapeHtml(targetName)}</strong> quedó asociada a tu cuenta.`) +
+        paragraph('Estamos construyendo el panel de negocio (editar tu ficha, subir fotos y ver estadísticas de visitas). Te avisaremos por este correo cuando esté disponible; mientras tanto, si necesitas corregir algo de tu ficha, responde este correo y lo actualizamos nosotros.'),
+      button: { label: 'Ver mi ficha', url: 'https://portalpanorama.cl/mi-cuenta' },
+    })
+    await this.client().emails.send({
+      from: this.from,
+      to,
+      subject: `Tu reclamo de ${targetName} fue aprobado — Portal Panorama`,
+      html,
+    })
+  }
+
+  async sendClaimRejected(to: string, name: string, targetName: string, reason?: string): Promise<void> {
+    const html = renderEmail({
+      preheader: 'No pudimos aprobar tu reclamo. Aquí te contamos por qué y cómo reintentar.',
+      bodyHtml:
+        paragraph(`Hola <strong>${escapeHtml(name)}</strong>,`) +
+        paragraph(`Revisamos tu solicitud para reclamar la ficha de <strong>${escapeHtml(targetName)}</strong> y esta vez no pudimos aprobarla.`) +
+        (reason ? paragraph(`<strong>Motivo:</strong> ${escapeHtml(reason)}`) : '') +
+        paragraph('Si crees que es un error o tienes más antecedentes (por ejemplo, un documento o un teléfono del local donde podamos confirmar), responde este correo y lo vemos de nuevo.'),
+    })
+    await this.client().emails.send({
+      from: this.from,
+      to,
+      subject: `Sobre tu reclamo de ${targetName} — Portal Panorama`,
+      html,
+    })
+  }
+
   async sendPasswordReset(to: string, name: string, resetUrl: string): Promise<void> {
     const html = renderEmail({
       preheader: 'Restablece tu contraseña. El enlace vence en 1 hora.',

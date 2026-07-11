@@ -29,10 +29,28 @@ acordadas: (1) schema `BusinessProfile`+`BusinessClaim` · (2) reclamo e2e + lan
 verdes**. ⚠️ **Prod aún sin la migración** — viaja con el próximo `git push` (el build corre `migrate deploy`). **(D) Encargo de
 carga entregado al usuario:** lote **"complementos de cita"** (chocolaterías · florerías · tiendas de plantas; 0 cargadas, subcats
 ya existen en `locales-tiendas`) — alimenta el norte del **planificador IA del panorama completo**; estacionamientos re-triaged al
-backlog como dato de ficha, NO como fichas (ver backlog). **▶️ Próximo paso (s29): etapa 2 — reclamo end-to-end + landing "para
-negocios"** (CTA en ficha → form → bandeja admin → aprobar setea `ownerId` + crea BusinessProfile → correos Resend); y/o ingest del
-lote cuando llegue la lista con place_ids. Pendientes que siguen: portada guía de juegos · 5 PENDING antiguos de ramen · rotar
-contraseña Neon prod + borrar `PROD_DB_URL` · regenerar recovery codes de Vercel · rotar API key de Resend.
+backlog como dato de ficha, NO como fichas (ver backlog). **(E) Build etapa 2 HECHO (misma sesión): reclamo END-TO-END + landing "para negocios".**
+**Dominio:** `BusinessClaim` (invariantes: place XOR brand · decisión única desde PENDING; entidad inmutable) + 5 errores.
+**Application:** port `BusinessClaimRepository` (con `persistApproval` transaccional documentado) + 4 use cases (Create con
+anti-duplicado y guard de ficha-con-dueño / Approve / Reject / ListForAdmin) + `GetAdminInboxCounts` ahora trae `pendingClaims`;
+`EmailService` extendido con 3 correos del ciclo (recibido/aprobado/rechazado con motivo — decisión s28: la revisión nunca es un
+hoyo negro). **Infra:** `PrismaBusinessClaimRepository` (aprobación = transacción: claim + ownerId del Place/Brand + BusinessProfile
+creado/verificado) + plantillas Resend en chileno. **UI:** CTA destacado en la ficha ("¿Este negocio es tuyo?", `.ficha__claim` con
+borde de acento) → **`/reclamar/[slug]`** (requiere sesión, form con rol/mensaje/contacto/evidencia, rate limit 3/h por IP, el
+id/nombre del lugar se resuelven server-side) → bandeja **`/admin/reclamos`** (tabla con evidencia y contacto, aprobar/rechazar con
+nota que viaja en el correo, badge propio en la nav del admin) + **landing `/para-negocios`** (qué es · qué incluye hoy gratis ·
+qué viene · cuánto cuesta: nada, y la visibilidad pagada futura declarada; FAQ) linkeada en footer, sitemap y CTA de ficha.
+**Guardianes:** `architecture-guardian` → capas limpias (0 violaciones); `security-reviewer` → **2 hallazgos, ambos arreglados en la
+misma sesión:** (1) **XSS almacenado** — `z.url()` acepta `javascript:`/`data:`, y ese `evidenceUrl` iba a un `href` del panel admin
+(React no sanea href) → `refine(/^https?:/)` en la action + guard al render; (2) **TOCTOU al aprobar** — dos reclamos PENDING del
+mismo lugar, el 2º pisaba el `ownerId` del 1º sin aviso → `persistApproval` ahora setea el owner con `updateMany({where:{ownerId:null}})`
+y aborta la transacción (`TargetAlreadyOwnedError`, mapeado en la action) si ya no está libre. **Verificado:** typecheck limpio ·
+**122 tests verdes** (13 nuevos: entidad + use case) · lint completo OK (¡mismas comillas de la (A) pilladas en local!) · **ciclo e2e
+contra la BD local** (crear → duplicado bloqueado → aprobar → ownerId+profile ✓ → re-decisión bloqueada → ficha con dueño bloqueada →
+limpieza) · rutas verificadas contra el dev server (CTA en ficha, landing 200, /reclamar y /admin/reclamos redirigen sin sesión). **▶️ Próximo paso (s29):** push a prod de etapa 1+2 (la migración viaja en el build) + probar
+el flujo en prod con un reclamo real; luego **etapa 3 (registro de negocio + crear ficha)** y/o ingest del lote "complementos de
+cita" cuando llegue la lista. Pendientes que siguen: portada guía de juegos · 5 PENDING antiguos de ramen · rotar contraseña Neon
+prod + borrar `PROD_DB_URL` · regenerar recovery codes de Vercel · rotar API key de Resend.
 
 **Sesión previa:** 2026-07-10 (sesión 27 — **Quick wins de UI: los 6 frentes acordados, implementados y verificados en local**):
 los 6 ítems del plan de la s26 quedaron en un solo commit (`137bac2`, 37 archivos; typecheck limpio + **109 tests verdes** + rutas verificadas
@@ -858,8 +876,11 @@ Los hijos del padre se muestran solo si están PUBLISHED.
     estacionamiento no es un "lugar que vale la pena", diluiría score/explorar/guías. El valor es
     "dónde estaciono cerca de X" (pagado o gratis) como **dato de la ficha** y, a futuro, insumo del
     **planificador IA del panorama completo** (norte del usuario: la IA arma la cita entera — flores
-    → chocolates → restaurante → estacionamiento). Implementación candidata: Places API nearby en el
-    enrich o capa de datos aparte. Fase B+.
+    → chocolates → restaurante → estacionamiento). **UX acordada con el usuario (s28):** en la ficha,
+    el dato "Estacionamiento" es clickeable y abre un **pop-up liviano** con los estacionamientos
+    cercanos — poca info: nombre, dirección y si es pagado o gratis — al estilo de los lugares-hijo
+    pero SIN ficha propia (no entran al catálogo ni al score). Implementación candidata: Places API
+    nearby en el enrich o capa de datos aparte. Fase B+.
   - *Complementos de cita como verticales de carga (idea s28, alimenta el mismo norte IA):*
     chocolaterías · florerías · tiendas de plantas — las subcategorías ya existen en el catálogo
     (`locales-tiendas/chocolateria`, `floreria`, `tienda-de-plantas`) y hay **0 cargadas**; encargo

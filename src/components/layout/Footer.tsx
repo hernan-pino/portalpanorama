@@ -29,6 +29,7 @@ export function Footer() {
                 <li><Link href="/registro">Crear cuenta</Link></li>
                 <li><Link href="/login">Iniciar sesión</Link></li>
                 <li><Link href="/mi-cuenta">Mis listas</Link></li>
+                <li><Link href="/para-negocios">Para negocios</Link></li>
               </ul>
             </div>
             <div>

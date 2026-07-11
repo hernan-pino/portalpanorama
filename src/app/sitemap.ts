@@ -15,6 +15,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: absoluteUrl('/explorar'), changeFrequency: 'daily', priority: 0.8 },
     { url: absoluteUrl('/guias'), changeFrequency: 'weekly', priority: 0.8 },
     { url: absoluteUrl('/como-ordenamos'), changeFrequency: 'monthly', priority: 0.4 },
+    { url: absoluteUrl('/para-negocios'), changeFrequency: 'monthly', priority: 0.5 },
   ]
 
   const placeRoutes: MetadataRoute.Sitemap = places.map((p) => ({

@@ -1564,6 +1564,28 @@ button.ficha__hero-img { cursor: zoom-in; }
 .ficha__relcard-rate { display: inline-flex; align-items: center; gap: 3px; font-family: var(--font-mono); font-size: var(--t-mono-sm); color: var(--fg-muted); }
 .ficha__relcard-rate svg { width: 12px; height: 12px; color: var(--star); fill: currentColor; }
 
+/* — Reclamo de negocio ("¿Este negocio es tuyo?") — */
+.ficha__claim {
+  margin-top: var(--s-10);
+  padding: var(--s-5) var(--s-6);
+  background: var(--bg-raised);
+  border: 1px solid var(--surface-line);
+  border-left: 3px solid var(--accent);
+  border-radius: var(--r-lg);
+  display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between;
+  gap: var(--s-4);
+}
+.ficha__claim-title {
+  font-family: var(--font-display); font-weight: 500; font-size: 19px;
+  line-height: var(--lh-snug); letter-spacing: var(--tr-tight);
+  font-variation-settings: "opsz" 60; margin: 0;
+}
+.ficha__claim-sub {
+  font-size: var(--t-body-sm); color: var(--fg-muted);
+  margin: var(--s-1) 0 0; max-width: 52ch;
+}
+.ficha__claim-actions { display: flex; align-items: center; gap: var(--s-2); flex-shrink: 0; }
+
 /* — Reportar (pie discreto) — */
 .ficha__report { padding-top: var(--s-10); text-align: center; }
 .ficha__report-hr { height: 1px; background: var(--surface-line-soft); margin-bottom: var(--s-6); }
