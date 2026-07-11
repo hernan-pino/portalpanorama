@@ -37,9 +37,9 @@ export default async function ReclamarPage({ params }: PageProps) {
       <h1 className="display legal__title">Reclama la ficha de {place.name}</h1>
 
       <p className="legal__lead">
-        Si eres parte del equipo de <strong>{place.name}</strong>, cuéntanos tu rol y cómo
-        contactarte. Revisamos cada reclamo a mano — puede que te llamemos o escribamos para
-        confirmar — y te avisamos por correo apenas tengamos una respuesta.{' '}
+        Si eres parte del equipo de <strong>{place.name}</strong>, cuéntanos tu rol y déjanos un
+        contacto. Para verificarte te pediremos un mensaje desde el canal oficial del local
+        (te explicamos cómo abajo) y te avisamos por correo apenas quede aprobado.{' '}
         <Link href="/para-negocios">Saber más sobre las cuentas de negocio</Link>.
       </p>
 

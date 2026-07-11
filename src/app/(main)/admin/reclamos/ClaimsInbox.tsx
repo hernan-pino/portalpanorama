@@ -13,7 +13,6 @@ export interface ClaimView {
   claimantEmail: string
   claimantRole: string | null
   message: string | null
-  evidenceUrl: string | null
   contactEmail: string | null
   contactPhone: string | null
   status: 'PENDING' | 'APPROVED' | 'REJECTED'
@@ -64,7 +63,7 @@ export function ClaimsInbox({ claims }: { claims: ClaimView[] }) {
               <th>Ficha reclamada</th>
               <th>Quién</th>
               <th>Rol</th>
-              <th>Evidencia</th>
+              <th>Mensaje</th>
               <th>Contacto</th>
               <th>Fecha</th>
               <th>Estado</th>
@@ -90,15 +89,7 @@ export function ClaimsInbox({ claims }: { claims: ClaimView[] }) {
                   <span style={{ color: 'var(--fg-muted)' }}>{c.claimantEmail}</span>
                 </td>
                 <td>{c.claimantRole ?? '—'}</td>
-                <td className="admin-inbox__msg">
-                  {c.message || '—'}
-                  {c.evidenceUrl && /^https?:\/\//i.test(c.evidenceUrl) && (
-                    <>
-                      <br />
-                      <a href={c.evidenceUrl} target="_blank" rel="noopener noreferrer">enlace de respaldo ↗</a>
-                    </>
-                  )}
-                </td>
+                <td className="admin-inbox__msg">{c.message || '—'}</td>
                 <td>
                   {c.contactEmail ?? '—'}
                   {c.contactPhone && (<><br />{c.contactPhone}</>)}

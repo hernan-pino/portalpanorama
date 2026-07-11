@@ -48,6 +48,12 @@ ese User (no posee lugares directamente).
   teléfono/email de contacto, documento opcional) y el **admin revisa y aprueba**. Métodos automáticos
   (SMS al fono de la ficha, email al dominio del negocio) son más caros → el schema deja lugar para
   guardarlos, pero **no se construyen ahora**.
+  - **Método de verificación decidido (s28-cont, 2026-07-10):** el reclamante debe **escribir desde el
+    canal oficial del local** — DM desde el **Instagram oficial** a `@portalpanorama.cl`, o correo desde
+    el **correo oficial** del negocio a `hola@portalpanorama.cl` — mencionando su nombre. Prueba control
+    del canal oficial, con cero fricción de documentos. Por eso el formulario **NO pide "enlace de
+    evidencia"** (era débil: cualquiera pega un IG público) → el form quedó en **rol + contacto**. La
+    columna `evidenceUrl` queda **dormida** en la BD (puerta barata) por si vuelve la evidencia documental.
 - **El BusinessProfile es el hub del lado negocio.** Nace casi vacío, pero es el ancla donde colgarán
   —cuando se enciendan, todo *gated*— **crear eventos, analíticas, gestión/respuesta de comentarios,
   pagos y promociones**. El schema de hoy solo crearía el ancla + reservaría las puertas.

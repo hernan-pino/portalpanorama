@@ -47,7 +47,16 @@ mismo lugar, el 2º pisaba el `ownerId` del 1º sin aviso → `persistApproval` 
 y aborta la transacción (`TargetAlreadyOwnedError`, mapeado en la action) si ya no está libre. **Verificado:** typecheck limpio ·
 **122 tests verdes** (13 nuevos: entidad + use case) · lint completo OK (¡mismas comillas de la (A) pilladas en local!) · **ciclo e2e
 contra la BD local** (crear → duplicado bloqueado → aprobar → ownerId+profile ✓ → re-decisión bloqueada → ficha con dueño bloqueada →
-limpieza) · rutas verificadas contra el dev server (CTA en ficha, landing 200, /reclamar y /admin/reclamos redirigen sin sesión). **▶️ Próximo paso (s29):** push a prod de etapa 1+2 (la migración viaja en el build) + probar
+limpieza) · rutas verificadas contra el dev server (CTA en ficha, landing 200, /reclamar y /admin/reclamos redirigen sin sesión). **(F) Ajustes tras la revisión visual del usuario (misma sesión):** (1) **Landing `/para-negocios` rediseñada** — dejó de ser
+"solo texto" (el usuario la vio "reee mal"): ahora hero con CTA, **grid de tarjetas de beneficios** con etiquetas Ya disponible/Pronto,
+**panel de precio** con "Gratis" grande en acento, **pasos numerados** y **FAQ con toggle** (`<details>` nativo, accesible, sin JS);
+CSS nuevo `.biz-*` con los tokens del handoff. El usuario mandó refs de Claude Design (planes Free/Premium + panel de negocio) como
+inspiración → **descartadas para ahora** ("olvida lo que te dije", le gustó el rework); quedan como norte para la **etapa 4 (panel de
+negocio)** y el tema de **planes de pago** (Fase C). (2) **Método de verificación redefinido** (el usuario no veía sentido al "enlace
+de evidencia"): ahora el reclamante **escribe desde el canal oficial del local** (DM del IG oficial a `@portalpanorama.cl` o correo del
+correo oficial a `hola@portalpanorama.cl`) → el form quedó en **rol + contacto** (se quitó el campo de URL; de paso mata el vector XSS
+de raíz), el correo de "recibido" y la landing explican el paso, y la columna `evidenceUrl` queda **dormida** en la BD. Re-verificado:
+typecheck + **122 tests** + lint OK. **▶️ Próximo paso (s29):** push a prod de etapa 1+2 (la migración viaja en el build) + probar
 el flujo en prod con un reclamo real; luego **etapa 3 (registro de negocio + crear ficha)** y/o ingest del lote "complementos de
 cita" cuando llegue la lista. Pendientes que siguen: portada guía de juegos · 5 PENDING antiguos de ramen · rotar contraseña Neon
 prod + borrar `PROD_DB_URL` · regenerar recovery codes de Vercel · rotar API key de Resend.

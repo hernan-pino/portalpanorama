@@ -12,7 +12,6 @@ export interface ClaimAdminRow {
   claimantEmail: string
   claimantRole: string | null
   message: string | null
-  evidenceUrl: string | null
   contactEmail: string | null
   contactPhone: string | null
   status: ClaimStatus

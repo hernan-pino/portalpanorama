@@ -16,14 +16,6 @@ const claimSchema = z.object({
   message: z.string().trim().max(1000, 'Máximo 1000 caracteres.').optional(),
   contactEmail: z.string().trim().email('Ingresa un correo válido.').optional(),
   contactPhone: z.string().trim().max(30, 'Máximo 30 caracteres.').optional(),
-  // z.url() acepta cualquier esquema (javascript:, data:…) → un href con ese valor
-  // en el panel del admin sería XSS. Exigimos http(s) explícito.
-  evidenceUrl: z
-    .string()
-    .trim()
-    .url('Ingresa un enlace válido (con https://).')
-    .refine((u) => /^https?:\/\//i.test(u), 'El enlace debe empezar con http:// o https://')
-    .optional(),
 })
 
 export async function createClaimAction(formData: FormData): Promise<ActionResult> {
@@ -44,7 +36,6 @@ export async function createClaimAction(formData: FormData): Promise<ActionResul
     message: formData.get('message') || undefined,
     contactEmail: formData.get('contactEmail') || undefined,
     contactPhone: formData.get('contactPhone') || undefined,
-    evidenceUrl: formData.get('evidenceUrl') || undefined,
   })
   if (!parsed.success) return { error: parsed.error.issues[0]?.message ?? 'Datos inválidos.' }
 
@@ -66,7 +57,6 @@ export async function createClaimAction(formData: FormData): Promise<ActionResul
       targetName: place.name,
       claimantRole: parsed.data.role,
       message: parsed.data.message,
-      evidenceUrl: parsed.data.evidenceUrl,
       contactEmail: parsed.data.contactEmail,
       contactPhone: parsed.data.contactPhone,
     })

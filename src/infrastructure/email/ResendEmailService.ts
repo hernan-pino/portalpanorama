@@ -41,12 +41,12 @@ export class ResendEmailService implements EmailService {
 
   async sendClaimReceived(to: string, name: string, targetName: string): Promise<void> {
     const html = renderEmail({
-      preheader: 'Recibimos tu reclamo. Lo revisamos a mano y te avisamos por este correo.',
+      preheader: 'Recibimos tu reclamo. Falta un paso para verificarte.',
       bodyHtml:
         paragraph(`Hola <strong>${escapeHtml(name)}</strong>,`) +
         paragraph(`Recibimos tu solicitud para reclamar la ficha de <strong>${escapeHtml(targetName)}</strong> en Portal Panorama.`) +
-        paragraph('Revisamos cada reclamo a mano para proteger a los negocios: puede que te contactemos al teléfono o correo que dejaste para confirmar que eres parte del equipo del local.') +
-        muted('Te avisaremos por este mismo correo apenas tengamos una respuesta. No necesitas hacer nada más.'),
+        paragraph('<strong>Falta un paso para verificarte:</strong> escríbenos desde el canal oficial del local — un mensaje directo desde su Instagram oficial a <strong>@portalpanorama.cl</strong>, o un correo desde el correo oficial del negocio a <strong>hola@portalpanorama.cl</strong> — mencionando tu nombre. Con eso confirmamos que el local es tuyo y aprobamos tu reclamo.') +
+        muted('Te avisaremos por este mismo correo apenas quede aprobado.'),
     })
     await this.client().emails.send({
       from: this.from,

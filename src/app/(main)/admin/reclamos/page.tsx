@@ -16,7 +16,6 @@ export default async function ReclamosPage() {
     claimantEmail: c.claimantEmail,
     claimantRole: c.claimantRole,
     message: c.message,
-    evidenceUrl: c.evidenceUrl,
     contactEmail: c.contactEmail,
     contactPhone: c.contactPhone,
     status: c.status,

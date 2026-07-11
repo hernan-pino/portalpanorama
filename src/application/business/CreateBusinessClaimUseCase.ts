@@ -18,7 +18,6 @@ export interface CreateBusinessClaimInput {
   targetName: string
   claimantRole?: string
   message?: string
-  evidenceUrl?: string
   contactEmail?: string
   contactPhone?: string
 }
@@ -41,7 +40,6 @@ export class CreateBusinessClaimUseCase {
       brandId: input.brandId,
       claimantRole: input.claimantRole,
       message: input.message,
-      evidenceUrl: input.evidenceUrl,
       // Sin contacto explícito, el admin verifica contra el email de la cuenta.
       contactEmail: input.contactEmail ?? input.claimantEmail,
       contactPhone: input.contactPhone,

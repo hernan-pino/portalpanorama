@@ -63,15 +63,15 @@ export function ClaimForm({
 
       <div>
         <label className="form-label" htmlFor="claim-message">
-          Cuéntanos algo que nos ayude a verificarte <span style={{ color: 'var(--fg-subtle)' }}>(opcional)</span>
+          Cuéntanos algo sobre ti y el local <span style={{ color: 'var(--fg-subtle)' }}>(opcional)</span>
         </label>
         <textarea
           id="claim-message"
           name="message"
           className="form-input"
-          rows={4}
+          rows={3}
           maxLength={1000}
-          placeholder="Ej: soy la dueña, el teléfono de la ficha es el del local y pueden llamar en horario de atención…"
+          placeholder="Ej: soy la dueña desde 2019, cualquier duda me avisan…"
         />
       </div>
 
@@ -88,22 +88,22 @@ export function ClaimForm({
 
       <div>
         <label className="form-label" htmlFor="claim-phone">
-          Teléfono de contacto <span style={{ color: 'var(--fg-subtle)' }}>(opcional, acelera la verificación)</span>
+          Teléfono de contacto <span style={{ color: 'var(--fg-subtle)' }}>(opcional)</span>
         </label>
         <input id="claim-phone" name="contactPhone" type="tel" className="form-input" maxLength={30} placeholder="+56 9 …" />
       </div>
 
-      <div>
-        <label className="form-label" htmlFor="claim-evidence">
-          Enlace que respalde tu vínculo <span style={{ color: 'var(--fg-subtle)' }}>(opcional)</span>
-        </label>
-        <input
-          id="claim-evidence"
-          name="evidenceUrl"
-          type="url"
-          className="form-input"
-          placeholder="https:// — ej. el Instagram del local donde aparezcas, o tu perfil en el sitio"
-        />
+      {/* Cómo se verifica (decisión s28: DM del IG oficial o correo del local) */}
+      <div className="claim-verify">
+        <p className="claim-verify__title">Un paso más para verificarte</p>
+        <p className="claim-verify__body">
+          Para confirmar que el local es tuyo, escríbenos <strong>desde el canal oficial de
+          {' '}{placeName}</strong>: un mensaje directo desde su Instagram oficial a{' '}
+          <a href="https://instagram.com/portalpanorama.cl" target="_blank" rel="noopener noreferrer">@portalpanorama.cl</a>,
+          o un correo desde el correo oficial del local a{' '}
+          <a href="mailto:hola@portalpanorama.cl">hola@portalpanorama.cl</a>, mencionando tu nombre.
+          Con eso aprobamos tu reclamo.
+        </p>
       </div>
 
       {error && <p style={{ color: 'var(--error)', fontSize: 'var(--t-body-sm)', margin: 0 }}>{error}</p>}
