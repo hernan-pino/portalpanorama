@@ -62,9 +62,15 @@ resuelve el objetivo server-side y llama al use case con `placeId` **o** `brandI
 marca se setea `Brand.ownerId`; sus sucursales cuelgan de ella. `BrandPageView` ahora expone `id`. **(4) "Para negocios" en el menú**
 (header desktop + móvil), además del footer. **(5) Color del bloque de verificación** suavizado (carta neutra, no el durazno).
 **⚠️ Creación de cuenta de negocio (registro + crear ficha) = etapa 3, NO construida aún** — hoy solo existe el RECLAMO de fichas/marcas
-existentes. **▶️ Próximo paso (s29):** push a prod de etapa 1+2 (la migración viaja en el build) + probar
-el flujo en prod con un reclamo real; luego **etapa 3 (registro de negocio + crear ficha)** y/o ingest del lote "complementos de
-cita" cuando llegue la lista. Pendientes que siguen: portada guía de juegos · 5 PENDING antiguos de ramen · rotar contraseña Neon
+existentes. **(6) FAQ local-vs-marca** agregado a la landing (qué hacer si reclamaste un local que era parte de una cadena).
+**🛑 DECISIÓN DEL USUARIO (cierre s28): NO pushear todavía.** El reclamo sin su contraparte (panel donde el dueño gestione tras ser
+aprobado) sería prometer algo que no existe — "van a reclamar una ficha pero aún no está el dashboard/cuenta de negocio". Todo el trabajo
+de negocios (etapas 1+2, 5 commits `bde307e..4ac0f18`) queda **en local, sin pushear**, hasta que el flujo sirva de punta a punta.
+**▶️ Próximo paso (s29): construir el PANEL DE NEGOCIO (etapa 4)** — que tras aprobar el reclamo el dueño tenga una pestaña separada
+donde ver SU ficha, editar su info (moderado) y ver estadísticas básicas (visitas/guardados/cómo llegar; datos ya existen). Refs
+visuales del usuario: 2ª imagen de Claude Design ("Mi negocio"/panel con stats + estado de ficha). Con reclamo + panel, se pushea TODO
+junto y el flujo tiene sentido. (Etapa 3 —registro + crear ficha desde cero— puede ir después; es independiente.) En paralelo: ingest
+del lote "complementos de cita" cuando llegue la lista. Pendientes que siguen: portada guía de juegos · 5 PENDING antiguos de ramen · rotar contraseña Neon
 prod + borrar `PROD_DB_URL` · regenerar recovery codes de Vercel · rotar API key de Resend.
 
 **Sesión previa:** 2026-07-10 (sesión 27 — **Quick wins de UI: los 6 frentes acordados, implementados y verificados en local**):
