@@ -2531,8 +2531,8 @@ select.form-input { cursor: pointer; }
 
 /* Bloque "cómo te verificamos" en el formulario de reclamo */
 .claim-verify {
-  background: var(--accent-soft); border-radius: var(--r-lg);
-  padding: var(--s-4) var(--s-5);
+  background: var(--bg-raised); border: 1px solid var(--surface-line);
+  border-radius: var(--r-lg); padding: var(--s-4) var(--s-5);
 }
 .claim-verify__title {
   font-family: var(--font-display); font-weight: 500; font-size: 16px;

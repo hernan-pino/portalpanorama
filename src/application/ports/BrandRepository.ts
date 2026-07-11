@@ -4,6 +4,7 @@ import { PlaceCardView } from './PlaceRepository'
 // Página pública de la marca: identidad + sus sucursales publicadas (tarjetas).
 // Denormalizado; no es el agregado de dominio.
 export interface BrandPageView {
+  id: string
   slug: string
   name: string
   logoUrl?: string

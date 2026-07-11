@@ -24,6 +24,7 @@ export async function Header() {
           <nav className="topbar__nav" aria-label="Navegación principal">
             <Link href="/explorar">Explorar</Link>
             <Link href="/guias">Guías</Link>
+            <Link href="/para-negocios">Para negocios</Link>
           </nav>
 
           {/* Actions */}

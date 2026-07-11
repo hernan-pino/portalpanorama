@@ -43,7 +43,13 @@ export default async function ReclamarPage({ params }: PageProps) {
         <Link href="/para-negocios">Saber más sobre las cuentas de negocio</Link>.
       </p>
 
-      <ClaimForm slug={slug} placeName={place.name} defaultEmail={session.user.email ?? ''} />
+      <ClaimForm
+        kind="place"
+        slug={slug}
+        targetName={place.name}
+        defaultEmail={session.user.email ?? ''}
+        backHref={`/lugar/${slug}`}
+      />
     </div>
   )
 }

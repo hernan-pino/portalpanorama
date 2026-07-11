@@ -99,6 +99,7 @@ export class PrismaBrandRepository implements BrandRepository {
     })
     if (!row) return null
     return {
+      id: row.id,
       slug: row.slug,
       name: row.name,
       logoUrl: row.logoUrl ?? undefined,

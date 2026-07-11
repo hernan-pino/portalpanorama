@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 import Image from 'next/image'
 import { container } from '@lib/container'
+import Link from 'next/link'
 import type { BrandPageView } from '@application/ports/BrandRepository'
 import { BrandNotFoundError } from '@domain/brand/errors/BrandNotFoundError'
 import { PlaceCard } from '@components/place/PlaceCard'
@@ -118,6 +119,24 @@ export default async function MarcaPage({ params }: PageProps) {
           </p>
         )}
       </section>
+
+      {/* Reclamo de la marca (cadena) — CTA destacado, s28 */}
+      <aside className="ficha__claim">
+        <div>
+          <p className="ficha__claim-title">¿Esta marca es tuya?</p>
+          <p className="ficha__claim-sub">
+            Reclama {brand.name} gratis para gestionar todos sus locales desde una sola cuenta.
+          </p>
+        </div>
+        <div className="ficha__claim-actions">
+          <Link href={`/reclamar-marca/${slug}`} className="btn btn--primary btn--sm">
+            Reclamar esta marca
+          </Link>
+          <Link href="/para-negocios" className="btn btn--ghost btn--sm">
+            Saber más
+          </Link>
+        </div>
+      </aside>
     </div>
   )
 }

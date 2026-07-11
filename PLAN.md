@@ -56,7 +56,13 @@ negocio)** y el tema de **planes de pago** (Fase C). (2) **Método de verificaci
 de evidencia"): ahora el reclamante **escribe desde el canal oficial del local** (DM del IG oficial a `@portalpanorama.cl` o correo del
 correo oficial a `hola@portalpanorama.cl`) → el form quedó en **rol + contacto** (se quitó el campo de URL; de paso mata el vector XSS
 de raíz), el correo de "recibido" y la landing explican el paso, y la columna `evidenceUrl` queda **dormida** en la BD. Re-verificado:
-typecheck + **122 tests** + lint OK. **▶️ Próximo paso (s29):** push a prod de etapa 1+2 (la migración viaja en el build) + probar
+typecheck + **122 tests** + lint OK. **(3) Flujo de MARCA agregado:** el reclamo se generalizó a lugar O marca — CTA "¿Esta marca
+es tuya?" en `/marca/[slug]` → **`/reclamar-marca/[slug]`** (reusa el `ClaimForm`, ahora con prop `kind: place|brand`; la action
+resuelve el objetivo server-side y llama al use case con `placeId` **o** `brandId`, que el schema/dominio ya soportaban). Al aprobar una
+marca se setea `Brand.ownerId`; sus sucursales cuelgan de ella. `BrandPageView` ahora expone `id`. **(4) "Para negocios" en el menú**
+(header desktop + móvil), además del footer. **(5) Color del bloque de verificación** suavizado (carta neutra, no el durazno).
+**⚠️ Creación de cuenta de negocio (registro + crear ficha) = etapa 3, NO construida aún** — hoy solo existe el RECLAMO de fichas/marcas
+existentes. **▶️ Próximo paso (s29):** push a prod de etapa 1+2 (la migración viaja en el build) + probar
 el flujo en prod con un reclamo real; luego **etapa 3 (registro de negocio + crear ficha)** y/o ingest del lote "complementos de
 cita" cuando llegue la lista. Pendientes que siguen: portada guía de juegos · 5 PENDING antiguos de ramen · rotar contraseña Neon
 prod + borrar `PROD_DB_URL` · regenerar recovery codes de Vercel · rotar API key de Resend.

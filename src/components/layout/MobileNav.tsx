@@ -39,6 +39,7 @@ export function MobileNav({ isAuthenticated, role }: MobileNavProps) {
             <nav className="mobile-nav-links" aria-label="Menú principal">
               <Link href="/explorar" onClick={close}>Explorar</Link>
               <Link href="/guias" onClick={close}>Guías</Link>
+              <Link href="/para-negocios" onClick={close}>Para negocios</Link>
             </nav>
 
             <div className="mobile-nav-divider" />
