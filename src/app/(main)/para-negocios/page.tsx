@@ -51,6 +51,10 @@ const FAQ = [
     a: 'Nada. Reclamar tu ficha y gestionar tu información es gratis, y lo va a seguir siendo. Más adelante ofreceremos opciones pagadas de visibilidad (siempre opcionales y claramente marcadas), pero la información de tu local es gratis para todos, siempre.',
   },
   {
+    q: '¿Tengo varios locales o una cadena?',
+    a: 'Si tu negocio tiene varias sucursales agrupadas bajo una misma marca, puedes reclamar la marca completa desde su página (el botón “¿Esta marca es tuya?”) y gestionar todos sus locales desde una sola cuenta. ¿Reclamaste un local suelto y después te diste cuenta de que es parte de una cadena? Reclama también la marca, o escríbenos a hola@portalpanorama.cl y lo unimos por ti.',
+  },
+  {
     q: '¿Puedo pedir que saquen mi local?',
     a: 'Sí. Escríbenos a hola@portalpanorama.cl y lo conversamos.',
   },
