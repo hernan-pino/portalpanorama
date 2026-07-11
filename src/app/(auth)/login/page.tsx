@@ -9,14 +9,17 @@ export const metadata: Metadata = { title: 'Iniciar sesión' }
 export default async function LoginPage({
   searchParams,
 }: {
-  searchParams: Promise<{ reset?: string; registered?: string }>
+  searchParams: Promise<{ reset?: string; registered?: string; callbackUrl?: string }>
 }) {
-  const { reset, registered } = await searchParams
+  const { reset, registered, callbackUrl } = await searchParams
   const notice = reset
     ? 'Tu contraseña se actualizó. Ya puedes iniciar sesión.'
     : registered
       ? 'Tu cuenta se creó. Inicia sesión para continuar.'
       : null
+  const registroHref = callbackUrl
+    ? `/registro?callbackUrl=${encodeURIComponent(callbackUrl)}`
+    : '/registro'
 
   return (
     <div className="auth-shell">
@@ -51,7 +54,7 @@ export default async function LoginPage({
 
         <div className="auth-tabs">
           <span className="auth-tabs__item auth-tabs__item--active">Iniciar sesión</span>
-          <Link href="/registro" className="auth-tabs__item">Registrarse</Link>
+          <Link href={registroHref} className="auth-tabs__item">Registrarse</Link>
         </div>
 
         <h1
@@ -83,7 +86,7 @@ export default async function LoginPage({
           </p>
         )}
 
-        <LoginForm />
+        <LoginForm callbackUrl={callbackUrl} />
         {googleAuthEnabled && <GoogleButton />}
       </div>
 

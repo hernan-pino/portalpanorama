@@ -6,7 +6,15 @@ import { RegisterForm } from './RegisterForm'
 
 export const metadata: Metadata = { title: 'Crear cuenta' }
 
-export default function RegistroPage() {
+export default async function RegistroPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ callbackUrl?: string }>
+}) {
+  const { callbackUrl } = await searchParams
+  const loginHref = callbackUrl
+    ? `/login?callbackUrl=${encodeURIComponent(callbackUrl)}`
+    : '/login'
   return (
     <div className="auth-shell">
 
@@ -39,7 +47,7 @@ export default function RegistroPage() {
         </Link>
 
         <div className="auth-tabs">
-          <Link href="/login" className="auth-tabs__item">Iniciar sesión</Link>
+          <Link href={loginHref} className="auth-tabs__item">Iniciar sesión</Link>
           <span className="auth-tabs__item auth-tabs__item--active">Registrarse</span>
         </div>
 
@@ -60,7 +68,7 @@ export default function RegistroPage() {
           Gratis. Sin tarjeta de crédito.
         </p>
 
-        <RegisterForm />
+        <RegisterForm callbackUrl={callbackUrl} />
         {googleAuthEnabled && <GoogleButton label="Registrarse con Google" />}
       </div>
 

@@ -2,6 +2,7 @@
 import { AuthError } from 'next-auth'
 import { redirect } from 'next/navigation'
 import { signIn } from '@lib/auth'
+import { safeCallbackUrl } from '@lib/safeCallbackUrl'
 import { z } from 'zod'
 
 const schema = z.object({
@@ -35,5 +36,6 @@ export async function loginAction(
     throw error
   }
 
-  redirect('/explorar?ingreso=1')
+  // Si venía de un flujo (ej. reclamar ficha), vuelve ahí; si no, a /explorar.
+  redirect(safeCallbackUrl(formData.get('callbackUrl') as string | null, '/explorar?ingreso=1'))
 }

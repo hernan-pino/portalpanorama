@@ -3,12 +3,13 @@ import { useActionState, useState } from 'react'
 import { PasswordMeter } from '../PasswordMeter'
 import { registerAction } from './actions'
 
-export function RegisterForm() {
+export function RegisterForm({ callbackUrl }: { callbackUrl?: string }) {
   const [state, formAction, pending] = useActionState(registerAction, null)
   const [password, setPassword] = useState('')
 
   return (
     <form action={formAction} style={{ display: 'flex', flexDirection: 'column', gap: 'var(--s-4)' }}>
+      {callbackUrl && <input type="hidden" name="callbackUrl" value={callbackUrl} />}
       {state?.error && (
         <p
           role="alert"

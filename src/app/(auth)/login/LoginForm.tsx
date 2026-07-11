@@ -3,11 +3,12 @@ import { useActionState } from 'react'
 import Link from 'next/link'
 import { loginAction } from './actions'
 
-export function LoginForm() {
+export function LoginForm({ callbackUrl }: { callbackUrl?: string }) {
   const [state, formAction, pending] = useActionState(loginAction, null)
 
   return (
     <form action={formAction} style={{ display: 'flex', flexDirection: 'column', gap: 'var(--s-4)' }}>
+      {callbackUrl && <input type="hidden" name="callbackUrl" value={callbackUrl} />}
       {state?.error && (
         <p
           role="alert"

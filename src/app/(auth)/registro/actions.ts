@@ -4,6 +4,7 @@ import { redirect } from 'next/navigation'
 import { z } from 'zod'
 import { signIn } from '@lib/auth'
 import { container } from '@lib/container'
+import { safeCallbackUrl } from '@lib/safeCallbackUrl'
 import { rateLimitDurable, clientIp } from '@lib/rateLimit'
 import { EmailAlreadyInUseError } from '@domain/user/errors/EmailAlreadyInUseError'
 import { evaluatePassword } from '@domain/user/PasswordPolicy'
@@ -47,6 +48,9 @@ export async function registerAction(
     throw error
   }
 
+  // Destino tras el alta: si venía de un flujo (reclamar ficha), vuelve ahí.
+  const callbackUrl = safeCallbackUrl(formData.get('callbackUrl') as string | null, '/mi-cuenta?bienvenida=1')
+
   // Auto-login: la persona recién creada entra directo, sin pasar por /login.
   try {
     await signIn('credentials', {
@@ -55,10 +59,13 @@ export async function registerAction(
       redirect: false,
     })
   } catch (error) {
-    // La cuenta sí quedó creada; si el auto-login fallara, la mandamos a login a mano.
-    if (error instanceof AuthError) redirect('/login?registered=1')
+    // La cuenta sí quedó creada; si el auto-login fallara, la mandamos a login a mano
+    // preservando el destino para no perder el flujo.
+    if (error instanceof AuthError) {
+      redirect(`/login?registered=1&callbackUrl=${encodeURIComponent(callbackUrl)}`)
+    }
     throw error
   }
 
-  redirect('/mi-cuenta?bienvenida=1')
+  redirect(callbackUrl)
 }
