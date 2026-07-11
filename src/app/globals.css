@@ -2543,6 +2543,22 @@ select.form-input { cursor: pointer; }
 /* CTA final */
 .biz-cta { text-align: center; padding: var(--s-12) 0 0; }
 
+/* Ayuda por campo (el "?" clickeable junto a la etiqueta) */
+.field-help { display: inline-flex; align-items: center; }
+.field-help__btn {
+  width: 16px; height: 16px; border-radius: 50%; margin-left: 6px;
+  border: 1px solid var(--surface-line); background: var(--bg-sunken);
+  color: var(--fg-muted); font-size: 11px; line-height: 1; font-weight: 600;
+  display: inline-grid; place-items: center; cursor: pointer; vertical-align: middle;
+}
+.field-help__btn:hover { border-color: var(--accent); color: var(--accent-70); }
+.field-help__tip {
+  display: block; margin-top: var(--s-2); padding: var(--s-3);
+  background: var(--bg-sunken); border: 1px solid var(--surface-line-soft);
+  border-radius: var(--r-md); font-size: var(--t-body-sm); font-weight: 400;
+  color: var(--fg-muted); line-height: var(--lh-loose, 1.6);
+}
+
 /* ═══ Panel de negocio (/mi-negocio) ═══════════════════════════════════════ */
 .biz-panel { max-width: 960px; padding-top: var(--s-10); padding-bottom: var(--s-24); }
 .biz-panel__head { margin-bottom: var(--s-8); }

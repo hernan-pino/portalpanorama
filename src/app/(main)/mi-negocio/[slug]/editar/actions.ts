@@ -30,6 +30,8 @@ const editSchema = z.object({
   menuUrl: httpUrl.optional().or(z.literal('')),
   priceRange: z.nativeEnum(PriceRange).optional().or(z.literal('')),
   reservation: z.nativeEnum(ReservationPolicy).optional().or(z.literal('')),
+  accessDetail: z.string().trim().max(300).optional(),
+  reference: z.string().trim().max(300).optional(),
 })
 
 function clean(v: string | undefined): string | undefined {
@@ -50,6 +52,8 @@ export async function updateOwnedPlaceAction(formData: FormData): Promise<Action
     menuUrl: formData.get('menuUrl') || undefined,
     priceRange: formData.get('priceRange') || undefined,
     reservation: formData.get('reservation') || undefined,
+    accessDetail: formData.get('accessDetail') || undefined,
+    reference: formData.get('reference') || undefined,
   })
   if (!parsed.success) return { error: parsed.error.issues[0]?.message ?? 'Datos inválidos.' }
 
@@ -64,6 +68,8 @@ export async function updateOwnedPlaceAction(formData: FormData): Promise<Action
       menuUrl: clean(d.menuUrl),
       priceRange: (d.priceRange || undefined) as PriceRange | undefined,
       reservation: (d.reservation || undefined) as ReservationPolicy | undefined,
+      accessDetail: clean(d.accessDetail),
+      reference: clean(d.reference),
     })
   } catch (err) {
     if (err instanceof UnauthorizedBusinessAccessError) return { error: 'No gestionas esta ficha.' }

@@ -39,11 +39,17 @@ export default async function EditarFichaPage({ params }: PageProps) {
         <Link href="/mi-negocio">← Mi negocio</Link>
       </p>
       <h1 className="display legal__title">Editar {place.name}</h1>
-      <p className="legal__lead">
-        Actualiza la información de tu ficha. Los cambios se publican al tiro. El nombre, la
-        categoría y la ubicación los gestiona nuestro equipo — si necesitas cambiarlos, escríbenos a{' '}
-        <a href="mailto:hola@portalpanorama.cl">hola@portalpanorama.cl</a>.
-      </p>
+
+      <div className="claim-verify" style={{ marginBottom: 'var(--s-5)' }}>
+        <p className="claim-verify__title">Tu ficha ya está optimizada ✨</p>
+        <p className="claim-verify__body">
+          Nuestro equipo cuidó esta ficha para que se vea y posicione bien. Te recomendamos usar
+          este editor solo para <strong>corregir información errónea o desactualizada</strong>
+          {' '}(horario, teléfono, precios) y <strong>sumar tus fotos</strong>. El nombre, la
+          categoría y la ubicación los gestiona nuestro equipo — si necesitas cambiarlos, escríbenos
+          a <a href="mailto:hola@portalpanorama.cl">hola@portalpanorama.cl</a>.
+        </p>
+      </div>
 
       <EditPlaceForm
         slug={place.slug}
@@ -56,6 +62,8 @@ export default async function EditarFichaPage({ params }: PageProps) {
           menuUrl: place.menuUrl ?? '',
           priceRange: place.priceRange ?? '',
           reservation: place.reservation ?? '',
+          accessDetail: place.accessDetail ?? '',
+          reference: place.reference ?? '',
         }}
       />
     </div>

@@ -1,6 +1,7 @@
 'use client'
 import { useState, useTransition } from 'react'
 import Link from 'next/link'
+import { FieldHelp } from '@components/ui/FieldHelp'
 import { updateOwnedPlaceAction } from './actions'
 
 const PRICE_OPTIONS = [
@@ -28,6 +29,8 @@ export interface EditInitial {
   menuUrl: string
   priceRange: string
   reservation: string
+  accessDetail: string
+  reference: string
 }
 
 export function EditPlaceForm({ slug, initial }: { slug: string; initial: EditInitial }) {
@@ -55,55 +58,87 @@ export function EditPlaceForm({ slug, initial }: { slug: string; initial: EditIn
       <input type="hidden" name="slug" value={slug} />
 
       <div>
-        <label className="form-label" htmlFor="f-description">Descripción</label>
+        <label className="form-label" htmlFor="f-description">
+          Descripción <FieldHelp tip="2–4 frases que cuenten qué hace especial al lugar: el plato estrella, el ambiente, para quién es ideal. Evita mayúsculas sostenidas y datos de contacto (esos van en sus campos)." />
+        </label>
         <textarea id="f-description" name="description" className="form-input" rows={5}
           defaultValue={initial.description} maxLength={4000}
           placeholder="Cuenta qué hace especial a tu local…" />
       </div>
 
       <div>
-        <label className="form-label" htmlFor="f-schedule">Horario</label>
+        <label className="form-label" htmlFor="f-schedule">
+          Horario <FieldHelp tip="Un horario claro es lo que más consulta la gente. Anota los días y el rango horario; si cierran un día o tienen horario especial de fin de semana, dilo. Ej: Lun a Vie 9:00–19:00 · Sáb 10:00–14:00 · Dom cerrado." />
+        </label>
         <textarea id="f-schedule" name="schedule" className="form-input" rows={3}
           defaultValue={initial.schedule} maxLength={2000}
           placeholder="Ej: Lun a Vie 9:00–19:00 · Sáb 10:00–14:00" />
       </div>
 
       <div>
-        <label className="form-label" htmlFor="f-phone">Teléfono</label>
+        <label className="form-label" htmlFor="f-phone">
+          Teléfono <FieldHelp tip="Un número donde de verdad contesten (idealmente el del local). Con código: +56 9 …" />
+        </label>
         <input id="f-phone" name="phone" type="tel" className="form-input"
           defaultValue={initial.phone} maxLength={40} placeholder="+56 9 …" />
       </div>
 
       <div>
-        <label className="form-label" htmlFor="f-website">Sitio web</label>
+        <label className="form-label" htmlFor="f-website">
+          Sitio web <FieldHelp tip="El enlace debe empezar con https://. Si no tienes sitio, déjalo vacío — no pongas aquí tu Instagram (ese tiene su campo)." />
+        </label>
         <input id="f-website" name="website" type="url" className="form-input"
           defaultValue={initial.website} placeholder="https://…" />
       </div>
 
       <div>
-        <label className="form-label" htmlFor="f-instagram">Instagram</label>
+        <label className="form-label" htmlFor="f-instagram">
+          Instagram <FieldHelp tip="Tu cuenta oficial. Puedes poner el @usuario o el enlace completo." />
+        </label>
         <input id="f-instagram" name="instagram" className="form-input"
           defaultValue={initial.instagram} maxLength={120} placeholder="@tu_local o el enlace" />
       </div>
 
       <div>
-        <label className="form-label" htmlFor="f-menu">Carta / menú (enlace)</label>
+        <label className="form-label" htmlFor="f-menu">
+          Carta / menú (enlace) <FieldHelp tip="Un enlace a tu carta (PDF, tu web o una foto pública). Debe empezar con https://. Que esté actualizada — una carta vieja frustra al cliente." />
+        </label>
         <input id="f-menu" name="menuUrl" type="url" className="form-input"
           defaultValue={initial.menuUrl} placeholder="https://…" />
       </div>
 
       <div>
-        <label className="form-label" htmlFor="f-price">Rango de precio</label>
+        <label className="form-label" htmlFor="f-price">
+          Rango de precio <FieldHelp tip="El gasto típico por persona. Ayuda a que te encuentre gente con la expectativa correcta." />
+        </label>
         <select id="f-price" name="priceRange" className="form-input" defaultValue={initial.priceRange}>
           {PRICE_OPTIONS.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
         </select>
       </div>
 
       <div>
-        <label className="form-label" htmlFor="f-reservation">¿Reserva?</label>
+        <label className="form-label" htmlFor="f-reservation">
+          ¿Reserva? <FieldHelp tip="¿Se puede llegar nomás o conviene reservar? Si es obligatoria, márcalo para que nadie llegue en vano." />
+        </label>
         <select id="f-reservation" name="reservation" className="form-input" defaultValue={initial.reservation}>
           {RESERVATION_OPTIONS.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
         </select>
+      </div>
+
+      <div>
+        <label className="form-label" htmlFor="f-access">
+          Cómo llegar / acceso <FieldHelp tip="Detalles para encontrarte una vez en la dirección: piso, local, entrada específica. Ej: 2° piso del Espacio B, entrada por el pasaje. (La dirección y el mapa los gestiona nuestro equipo.)" />
+        </label>
+        <input id="f-access" name="accessDetail" className="form-input"
+          defaultValue={initial.accessDetail} maxLength={300} placeholder="Ej: 2° piso, entrada por el pasaje" />
+      </div>
+
+      <div>
+        <label className="form-label" htmlFor="f-reference">
+          Referencia <FieldHelp tip="Un punto conocido cerca que ayude a ubicarte. Ej: frente a la plaza, al lado del Jumbo." />
+        </label>
+        <input id="f-reference" name="reference" className="form-input"
+          defaultValue={initial.reference} maxLength={300} placeholder="Ej: frente a la plaza" />
       </div>
 
       {error && <p style={{ color: 'var(--error)', fontSize: 'var(--t-body-sm)', margin: 0 }}>{error}</p>}

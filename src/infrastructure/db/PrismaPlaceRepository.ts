@@ -551,6 +551,8 @@ export class PrismaPlaceRepository implements PlaceRepository {
         menuUrl: true,
         priceRange: true,
         reservation: true,
+        accessDetail: true,
+        reference: true,
         ownerId: true,
         category: { select: { name: true } },
         commune: { select: { name: true } },
@@ -572,6 +574,8 @@ export class PrismaPlaceRepository implements PlaceRepository {
       menuUrl: r.menuUrl ?? undefined,
       priceRange: (r.priceRange as PriceRange | null) ?? undefined,
       reservation: (r.reservation as ReservationPolicy | null) ?? undefined,
+      accessDetail: r.accessDetail ?? undefined,
+      reference: r.reference ?? undefined,
       ownerId: r.ownerId,
       brandOwnerId: r.brand?.ownerId ?? null,
     }
@@ -591,6 +595,8 @@ export class PrismaPlaceRepository implements PlaceRepository {
         menuUrl: fields.menuUrl ?? null,
         priceRange: (fields.priceRange as $Enums.PriceRange | undefined) ?? null,
         reservation: (fields.reservation as $Enums.ReservationPolicy | undefined) ?? null,
+        accessDetail: fields.accessDetail ?? null,
+        reference: fields.reference ?? null,
       },
     })
   }

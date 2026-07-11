@@ -140,6 +140,8 @@ export interface OwnerEditableFields {
   menuUrl?: string
   priceRange?: PriceRange
   reservation?: ReservationPolicy
+  accessDetail?: string
+  reference?: string
 }
 
 // Vista para poblar el form de edición del dueño + los ids de propiedad para el
