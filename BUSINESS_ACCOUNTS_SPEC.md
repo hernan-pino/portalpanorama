@@ -131,9 +131,46 @@ no hay pagos, no es agregador scrapeado, no reemplaza la ficha. El `BusinessProf
 ancla donde eventos colgará *gated*, pero su build va **separado y después, con audiencia**.
 
 **Etapas de implementación (las próximas sesiones de código):**
-1. **Schema:** `BusinessProfile` + `BusinessClaim` + enum + migración aditiva (§4).
+1. **Schema:** `BusinessProfile` + `BusinessClaim` + enum + migración aditiva (§4). ✅ HECHO (s28).
 2. **Reclamo end-to-end:** CTA en ficha → form → bandeja en el admin → aprobar setea `ownerId` y
-   crea el `BusinessProfile` → correos. Incluye la **landing "para negocios"** (la necesitan ambos
-   flujos).
+   crea el `BusinessProfile` → correos. Incluye la **landing "para negocios"**. ✅ HECHO (s28).
 3. **Registro de negocio + crear ficha** (con la guía de mejores prácticas) → PENDING_REVIEW.
-4. **Dashboard de negocio:** editar ficha moderada + fotos + estadísticas + reportes.
+4. **Dashboard de negocio:** editar ficha + fotos + estadísticas + reportes. 🔄 Parcial (s28): dashboard
+   básico + edición directa + guard IDOR + ayuda por campo hechos; falta rediseño, fotos, propuestas.
+
+## 7. Decisiones de la s28-cont (2026-07-10) — edición, ficha nueva y fotos
+
+**Reparto de campos de una ficha (quién edita qué):**
+- 🟢 **Editar directo (dueño verificado, se publica al tiro):** descripción, horario, teléfono,
+  sitio web, Instagram + redes extra, carta/menú, rango de precio, política de reserva, métodos de
+  pago, cómo llegar/acceso, referencia, **y fotos**. Son datos operacionales que el dueño conoce mejor.
+- 🟡 **Proponer → el admin aprueba (afecta curatoría/filtros):** categoría y subcategoría (principal
+  y secundaria), tags. El dueño propone el cambio y queda en una **cola de moderación** hasta el OK.
+- 🔒 **Solo admin (identidad/ubicación/datos automáticos):** nombre (cambio de nombre = por correo,
+  afecta URL/SEO), dirección/comuna/barrio/mapa/metro, place_id/rating/reseñas/score, estado/marca/
+  contenedor/destacado.
+- **Encuadre "ficha optimizada":** el editor y el reclamo avisan que la ficha ya está optimizada por
+  el equipo y se recomienda **solo corregir info errónea/desactualizada y sumar fotos** (no reescribir).
+- **Ayuda por campo:** componente `FieldHelp` (un "?" clickeable con recomendaciones) en cada campo.
+
+**Modelo mental (resuelve la confusión "¿son cosas separadas?"): NO — hay UNA sola ficha (`Place`).**
+Lo que cambia es su **origen** y su **estado**. Tres orígenes, un mismo destino (ficha publicada y
+**optimizada**):
+1. **Admin la carga** con la skill `ficha-lugar` (carga del catálogo hoy).
+2. **Dueño reclama** una que ya existe (ya optimizada → solo corrige + fotos).
+3. **Dueño crea una nueva** (su local no está en el catálogo).
+
+**Flujo de ficha nueva (origen 3), decidido:** el dueño llena un **formulario-semilla CORTO** (lo que
+él sabe) → la ficha entra en **PENDING_REVIEW (borrador, no visible)** → **el admin corre la skill**
+sobre la semilla para investigar/optimizar (fotos, rating, tags, descripción) → revisa y **publica** →
+ya publicada, el dueño la gestiona (editar directo + proponer). La semilla es un *lead*, no la ficha
+final: el dueño aporta poco, la skill + el admin hacen el trabajo pesado → se mantiene la calidad sin
+cargarle la mano al dueño. **Casi no hay maquinaria nueva:** `PENDING_REVIEW` + admin + skill ya existen;
+"crear ficha" = un form corto que crea un `Place` en PENDING_REVIEW con `ownerId`.
+- **Campos mínimos de la semilla (propuesta):** nombre · dirección · comuna · categoría tentativa ·
+  un teléfono o Instagram para verificar. Nada más.
+
+**Fotos — recomendaciones al dueño (pedido del usuario):** Google Maps a veces trae fotos genéricas o
+malas, y la foto es lo primero que mira la gente. Al subir, guiar con **qué fotos convierten**:
+fachada/entrada (para reconocer el lugar al llegar), interior/ambiente, producto/comida o lo que se
+ofrece. Objetivo: que el usuario se haga una idea real de cómo es el lugar. (Va en la etapa de fotos.)
