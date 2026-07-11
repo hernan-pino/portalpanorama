@@ -7,6 +7,43 @@ priorizado. Se actualiza cada vez que avanzamos. Liviano a propósito — para r
 - **Modelo de datos:** [SCHEMA.md](SCHEMA.md) · **Capas:** [ARCHITECTURE.md](ARCHITECTURE.md) · **Marca:** [BRAND_SPEC.md](BRAND_SPEC.md) · **Cuenta de negocio + reclamo (✅ scope MVP decidido s28, por construir):** [BUSINESS_ACCOUNTS_SPEC.md](BUSINESS_ACCOUNTS_SPEC.md)
 - **Bitácora del rediseño (historia + razonamiento de las decisiones):** [PLAN_FASE9.md](PLAN_FASE9.md) · **Histórico (docs superados):** [docs/historico/](docs/historico/)
 
+---
+
+## ▶️ RETOMAR AQUÍ — Cuentas de negocio (cierre s28, 2026-07-10)
+
+**Dónde vamos:** construyendo el MVP de **cuentas de negocio** (lado gratis). Todo el trabajo está
+**en LOCAL, sin pushear** — decisión del usuario: no subir hasta que el flujo sirva de punta a punta
+(reclamar → cuenta → panel donde gestionar). En prod NO cambió nada.
+
+**✅ Hecho y commiteado en local (NO en prod):**
+- **Etapa 1 — schema:** `BusinessProfile` + `BusinessClaim` + enum + migración `add_business_accounts` (aplicada en local, NO en prod).
+- **Etapa 2 — reclamo end-to-end:** CTA "¿Este negocio es tuyo?" en ficha → `/reclamar/[slug]` · reclamo de MARCA en `/marca/[slug]` → `/reclamar-marca/[slug]` · bandeja `/admin/reclamos` (aprobar/rechazar con nota) · correos Resend · **landing `/para-negocios`** (rediseñada, con FAQ toggle) · "Para negocios" en el menú · verificación por **DM del IG oficial o correo del local** (no "enlace de evidencia").
+- **Etapa 4 — panel (PARCIAL):** `/mi-negocio` (dashboard básico: fichas gestionadas + stats visitas/guardados/rating) · `/mi-negocio/[slug]/editar` (**edición directa** de campos operacionales + `accessDetail`/`reference` + **ayuda por campo `FieldHelp`** + banner "ficha optimizada") · guard anti-IDOR (`assertManagesPlace`, probado e2e) · acceso "Mi negocio" en header · correo de aprobación linkea al panel.
+- **Fix aparte:** login/registro respetan `callbackUrl` (no se pierde el flujo de reclamo tras crear cuenta) + `safeCallbackUrl` anti open-redirect.
+- **Estado build:** 131 tests verdes · typecheck + lint OK · `architecture-guardian` limpio · XSS cerrado (website/menuUrl http(s) + withProtocol).
+
+**📋 Decisiones de producto cerradas (todas en [BUSINESS_ACCOUNTS_SPEC.md](BUSINESS_ACCOUNTS_SPEC.md) §6-§7):**
+- **Reparto de campos:** 🟢 editar directo (info operacional + fotos) · 🟡 proponer→admin aprueba (categoría/subcategoría/tags) · 🔒 solo admin (nombre, ubicación, datos de Google).
+- **Modelo mental:** UNA sola ficha (`Place`), 3 orígenes (admin+skill / reclamo / creación por dueño), mismo destino optimizado.
+- **Ficha nueva (etapa 3):** el dueño llena una **semilla corta** (nombre·dirección·comuna·categoría tentativa·teléfono o IG) → `PENDING_REVIEW` → **el admin corre la skill `ficha-lugar`** para optimizar → publica → el dueño gestiona. Casi no hay maquinaria nueva.
+- **Fotos:** con **recomendaciones de qué subir** (fachada/entrada · interior · producto/comida).
+- **Encuadre "ficha optimizada":** el editor/reclamo avisan que la ficha ya está curada y se recomienda solo corregir info errónea + fotos.
+
+**⬜ PLAN DE ACCIÓN — próxima sesión (en orden):**
+1. **Rediseñar el dashboard `/mi-negocio`** — al usuario NO le gustó el actual; apuntar al mockup de Claude Design que mandó (sidebar · tarjetas KPI · "estado de tu ficha" con checklist de completitud · gráfico). ⚠️ Ser honesto: llamadas/posición/reseñas/eventos NO existen aún → marcarlos "pronto"; usar datos reales (visitas/guardados/rating + completitud portada/galería/horario/menú).
+2. **Gestión de fotos del dueño** (parte de "editar directo") — reusar el pipeline de imágenes (subir/importar/reordenar/portada/borrar) con guard de ownership + **recomendaciones de qué fotos subir**.
+3. **Propuestas de categoría/tags** — cola de moderación: el dueño propone, el admin aprueba (patrón similar a los reclamos; entidad/estado nuevos + bandeja admin + correos).
+4. **Etapa 3 — registro "para negocios" + crear ficha (semilla)** — signup que crea `User` + `BusinessProfile` activado; form-semilla corto → `Place` PENDING_REVIEW con `ownerId` → cae en el flujo admin+skill.
+5. **Cuando el flujo sirva de punta a punta + OK visual del usuario → PUSHEAR TODO junto** (etapas 1+2+3+4; la migración viaja en el build) y probar en prod.
+
+**🔧 Pendientes operativos (del usuario / infra):**
+- **Recepción de `hola@portalpanorama.cl`:** Resend solo ENVÍA. Hay que configurar recepción (Cloudflare Email Routing gratis → reenvía a Gmail, o Zoho/Workspace) o los correos que el dueño mande para verificarse se pierden. **Sin esto, la verificación por correo no funciona** (queda solo IG).
+- **Deliverability:** los correos caen en "Promociones" de Gmail → revisar SPF/DKIM/DMARC en Resend + bajar el tono "marketing" de los transaccionales.
+- **Relanzar `security-reviewer`** del panel (se cortó por límite de sesión; el e2e ya probó el IDOR, falta la auditoría formal).
+- Arrastrados: portada guía de juegos · 5 PENDING antiguos de ramen · rotar contraseña Neon prod + borrar `PROD_DB_URL` · regenerar recovery codes de Vercel · rotar API key de Resend · ingest lote "complementos de cita" (chocolaterías/florerías/plantas) cuando llegue la lista.
+
+---
+
 **Última actualización:** 2026-07-10 (sesión 28 — **Deploy de la s27 arreglado y verificado en vivo + scope MVP de cuentas de negocio DECIDIDO (sesión de producto)**):
 **(A) Deploy s27:** el build de Vercel estaba **fallando por lint** (`react/no-unescaped-entities`: 4 comillas rectas `"` en el JSX de
 `/como-ordenamos`; en local no se vio porque la s27 corrió typecheck + dev server, **no `next build`** — gotcha nuevo: correr `next build`
