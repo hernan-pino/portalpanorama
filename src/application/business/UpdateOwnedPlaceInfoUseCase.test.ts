@@ -13,6 +13,7 @@ function view(overrides: Partial<OwnerEditablePlaceView> = {}): OwnerEditablePla
     communeName: 'Providencia',
     ownerId: 'user-1',
     brandOwnerId: null,
+    images: [],
     ...overrides,
   }
 }

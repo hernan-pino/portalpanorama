@@ -155,6 +155,14 @@ export interface OwnerEditableFields {
   reference?: string
 }
 
+// Foto gestionada por el dueño. La URL siempre nace de NUESTRO storage (subida o
+// import rehospedado): host permitido garantizado. `alt` es opcional (accesibilidad).
+export interface OwnerImageInput {
+  url: string
+  alt?: string
+  isPrimary: boolean
+}
+
 // Vista para poblar el form de edición del dueño + los ids de propiedad para el
 // guard de autorización (gestiona si es su owner directo o dueño de su marca).
 export interface OwnerEditablePlaceView extends OwnerEditableFields {
@@ -165,6 +173,7 @@ export interface OwnerEditablePlaceView extends OwnerEditableFields {
   communeName: string
   ownerId: string | null
   brandOwnerId: string | null
+  images: OwnerImageInput[]
 }
 
 export interface PlaceRepository {
@@ -227,4 +236,8 @@ export interface PlaceRepository {
   // Aplica SOLO los campos operacionales editables por el dueño (no toca
   // nombre/categoría/ubicación/rating/score/estado/tags).
   updateOwnerEditableFields(placeId: string, fields: OwnerEditableFields): Promise<void>
+  // Reemplaza el set de fotos de la ficha (el dueño gestiona sus propias fotos).
+  // Reemplazo total en transacción (delete + recreate), como el save del admin,
+  // pero acotado a las imágenes: NO toca el resto del agregado.
+  updateOwnerImages(placeId: string, images: OwnerImageInput[]): Promise<void>
 }

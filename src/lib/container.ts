@@ -91,6 +91,7 @@ import { GetBusinessDashboardUseCase } from '@application/business/GetBusinessDa
 import { CountManagedPlacesUseCase } from '@application/business/CountManagedPlacesUseCase'
 import { GetOwnedPlaceForEditUseCase } from '@application/business/GetOwnedPlaceForEditUseCase'
 import { UpdateOwnedPlaceInfoUseCase } from '@application/business/UpdateOwnedPlaceInfoUseCase'
+import { UpdateOwnedPlaceImagesUseCase } from '@application/business/UpdateOwnedPlaceImagesUseCase'
 import { SetUserRoleUseCase } from '@application/user/SetUserRoleUseCase'
 import { DeleteUserUseCase } from '@application/user/DeleteUserUseCase'
 
@@ -251,6 +252,10 @@ export const container = {
 
   getUpdateOwnedPlaceInfoUseCase() {
     return new UpdateOwnedPlaceInfoUseCase(placeRepo)
+  },
+
+  getUpdateOwnedPlaceImagesUseCase() {
+    return new UpdateOwnedPlaceImagesUseCase(placeRepo)
   },
 
   // ── Sugerencias (footer) + buzón ────────────────────────────────────

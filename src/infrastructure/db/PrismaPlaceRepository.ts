@@ -1,4 +1,5 @@
 import { $Enums, Prisma, PrismaClient } from '@prisma/client'
+import { createId } from '@paralleldrive/cuid2'
 import { Place } from '@domain/place/Place'
 import { Slug } from '@domain/shared/Slug'
 import { TagLayer } from '@domain/catalog/TagLayer'
@@ -11,6 +12,7 @@ import {
   OwnedPlaceRow,
   OwnerEditableFields,
   OwnerEditablePlaceView,
+  OwnerImageInput,
   PlaceAdminRow,
   PlaceCardView,
   PlaceDetailView,
@@ -573,6 +575,10 @@ export class PrismaPlaceRepository implements PlaceRepository {
         category: { select: { name: true } },
         commune: { select: { name: true } },
         brand: { select: { ownerId: true } },
+        images: {
+          orderBy: [{ isPrimary: 'desc' }, { sortOrder: 'asc' }],
+          select: { url: true, alt: true, isPrimary: true },
+        },
       },
     })
     if (!r) return null
@@ -594,6 +600,11 @@ export class PrismaPlaceRepository implements PlaceRepository {
       reference: r.reference ?? undefined,
       ownerId: r.ownerId,
       brandOwnerId: r.brand?.ownerId ?? null,
+      images: r.images.map((img) => ({
+        url: img.url,
+        alt: img.alt ?? undefined,
+        isPrimary: img.isPrimary,
+      })),
     }
   }
 
@@ -615,5 +626,26 @@ export class PrismaPlaceRepository implements PlaceRepository {
         reference: fields.reference ?? null,
       },
     })
+  }
+
+  // Reemplazo total del set de fotos (delete + recreate), acotado a las imágenes.
+  // En transacción para no dejar la ficha sin fotos si algo falla a mitad. El
+  // sortOrder = índice del arreglo (el orden que dejó el dueño). Garantiza a lo
+  // más una portada: si ninguna viene marcada, la primera queda de portada.
+  async updateOwnerImages(placeId: string, images: OwnerImageInput[]): Promise<void> {
+    const hasPrimary = images.some((img) => img.isPrimary)
+    await this.prisma.$transaction([
+      this.prisma.placeImage.deleteMany({ where: { placeId } }),
+      this.prisma.placeImage.createMany({
+        data: images.map((img, i) => ({
+          id: createId(),
+          placeId,
+          url: img.url,
+          alt: img.alt ?? null,
+          isPrimary: img.isPrimary || (!hasPrimary && i === 0),
+          sortOrder: i,
+        })),
+      }),
+    ])
   }
 }

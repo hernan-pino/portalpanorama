@@ -6,6 +6,7 @@ import { container } from '@lib/container'
 import { PlaceNotFoundError } from '@domain/place/errors/PlaceNotFoundError'
 import { UnauthorizedBusinessAccessError } from '@domain/business/errors/UnauthorizedBusinessAccessError'
 import { EditPlaceForm } from './EditPlaceForm'
+import { OwnerPhotos } from './OwnerPhotos'
 
 interface PageProps {
   params: Promise<{ slug: string }>
@@ -50,6 +51,15 @@ export default async function EditarFichaPage({ params }: PageProps) {
           a <a href="mailto:hola@portalpanorama.cl">hola@portalpanorama.cl</a>.
         </p>
       </div>
+
+      <OwnerPhotos
+        slug={place.slug}
+        initial={place.images.map((img) => ({
+          url: img.url,
+          alt: img.alt ?? '',
+          isPrimary: img.isPrimary,
+        }))}
+      />
 
       <EditPlaceForm
         slug={place.slug}

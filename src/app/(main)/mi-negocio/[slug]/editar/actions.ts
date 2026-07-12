@@ -4,10 +4,12 @@ import { revalidateTag } from 'next/cache'
 import { auth } from '@lib/auth'
 import { container } from '@lib/container'
 import { CACHE_TAGS } from '@lib/cachedReads'
+import { ALLOWED_IMAGE_HOSTS, isAllowedImageUrl } from '@lib/imageHosts'
 import { PriceRange } from '@domain/place/PriceRange'
 import { ReservationPolicy } from '@domain/place/ReservationPolicy'
 import { PlaceNotFoundError } from '@domain/place/errors/PlaceNotFoundError'
 import { UnauthorizedBusinessAccessError } from '@domain/business/errors/UnauthorizedBusinessAccessError'
+import { ImageFetchError } from '@application/ports/ImageFetcher'
 
 type ActionResult = { error: string } | { success: true }
 
@@ -78,6 +80,116 @@ export async function updateOwnedPlaceAction(formData: FormData): Promise<Action
   }
 
   // El contenido público está cacheado por tag: al editar, se invalida al tiro.
+  revalidateTag(CACHE_TAGS.places)
+  return { success: true }
+}
+
+// ── Fotos del dueño ─────────────────────────────────────────────────────────
+// El dueño gestiona sus propias fotos (parte de "editar directo"). El guard de
+// ownership se reusa cargando la ficha con GetOwnedPlaceForEdit (lanza si no la
+// gestiona), antes de tocar el storage o la BD.
+
+const UPLOAD_ALLOWED_MIME = new Set(['image/jpeg', 'image/png', 'image/webp', 'image/gif'])
+const UPLOAD_MAX_BYTES = 15 * 1024 * 1024 // 15 MB crudos (foto de teléfono entra holgada)
+const MAX_OWNER_IMAGES = 12
+
+async function assertOwnerManages(slug: string): Promise<{ userId: string } | { error: string }> {
+  const session = await auth()
+  if (!session?.user?.id) return { error: 'Inicia sesión para gestionar tus fotos.' }
+  try {
+    await container.getGetOwnedPlaceForEditUseCase().execute(session.user.id, slug)
+    return { userId: session.user.id }
+  } catch (err) {
+    if (err instanceof UnauthorizedBusinessAccessError) return { error: 'No gestionas esta ficha.' }
+    if (err instanceof PlaceNotFoundError) return { error: 'Esta ficha ya no existe.' }
+    throw err
+  }
+}
+
+// Sube un archivo: comprime y rehospeda en nuestro Blob, devuelve la URL lista
+// para guardar. No toca la ficha todavía (eso lo hace saveOwnedPlaceImagesAction).
+export async function uploadOwnedPlaceImageAction(
+  formData: FormData,
+): Promise<{ error: string } | { url: string }> {
+  const slug = String(formData.get('slug') ?? '')
+  const guard = await assertOwnerManages(slug)
+  if ('error' in guard) return guard
+
+  const file = formData.get('file')
+  if (!(file instanceof File) || file.size === 0) return { error: 'No llegó ningún archivo.' }
+  if (!UPLOAD_ALLOWED_MIME.has(file.type)) {
+    return { error: 'Formato no permitido. Usa JPG, PNG, WebP o GIF.' }
+  }
+  if (file.size > UPLOAD_MAX_BYTES) {
+    return { error: `La imagen supera el límite de ${UPLOAD_MAX_BYTES / 1024 / 1024} MB.` }
+  }
+
+  try {
+    const buffer = Buffer.from(await file.arrayBuffer())
+    const { url } = await container
+      .getUploadPlaceImageUseCase()
+      .execute({ buffer, filename: file.name })
+    return { url }
+  } catch {
+    return { error: 'No se pudo subir la imagen. Intenta de nuevo.' }
+  }
+}
+
+// Trae una imagen desde una URL externa (con guardas anti-SSRF), la comprime y la
+// rehospeda en nuestro Blob — así la foto guardada siempre queda en un host permitido.
+export async function importOwnedPlaceImageAction(
+  slug: string,
+  rawUrl: string,
+): Promise<{ error: string } | { url: string }> {
+  const guard = await assertOwnerManages(slug)
+  if ('error' in guard) return guard
+
+  const parsed = z.string().trim().url('Pega una URL válida.').safeParse(rawUrl)
+  if (!parsed.success) return { error: parsed.error.issues[0]?.message ?? 'URL inválida.' }
+
+  try {
+    const { url } = await container.getImportImageFromUrlUseCase().execute({ url: parsed.data })
+    return { url }
+  } catch (err) {
+    if (err instanceof ImageFetchError) return { error: err.message }
+    return { error: 'No se pudo traer la imagen de esa URL.' }
+  }
+}
+
+// Persiste el set completo de fotos (orden + portada + alt). Solo acepta URLs de
+// host permitido: aunque nacen de nuestro upload/import, un payload manipulado del
+// cliente no puede colar un host externo que tumbe la ficha pública (next/image 500).
+const ownerImageSchema = z.object({
+  url: z.string().trim().refine(isAllowedImageUrl, {
+    message: `Cada foto debe venir de un host permitido (${ALLOWED_IMAGE_HOSTS.join(', ')}).`,
+  }),
+  alt: z.preprocess(
+    (v) => (typeof v === 'string' && v.trim() === '' ? undefined : v),
+    z.string().trim().max(200).optional(),
+  ),
+  isPrimary: z.boolean(),
+})
+
+export async function saveOwnedPlaceImagesAction(
+  slug: string,
+  images: { url: string; alt?: string; isPrimary: boolean }[],
+): Promise<ActionResult> {
+  const session = await auth()
+  if (!session?.user?.id) return { error: 'Inicia sesión para gestionar tus fotos.' }
+
+  const parsed = z.array(ownerImageSchema).max(MAX_OWNER_IMAGES).safeParse(images)
+  if (!parsed.success) return { error: parsed.error.issues[0]?.message ?? 'Fotos inválidas.' }
+
+  try {
+    await container
+      .getUpdateOwnedPlaceImagesUseCase()
+      .execute(session.user.id, slug, parsed.data)
+  } catch (err) {
+    if (err instanceof UnauthorizedBusinessAccessError) return { error: 'No gestionas esta ficha.' }
+    if (err instanceof PlaceNotFoundError) return { error: 'Esta ficha ya no existe.' }
+    throw err
+  }
+
   revalidateTag(CACHE_TAGS.places)
   return { success: true }
 }

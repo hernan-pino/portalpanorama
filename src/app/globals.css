@@ -1586,6 +1586,50 @@ button.ficha__hero-img { cursor: zoom-in; }
 }
 .ficha__claim-actions { display: flex; align-items: center; gap: var(--s-2); flex-shrink: 0; }
 
+/* — Fotos del dueño (panel /mi-negocio/[slug]/editar) — */
+.owner-photos__title {
+  font-family: var(--font-display); font-weight: 500; font-size: 22px;
+  line-height: var(--lh-snug); letter-spacing: var(--tr-tight);
+  font-variation-settings: "opsz" 60; margin: 0 0 var(--s-3);
+}
+.owner-photos__tips {
+  background: var(--bg-sunken); border: 1px solid var(--surface-line-soft);
+  border-radius: var(--r-lg); padding: var(--s-4) var(--s-5); margin-bottom: var(--s-5);
+}
+.owner-photos__tips-title {
+  font-family: var(--font-mono); font-size: var(--t-mono-sm); letter-spacing: var(--tr-wide);
+  text-transform: uppercase; color: var(--fg-muted); margin: 0 0 var(--s-2); font-weight: 500;
+}
+.owner-photos__tips-list { margin: 0; padding-left: var(--s-5); display: flex; flex-direction: column; gap: 2px; }
+.owner-photos__tips-list li { font-size: var(--t-body-sm); color: var(--fg-muted); }
+.owner-photos__tips-foot { font-size: var(--t-body-sm); color: var(--fg-subtle); margin: var(--s-3) 0 0; }
+
+.owner-photos__grid {
+  list-style: none; margin: 0 0 var(--s-4); padding: 0;
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: var(--s-4);
+}
+.owner-photos__card { display: flex; flex-direction: column; gap: var(--s-2); }
+.owner-photos__thumb-wrap { position: relative; }
+.owner-photos__thumb {
+  width: 100%; aspect-ratio: 4 / 3; object-fit: cover;
+  border-radius: var(--r-md); border: 1px solid var(--surface-line); display: block;
+}
+.owner-photos__badge {
+  position: absolute; top: var(--s-2); left: var(--s-2);
+  background: var(--accent); color: var(--paper-05);
+  font-family: var(--font-mono); font-size: var(--t-tiny); letter-spacing: 0.04em;
+  text-transform: uppercase; padding: 2px 8px; border-radius: var(--r-sm);
+}
+.owner-photos__alt { font-size: var(--t-body-sm); padding: 6px 10px; }
+.owner-photos__actions { display: flex; flex-wrap: wrap; gap: var(--s-1); }
+.owner-photos__remove { margin-left: auto; color: var(--error); }
+.owner-photos__empty { font-size: var(--t-body-sm); color: var(--fg-subtle); margin: 0 0 var(--s-4); }
+
+.owner-photos__add { display: flex; align-items: center; flex-wrap: wrap; gap: var(--s-3); }
+.owner-photos__or { font-size: var(--t-body-sm); color: var(--fg-subtle); }
+.owner-photos__url { display: flex; gap: var(--s-2); flex: 1; min-width: 220px; }
+.owner-photos__url .form-input { flex: 1; }
+
 /* — Reportar (pie discreto) — */
 .ficha__report { padding-top: var(--s-10); text-align: center; }
 .ficha__report-hr { height: 1px; background: var(--surface-line-soft); margin-bottom: var(--s-6); }
