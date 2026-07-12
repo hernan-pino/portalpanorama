@@ -35,8 +35,28 @@ reemplaza el rating en el panel (`0a3134b`, **migración nueva**). Sigue **todo 
 4. **Instagram feo + faltaban redes** (YouTube/TikTok…) → editor **multi-red** (`socialLinks`, como el admin).
    ⚠️ Esto REVIERTE la decisión s28 de dejar las redes extra fuera del alcance del dueño.
 
-**⚠️ Pendiente de la s30:** la **revisión visual del usuario** de los 4 frentes (fotos rediseñadas, redes, horario
-estructurado, panel con clics). **Migración `add_place_clicks` aplicada SOLO en local** — viaja a prod con el push.
+**✅ Revisión visual del usuario: OK** a los 4 frentes (fotos rediseñadas, redes, horario estructurado, panel con clics).
+**Migración `add_place_clicks` aplicada SOLO en local** — viaja a prod con el push.
+
+**▶️ PRÓXIMO PASO (s31): ETAPA 3 — la puerta de entrada del negocio nuevo.**
+Al cierre de la s30 el usuario preguntó qué quedó listo, y se **re-confirmó en el código** la brecha:
+- Hoy funciona **SOLO el camino del RECLAMO** (la ficha ya tiene que existir en el directorio).
+- **NO existe registro de negocio:** en `(auth)/` solo hay `login` · `registro` (de usuario común) · `recuperar`.
+- **NO existe form para que un dueño cree su ficha.** Rutas de negocio existentes: `/para-negocios` · `/reclamar/[slug]`
+  · `/reclamar-marca/[slug]` · `/mi-negocio` · `/mi-negocio/[slug]/editar` · `/admin/reclamos`.
+- **El `BusinessProfile` nace en UN solo lugar:** la transacción de aprobar un reclamo
+  (`PrismaBusinessClaimRepository`). No hay otra puerta → hoy "cuenta de negocio" = usuario común + reclamo aprobado.
+
+**Lo que hay que construir (scope ya decidido en s28, `BUSINESS_ACCOUNTS_SPEC.md`):** (1) **registro de negocio**
+desde `/para-negocios` que crea `User` **+ `BusinessProfile` activado** sin pasar por reclamo · (2) **form-semilla
+corto** (nombre·dirección·comuna·categoría tentativa·teléfono o IG) → **`Place` PENDING_REVIEW con `ownerId`** ·
+(3) cae en `/admin/lugares` → el admin corre la skill **`ficha-lugar`** para optimizarla → publica → le aparece sola
+en `/mi-negocio` con el editor ya construido. **Casi cero maquinaria nueva** (reusa panel + editor + flujo admin+skill).
+Sin esto, pushear el reclamo a prod deja media promesa (no hay puerta para "soy nuevo, quiero entrar").
+
+**🧹 Dato de prueba de la s30 ya revertido:** se había asignado Eggy Cafetería como ficha del usuario
+`hernan.pino7@gmail.com` para probar el panel; al cierre se revirtió (`ownerId → null`, 0 clics). BD local limpia:
+**0 places con dueño · 0 businessProfiles**. Para volver a probar el panel hay que re-asignar un `ownerId` a mano.
 
 **✅ Hecho y commiteado en local (NO en prod):**
 - **Etapa 1 — schema:** `BusinessProfile` + `BusinessClaim` + enum + migración `add_business_accounts` (aplicada en local, NO en prod).
