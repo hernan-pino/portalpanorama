@@ -12,6 +12,7 @@ import { Collection } from '@domain/collection/Collection'
 import { type SaveContext } from '@components/place/PlaceCard'
 import { PaginatedRest } from './PaginatedRest'
 import { curatedListJsonLd } from './jsonLd'
+import { safeJsonLd } from '@lib/jsonLd'
 
 interface PageProps {
   params: Promise<{ slug: string }>
@@ -90,7 +91,7 @@ export default async function ListaPage({ params }: PageProps) {
     <div className="curated-page page-enter">
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(curatedListJsonLd(list)) }}
+        dangerouslySetInnerHTML={{ __html: safeJsonLd(curatedListJsonLd(list)) }}
       />
 
       <header className="curated-page__head">

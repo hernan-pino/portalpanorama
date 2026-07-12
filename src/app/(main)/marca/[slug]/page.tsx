@@ -7,6 +7,7 @@ import type { BrandPageView } from '@application/ports/BrandRepository'
 import { BrandNotFoundError } from '@domain/brand/errors/BrandNotFoundError'
 import { PlaceCard } from '@components/place/PlaceCard'
 import { brandJsonLd } from './jsonLd'
+import { safeJsonLd } from '@lib/jsonLd'
 
 interface PageProps {
   params: Promise<{ slug: string }>
@@ -66,7 +67,7 @@ export default async function MarcaPage({ params }: PageProps) {
     <div className="brand-page page-enter">
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(brandJsonLd(brand, slug)) }}
+        dangerouslySetInnerHTML={{ __html: safeJsonLd(brandJsonLd(brand, slug)) }}
       />
 
       <header className="brand-page__head">

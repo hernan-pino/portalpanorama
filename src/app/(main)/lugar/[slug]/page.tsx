@@ -6,6 +6,7 @@ import Link from 'next/link'
 import { auth } from '@lib/auth'
 import { container } from '@lib/container'
 import { getPlaceDetailCached } from '@lib/cachedReads'
+import { safeJsonLd } from '@lib/jsonLd'
 import type { PlaceDetailView, PlaceCardView } from '@application/ports/PlaceRepository'
 import type { SaveContextOutput } from '@application/collection/GetSaveContextUseCase'
 import { PlaceNotFoundError } from '@domain/place/errors/PlaceNotFoundError'
@@ -187,7 +188,7 @@ export default async function LugarPage({ params }: PageProps) {
       {/* JSON-LD LocalBusiness: rich results de Google + lectura por LLMs (GEO/AEO). */}
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(placeJsonLd(place)) }}
+        dangerouslySetInnerHTML={{ __html: safeJsonLd(placeJsonLd(place)) }}
       />
 
       {/* ── Hero + galería navegable (lightbox) ── */}
