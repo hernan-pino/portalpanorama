@@ -1,8 +1,9 @@
 'use client'
 import { useState } from 'react'
 
-// Ayuda por campo: un "?" clickeable junto a la etiqueta que muestra recomendaciones
-// / mejores prácticas. Reutilizable en el editor del panel y en el form de reclamo.
+// Ayuda por campo: un "?" junto a la etiqueta que muestra recomendaciones / mejores
+// prácticas en una burbuja flotante (no empuja el layout). Aparece al pasar el mouse
+// y también con click/foco (para touch y teclado). Reutilizable en el editor y el reclamo.
 export function FieldHelp({ tip }: { tip: string }) {
   const [open, setOpen] = useState(false)
   return (
@@ -13,10 +14,11 @@ export function FieldHelp({ tip }: { tip: string }) {
         aria-expanded={open}
         aria-label="Ver recomendación"
         onClick={() => setOpen((o) => !o)}
+        onBlur={() => setOpen(false)}
       >
         ?
       </button>
-      {open && <span className="field-help__tip" role="note">{tip}</span>}
+      <span className={`field-help__tip${open ? ' is-open' : ''}`} role="tooltip">{tip}</span>
     </span>
   )
 }

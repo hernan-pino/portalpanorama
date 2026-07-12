@@ -40,7 +40,7 @@ export default async function EditarFichaPage({ params }: PageProps) {
       </p>
       <h1 className="display legal__title">Editar {place.name}</h1>
 
-      <div className="claim-verify" style={{ marginBottom: 'var(--s-5)' }}>
+      <div className="claim-verify" style={{ marginBottom: 'var(--s-5)', maxWidth: 560 }}>
         <p className="claim-verify__title">Tu ficha ya está optimizada ✨</p>
         <p className="claim-verify__body">
           Nuestro equipo cuidó esta ficha para que se vea y posicione bien. Te recomendamos usar

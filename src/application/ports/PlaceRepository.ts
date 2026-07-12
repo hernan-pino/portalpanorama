@@ -126,6 +126,17 @@ export interface OwnedPlaceRow {
   googleRating?: number
   visitCount: number
   saveCount: number
+  // Señales de completitud de la ficha (para el checklist "estado de tu ficha"
+  // del panel). Son presencia de datos; qué cuenta como "completo" lo decide el
+  // use case (lógica de negocio), no el repo.
+  imageCount: number
+  hasDescription: boolean
+  hasSchedule: boolean
+  hasPhone: boolean
+  hasWebsite: boolean
+  hasInstagram: boolean
+  hasMenu: boolean
+  hasPrice: boolean
 }
 
 // Campos que el DUEÑO verificado puede editar directo (info operacional, no

@@ -2,28 +2,38 @@ import { signInWithGoogle } from './oauth-actions'
 
 // Botón "Continuar con Google". Se renderiza solo cuando el provider está habilitado
 // (ver googleAuthEnabled en lib/auth). Es un form con server action para mantener el
-// flujo de OAuth del lado servidor.
-export function GoogleButton({ label = 'Continuar con Google' }: { label?: string }) {
+// flujo de OAuth del lado servidor. Es el método PREFERIDO: va primero y en estilo
+// primario; `divider` controla si la línea "o" va debajo (Google arriba) o encima.
+export function GoogleButton({
+  label = 'Continuar con Google',
+  divider = 'below',
+}: {
+  label?: string
+  divider?: 'above' | 'below'
+}) {
+  const separator = (
+    <div
+      style={{
+        display: 'flex',
+        alignItems: 'center',
+        gap: 'var(--s-3)',
+        margin: 'var(--s-5) 0',
+        color: 'var(--fg-subtle)',
+        fontSize: 'var(--t-body-sm)',
+      }}
+    >
+      <span style={{ flex: 1, height: 1, background: 'var(--surface-line)' }} />
+      o
+      <span style={{ flex: 1, height: 1, background: 'var(--surface-line)' }} />
+    </div>
+  )
   return (
     <>
-      <div
-        style={{
-          display: 'flex',
-          alignItems: 'center',
-          gap: 'var(--s-3)',
-          margin: 'var(--s-5) 0',
-          color: 'var(--fg-subtle)',
-          fontSize: 'var(--t-body-sm)',
-        }}
-      >
-        <span style={{ flex: 1, height: 1, background: 'var(--surface-line)' }} />
-        o
-        <span style={{ flex: 1, height: 1, background: 'var(--surface-line)' }} />
-      </div>
+      {divider === 'above' && separator}
       <form action={signInWithGoogle}>
         <button
           type="submit"
-          className="btn btn--ghost"
+          className="btn btn--primary"
           style={{ width: '100%', justifyContent: 'center', gap: 'var(--s-2)' }}
         >
           <svg width="18" height="18" viewBox="0 0 18 18" aria-hidden="true">
@@ -35,6 +45,7 @@ export function GoogleButton({ label = 'Continuar con Google' }: { label?: strin
           {label}
         </button>
       </form>
+      {divider === 'below' && separator}
     </>
   )
 }

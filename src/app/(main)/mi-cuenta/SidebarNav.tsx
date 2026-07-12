@@ -12,7 +12,7 @@ const TABS = [
   { key: 'perfil', label: 'Perfil' },
 ]
 
-export function SidebarNav() {
+export function SidebarNav({ hasBusiness = false }: { hasBusiness?: boolean }) {
   const searchParams = useSearchParams()
   const current = searchParams.get('tab') ?? 'guardados'
 
@@ -28,6 +28,17 @@ export function SidebarNav() {
           <span>{label}</span>
         </Link>
       ))}
+
+      {hasBusiness && (
+        <Link
+          href="/mi-negocio"
+          className="dash-sidenav__link dash-sidenav__link--cross"
+          style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 'var(--s-2)' }}
+        >
+          <span>Mi negocio</span>
+          <span aria-hidden="true">↗</span>
+        </Link>
+      )}
 
       <div className="dash-sidenav__footer">
         <button className="dash-sidenav__signout" onClick={() => signOut({ callbackUrl: '/' })}>

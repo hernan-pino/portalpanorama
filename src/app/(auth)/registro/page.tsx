@@ -68,8 +68,8 @@ export default async function RegistroPage({
           Gratis. Sin tarjeta de crédito.
         </p>
 
-        <RegisterForm callbackUrl={callbackUrl} />
-        {googleAuthEnabled && <GoogleButton label="Registrarse con Google" />}
+        {googleAuthEnabled && <GoogleButton label="Registrarse con Google" divider="below" />}
+        <RegisterForm callbackUrl={callbackUrl} deemphasized={googleAuthEnabled} />
       </div>
 
     </div>

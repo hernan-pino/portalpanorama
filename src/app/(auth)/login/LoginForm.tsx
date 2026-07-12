@@ -3,7 +3,7 @@ import { useActionState } from 'react'
 import Link from 'next/link'
 import { loginAction } from './actions'
 
-export function LoginForm({ callbackUrl }: { callbackUrl?: string }) {
+export function LoginForm({ callbackUrl, deemphasized = false }: { callbackUrl?: string; deemphasized?: boolean }) {
   const [state, formAction, pending] = useActionState(loginAction, null)
 
   return (
@@ -70,10 +70,10 @@ export function LoginForm({ callbackUrl }: { callbackUrl?: string }) {
       <button
         type="submit"
         disabled={pending}
-        className="btn btn--primary"
+        className={`btn ${deemphasized ? 'btn--ghost' : 'btn--primary'}`}
         style={{ width: '100%', marginTop: 'var(--s-2)', justifyContent: 'center' }}
       >
-        {pending ? 'Ingresando…' : 'Ingresar'}
+        {pending ? 'Ingresando…' : 'Ingresar con email'}
       </button>
     </form>
   )

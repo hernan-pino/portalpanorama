@@ -512,6 +512,13 @@ export class PrismaPlaceRepository implements PlaceRepository {
         name: true,
         status: true,
         googleRating: true,
+        description: true,
+        schedule: true,
+        phone: true,
+        website: true,
+        instagram: true,
+        menuUrl: true,
+        priceRange: true,
         category: { select: { name: true } },
         commune: { select: { name: true } },
         images: {
@@ -519,9 +526,10 @@ export class PrismaPlaceRepository implements PlaceRepository {
           take: 1,
           select: { url: true },
         },
-        _count: { select: { visitHistory: true, collectionItems: true } },
+        _count: { select: { visitHistory: true, collectionItems: true, images: true } },
       },
     })
+    const filled = (v: string | null | undefined) => !!v && v.trim().length > 0
     return rows.map((r) => ({
       id: r.id,
       slug: r.slug,
@@ -533,6 +541,14 @@ export class PrismaPlaceRepository implements PlaceRepository {
       googleRating: r.googleRating ?? undefined,
       visitCount: r._count.visitHistory,
       saveCount: r._count.collectionItems,
+      imageCount: r._count.images,
+      hasDescription: filled(r.description),
+      hasSchedule: filled(r.schedule),
+      hasPhone: filled(r.phone),
+      hasWebsite: filled(r.website),
+      hasInstagram: filled(r.instagram),
+      hasMenu: filled(r.menuUrl),
+      hasPrice: r.priceRange != null,
     }))
   }
 

@@ -3,7 +3,7 @@ import { useActionState, useState } from 'react'
 import { PasswordMeter } from '../PasswordMeter'
 import { registerAction } from './actions'
 
-export function RegisterForm({ callbackUrl }: { callbackUrl?: string }) {
+export function RegisterForm({ callbackUrl, deemphasized = false }: { callbackUrl?: string; deemphasized?: boolean }) {
   const [state, formAction, pending] = useActionState(registerAction, null)
   const [password, setPassword] = useState('')
 
@@ -57,10 +57,10 @@ export function RegisterForm({ callbackUrl }: { callbackUrl?: string }) {
       <button
         type="submit"
         disabled={pending}
-        className="btn btn--primary"
+        className={`btn ${deemphasized ? 'btn--ghost' : 'btn--primary'}`}
         style={{ width: '100%', marginTop: 'var(--s-2)', justifyContent: 'center' }}
       >
-        {pending ? 'Creando cuenta…' : 'Crear cuenta'}
+        {pending ? 'Creando cuenta…' : 'Crear cuenta con email'}
       </button>
     </form>
   )

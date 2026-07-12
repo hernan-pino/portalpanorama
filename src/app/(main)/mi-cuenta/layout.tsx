@@ -3,6 +3,7 @@ import Link from 'next/link'
 import { Suspense } from 'react'
 import { auth } from '@lib/auth'
 import { redirect } from 'next/navigation'
+import { container } from '@lib/container'
 import { getUserDashboard } from '@lib/userDashboardCache'
 import { SidebarNav } from './SidebarNav'
 import { WelcomeModal } from './WelcomeModal'
@@ -17,6 +18,9 @@ export default async function MiCuentaLayout({ children }: { children: React.Rea
 
   const data = await getUserDashboard(session.user.id)
   const { user, collections, history } = data
+
+  // ¿Gestiona alguna ficha? Muestra el cruce a "Mi negocio" en el sidebar.
+  const hasBusiness = (await container.getCountManagedPlacesUseCase().execute(session.user.id)) > 0
 
   const firstName = user.name.split(' ')[0]
   const mes = MESES_ES[user.createdAt.getMonth()].toUpperCase()
@@ -71,7 +75,7 @@ export default async function MiCuentaLayout({ children }: { children: React.Rea
       <div className="dash-shell" style={{ minHeight: 'calc(100dvh - 200px)' }}>
         <aside className="dash-sidebar">
           <Suspense fallback={null}>
-            <SidebarNav />
+            <SidebarNav hasBusiness={hasBusiness} />
           </Suspense>
         </aside>
         <div className="dash-content">{children}</div>
