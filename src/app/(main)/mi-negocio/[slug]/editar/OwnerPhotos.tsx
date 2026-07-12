@@ -18,13 +18,7 @@ const MAX_PHOTOS = 12
 // Las fotos se suben al storage al tiro (devuelven URL); el orden/portada/alt se
 // persisten recién al tocar "Guardar fotos". Sección autocontenida (guarda aparte
 // del form de campos operacionales).
-export function OwnerPhotos({
-  slug,
-  initial,
-}: {
-  slug: string
-  initial: OwnerPhoto[]
-}) {
+export function OwnerPhotos({ slug, initial }: { slug: string; initial: OwnerPhoto[] }) {
   const [photos, setPhotos] = useState<OwnerPhoto[]>(() =>
     initial.length > 0 ? ensurePrimary(initial) : [],
   )
@@ -76,7 +70,7 @@ export function OwnerPhotos({
 
   function setCover(i: number) {
     markDirty()
-    setPhotos((prev) => prev.map((p, idx) => ({ ...p, isPrimary: idx === i })))
+    setPhotos((prev) => ensurePrimary(prev.map((p, idx) => ({ ...p, isPrimary: idx === i }))))
   }
 
   function move(i: number, dir: -1 | 1) {
@@ -109,91 +103,96 @@ export function OwnerPhotos({
   }
 
   return (
-    <section style={{ maxWidth: 560, marginBottom: 'var(--s-6)' }}>
-      <h2 className="owner-photos__title">Fotos de tu local</h2>
-      <div className="owner-photos__tips">
-        <p className="owner-photos__tips-title">Las fotos que mejor funcionan</p>
-        <ul className="owner-photos__tips-list">
-          <li><strong>La fachada o entrada</strong> — ayuda a que te reconozcan al llegar.</li>
-          <li><strong>El interior / ambiente</strong> — cómo se siente estar ahí.</li>
-          <li><strong>Tu producto estrella</strong> — el plato, trago o producto que te distingue.</li>
+    <section className="ophotos">
+      <div className="ophotos__head">
+        <h2 className="ophotos__title">Fotos de tu local</h2>
+        <span className="ophotos__count">{photos.length} de {MAX_PHOTOS}</span>
+      </div>
+
+      <div className="ophotos__tips">
+        <p className="ophotos__tips-title">Las que mejor funcionan</p>
+        <ul className="ophotos__tips-list">
+          <li><strong>Fachada o entrada</strong><span>para reconocerte al llegar</span></li>
+          <li><strong>Interior / ambiente</strong><span>cómo se siente estar ahí</span></li>
+          <li><strong>Producto estrella</strong><span>el plato o producto que te distingue</span></li>
         </ul>
-        <p className="owner-photos__tips-foot">
-          Sube fotos propias, horizontales y bien iluminadas. La <strong>portada</strong> es la
-          primera que ve la gente. Hasta {MAX_PHOTOS} fotos.
+        <p className="ophotos__tips-foot">
+          Fotos propias, horizontales y bien iluminadas. La <strong>portada</strong> es la primera
+          que ve la gente.
         </p>
       </div>
 
-      {photos.length > 0 && (
-        <ul className="owner-photos__grid">
-          {photos.map((p, i) => (
-            <li key={p.url} className="owner-photos__card">
-              <div className="owner-photos__thumb-wrap">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img className="owner-photos__thumb" src={p.url} alt={p.alt || ''} />
-                {p.isPrimary && <span className="owner-photos__badge">Portada</span>}
-              </div>
-              <input
-                className="form-input owner-photos__alt"
-                value={p.alt}
-                onChange={(e) => setAlt(i, e.target.value)}
-                maxLength={200}
-                placeholder="Describe la foto (opcional)"
-                aria-label="Descripción de la foto"
-              />
-              <div className="owner-photos__actions">
-                {!p.isPrimary && (
-                  <button type="button" className="btn btn--ghost btn--sm" onClick={() => setCover(i)}>
-                    Portada
-                  </button>
-                )}
-                <button type="button" className="btn btn--ghost btn--sm"
-                  onClick={() => move(i, -1)} disabled={i === 0} aria-label="Mover antes">←</button>
-                <button type="button" className="btn btn--ghost btn--sm"
-                  onClick={() => move(i, 1)} disabled={i === photos.length - 1} aria-label="Mover después">→</button>
-                <button type="button" className="btn btn--ghost btn--sm owner-photos__remove"
-                  onClick={() => remove(i)}>Quitar</button>
-              </div>
-            </li>
-          ))}
-        </ul>
-      )}
+      <ul className="ophotos__grid">
+        {photos.map((p, i) => (
+          <li key={p.url} className={`ophoto${p.isPrimary ? ' ophoto--cover' : ''}`}>
+            <div className="ophoto__frame">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img className="ophoto__img" src={p.url} alt={p.alt || ''} />
+              {p.isPrimary && <span className="ophoto__tag">Portada</span>}
+            </div>
 
-      {photos.length === 0 && (
-        <p className="owner-photos__empty">Todavía no hay fotos. Súmalas para que tu ficha luzca mejor.</p>
+            <div className="ophoto__bar">
+              <button type="button" className="ophoto__cover-btn" onClick={() => setCover(i)}
+                disabled={p.isPrimary} title={p.isPrimary ? 'Es la portada' : 'Hacer portada'}>
+                <span aria-hidden="true">{p.isPrimary ? '★' : '☆'}</span>
+                <span className="ophoto__cover-label">Portada</span>
+              </button>
+              <div className="ophoto__reorder" role="group" aria-label="Reordenar">
+                <button type="button" onClick={() => move(i, -1)} disabled={i === 0} aria-label="Mover antes">←</button>
+                <button type="button" onClick={() => move(i, 1)} disabled={i === photos.length - 1} aria-label="Mover después">→</button>
+              </div>
+              <button type="button" className="ophoto__remove" onClick={() => remove(i)} aria-label="Quitar foto">
+                Quitar
+              </button>
+            </div>
+
+            <input
+              className="ophoto__alt"
+              value={p.alt}
+              onChange={(e) => setAlt(i, e.target.value)}
+              maxLength={200}
+              placeholder="Describe la foto (opcional)"
+              aria-label="Descripción de la foto"
+            />
+          </li>
+        ))}
+
+        {!atLimit && (
+          <li className="ophoto ophoto--add">
+            <label className={`ophoto__drop${busy === 'upload' ? ' is-busy' : ''}`}>
+              <input type="file" accept="image/*" hidden disabled={busy !== null}
+                onChange={(e) => {
+                  const f = e.target.files?.[0]
+                  if (f) void handleUpload(f)
+                  e.target.value = ''
+                }} />
+              <span className="ophoto__drop-plus" aria-hidden="true">+</span>
+              <span className="ophoto__drop-text">{busy === 'upload' ? 'Subiendo…' : 'Subir foto'}</span>
+            </label>
+          </li>
+        )}
+      </ul>
+
+      {atLimit && (
+        <p className="ophotos__note">Llegaste al máximo de {MAX_PHOTOS} fotos. Quita alguna para sumar otra.</p>
       )}
 
       {!atLimit && (
-        <div className="owner-photos__add">
-          <label className={`btn btn--ghost btn--sm ${busy ? 'is-disabled' : ''}`}>
-            <input type="file" accept="image/*" hidden disabled={busy !== null}
-              onChange={(e) => {
-                const f = e.target.files?.[0]
-                if (f) void handleUpload(f)
-                e.target.value = ''
-              }} />
-            {busy === 'upload' ? 'Subiendo…' : '+ Subir foto'}
-          </label>
-          <span className="owner-photos__or">o</span>
-          <div className="owner-photos__url">
-            <input className="form-input" type="url" value={urlDraft}
-              onChange={(e) => setUrlDraft(e.target.value)}
-              placeholder="Pega una URL de imagen…" disabled={busy !== null} />
-            <button type="button" className="btn btn--ghost btn--sm"
-              disabled={busy !== null || !urlDraft.trim()} onClick={() => void handleImport()}>
-              {busy === 'import' ? 'Trayendo…' : 'Traer'}
-            </button>
-          </div>
+        <div className="ophotos__url">
+          <input className="form-input" type="url" value={urlDraft}
+            onChange={(e) => setUrlDraft(e.target.value)}
+            placeholder="…o pega la URL de una imagen" disabled={busy !== null} />
+          <button type="button" className="btn btn--ghost btn--sm"
+            disabled={busy !== null || !urlDraft.trim()} onClick={() => void handleImport()}>
+            {busy === 'import' ? 'Trayendo…' : 'Traer'}
+          </button>
         </div>
       )}
-      {atLimit && (
-        <p className="owner-photos__empty">Llegaste al máximo de {MAX_PHOTOS} fotos. Quita alguna para sumar otra.</p>
-      )}
 
-      {error && <p style={{ color: 'var(--error)', fontSize: 'var(--t-body-sm)', margin: 'var(--s-2) 0 0' }}>{error}</p>}
-      {saved && <p style={{ color: 'var(--accent-70)', fontSize: 'var(--t-body-sm)', margin: 'var(--s-2) 0 0' }}>✓ Fotos guardadas. Ya se ven en tu ficha.</p>}
+      {error && <p className="ophotos__error">{error}</p>}
+      {saved && <p className="ophotos__ok">✓ Fotos guardadas. Ya se ven en tu ficha.</p>}
 
-      <div style={{ marginTop: 'var(--s-4)' }}>
+      <div className="ophotos__save">
         <button type="button" className="btn btn--primary" onClick={handleSave} disabled={isSaving}>
           {isSaving ? 'Guardando…' : 'Guardar fotos'}
         </button>
