@@ -15,10 +15,28 @@ priorizado. Se actualiza cada vez que avanzamos. Liviano a propósito — para r
 **en LOCAL, sin pushear** — decisión del usuario: no subir hasta que el flujo sirva de punta a punta
 (reclamar → cuenta → panel donde gestionar). En prod NO cambió nada.
 
-**⏩ s30 (esta sesión):** (1) se **commiteó la s29** que estaba en el working tree — en 2 commits limpios:
-`595d2dd` fix(security) del XSS del JSON-LD + `0901acd` feat del dashboard rediseñado + pulido UX.
-(2) **Gestión de fotos del dueño CONSTRUIDA** (item 2 del plan de acción, ver abajo) — commit `69f25d2`.
-Falta la **revisión visual del usuario** del editor con fotos (subir/portada/reordenar). Sigue todo sin pushear.
+**⏩ s30 (esta sesión):** (1) se **commiteó la s29** que estaba en el working tree (`595d2dd` XSS del JSON-LD +
+`0901acd` dashboard rediseñado + pulido UX). (2) **Fotos del dueño** construidas (`69f25d2`) y luego
+**rediseñadas** (`5ecf1df`) tras el feedback del usuario ("se veía sloppy": controles sueltos flotando) →
+ahora cada foto es una tarjeta contenida con barra de controles agrupada + tile dropzone en la grilla.
+(3) **Los 4 frentes que pidió el usuario al revisar el panel** (ver "Feedback s30" abajo) quedaron HECHOS:
+redes multi-red (`bffff08`) · horario estructurado (`09d7475`) · **tracking de clics de contacto** que
+reemplaza el rating en el panel (`0a3134b`, **migración nueva**). Sigue **todo sin pushear**.
+
+**🗣️ Feedback del usuario (s30, revisando el panel en vivo) → los 4 se resolvieron:**
+1. **"El rating es redundante"** (ya se ve en la ficha) → pidió clics a cómo llegar/web/redes. **Hallazgo:** NO
+   trackeábamos nada de eso en la BD (`trackEvent` solo iba a GA4/Clarity; `VisitHistory` es historial de usuarios
+   logueados, ≠ tráfico). **Decisión del usuario: construir el tracking YA** → modelo `PlaceClick` + migración
+   `20260712193257_add_place_clicks` (aditiva) + instrumentación de la ficha + desglose en el panel.
+2. **Fotos "sloppy"** → rediseñadas contenidas (sin dependencia nueva; el usuario descartó drag-and-drop por ahora).
+3. **Horario sin estandarizar** (texto libre, cada quien escribe distinto) → **editor estructurado** (7 días ×
+   abierto/cerrado + turnos partidos) que serializa al formato canónico de siempre. Sin schema nuevo; los horarios
+   legacy no se pisan hasta que el dueño edite.
+4. **Instagram feo + faltaban redes** (YouTube/TikTok…) → editor **multi-red** (`socialLinks`, como el admin).
+   ⚠️ Esto REVIERTE la decisión s28 de dejar las redes extra fuera del alcance del dueño.
+
+**⚠️ Pendiente de la s30:** la **revisión visual del usuario** de los 4 frentes (fotos rediseñadas, redes, horario
+estructurado, panel con clics). **Migración `add_place_clicks` aplicada SOLO en local** — viaja a prod con el push.
 
 **✅ Hecho y commiteado en local (NO en prod):**
 - **Etapa 1 — schema:** `BusinessProfile` + `BusinessClaim` + enum + migración `add_business_accounts` (aplicada en local, NO en prod).
@@ -38,7 +56,8 @@ Falta la **revisión visual del usuario** del editor con fotos (subir/portada/re
 
 **⬜ PLAN DE ACCIÓN — próxima sesión (en orden):**
 1. ✅ **Rediseñar el dashboard `/mi-negocio`** (HECHO s29 — el usuario quedó conforme; sidebar · KPIs agregados · "Estado de tu ficha" con checklist de completitud real · sin gráfico de tendencia porque no hay serie de tiempo, se usó desglose real por ficha).
-2. ✅ **Gestión de fotos del dueño** (HECHO s30, commit `69f25d2`; subir/importar/reordenar/portada/quitar + recomendaciones; guard de ownership + solo hosts permitidos) — **falta la revisión visual del usuario** del editor con fotos.
+2. ✅ **Gestión de fotos del dueño** (HECHO s30, `69f25d2` + rediseño `5ecf1df`).
+2b. ✅ **Redes multi-red + horario estructurado + tracking de clics** (HECHO s30 — los 4 puntos del feedback; ver arriba).
 3. **Propuestas de categoría/tags** — cola de moderación: el dueño propone, el admin aprueba (patrón similar a los reclamos; entidad/estado nuevos + bandeja admin + correos).
 4. **Etapa 3 — registro "para negocios" + crear ficha (semilla)** — ⚠️ **HOY NO EXISTE ningún flujo para publicar un negocio NUEVO** que no esté en el directorio (confirmado en código s29: solo hay RECLAMO de fichas/marcas existentes + panel; no hay ruta de registro-negocio ni form de crear ficha). Falta: signup que crea `User` + `BusinessProfile` activado; **form-semilla corto** (nombre·dirección·comuna·categoría tentativa·teléfono o IG) → `Place` PENDING_REVIEW con `ownerId` → **el admin corre la skill `ficha-lugar`** para optimizar → publica → cae en `/mi-negocio`. Casi cero maquinaria nueva (reusa el flujo admin+skill).
 5. **Cuando el flujo sirva de punta a punta + OK visual del usuario → PUSHEAR TODO junto** (etapas 1+2+3+4; la migración viaja en el build) y probar en prod.
