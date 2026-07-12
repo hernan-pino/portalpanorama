@@ -9,18 +9,25 @@ priorizado. Se actualiza cada vez que avanzamos. Liviano a propósito — para r
 
 ---
 
-## ▶️ RETOMAR AQUÍ — Cuentas de negocio (cierre s28, 2026-07-10)
+## ▶️ RETOMAR AQUÍ — Cuentas de negocio (cierre s30, 2026-07-11)
 
 **Dónde vamos:** construyendo el MVP de **cuentas de negocio** (lado gratis). Todo el trabajo está
 **en LOCAL, sin pushear** — decisión del usuario: no subir hasta que el flujo sirva de punta a punta
 (reclamar → cuenta → panel donde gestionar). En prod NO cambió nada.
 
+**⏩ s30 (esta sesión):** (1) se **commiteó la s29** que estaba en el working tree — en 2 commits limpios:
+`595d2dd` fix(security) del XSS del JSON-LD + `0901acd` feat del dashboard rediseñado + pulido UX.
+(2) **Gestión de fotos del dueño CONSTRUIDA** (item 2 del plan de acción, ver abajo) — commit `69f25d2`.
+Falta la **revisión visual del usuario** del editor con fotos (subir/portada/reordenar). Sigue todo sin pushear.
+
 **✅ Hecho y commiteado en local (NO en prod):**
 - **Etapa 1 — schema:** `BusinessProfile` + `BusinessClaim` + enum + migración `add_business_accounts` (aplicada en local, NO en prod).
 - **Etapa 2 — reclamo end-to-end:** CTA "¿Este negocio es tuyo?" en ficha → `/reclamar/[slug]` · reclamo de MARCA en `/marca/[slug]` → `/reclamar-marca/[slug]` · bandeja `/admin/reclamos` (aprobar/rechazar con nota) · correos Resend · **landing `/para-negocios`** (rediseñada, con FAQ toggle) · "Para negocios" en el menú · verificación por **DM del IG oficial o correo del local** (no "enlace de evidencia").
-- **Etapa 4 — panel (PARCIAL):** `/mi-negocio` (dashboard básico: fichas gestionadas + stats visitas/guardados/rating) · `/mi-negocio/[slug]/editar` (**edición directa** de campos operacionales + `accessDetail`/`reference` + **ayuda por campo `FieldHelp`** + banner "ficha optimizada") · guard anti-IDOR (`assertManagesPlace`, probado e2e) · acceso "Mi negocio" en header · correo de aprobación linkea al panel.
+- **Etapa 4 — panel:** `/mi-negocio` (**dashboard rediseñado s29:** sidebar · fila de KPIs agregados · tarjeta por ficha con desglose real + **"Estado de tu ficha"** = barra de completitud + checklist de 8 ítems computado en el use case · ítems "Pronto" honestos) · `/mi-negocio/[slug]/editar` (**edición directa** de campos operacionales + `accessDetail`/`reference` + ayuda por campo + banner "ficha optimizada") · guard anti-IDOR (`assertManagesPlace`, probado e2e) · acceso "Mi negocio" en header · correo de aprobación linkea al panel.
 - **Fix aparte:** login/registro respetan `callbackUrl` (no se pierde el flujo de reclamo tras crear cuenta) + `safeCallbackUrl` anti open-redirect.
-- **Estado build:** 131 tests verdes · typecheck + lint OK · `architecture-guardian` limpio · XSS cerrado (website/menuUrl http(s) + withProtocol).
+- **s29 — auditoría + pulido de UX (✅ commiteado en s30: `595d2dd` seguridad + `0901acd` feature):** (a) **`security-reviewer` completado** (se había cortado en s28): encontró **1 XSS almacenado real** — `description`/`phone` del dueño iban al JSON-LD con `JSON.stringify` sin escapar `<` → **arreglado** con `src/lib/jsonLd.ts::safeJsonLd` (escapa `<`→`<`, neutraliza `</script>`/`<!--`) aplicado en las 3 páginas con JSON-LD (lugar/lista/marca); resto de la superficie salió bien cerrado (nota menor fuera de alcance: `login` sin rate limit). (b) **`/admin/reclamos` accionable** — la 8ª columna (Revisar/Aprobar/Rechazar) la recortaba `overflow:hidden` en desktop → `.admin-table` ahora `overflow-x:auto`. (c) **Cruce entre dashboards** — link recíproco "Mi cuenta personal ↗" en `/mi-negocio` y "Mi negocio ↗" en el sidebar de `/mi-cuenta` (solo si gestiona ≥1 ficha). (d) **Editor alineado** — el banner "ficha optimizada" quedó al mismo ancho (560) que el form. (e) **Login/registro: Google primero y preferido** — botón Google arriba en estilo primario, divisor "o", email/contraseña debajo en `btn--ghost` (solo cuando Google está habilitado). (f) **Ayuda `?` (FieldHelp)** → **burbuja flotante** (hover + click/foco) que no empuja el layout.
+- **Fotos del dueño (s30, commit `69f25d2`):** en `/mi-negocio/[slug]/editar`, sección **OwnerPhotos** — subir archivo (se comprime+rehospeda), traer desde URL, elegir portada, reordenar (←/→), editar alt, quitar; **recomendaciones de qué subir** (fachada · interior · producto estrella), tope 12 fotos. **Capas:** port `OwnerImageInput` + `images` en la vista + `updateOwnerImages`; use case `UpdateOwnedPlaceImagesUseCase` reusa el guard `assertManagesPlace`; las actions de upload/import verifican ownership vía `GetOwnedPlaceForEdit` antes de tocar el storage; infra = delete+createMany en transacción acotado a las imágenes. **Seguridad:** `saveOwnedPlaceImagesAction` solo acepta URLs de host permitido (`isAllowedImageUrl`) — defensa en profundidad contra payload manipulado (next/image 500).
+- **Estado build:** 135 tests verdes (4 nuevos del guard de fotos) · typecheck + lint OK · capas verificadas por inspección · ruta del editor compila y sigue protegida sin sesión · XSS cerrado.
 
 **📋 Decisiones de producto cerradas (todas en [BUSINESS_ACCOUNTS_SPEC.md](BUSINESS_ACCOUNTS_SPEC.md) §6-§7):**
 - **Reparto de campos:** 🟢 editar directo (info operacional + fotos) · 🟡 proponer→admin aprueba (categoría/subcategoría/tags) · 🔒 solo admin (nombre, ubicación, datos de Google).
@@ -30,16 +37,16 @@ priorizado. Se actualiza cada vez que avanzamos. Liviano a propósito — para r
 - **Encuadre "ficha optimizada":** el editor/reclamo avisan que la ficha ya está curada y se recomienda solo corregir info errónea + fotos.
 
 **⬜ PLAN DE ACCIÓN — próxima sesión (en orden):**
-1. **Rediseñar el dashboard `/mi-negocio`** — al usuario NO le gustó el actual; apuntar al mockup de Claude Design que mandó (sidebar · tarjetas KPI · "estado de tu ficha" con checklist de completitud · gráfico). ⚠️ Ser honesto: llamadas/posición/reseñas/eventos NO existen aún → marcarlos "pronto"; usar datos reales (visitas/guardados/rating + completitud portada/galería/horario/menú).
-2. **Gestión de fotos del dueño** (parte de "editar directo") — reusar el pipeline de imágenes (subir/importar/reordenar/portada/borrar) con guard de ownership + **recomendaciones de qué fotos subir**.
+1. ✅ **Rediseñar el dashboard `/mi-negocio`** (HECHO s29 — el usuario quedó conforme; sidebar · KPIs agregados · "Estado de tu ficha" con checklist de completitud real · sin gráfico de tendencia porque no hay serie de tiempo, se usó desglose real por ficha).
+2. ✅ **Gestión de fotos del dueño** (HECHO s30, commit `69f25d2`; subir/importar/reordenar/portada/quitar + recomendaciones; guard de ownership + solo hosts permitidos) — **falta la revisión visual del usuario** del editor con fotos.
 3. **Propuestas de categoría/tags** — cola de moderación: el dueño propone, el admin aprueba (patrón similar a los reclamos; entidad/estado nuevos + bandeja admin + correos).
-4. **Etapa 3 — registro "para negocios" + crear ficha (semilla)** — signup que crea `User` + `BusinessProfile` activado; form-semilla corto → `Place` PENDING_REVIEW con `ownerId` → cae en el flujo admin+skill.
+4. **Etapa 3 — registro "para negocios" + crear ficha (semilla)** — ⚠️ **HOY NO EXISTE ningún flujo para publicar un negocio NUEVO** que no esté en el directorio (confirmado en código s29: solo hay RECLAMO de fichas/marcas existentes + panel; no hay ruta de registro-negocio ni form de crear ficha). Falta: signup que crea `User` + `BusinessProfile` activado; **form-semilla corto** (nombre·dirección·comuna·categoría tentativa·teléfono o IG) → `Place` PENDING_REVIEW con `ownerId` → **el admin corre la skill `ficha-lugar`** para optimizar → publica → cae en `/mi-negocio`. Casi cero maquinaria nueva (reusa el flujo admin+skill).
 5. **Cuando el flujo sirva de punta a punta + OK visual del usuario → PUSHEAR TODO junto** (etapas 1+2+3+4; la migración viaja en el build) y probar en prod.
 
 **🔧 Pendientes operativos (del usuario / infra):**
 - **Recepción de `hola@portalpanorama.cl`:** Resend solo ENVÍA. Hay que configurar recepción (Cloudflare Email Routing gratis → reenvía a Gmail, o Zoho/Workspace) o los correos que el dueño mande para verificarse se pierden. **Sin esto, la verificación por correo no funciona** (queda solo IG).
 - **Deliverability:** los correos caen en "Promociones" de Gmail → revisar SPF/DKIM/DMARC en Resend + bajar el tono "marketing" de los transaccionales.
-- **Relanzar `security-reviewer`** del panel (se cortó por límite de sesión; el e2e ya probó el IDOR, falta la auditoría formal).
+- **Nota del security-reviewer (s29, fuera de alcance):** `login` no tiene rate limiting (registro/recuperar sí) → cerrarlo con el mismo patrón `rateLimitDurable('login:${ip}', …)` cuando se toque auth.
 - Arrastrados: portada guía de juegos · 5 PENDING antiguos de ramen · rotar contraseña Neon prod + borrar `PROD_DB_URL` · regenerar recovery codes de Vercel · rotar API key de Resend · ingest lote "complementos de cita" (chocolaterías/florerías/plantas) cuando llegue la lista.
 
 ---
