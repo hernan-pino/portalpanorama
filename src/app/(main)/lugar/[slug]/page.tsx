@@ -10,7 +10,9 @@ import { safeJsonLd } from '@lib/jsonLd'
 import type { PlaceDetailView, PlaceCardView } from '@application/ports/PlaceRepository'
 import type { SaveContextOutput } from '@application/collection/GetSaveContextUseCase'
 import { PlaceNotFoundError } from '@domain/place/errors/PlaceNotFoundError'
+import { PlaceClickKind } from '@domain/place/PlaceClickKind'
 import { Collection } from '@domain/collection/Collection'
+import { ContactRow } from './ContactRow'
 import { PlaceCard } from '@components/place/PlaceCard'
 import { PlaceRail } from '@components/place/PlaceRail'
 import { Gallery } from './Gallery'
@@ -357,19 +359,24 @@ export default async function LugarPage({ params }: PageProps) {
             <h2 className="ficha__sec-h">Contacto</h2>
             <div className="ficha__contact">
               {place.phone && (
-                <ContactRow icon={<PhoneIcon />} k="Teléfono" v={place.phone} href={`tel:${place.phone}`} />
+                <ContactRow icon={<PhoneIcon />} k="Teléfono" v={place.phone} href={`tel:${place.phone}`}
+                  placeId={place.id} kind={PlaceClickKind.PHONE} />
               )}
               {place.website && (
-                <ContactRow icon={<GlobeIcon />} k="Sitio web" v={place.website} href={withProtocol(place.website)} />
+                <ContactRow icon={<GlobeIcon />} k="Sitio web" v={place.website} href={withProtocol(place.website)}
+                  placeId={place.id} kind={PlaceClickKind.WEBSITE} />
               )}
               {place.instagram && (
-                <ContactRow icon={<InstagramIcon />} k="Instagram" v={place.instagram} href={instagramHref(place.instagram)} />
+                <ContactRow icon={<InstagramIcon />} k="Instagram" v={place.instagram} href={instagramHref(place.instagram)}
+                  placeId={place.id} kind={PlaceClickKind.INSTAGRAM} />
               )}
               {place.menuUrl && (
-                <ContactRow icon={<MenuIcon />} k="Menú" v="Ver la carta" href={withProtocol(place.menuUrl)} />
+                <ContactRow icon={<MenuIcon />} k="Menú" v="Ver la carta" href={withProtocol(place.menuUrl)}
+                  placeId={place.id} kind={PlaceClickKind.MENU} />
               )}
               {place.socialLinks.map((s) => (
-                <ContactRow key={s.url} icon={<GlobeIcon />} k={s.network} v="Ver perfil" href={withProtocol(s.url)} />
+                <ContactRow key={s.url} icon={<GlobeIcon />} k={s.network} v="Ver perfil" href={withProtocol(s.url)}
+                  placeId={place.id} kind={PlaceClickKind.SOCIAL} />
               ))}
             </div>
           </div>
@@ -483,19 +490,6 @@ function PriceScale({ value }: { value: string }) {
       </div>
       <span className="ficha__price-label">{PRICE_LABELS[value] ?? value}</span>
     </div>
-  )
-}
-
-function ContactRow({ icon, k, v, href }: { icon: React.ReactNode; k: string; v: string; href: string }) {
-  const external = href.startsWith('http')
-  return (
-    <a className="ficha__crow" href={href} {...(external ? { target: '_blank', rel: 'noopener noreferrer' } : {})}>
-      <span className="ci">{icon}</span>
-      <span style={{ minWidth: 0 }}>
-        <span className="ck">{k}</span>
-        <span className="cv">{v}</span>
-      </span>
-    </a>
   )
 }
 

@@ -504,6 +504,7 @@ model Place {
   visitHistory    VisitHistory[]
   reports         Report[]
   claims          BusinessClaim[]
+  clicks          PlaceClick[]
 
   @@index([status])
   @@index([categoryId, status])
@@ -696,6 +697,32 @@ model VisitHistory {
 
   @@index([userId, visitedAt(sort: Desc)])
   @@index([placeId])
+}
+
+// ─── PlaceClick — intención de contacto (métricas del panel de negocio) ──────────
+// Clic ANÓNIMO en un enlace de acción de la ficha: cómo llegar, web, Instagram,
+// teléfono, carta, otra red. Es lo que el dueño quiere ver (a diferencia del rating
+// de Google, que ya se ve en la ficha). Sin userId: es tráfico público, no historial
+// personal — VisitHistory (arriba) es otra cosa (lugares que un usuario marcó).
+enum PlaceClickType {
+  DIRECTIONS
+  WEBSITE
+  INSTAGRAM
+  PHONE
+  MENU
+  SOCIAL
+}
+
+model PlaceClick {
+  id        String         @id
+  placeId   String
+  type      PlaceClickType
+  createdAt DateTime       @default(now())
+
+  place Place @relation(fields: [placeId], references: [id], onDelete: Cascade)
+
+  @@index([placeId, type])
+  @@index([placeId, createdAt(sort: Desc)])
 }
 
 // ─── Review (propia, polimórfica) — creada pero APAGADA en el MVP (2.4) ──────────

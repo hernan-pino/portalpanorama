@@ -1737,6 +1737,19 @@ button.ficha__hero-img { cursor: zoom-in; }
 .osched__add { font-size: var(--t-body-sm); color: var(--accent-70); align-self: flex-start; }
 .osched__add:hover { text-decoration: underline; }
 
+/* — Desglose de clics de contacto (panel de negocio) — */
+.biz-clicks {
+  list-style: none; margin: var(--s-4) 0 0; padding: var(--s-3) 0 0;
+  border-top: 1px solid var(--surface-line-soft);
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(96px, 1fr)); gap: var(--s-2);
+}
+.biz-clicks__item { display: flex; flex-direction: column; gap: 2px; }
+.biz-clicks__label {
+  font-family: var(--font-mono); font-size: var(--t-tiny); letter-spacing: 0.04em;
+  text-transform: uppercase; color: var(--fg-subtle);
+}
+.biz-clicks__num { font-family: var(--font-display); font-size: 18px; color: var(--fg); }
+
 /* — Reportar (pie discreto) — */
 .ficha__report { padding-top: var(--s-10); text-align: center; }
 .ficha__report-hr { height: 1px; background: var(--surface-line-soft); margin-bottom: var(--s-6); }

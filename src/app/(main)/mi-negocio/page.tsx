@@ -20,6 +20,17 @@ const STATUS_CLASS: Record<string, string> = {
   ARCHIVED: 'archived',
 }
 
+// Desglose de la intención de contacto. Es lo accionable para el dueño: el rating
+// de Google no va — ya se ve en su propia ficha y él no lo mueve desde acá.
+const CLICK_BREAKDOWN = [
+  { key: 'directions', label: 'Cómo llegar' },
+  { key: 'website', label: 'Sitio web' },
+  { key: 'instagram', label: 'Instagram' },
+  { key: 'phone', label: 'Teléfono' },
+  { key: 'menu', label: 'Carta' },
+  { key: 'social', label: 'Otras redes' },
+] as const
+
 // Lo que todavía no existe pero viene: se muestra honesto como "pronto", nunca
 // como si ya funcionara.
 const SOON_ITEMS = ['Reseñas', 'Estadísticas avanzadas', 'Eventos', 'Publicidad']
@@ -99,8 +110,8 @@ export default async function MiNegocioPage() {
                 <span className="biz-kpi__label">Guardados</span>
               </div>
               <div className="biz-kpi">
-                <span className="biz-kpi__num">{totals.avgRating ? totals.avgRating.toFixed(1) : '—'}</span>
-                <span className="biz-kpi__label">Rating Google</span>
+                <span className="biz-kpi__num">{totals.clicks}</span>
+                <span className="biz-kpi__label">Clics de contacto</span>
               </div>
             </section>
 
@@ -143,10 +154,20 @@ export default async function MiNegocioPage() {
                         <span className="biz-stat__label">Guardados</span>
                       </div>
                       <div className="biz-stat">
-                        <span className="biz-stat__num">{p.googleRating ? p.googleRating.toFixed(1) : '—'}</span>
-                        <span className="biz-stat__label">Google</span>
+                        <span className="biz-stat__num">{p.clicks.total}</span>
+                        <span className="biz-stat__label">Clics</span>
                       </div>
                     </div>
+
+                    {/* Qué hace la gente al llegar a tu ficha (intención de contacto) */}
+                    <ul className="biz-clicks" aria-label="Clics de contacto">
+                      {CLICK_BREAKDOWN.map(({ key, label }) => (
+                        <li key={key} className="biz-clicks__item">
+                          <span className="biz-clicks__label">{label}</span>
+                          <span className="biz-clicks__num">{p.clicks[key]}</span>
+                        </li>
+                      ))}
+                    </ul>
 
                     {/* Estado de la ficha (completitud) */}
                     <div className="biz-meter">

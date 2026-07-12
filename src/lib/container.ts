@@ -92,12 +92,15 @@ import { CountManagedPlacesUseCase } from '@application/business/CountManagedPla
 import { GetOwnedPlaceForEditUseCase } from '@application/business/GetOwnedPlaceForEditUseCase'
 import { UpdateOwnedPlaceInfoUseCase } from '@application/business/UpdateOwnedPlaceInfoUseCase'
 import { UpdateOwnedPlaceImagesUseCase } from '@application/business/UpdateOwnedPlaceImagesUseCase'
+import { PrismaPlaceClickRepository } from '@infrastructure/db/PrismaPlaceClickRepository'
+import { RecordPlaceClickUseCase } from '@application/place/RecordPlaceClickUseCase'
 import { SetUserRoleUseCase } from '@application/user/SetUserRoleUseCase'
 import { DeleteUserUseCase } from '@application/user/DeleteUserUseCase'
 
 // Los adapters son stateless sobre el cliente Prisma compartido: una instancia basta.
 const userRepo = new PrismaUserRepository(prisma)
 const placeRepo = new PrismaPlaceRepository(prisma)
+const placeClickRepo = new PrismaPlaceClickRepository(prisma)
 const brandRepo = new PrismaBrandRepository(prisma)
 const curatedListRepo = new PrismaCuratedListRepository(prisma)
 const categoryRepo = new PrismaCategoryRepository(prisma)
@@ -238,7 +241,12 @@ export const container = {
 
   // ── Panel de negocio (dueño verificado) ─────────────────────────────
   getGetBusinessDashboardUseCase() {
-    return new GetBusinessDashboardUseCase(placeRepo)
+    return new GetBusinessDashboardUseCase(placeRepo, placeClickRepo)
+  },
+
+  // Clic de contacto en la ficha (cómo llegar / web / IG / teléfono / carta / red).
+  getRecordPlaceClickUseCase() {
+    return new RecordPlaceClickUseCase(placeClickRepo)
   },
 
   // Liviano: ¿el usuario gestiona algún negocio? (acceso al panel en el header).

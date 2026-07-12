@@ -4,6 +4,7 @@ import { auth } from '@lib/auth'
 import { container } from '@lib/container'
 import { rateLimitDurable, clientIp } from '@lib/rateLimit'
 import { ReportReason } from '@domain/report/ReportReason'
+import { PlaceClickKind } from '@domain/place/PlaceClickKind'
 
 // Las acciones de guardar en lista viven en @/app/actions/collections (compartidas
 // con la tarjeta de lugar; SaveButton las importa de ahí). Un archivo "use server"
@@ -44,4 +45,29 @@ export async function reportPlaceAction(formData: FormData): Promise<ActionResul
   })
 
   return { success: true }
+}
+
+// ── Clic de contacto (métrica del panel del dueño) ──
+// Cómo llegar / web / Instagram / teléfono / carta / otra red. Anónimo.
+//
+// Fire-and-forget: el <a> navega igual, así que esto NUNCA lanza — un fallo de
+// telemetría no puede romperle la navegación a nadie. El rate limit evita inflar
+// los conteos a mano: el dueño ve estos números, tienen que ser creíbles.
+const clickSchema = z.object({
+  placeId: z.string().min(1).max(40),
+  kind: z.nativeEnum(PlaceClickKind),
+})
+
+export async function recordPlaceClickAction(placeId: string, kind: string): Promise<void> {
+  try {
+    const parsed = clickSchema.safeParse({ placeId, kind })
+    if (!parsed.success) return
+
+    const ip = await clientIp()
+    if (!(await rateLimitDurable(`click:${ip}`, 40, 60 * 60_000)).ok) return
+
+    await container.getRecordPlaceClickUseCase().execute(parsed.data.placeId, parsed.data.kind)
+  } catch {
+    // Silencio a propósito: es telemetría.
+  }
 }

@@ -1,4 +1,9 @@
 import { OwnedPlaceRow, PlaceRepository } from '../ports/PlaceRepository'
+import {
+  EMPTY_CLICK_COUNTS,
+  PlaceClickCounts,
+  PlaceClickRepository,
+} from '../ports/PlaceClickRepository'
 
 export interface DashboardChecklistItem {
   label: string
@@ -16,6 +21,9 @@ export interface DashboardPlace {
   googleRating?: number
   visitCount: number
   saveCount: number
+  // Intención de contacto: lo accionable para el dueño (el rating de Google ya se
+  // ve en su propia ficha, así que no ocupa espacio en el panel).
+  clicks: PlaceClickCounts
   checklist: DashboardChecklistItem[]
   completedCount: number
   totalCount: number
@@ -26,7 +34,7 @@ export interface DashboardTotals {
   placeCount: number
   visits: number
   saves: number
-  avgRating?: number
+  clicks: number
   avgCompletenessPct: number
 }
 
@@ -57,10 +65,15 @@ function buildChecklist(r: OwnedPlaceRow): DashboardChecklistItem[] {
 // con su engagement real y el estado de completitud de cada ficha. Vacío = el
 // usuario aún no tiene ningún negocio aprobado.
 export class GetBusinessDashboardUseCase {
-  constructor(private readonly placeRepo: PlaceRepository) {}
+  constructor(
+    private readonly placeRepo: PlaceRepository,
+    private readonly clickRepo: PlaceClickRepository,
+  ) {}
 
   async execute(userId: string): Promise<BusinessDashboardOutput> {
     const rows = await this.placeRepo.findManagedByUser(userId)
+    // Un solo groupBy para todas las fichas del panel (no una query por ficha).
+    const clicksByPlace = await this.clickRepo.countsByPlaceIds(rows.map((r) => r.id))
 
     const places: DashboardPlace[] = rows.map((r) => {
       const checklist = buildChecklist(r)
@@ -77,6 +90,7 @@ export class GetBusinessDashboardUseCase {
         googleRating: r.googleRating,
         visitCount: r.visitCount,
         saveCount: r.saveCount,
+        clicks: clicksByPlace.get(r.id) ?? { ...EMPTY_CLICK_COUNTS },
         checklist,
         completedCount,
         totalCount,
@@ -84,15 +98,11 @@ export class GetBusinessDashboardUseCase {
       }
     })
 
-    const rated = places.filter((p) => p.googleRating != null)
     const totals: DashboardTotals = {
       placeCount: places.length,
       visits: places.reduce((sum, p) => sum + p.visitCount, 0),
       saves: places.reduce((sum, p) => sum + p.saveCount, 0),
-      avgRating:
-        rated.length > 0
-          ? rated.reduce((sum, p) => sum + (p.googleRating ?? 0), 0) / rated.length
-          : undefined,
+      clicks: places.reduce((sum, p) => sum + p.clicks.total, 0),
       avgCompletenessPct:
         places.length > 0
           ? Math.round(places.reduce((sum, p) => sum + p.completenessPct, 0) / places.length)
