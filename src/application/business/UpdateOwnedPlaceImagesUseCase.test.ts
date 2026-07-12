@@ -14,6 +14,7 @@ function view(overrides: Partial<OwnerEditablePlaceView> = {}): OwnerEditablePla
     ownerId: 'user-1',
     brandOwnerId: null,
     images: [],
+    socialLinks: [],
     ...overrides,
   }
 }

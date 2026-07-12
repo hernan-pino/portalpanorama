@@ -69,6 +69,7 @@ export default async function EditarFichaPage({ params }: PageProps) {
           phone: place.phone ?? '',
           website: place.website ?? '',
           instagram: place.instagram ?? '',
+          socialLinks: place.socialLinks,
           menuUrl: place.menuUrl ?? '',
           priceRange: place.priceRange ?? '',
           reservation: place.reservation ?? '',

@@ -1687,6 +1687,29 @@ button.ficha__hero-img { cursor: zoom-in; }
 .ophotos__ok { color: var(--accent-70); font-size: var(--t-body-sm); margin: var(--s-2) 0 0; }
 .ophotos__save { margin-top: var(--s-4); }
 
+/* — Redes sociales del dueño (dentro del form de edición) — */
+.edit-social {
+  border: none; margin: 0; padding: var(--s-4) 0 0;
+  border-top: 1px solid var(--surface-line-soft);
+  display: flex; flex-direction: column; gap: var(--s-4);
+}
+.edit-social__legend {
+  font-family: var(--font-display); font-weight: 500; font-size: 17px;
+  line-height: var(--lh-snug); letter-spacing: var(--tr-tight);
+  font-variation-settings: "opsz" 60; padding: 0; margin-bottom: var(--s-1);
+}
+.osocial { display: flex; flex-direction: column; gap: var(--s-2); }
+.osocial__list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: var(--s-2); }
+.osocial__row { display: flex; gap: var(--s-2); align-items: center; }
+.osocial__net { flex: 0 0 130px; }
+.osocial__url { flex: 1; min-width: 0; }
+.osocial__remove {
+  flex: 0 0 auto; width: 34px; height: 34px; border-radius: var(--r-sm);
+  color: var(--fg-subtle); font-size: 14px;
+  border: 1px solid var(--surface-line); transition: color var(--d-fast), background var(--d-fast);
+}
+.osocial__remove:hover { color: var(--error); background: var(--bg-sunken); }
+
 /* — Reportar (pie discreto) — */
 .ficha__report { padding-top: var(--s-10); text-align: center; }
 .ficha__report-hr { height: 1px; background: var(--surface-line-soft); margin-bottom: var(--s-6); }

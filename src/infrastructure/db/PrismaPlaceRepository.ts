@@ -571,6 +571,7 @@ export class PrismaPlaceRepository implements PlaceRepository {
         reservation: true,
         accessDetail: true,
         reference: true,
+        socialLinks: true,
         ownerId: true,
         category: { select: { name: true } },
         commune: { select: { name: true } },
@@ -605,27 +606,31 @@ export class PrismaPlaceRepository implements PlaceRepository {
         alt: img.alt ?? undefined,
         isPrimary: img.isPrimary,
       })),
+      socialLinks: parseSocialLinks(r.socialLinks),
     }
   }
 
   // Solo los campos operacionales editables por el dueño. NO toca nombre/categoría/
   // ubicación/rating/score/estado/tags/ownerId. El score no depende de estos campos.
   async updateOwnerEditableFields(placeId: string, fields: OwnerEditableFields): Promise<void> {
-    await this.prisma.place.update({
-      where: { id: placeId },
-      data: {
-        description: fields.description ?? null,
-        schedule: fields.schedule ?? null,
-        phone: fields.phone ?? null,
-        website: fields.website ?? null,
-        instagram: fields.instagram ?? null,
-        menuUrl: fields.menuUrl ?? null,
-        priceRange: (fields.priceRange as $Enums.PriceRange | undefined) ?? null,
-        reservation: (fields.reservation as $Enums.ReservationPolicy | undefined) ?? null,
-        accessDetail: fields.accessDetail ?? null,
-        reference: fields.reference ?? null,
-      },
-    })
+    const data: Prisma.PlaceUpdateInput = {
+      description: fields.description ?? null,
+      schedule: fields.schedule ?? null,
+      phone: fields.phone ?? null,
+      website: fields.website ?? null,
+      instagram: fields.instagram ?? null,
+      menuUrl: fields.menuUrl ?? null,
+      priceRange: (fields.priceRange as $Enums.PriceRange | undefined) ?? null,
+      reservation: (fields.reservation as $Enums.ReservationPolicy | undefined) ?? null,
+      accessDetail: fields.accessDetail ?? null,
+      reference: fields.reference ?? null,
+    }
+    // socialLinks solo se toca si el caller lo mandó explícito (undefined = no tocar,
+    // así un save parcial nunca borra las redes existentes). El form manda el set completo.
+    if (fields.socialLinks !== undefined) {
+      data.socialLinks = fields.socialLinks.length ? fields.socialLinks : Prisma.DbNull
+    }
+    await this.prisma.place.update({ where: { id: placeId }, data })
   }
 
   // Reemplazo total del set de fotos (delete + recreate), acotado a las imágenes.

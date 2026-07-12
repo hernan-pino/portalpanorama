@@ -148,6 +148,9 @@ export interface OwnerEditableFields {
   phone?: string
   website?: string
   instagram?: string
+  // Redes extra (WhatsApp/Facebook/TikTok/YouTube…). El form manda el set completo:
+  // es la fuente de verdad del dueño. Instagram va aparte (campo propio).
+  socialLinks?: { network: string; url: string }[]
   menuUrl?: string
   priceRange?: PriceRange
   reservation?: ReservationPolicy
@@ -174,6 +177,7 @@ export interface OwnerEditablePlaceView extends OwnerEditableFields {
   ownerId: string | null
   brandOwnerId: string | null
   images: OwnerImageInput[]
+  socialLinks: { network: string; url: string }[]
 }
 
 export interface PlaceRepository {

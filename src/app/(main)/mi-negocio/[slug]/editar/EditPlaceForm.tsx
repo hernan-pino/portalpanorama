@@ -3,6 +3,7 @@ import { useState, useTransition } from 'react'
 import Link from 'next/link'
 import { FieldHelp } from '@components/ui/FieldHelp'
 import { updateOwnedPlaceAction } from './actions'
+import { OwnerSocialLinks, type SocialLinkRow } from './OwnerSocialLinks'
 
 const PRICE_OPTIONS = [
   { value: '', label: 'Sin especificar' },
@@ -26,6 +27,7 @@ export interface EditInitial {
   phone: string
   website: string
   instagram: string
+  socialLinks: SocialLinkRow[]
   menuUrl: string
   priceRange: string
   reservation: string
@@ -91,13 +93,22 @@ export function EditPlaceForm({ slug, initial }: { slug: string; initial: EditIn
           defaultValue={initial.website} placeholder="https://…" />
       </div>
 
-      <div>
-        <label className="form-label" htmlFor="f-instagram">
-          Instagram <FieldHelp tip="Tu cuenta oficial. Puedes poner el @usuario o el enlace completo." />
-        </label>
-        <input id="f-instagram" name="instagram" className="form-input"
-          defaultValue={initial.instagram} maxLength={120} placeholder="@tu_local o el enlace" />
-      </div>
+      <fieldset className="edit-social">
+        <legend className="edit-social__legend">
+          Redes sociales <FieldHelp tip="Instagram es tu red principal (se destaca en la ficha). Suma las demás que uses — YouTube, TikTok, WhatsApp, Facebook…" />
+        </legend>
+
+        <div>
+          <label className="form-label" htmlFor="f-instagram">Instagram</label>
+          <input id="f-instagram" name="instagram" className="form-input"
+            defaultValue={initial.instagram} maxLength={120} placeholder="@tu_local o el enlace" />
+        </div>
+
+        <div>
+          <span className="form-label">Otras redes</span>
+          <OwnerSocialLinks initial={initial.socialLinks} />
+        </div>
+      </fieldset>
 
       <div>
         <label className="form-label" htmlFor="f-menu">

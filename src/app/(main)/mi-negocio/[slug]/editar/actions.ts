@@ -10,6 +10,7 @@ import { ReservationPolicy } from '@domain/place/ReservationPolicy'
 import { PlaceNotFoundError } from '@domain/place/errors/PlaceNotFoundError'
 import { UnauthorizedBusinessAccessError } from '@domain/business/errors/UnauthorizedBusinessAccessError'
 import { ImageFetchError } from '@application/ports/ImageFetcher'
+import { OWNER_SOCIAL_NETWORKS } from './socialNetworks'
 
 type ActionResult = { error: string } | { success: true }
 
@@ -20,6 +21,14 @@ const httpUrl = z
   .trim()
   .url('Debe ser un enlace válido.')
   .refine((u) => /^https?:\/\//i.test(u), 'El enlace debe empezar con http:// o https://')
+
+// Redes extra: red de la lista permitida + URL http(s). El form manda el set completo
+// como JSON; se descartan las filas sin URL antes de validar.
+const socialLinkSchema = z.object({
+  network: z.enum(OWNER_SOCIAL_NETWORKS),
+  url: httpUrl,
+})
+const MAX_SOCIAL_LINKS = 8
 
 // Solo campos operacionales. El enum vacío ('') = "sin especificar" → undefined.
 const editSchema = z.object({
@@ -38,6 +47,26 @@ const editSchema = z.object({
 
 function clean(v: string | undefined): string | undefined {
   return v && v.length > 0 ? v : undefined
+}
+
+// Parsea el JSON de redes del form → [{network,url}] validado (siempre un array,
+// aunque vacío: así el use case sabe que el dueño gestionó las redes y las fija).
+function parseSocialLinksField(
+  raw: FormDataEntryValue | null,
+): { links: { network: string; url: string }[] } | { error: string } {
+  if (typeof raw !== 'string' || raw.trim() === '') return { links: [] }
+  let arr: unknown
+  try {
+    arr = JSON.parse(raw)
+  } catch {
+    return { error: 'No se pudieron leer las redes sociales.' }
+  }
+  const rows = (Array.isArray(arr) ? arr : []).filter(
+    (x) => x && typeof x === 'object' && typeof (x as { url?: unknown }).url === 'string' && (x as { url: string }).url.trim() !== '',
+  )
+  const sp = z.array(socialLinkSchema).max(MAX_SOCIAL_LINKS).safeParse(rows)
+  if (!sp.success) return { error: sp.error.issues[0]?.message ?? 'Alguna red social es inválida.' }
+  return { links: sp.data }
 }
 
 export async function updateOwnedPlaceAction(formData: FormData): Promise<ActionResult> {
@@ -59,6 +88,11 @@ export async function updateOwnedPlaceAction(formData: FormData): Promise<Action
   })
   if (!parsed.success) return { error: parsed.error.issues[0]?.message ?? 'Datos inválidos.' }
 
+  // Redes extra: llegan como JSON del form. Se descartan las filas sin URL y se
+  // valida el resto (red permitida + http(s)). El set completo es la fuente de verdad.
+  const socialParsed = parseSocialLinksField(formData.get('socialLinks'))
+  if ('error' in socialParsed) return socialParsed
+
   const d = parsed.data
   try {
     await container.getUpdateOwnedPlaceInfoUseCase().execute(session.user.id, d.slug, {
@@ -67,6 +101,7 @@ export async function updateOwnedPlaceAction(formData: FormData): Promise<Action
       phone: clean(d.phone),
       website: clean(d.website),
       instagram: clean(d.instagram),
+      socialLinks: socialParsed.links,
       menuUrl: clean(d.menuUrl),
       priceRange: (d.priceRange || undefined) as PriceRange | undefined,
       reservation: (d.reservation || undefined) as ReservationPolicy | undefined,
