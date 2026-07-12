@@ -1710,6 +1710,33 @@ button.ficha__hero-img { cursor: zoom-in; }
 }
 .osocial__remove:hover { color: var(--error); background: var(--bg-sunken); }
 
+/* — Editor de horario del dueño — */
+.osched__legacy {
+  font-size: var(--t-body-sm); color: var(--fg-muted);
+  background: var(--bg-sunken); border: 1px solid var(--surface-line-soft);
+  border-radius: var(--r-md); padding: var(--s-3); margin: 0 0 var(--s-3);
+}
+.osched__list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: var(--s-1); }
+.osched__day {
+  display: flex; align-items: center; flex-wrap: wrap; gap: var(--s-3);
+  padding: var(--s-2) 0; border-bottom: 1px solid var(--surface-line-soft);
+}
+.osched__day:last-child { border-bottom: none; }
+.osched__name { flex: 0 0 44px; font-family: var(--font-mono); font-size: var(--t-mono-sm); color: var(--fg-muted); }
+.osched__toggle { display: inline-flex; align-items: center; gap: var(--s-1); flex: 0 0 96px; font-size: var(--t-body-sm); cursor: pointer; }
+.osched__toggle input { accent-color: var(--accent); }
+.osched__ranges { display: flex; flex-direction: column; gap: var(--s-1); }
+.osched__range { display: flex; align-items: center; gap: var(--s-1); }
+.osched__time { padding: 4px 8px; width: auto; }
+.osched__dash { color: var(--fg-subtle); }
+.osched__x {
+  width: 26px; height: 26px; border-radius: var(--r-sm); color: var(--fg-subtle); font-size: 12px;
+  border: 1px solid var(--surface-line); transition: color var(--d-fast), background var(--d-fast);
+}
+.osched__x:hover { color: var(--error); background: var(--bg-sunken); }
+.osched__add { font-size: var(--t-body-sm); color: var(--accent-70); align-self: flex-start; }
+.osched__add:hover { text-decoration: underline; }
+
 /* — Reportar (pie discreto) — */
 .ficha__report { padding-top: var(--s-10); text-align: center; }
 .ficha__report-hr { height: 1px; background: var(--surface-line-soft); margin-bottom: var(--s-6); }

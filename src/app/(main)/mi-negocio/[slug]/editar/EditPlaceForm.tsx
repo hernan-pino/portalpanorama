@@ -4,6 +4,8 @@ import Link from 'next/link'
 import { FieldHelp } from '@components/ui/FieldHelp'
 import { updateOwnedPlaceAction } from './actions'
 import { OwnerSocialLinks, type SocialLinkRow } from './OwnerSocialLinks'
+import { OwnerSchedule } from './OwnerSchedule'
+import { parseSchedule } from './scheduleFormat'
 
 const PRICE_OPTIONS = [
   { value: '', label: 'Sin especificar' },
@@ -69,12 +71,10 @@ export function EditPlaceForm({ slug, initial }: { slug: string; initial: EditIn
       </div>
 
       <div>
-        <label className="form-label" htmlFor="f-schedule">
-          Horario <FieldHelp tip="Un horario claro es lo que más consulta la gente. Anota los días y el rango horario; si cierran un día o tienen horario especial de fin de semana, dilo. Ej: Lun a Vie 9:00–19:00 · Sáb 10:00–14:00 · Dom cerrado." />
-        </label>
-        <textarea id="f-schedule" name="schedule" className="form-input" rows={3}
-          defaultValue={initial.schedule} maxLength={2000}
-          placeholder="Ej: Lun a Vie 9:00–19:00 · Sáb 10:00–14:00" />
+        <span className="form-label">
+          Horario <FieldHelp tip="Marca cada día como abierto o cerrado y pon el rango horario. Si tienes turno partido (cierras al mediodía), agrega un segundo turno. Es lo que más consulta la gente." />
+        </span>
+        <OwnerSchedule parsed={parseSchedule(initial.schedule)} rawFallback={initial.schedule} />
       </div>
 
       <div>
