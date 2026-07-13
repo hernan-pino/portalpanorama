@@ -160,9 +160,20 @@ Sin esto, pushear el reclamo a prod deja media promesa (no hay puerta para "soy 
 4. **Etapa 3 — registro "para negocios" + crear ficha (semilla)** — ⚠️ **HOY NO EXISTE ningún flujo para publicar un negocio NUEVO** que no esté en el directorio (confirmado en código s29: solo hay RECLAMO de fichas/marcas existentes + panel; no hay ruta de registro-negocio ni form de crear ficha). Falta: signup que crea `User` + `BusinessProfile` activado; **form-semilla corto** (nombre·dirección·comuna·categoría tentativa·teléfono o IG) → `Place` PENDING_REVIEW con `ownerId` → **el admin corre la skill `ficha-lugar`** para optimizar → publica → cae en `/mi-negocio`. Casi cero maquinaria nueva (reusa el flujo admin+skill).
 5. **Cuando el flujo sirva de punta a punta + OK visual del usuario → PUSHEAR TODO junto** (etapas 1+2+3+4; la migración viaja en el build) y probar en prod.
 
+**📬 CORREO RESUELTO (s31, con el usuario en vivo).** `hola@portalpanorama.cl` **ya recibe**: Cloudflare Email
+Routing activado (los MX de `route1/2/3.mx.cloudflare.net` verificados vivos desde 3 resolvers + SPF y DKIM de CF);
+regla `hola@` → Gmail del usuario. **El envío no se tocó**: Resend manda desde el subdominio `contacto.portalpanorama.cl`,
+que tiene su propio SPF/DKIM (verificados intactos tras el cambio). Probado end-to-end: correo enviado a `hola@` →
+llegó al Gmail. ⚠️ **Hallazgo al paso, arreglado (`3568fc9`): las respuestas se estaban perdiendo en PROD** — los
+correos salían desde `hola@contacto.portalpanorama.cl`, que NO tiene MX, así que darle "Responder" (¡el correo de
+rechazo de reclamo lo pide literalmente!) mandaba el mensaje al vacío. Ahora todos los envíos pasan por un helper con
+**`Reply-To` (`EMAIL_REPLY_TO`, default `hola@portalpanorama.cl`)**. Viaja a prod con el push.
+- ⬜ **Catch-all sigue en "Drop"** (lo que llegue a `contacto@`/`info@`/con typo se descarta en silencio) → cambiarlo
+  a reenviar al Gmail son 30s en Routing rules.
+
 **🔧 Pendientes operativos (del usuario / infra):**
-- **Recepción de `hola@portalpanorama.cl`:** Resend solo ENVÍA. Hay que configurar recepción (Cloudflare Email Routing gratis → reenvía a Gmail, o Zoho/Workspace) o los correos que el dueño mande para verificarse se pierden. **Sin esto, la verificación por correo no funciona** (queda solo IG).
-- **Deliverability:** los correos caen en "Promociones" de Gmail → revisar SPF/DKIM/DMARC en Resend + bajar el tono "marketing" de los transaccionales.
+- **Deliverability:** los correos caen en "Promociones" de Gmail → bajar el tono "marketing" de los transaccionales
+  (el DMARC del dominio ya existe: `p=none`).
 - **Nota del security-reviewer (s29, fuera de alcance):** `login` no tiene rate limiting (registro/recuperar sí) → cerrarlo con el mismo patrón `rateLimitDurable('login:${ip}', …)` cuando se toque auth.
 - Arrastrados: portada guía de juegos · 5 PENDING antiguos de ramen · rotar contraseña Neon prod + borrar `PROD_DB_URL` · regenerar recovery codes de Vercel · rotar API key de Resend · ingest lote "complementos de cita" (chocolaterías/florerías/plantas) cuando llegue la lista.
 
