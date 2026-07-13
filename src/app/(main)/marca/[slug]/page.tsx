@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 import Image from 'next/image'
 import { container } from '@lib/container'
+import { auth } from '@lib/auth'
 import Link from 'next/link'
 import type { BrandPageView } from '@application/ports/BrandRepository'
 import { BrandNotFoundError } from '@domain/brand/errors/BrandNotFoundError'
@@ -52,6 +53,8 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 
 export default async function MarcaPage({ params }: PageProps) {
   const { slug } = await params
+  const session = await auth()
+  const userId = session?.user?.id ?? undefined
 
   let brand: BrandPageView
   try {
@@ -62,6 +65,11 @@ export default async function MarcaPage({ params }: PageProps) {
   }
 
   const hasLinks = !!(brand.website || brand.instagram || brand.socialLinks.length)
+
+  // Igual que en la ficha: el reclamo solo se ofrece a quien puede hacerlo.
+  const claimEligibility = userId
+    ? await container.getGetClaimEligibilityUseCase().execute({ claimantId: userId, brandId: brand.id })
+    : 'FREE'
 
   return (
     <div className="brand-page page-enter">
@@ -122,22 +130,56 @@ export default async function MarcaPage({ params }: PageProps) {
       </section>
 
       {/* Reclamo de la marca (cadena) — CTA destacado, s28 */}
-      <aside className="ficha__claim">
-        <div>
-          <p className="ficha__claim-title">¿Esta marca es tuya?</p>
-          <p className="ficha__claim-sub">
-            Reclama {brand.name} gratis para gestionar todos sus locales desde una sola cuenta.
-          </p>
-        </div>
-        <div className="ficha__claim-actions">
-          <Link href={`/reclamar-marca/${slug}`} className="btn btn--primary btn--sm">
-            Reclamar esta marca
-          </Link>
-          <Link href="/para-negocios" className="btn btn--ghost btn--sm">
-            Saber más
-          </Link>
-        </div>
-      </aside>
+      {claimEligibility === 'FREE' && (
+        <aside className="ficha__claim">
+          <div>
+            <p className="ficha__claim-title">¿Esta marca es tuya?</p>
+            <p className="ficha__claim-sub">
+              Reclama {brand.name} gratis para gestionar todos sus locales desde una sola cuenta.
+            </p>
+          </div>
+          <div className="ficha__claim-actions">
+            <Link href={`/reclamar-marca/${slug}`} className="btn btn--primary btn--sm">
+              Reclamar esta marca
+            </Link>
+            <Link href="/para-negocios" className="btn btn--ghost btn--sm">
+              Saber más
+            </Link>
+          </div>
+        </aside>
+      )}
+
+      {claimEligibility === 'OWNED_BY_YOU' && (
+        <aside className="ficha__claim">
+          <div>
+            <p className="ficha__claim-title">Esta marca es tuya</p>
+            <p className="ficha__claim-sub">
+              Gestiona sus locales desde tu panel de negocio.
+            </p>
+          </div>
+          <div className="ficha__claim-actions">
+            <Link href="/mi-negocio" className="btn btn--primary btn--sm">
+              Ir a mi panel
+            </Link>
+          </div>
+        </aside>
+      )}
+
+      {claimEligibility === 'PENDING_YOURS' && (
+        <aside className="ficha__claim">
+          <div>
+            <p className="ficha__claim-title">Tu solicitud está en revisión</p>
+            <p className="ficha__claim-sub">
+              Estamos revisando a mano que esta marca sea tuya. Te avisamos por correo apenas quede lista.
+            </p>
+          </div>
+          <div className="ficha__claim-actions">
+            <Link href="/mi-negocio" className="btn btn--ghost btn--sm">
+              Ver en qué va
+            </Link>
+          </div>
+        </aside>
+      )}
     </div>
   )
 }

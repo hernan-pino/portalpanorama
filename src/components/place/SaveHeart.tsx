@@ -45,6 +45,9 @@ export function SaveHeart({
   const [newName, setNewName] = useState('')
   const [error, setError] = useState<string | null>(null)
   const [isPending, startTransition] = useTransition()
+  // A dónde volver si el visitante anónimo entra a su cuenta desde acá: sin esto,
+  // el login lo dejaba en /explorar y el lugar que quería guardar se perdía.
+  const [returnTo, setReturnTo] = useState('/')
 
   // "Favoritos" va primero y marcada; el resto de listas abajo, sin duplicarla.
   const defaultRow = collections.find((c) => c.id === defaultCollectionId)
@@ -54,6 +57,7 @@ export function SaveHeart({
     e.preventDefault()
     e.stopPropagation()
     setError(null)
+    setReturnTo(window.location.pathname + window.location.search)
     setOpen(true)
   }
 
@@ -131,10 +135,18 @@ export function SaveHeart({
                   Crea una cuenta o inicia sesión para guardar <strong>{placeName}</strong> en tus listas.
                 </p>
                 <div className="save-modal__actions">
-                  <Link href="/login" className="btn btn--accent" style={{ flex: 1, justifyContent: 'center' }}>
+                  <Link
+                    href={`/login?callbackUrl=${encodeURIComponent(returnTo)}`}
+                    className="btn btn--accent"
+                    style={{ flex: 1, justifyContent: 'center' }}
+                  >
                     Iniciar sesión
                   </Link>
-                  <Link href="/registro" className="btn btn--ghost" style={{ flex: 1, justifyContent: 'center' }}>
+                  <Link
+                    href={`/registro?callbackUrl=${encodeURIComponent(returnTo)}`}
+                    className="btn btn--ghost"
+                    style={{ flex: 1, justifyContent: 'center' }}
+                  >
                     Registrarme
                   </Link>
                 </div>

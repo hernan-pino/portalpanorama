@@ -2,9 +2,11 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 import { notFound, redirect } from 'next/navigation'
 import { auth } from '@lib/auth'
+import { container } from '@lib/container'
 import { getPlaceDetailCached } from '@lib/cachedReads'
 import { PlaceNotFoundError } from '@domain/place/errors/PlaceNotFoundError'
 import { ClaimForm } from './ClaimForm'
+import { ClaimUnavailable } from '@/components/business/ClaimUnavailable'
 
 interface PageProps {
   params: Promise<{ slug: string }>
@@ -29,6 +31,16 @@ export default async function ReclamarPage({ params }: PageProps) {
   } catch (err) {
     if (err instanceof PlaceNotFoundError) notFound()
     throw err
+  }
+
+  // Antes se mostraba el formulario siempre y el "no se puede" llegaba recién al enviar,
+  // con todo lleno. Se responde acá, con una salida para cada caso.
+  const eligibility = await container.getGetClaimEligibilityUseCase().execute({
+    claimantId: session.user.id!,
+    placeId: place.id,
+  })
+  if (eligibility !== 'FREE') {
+    return <ClaimUnavailable eligibility={eligibility} targetName={place.name} backHref={`/lugar/${slug}`} />
   }
 
   return (

@@ -135,6 +135,13 @@ export default async function LugarPage({ params }: PageProps) {
       .map((i) => i.collectionId)
   }
 
+  // ¿Corresponde ofrecerle reclamar esta ficha? Sin sesión sí (el flujo lo lleva al
+  // login); con sesión, no tiene sentido mostrárselo a quien ya es dueño, ya la pidió,
+  // o a una ficha que otro ya reclamó. Sin esto, el CTA le aparecía al propio dueño.
+  const claimEligibility = userId
+    ? await container.getGetClaimEligibilityUseCase().execute({ claimantId: userId, placeId: place.id })
+    : 'FREE'
+
   // Combustible IA (post-MVP): registrar la visita del usuario logueado SIN bloquear
   // el render — corre después de enviar la respuesta (no suma latencia a la ficha).
   if (userId) {
@@ -181,6 +188,7 @@ export default async function LugarPage({ params }: PageProps) {
       collections={collections}
       defaultCollectionId={defaultCollectionId}
       defaultName={Collection.DEFAULT_NAME}
+      returnTo={`/lugar/${slug}`}
     />
   )
 
@@ -407,24 +415,63 @@ export default async function LugarPage({ params }: PageProps) {
           </div>
         )}
 
-        {/* reclamo de negocio (s28: CTA destacado, decisión del usuario) */}
-        <aside className="ficha__claim">
-          <div>
-            <p className="ficha__claim-title">¿Este negocio es tuyo?</p>
-            <p className="ficha__claim-sub">
-              Reclama tu ficha gratis: mantén tu información al día y accede a las
-              herramientas para negocios que estamos construyendo.
-            </p>
-          </div>
-          <div className="ficha__claim-actions">
-            <Link href={`/reclamar/${slug}`} className="btn btn--primary btn--sm">
-              Reclamar esta ficha
-            </Link>
-            <Link href="/para-negocios" className="btn btn--ghost btn--sm">
-              Saber más
-            </Link>
-          </div>
-        </aside>
+        {/* reclamo de negocio (s28: CTA destacado, decisión del usuario). Se ofrece solo
+            si tiene sentido: al dueño se le muestra la puerta a su panel, y a una ficha
+            que otro ya reclamó no se le ofrece reclamo a nadie. */}
+        {claimEligibility === 'FREE' && (
+          <aside className="ficha__claim">
+            <div>
+              <p className="ficha__claim-title">¿Este negocio es tuyo?</p>
+              <p className="ficha__claim-sub">
+                Reclama tu ficha gratis: mantén tu información al día y accede a las
+                herramientas para negocios que estamos construyendo.
+              </p>
+            </div>
+            <div className="ficha__claim-actions">
+              <Link href={`/reclamar/${slug}`} className="btn btn--primary btn--sm">
+                Reclamar esta ficha
+              </Link>
+              <Link href="/para-negocios" className="btn btn--ghost btn--sm">
+                Saber más
+              </Link>
+            </div>
+          </aside>
+        )}
+
+        {claimEligibility === 'OWNED_BY_YOU' && (
+          <aside className="ficha__claim">
+            <div>
+              <p className="ficha__claim-title">Esta ficha es tuya</p>
+              <p className="ficha__claim-sub">
+                Puedes corregir la información, actualizar el horario y subir fotos desde tu panel.
+              </p>
+            </div>
+            <div className="ficha__claim-actions">
+              <Link href={`/mi-negocio/${slug}/editar`} className="btn btn--primary btn--sm">
+                Editar mi ficha
+              </Link>
+              <Link href="/mi-negocio" className="btn btn--ghost btn--sm">
+                Mi panel
+              </Link>
+            </div>
+          </aside>
+        )}
+
+        {claimEligibility === 'PENDING_YOURS' && (
+          <aside className="ficha__claim">
+            <div>
+              <p className="ficha__claim-title">Tu solicitud está en revisión</p>
+              <p className="ficha__claim-sub">
+                Estamos revisando a mano que este negocio sea tuyo. Te avisamos por correo apenas quede lista.
+              </p>
+            </div>
+            <div className="ficha__claim-actions">
+              <Link href="/mi-negocio" className="btn btn--ghost btn--sm">
+                Ver en qué va
+              </Link>
+            </div>
+          </aside>
+        )}
 
         {/* reportar */}
         <div className="ficha__report">

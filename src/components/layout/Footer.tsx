@@ -1,8 +1,12 @@
 import Link from 'next/link'
+import { auth } from '@lib/auth'
 import { SuggestionWidget } from './SuggestionWidget'
 import { FooterSocial } from './FooterSocial'
 
-export function Footer() {
+export async function Footer() {
+  const session = await auth()
+  const isLoggedIn = !!session?.user
+
   return (
     <footer className="footer">
       <div className="container">
@@ -25,10 +29,17 @@ export function Footer() {
             </div>
             <div>
               <h4>Tu cuenta</h4>
+              {/* Ofrecer "Mis listas" a quien no tiene sesión lo mandaba al login sin
+                  contexto; y a quien ya entró, "Crear cuenta" no le dice nada. */}
               <ul>
-                <li><Link href="/registro">Crear cuenta</Link></li>
-                <li><Link href="/login">Iniciar sesión</Link></li>
-                <li><Link href="/mi-cuenta">Mis listas</Link></li>
+                {isLoggedIn ? (
+                  <li><Link href="/mi-cuenta">Mis listas</Link></li>
+                ) : (
+                  <>
+                    <li><Link href="/registro">Crear cuenta</Link></li>
+                    <li><Link href="/login">Iniciar sesión</Link></li>
+                  </>
+                )}
                 <li><Link href="/para-negocios">Para negocios</Link></li>
               </ul>
             </div>

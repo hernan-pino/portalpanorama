@@ -6,8 +6,14 @@ import { ClaimStatus } from '@domain/business/ClaimStatus'
 export interface ClaimAdminRow {
   id: string
   targetType: 'PLACE' | 'BRAND'
+  targetId: string
   targetName: string
   targetSlug: string
+  /**
+   * ¿El objetivo tiene ficha pública? Las fichas que llegan por "publica tu negocio"
+   * nacen PENDING_REVIEW: no tienen /lugar/{slug} todavía y linkearlas daba 404.
+   */
+  targetIsPublic: boolean
   claimantName: string
   claimantEmail: string
   claimantRole: string | null
@@ -44,6 +50,11 @@ export interface BusinessClaimRepository {
   hasPending(claimantId: string, target: { placeId?: string; brandId?: string }): Promise<boolean>
   /** Estado del objetivo reclamado: no existe, ya tiene dueño, o está libre. */
   targetState(target: { placeId?: string; brandId?: string }): Promise<'MISSING' | 'OWNED' | 'FREE'>
+  /**
+   * Dueño actual del objetivo (null si no existe, ownerId null si está libre). Permite
+   * decidir ANTES de mostrar el formulario si tiene sentido reclamar.
+   */
+  targetOwnership(target: { placeId?: string; brandId?: string }): Promise<{ ownerId: string | null } | null>
   /** Bandeja del admin: todos los reclamos con su objetivo, recientes primero. */
   listForAdmin(): Promise<ClaimAdminRow[]>
   /** Solicitudes PENDING del propio usuario, para su panel. */

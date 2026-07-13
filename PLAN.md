@@ -9,7 +9,57 @@ priorizado. Se actualiza cada vez que avanzamos. Liviano a propósito — para r
 
 ---
 
-## ▶️ RETOMAR AQUÍ — Plan de acción acordado (cierre s31, 2026-07-12)
+## ▶️ RETOMAR AQUÍ — Cierre s32 (2026-07-13): barrido de flujos HECHO, 6 hoyos arreglados
+
+**Se hizo el punto 1 del orden acordado: el barrido de flujos en los 4 estados** (sin sesión · usuario común ·
+dueño con ficha · admin), recorriendo cada ruta y cada CTA con sesiones HTTP reales + **navegador headless en
+viewport de celular** (Playwright, iPhone 13). **Cero links muertos en el sitio público** y los guards de ruta
+salieron todos correctos. Pero aparecieron **6 hoyos, 2 de ellos en el camino feliz de lo que ya está en prod**:
+
+1. **🔴 `/admin/reclamos` daba 404 en el camino feliz.** La bandeja linkeaba siempre a `/lugar/{slug}`, pero
+   **toda ficha que entra por "Publica tu negocio" nace `PENDING_REVIEW`** y no tiene página pública → el admin
+   abría la solicitud, hacía clic en el negocio y se estrellaba. Mismo bug que ya se había arreglado en el panel
+   del dueño (el "Ver ↗"), pero seguía vivo acá. **Fix:** el nombre lleva a `/admin/lugares/{id}` (donde el admin
+   realmente trabaja la ficha) y "Ver ficha pública ↗" solo aparece si existe; si no, dice "Ficha en revisión".
+   Se agregaron `targetId` + `targetIsPublic` a `ClaimAdminRow`.
+2. **🔴 En móvil NO existía el lado negocio.** Bajo 960px `.topbar__auth` se oculta (ahí viven el CTA
+   **"Publica tu negocio"** y el link **"Mi negocio"**) y el `MobileNav` no los reemplazaba → el CTA que es el eje
+   de la s31 **era invisible en celular**, y el dueño no tenía acceso a su panel. El admin, de paso, no tenía
+   "Mi cuenta". **Fix:** el menú móvil ahora espeja el header desktop en los 4 estados.
+3. **🟡 El reclamo no validaba nada antes de mostrar el form.** `/reclamar/[slug]` y `/reclamar-marca/[slug]`
+   renderizaban el formulario aunque la ficha ya tuviera dueño, aunque la abriera **el propio dueño**, o aunque ya
+   hubieras mandado una solicitud: el error llegaba **recién al enviar**, con todo lleno. Y el CTA "¿Este negocio
+   es tuyo?" **se le mostraba al dueño en su propia ficha**. **Fix:** `GetClaimEligibilityUseCase`
+   (`FREE | OWNED_BY_YOU | OWNED_BY_OTHER | PENDING_YOURS | MISSING`, port nuevo `targetOwnership`) + componente
+   `ClaimUnavailable` con salida propia por caso; el CTA de la ficha/marca ahora muestra "Esta ficha es tuya →
+   Editar" al dueño, "Tu solicitud está en revisión" a quien la mandó, y **nada** si otro ya la reclamó.
+4. **🟡 Guardar sin sesión perdía el lugar.** El modal del corazón y el botón "Guardar" de la ficha mandaban a
+   `/login` y `/registro` **sin `callbackUrl`** → volvías a `/explorar?ingreso=1` y **el lugar nunca quedaba
+   guardado** (la acción de conversión principal del consumidor). **Fix:** ambos preservan la URL de origen.
+5. **🔴 (solo visible en celular) El menú móvil estaba roto de fondo.** `.topbar` tiene `backdrop-filter`, lo que
+   convierte al header en el **containing block de todo `position: fixed`** que cuelgue de él → el backdrop
+   (`inset:0; top:72px`) quedaba con **altura 0**: no atenuaba el fondo y, peor, **no se podía cerrar el menú
+   tocando fuera**. **Fix:** el menú se monta en `<body>` con `createPortal`. ⚠️ **Gotcha para el rediseño (s33):
+   cualquier `fixed` que cuelgue del header queda atrapado por el `backdrop-filter`.**
+6. **🟡 (solo visible en celular) El panel del dueño abría con una pila de "PRONTO".** La sidebar envolvía en 4
+   filas de ítems no accionables y empujaba los datos reales (visitas, clics, la ficha) fuera de la primera
+   pantalla. **Fix:** nav en una fila deslizable + la nota de ayuda se manda al final (`order`).
+
+**✅ Verificado:** typecheck + lint + **`next build` OK** (con el dev server abajo) · **158 tests verdes** (5
+nuevos del use case) · `architecture-guardian` sin violaciones de capas · **barrido móvil: 18 páginas × 4 estados,
+cero scroll horizontal, cero errores JS**, menú correcto en cada estado · desktop del panel sin regresión ·
+**BD local devuelta a su estado original** (las cuentas de prueba sembradas para el barrido fueron borradas).
+
+**▶️ PRÓXIMO PASO (s33):** (1) **revisión visual del usuario** de los 6 fixes y, con el OK, **pushear a prod**
+(los 2 hoyos rojos están vivos en producción ahora mismo; no hay migraciones nuevas, el diff es solo código).
+(2) Luego, **sistema de diseño + brief para Claude Design** (punto 2 del orden acordado).
+
+**⬜ Lo que el barrido NO cubrió (sigue pendiente de la lista del usuario):** reseñas desglosadas por tema (no
+existe el form de reseñas) · distancia desde mi ubicación · recomendador IA del panorama completo.
+
+---
+
+## Plan de acción acordado (cierre s31, 2026-07-12)
 
 **✅ CUENTAS DE NEGOCIO: EN PRODUCCIÓN.** Push `7a8f9bb..00f9069` (31 commits) → deploy **Ready** → las 2 migraciones
 (`add_business_accounts` + `add_place_clicks`) corrieron en prod y **verificado en vivo**: `BusinessProfile`/`BusinessClaim`/
@@ -19,11 +69,9 @@ nuevo. **`hola@portalpanorama.cl` ya recibe** (ver bloque del correo abajo). El 
 
 ### 📋 ORDEN ACORDADO CON EL USUARIO (s31) — no cambiarlo sin OK
 
-1. **s32 — Barrido de flujos + navegación** (empezado y cortado en s31; rehacer completo): recorrer cada ruta en los 4
-   estados (sin sesión · usuario común · dueño con ficha · admin), seguir cada CTA y cada link, cazar links muertos,
-   estados vacíos y callejones sin salida. **Precedente que justifica el barrido:** el usuario encontró solo el hoyo del
-   panel inalcanzable con solicitud pendiente (arreglado en `73086d6`) — hay más. **Más los pendientes reales de su lista**
-   (ver ⬜ abajo, son chicos).
+1. ✅ **s32 — Barrido de flujos + navegación** (HECHO 2026-07-13 — ver el bloque de arriba: 6 hoyos encontrados y
+   arreglados, 2 de ellos en el camino feliz de lo que ya estaba en prod. La intuición del usuario era correcta:
+   "hay más"). **Falta el push a prod con su OK.**
 2. **s33 — Sistema de diseño + brief para Claude Design.** El usuario quiere un **mini rebrand**: no le gusta la
    jerarquía de color (cansa la vista), quiere más uso de color y tipografías, y **detecta bien el problema de fondo:
    NO hay sistema de diseño establecido**, solo tokens acumulados en `globals.css` — cambiarlo después será caro. Él lo

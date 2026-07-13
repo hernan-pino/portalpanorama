@@ -6,6 +6,7 @@ import { container } from '@lib/container'
 import { BrandNotFoundError } from '@domain/brand/errors/BrandNotFoundError'
 // El formulario de reclamo es compartido (lugar y marca): se reusa el de /reclamar.
 import { ClaimForm } from '../../reclamar/[slug]/ClaimForm'
+import { ClaimUnavailable } from '@/components/business/ClaimUnavailable'
 
 interface PageProps {
   params: Promise<{ slug: string }>
@@ -30,6 +31,14 @@ export default async function ReclamarMarcaPage({ params }: PageProps) {
   } catch (err) {
     if (err instanceof BrandNotFoundError) notFound()
     throw err
+  }
+
+  const eligibility = await container.getGetClaimEligibilityUseCase().execute({
+    claimantId: session.user.id!,
+    brandId: brand.id,
+  })
+  if (eligibility !== 'FREE') {
+    return <ClaimUnavailable eligibility={eligibility} targetName={brand.name} backHref={`/marca/${slug}`} />
   }
 
   return (

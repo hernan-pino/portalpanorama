@@ -24,10 +24,12 @@ interface Props {
   collections: Collection[]
   defaultCollectionId: string | null
   defaultName: string
+  /** Ficha a la que volver tras iniciar sesión (si no, el lugar se pierde en el camino). */
+  returnTo: string
 }
 
 export function SaveButton({
-  placeId, isLoggedIn, isSaved, savedInIds, collections, defaultCollectionId, defaultName,
+  placeId, isLoggedIn, isSaved, savedInIds, collections, defaultCollectionId, defaultName, returnTo,
 }: Props) {
   const [open, setOpen] = useState(false)
   const [saved, setSaved] = useState(isSaved)
@@ -50,7 +52,11 @@ export function SaveButton({
 
   if (!isLoggedIn) {
     return (
-      <a href="/login" className="btn btn--accent" style={{ justifyContent: 'center' }}>
+      <a
+        href={`/login?callbackUrl=${encodeURIComponent(returnTo)}`}
+        className="btn btn--accent"
+        style={{ justifyContent: 'center' }}
+      >
         <BookmarkIcon /> Guardar
       </a>
     )

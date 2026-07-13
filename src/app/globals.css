@@ -2570,6 +2570,14 @@ select.form-input { cursor: pointer; }
   color: var(--ink-90);
   margin-top: var(--s-6);
 }
+/* Reclamo que no corresponde (ya es tuyo / en revisión / de otro): salidas del flujo. */
+.claim-unavailable__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--s-3);
+  margin-top: var(--s-8);
+}
+
 .legal__section { margin-top: var(--s-8); }
 .legal__section h2 {
   font-family: var(--font-display);
@@ -2968,8 +2976,28 @@ select.form-input { cursor: pointer; }
 
 @media (max-width: 860px) {
   .biz-shell { grid-template-columns: 1fr; gap: var(--s-6); }
-  .biz-side { position: static; }
-  .biz-nav { flex-direction: row; flex-wrap: wrap; }
+  /* El aside se disuelve en el grid para poder mandar la nota de ayuda DESPUÉS del
+     contenido: apilada arriba, empujaba los datos del negocio fuera de la primera
+     pantalla del celular. */
+  .biz-side { display: contents; }
+  .biz-side__note { order: 3; }
+  /* Los ítems envolvían en 4 filas (cada "Pronto" ocupa lo suyo). Una sola fila
+     deslizable, igual que la tab bar del panel de usuario. */
+  .biz-nav {
+    flex-direction: row;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    white-space: nowrap;
+  }
+  .biz-nav::-webkit-scrollbar { display: none; }
+  .biz-nav__item { flex: none; }
+  .biz-nav__item--link {
+    margin-top: 0;
+    border-top: none;
+    padding-top: var(--s-2);
+  }
   .biz-kpis { grid-template-columns: repeat(2, 1fr); }
   .biz-fiche { grid-template-columns: 1fr; }
   .biz-fiche__media { aspect-ratio: 16 / 9; }

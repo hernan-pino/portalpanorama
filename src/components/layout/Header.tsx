@@ -50,6 +50,7 @@ export async function Header() {
             <MobileNav
               isAuthenticated={!!user}
               role={role}
+              hasBusiness={hasBusiness}
             />
           </div>
         </div>

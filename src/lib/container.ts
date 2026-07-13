@@ -87,6 +87,7 @@ import { CreateBusinessClaimUseCase } from '@application/business/CreateBusiness
 import { ApproveBusinessClaimUseCase } from '@application/business/ApproveBusinessClaimUseCase'
 import { RejectBusinessClaimUseCase } from '@application/business/RejectBusinessClaimUseCase'
 import { ListBusinessClaimsForAdminUseCase } from '@application/business/ListBusinessClaimsForAdminUseCase'
+import { GetClaimEligibilityUseCase } from '@application/business/GetClaimEligibilityUseCase'
 import { GetBusinessDashboardUseCase } from '@application/business/GetBusinessDashboardUseCase'
 import { CreateOwnedPlaceSeedUseCase } from '@application/business/CreateOwnedPlaceSeedUseCase'
 import { GetSeedFormOptionsUseCase } from '@application/business/GetSeedFormOptionsUseCase'
@@ -236,6 +237,10 @@ export const container = {
 
   getRejectBusinessClaimUseCase() {
     return new RejectBusinessClaimUseCase(businessClaimRepo, emailService)
+  },
+
+  getGetClaimEligibilityUseCase() {
+    return new GetClaimEligibilityUseCase(businessClaimRepo)
   },
 
   getListBusinessClaimsForAdminUseCase() {

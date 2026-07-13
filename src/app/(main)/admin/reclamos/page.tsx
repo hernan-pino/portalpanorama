@@ -10,8 +10,10 @@ export default async function ReclamosPage() {
   const rows: ClaimView[] = claims.map((c) => ({
     id: c.id,
     targetType: c.targetType,
+    targetId: c.targetId,
     targetName: c.targetName,
     targetSlug: c.targetSlug,
+    targetIsPublic: c.targetIsPublic,
     claimantName: c.claimantName,
     claimantEmail: c.claimantEmail,
     claimantRole: c.claimantRole,

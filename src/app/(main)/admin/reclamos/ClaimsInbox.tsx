@@ -7,8 +7,10 @@ import { approveClaimAction, rejectClaimAction } from './actions'
 export interface ClaimView {
   id: string
   targetType: 'PLACE' | 'BRAND'
+  targetId: string
   targetName: string
   targetSlug: string
+  targetIsPublic: boolean
   claimantName: string
   claimantEmail: string
   claimantRole: string | null
@@ -74,14 +76,37 @@ export function ClaimsInbox({ claims }: { claims: ClaimView[] }) {
             {claims.map((c) => (
               <tr key={c.id}>
                 <td>
+                  {/* El nombre lleva al editor del admin, que es donde se trabaja la ficha.
+                      La ficha pública solo se ofrece si existe: las que llegan por "publica
+                      tu negocio" nacen PENDING_REVIEW y /lugar/{slug} daría 404. */}
                   <Link
-                    href={c.targetType === 'PLACE' ? `/lugar/${c.targetSlug}` : `/marca/${c.targetSlug}`}
+                    href={
+                      c.targetType === 'PLACE'
+                        ? `/admin/lugares/${c.targetId}`
+                        : `/admin/marcas/${c.targetId}`
+                    }
                     className="admin-table__name"
-                    target="_blank"
                   >
                     {c.targetName}
                   </Link>
                   {c.targetType === 'BRAND' && <span className="admin-table__hint"> (marca)</span>}
+                  {c.targetIsPublic ? (
+                    <>
+                      <br />
+                      <Link
+                        href={c.targetType === 'PLACE' ? `/lugar/${c.targetSlug}` : `/marca/${c.targetSlug}`}
+                        className="admin-table__hint"
+                        target="_blank"
+                      >
+                        Ver ficha pública ↗
+                      </Link>
+                    </>
+                  ) : (
+                    <>
+                      <br />
+                      <span className="admin-table__hint">Ficha en revisión (sin página pública)</span>
+                    </>
+                  )}
                 </td>
                 <td>
                   {c.claimantName}

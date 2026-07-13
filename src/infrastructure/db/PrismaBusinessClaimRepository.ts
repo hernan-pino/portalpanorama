@@ -76,6 +76,25 @@ export class PrismaBusinessClaimRepository implements BusinessClaimRepository {
     return 'MISSING'
   }
 
+  async targetOwnership(target: {
+    placeId?: string
+    brandId?: string
+  }): Promise<{ ownerId: string | null } | null> {
+    if (target.placeId) {
+      return this.prisma.place.findUnique({
+        where: { id: target.placeId },
+        select: { ownerId: true },
+      })
+    }
+    if (target.brandId) {
+      return this.prisma.brand.findUnique({
+        where: { id: target.brandId },
+        select: { ownerId: true },
+      })
+    }
+    return null
+  }
+
   async findPendingByClaimant(claimantId: string): Promise<PendingClaimRow[]> {
     const rows = await this.prisma.businessClaim.findMany({
       where: { claimantId, status: 'PENDING' },
@@ -113,15 +132,18 @@ export class PrismaBusinessClaimRepository implements BusinessClaimRepository {
         createdAt: true,
         reviewedAt: true,
         claimant: { select: { name: true, email: true } },
-        place: { select: { name: true, slug: true } },
-        brand: { select: { name: true, slug: true } },
+        place: { select: { id: true, name: true, slug: true, status: true } },
+        brand: { select: { id: true, name: true, slug: true } },
       },
     })
     return rows.map((r) => ({
       id: r.id,
       targetType: r.place ? ('PLACE' as const) : ('BRAND' as const),
+      targetId: r.place?.id ?? r.brand?.id ?? '',
       targetName: r.place?.name ?? r.brand?.name ?? '—',
       targetSlug: r.place?.slug ?? r.brand?.slug ?? '',
+      // Una marca siempre tiene página; un lugar, solo si está publicado.
+      targetIsPublic: r.place ? r.place.status === 'PUBLISHED' : true,
       claimantName: r.claimant.name,
       claimantEmail: r.claimant.email,
       claimantRole: r.claimantRole,
