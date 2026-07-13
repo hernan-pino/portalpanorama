@@ -1,6 +1,7 @@
 'use client'
 import { useMemo, useState, useTransition } from 'react'
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import { createOwnedPlaceSeedAction } from './actions'
 import { trackEvent } from '@lib/analytics'
 
@@ -26,10 +27,10 @@ export function SeedForm({
   categories: CategoryOption[]
   communes: CommuneOption[]
 }) {
+  const router = useRouter()
   const [categoryId, setCategoryId] = useState('')
   const [name, setName] = useState('')
   const [error, setError] = useState<{ message: string; duplicate?: boolean } | null>(null)
-  const [done, setDone] = useState(false)
   const [isPending, startTransition] = useTransition()
 
   const subcategories = useMemo(
@@ -48,25 +49,9 @@ export function SeedForm({
         return
       }
       trackEvent('crear_ficha_negocio', {})
-      setDone(true)
+      // Último paso del onboarding: aterriza en su panel, que le explica qué sigue.
+      router.push('/mi-negocio?enviada=1')
     })
-  }
-
-  if (done) {
-    return (
-      <section className="legal__section">
-        <h2>¡Listo! Recibimos tu negocio</h2>
-        <p>
-          Ahora lo investigamos y completamos su ficha: fotos, descripción, horario y cómo
-          llegar. Te enviamos un correo con el último paso para verificar que el negocio es
-          tuyo — apenas lo confirmemos, la ficha queda asociada a tu cuenta y podrás
-          gestionarla desde tu panel.
-        </p>
-        <p>
-          <Link href="/mi-negocio" className="btn btn--primary btn--sm">Ir a mi panel</Link>
-        </p>
-      </section>
-    )
   }
 
   return (

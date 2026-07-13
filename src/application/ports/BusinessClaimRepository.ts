@@ -20,6 +20,16 @@ export interface ClaimAdminRow {
   reviewedAt: Date | null
 }
 
+// Solicitud en curso del propio usuario (su panel): mientras el admin no la decide,
+// la ficha todavía no es suya y no aparece entre las que gestiona — pero tiene que
+// poder ver que la mandó y en qué va.
+export interface PendingClaimRow {
+  id: string
+  targetName: string
+  targetType: 'PLACE' | 'BRAND'
+  createdAt: Date
+}
+
 // Datos mínimos para notificar por correo al reclamante una decisión.
 export interface ClaimNotificationContext {
   claimantEmail: string
@@ -36,6 +46,8 @@ export interface BusinessClaimRepository {
   targetState(target: { placeId?: string; brandId?: string }): Promise<'MISSING' | 'OWNED' | 'FREE'>
   /** Bandeja del admin: todos los reclamos con su objetivo, recientes primero. */
   listForAdmin(): Promise<ClaimAdminRow[]>
+  /** Solicitudes PENDING del propio usuario, para su panel. */
+  findPendingByClaimant(claimantId: string): Promise<PendingClaimRow[]>
   /** Reclamos PENDING → badge "nuevo" en la navegación del admin. */
   countPending(): Promise<number>
   /**

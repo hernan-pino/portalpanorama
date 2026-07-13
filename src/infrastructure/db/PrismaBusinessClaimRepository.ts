@@ -4,6 +4,7 @@ import {
   BusinessClaimRepository,
   ClaimAdminRow,
   ClaimNotificationContext,
+  PendingClaimRow,
 } from '@application/ports/BusinessClaimRepository'
 import { BusinessClaim } from '@domain/business/BusinessClaim'
 import { ClaimStatus } from '@domain/business/ClaimStatus'
@@ -73,6 +74,25 @@ export class PrismaBusinessClaimRepository implements BusinessClaimRepository {
       return brand.ownerId ? 'OWNED' : 'FREE'
     }
     return 'MISSING'
+  }
+
+  async findPendingByClaimant(claimantId: string): Promise<PendingClaimRow[]> {
+    const rows = await this.prisma.businessClaim.findMany({
+      where: { claimantId, status: 'PENDING' },
+      orderBy: { createdAt: 'desc' },
+      select: {
+        id: true,
+        createdAt: true,
+        place: { select: { name: true } },
+        brand: { select: { name: true } },
+      },
+    })
+    return rows.map((r) => ({
+      id: r.id,
+      targetName: r.place?.name ?? r.brand?.name ?? '—',
+      targetType: r.place ? ('PLACE' as const) : ('BRAND' as const),
+      createdAt: r.createdAt,
+    }))
   }
 
   async listForAdmin(): Promise<ClaimAdminRow[]> {

@@ -15,6 +15,8 @@ export default async function RegistroPage({
   const loginHref = callbackUrl
     ? `/login?callbackUrl=${encodeURIComponent(callbackUrl)}`
     : '/login'
+  // Viene del onboarding de negocio: la cuenta es el paso 1 de 2, no el destino.
+  const fromBusiness = callbackUrl === '/mi-negocio/nuevo'
   return (
     <div className="auth-shell">
 
@@ -51,6 +53,8 @@ export default async function RegistroPage({
           <span className="auth-tabs__item auth-tabs__item--active">Registrarse</span>
         </div>
 
+        {fromBusiness && <p className="onboard-step">Paso 1 de 2 · Publica tu negocio</p>}
+
         <h1
           style={{
             fontFamily: 'var(--font-display)',
@@ -62,10 +66,12 @@ export default async function RegistroPage({
             fontVariationSettings: '"opsz" 100',
           }}
         >
-          Crear cuenta
+          {fromBusiness ? 'Crea tu cuenta de negocio' : 'Crear cuenta'}
         </h1>
         <p style={{ color: 'var(--fg-muted)', fontSize: 'var(--t-body-sm)', marginBottom: 'var(--s-4)' }}>
-          Gratis. Sin tarjeta de crédito.
+          {fromBusiness
+            ? 'Gratis, sin tarjeta. Después te pedimos los datos de tu local y nosotros armamos su ficha.'
+            : 'Gratis. Sin tarjeta de crédito.'}
         </p>
 
         {googleAuthEnabled && <GoogleButton label="Registrarse con Google" divider="below" />}

@@ -35,15 +35,33 @@ const CLICK_BREAKDOWN = [
 // como si ya funcionara.
 const SOON_ITEMS = ['Reseñas', 'Estadísticas avanzadas', 'Eventos', 'Publicidad']
 
+// Lo que le sirve saber al dueño recién llegado. No son promesas de features: son
+// las tres cosas que mueven la aguja de su ficha.
+const GOOD_PRACTICES = [
+  'Sube fotos propias: fachada para reconocer el local al llegar, interior y tu producto estrella. Es lo primero que mira la gente.',
+  'Mantén el horario y el teléfono al día: es la razón #1 por la que alguien no llega.',
+  'Revisa lo que escribimos: si algo quedó mal (horario, precio, teléfono), lo corriges tú mismo desde el editor.',
+]
+
 // Panel de negocio (etapa 4): las fichas que el dueño verificado gestiona, con su
 // engagement real y el estado de completitud de cada ficha. Requiere sesión.
-export default async function MiNegocioPage() {
+export default async function MiNegocioPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ enviada?: string }>
+}) {
   const session = await auth()
   if (!session?.user?.id) redirect('/login?callbackUrl=/mi-negocio')
 
-  const { places, totals } = await container.getGetBusinessDashboardUseCase().execute(session.user.id)
+  const [{ places, totals, pendingClaims }, { enviada }] = await Promise.all([
+    container.getGetBusinessDashboardUseCase().execute(session.user.id),
+    searchParams,
+  ])
   const firstName = (session.user.name ?? '').split(' ')[0]
   const hasPlaces = places.length > 0
+  // Recién completó el onboarding (mandó su negocio): el panel lo recibe explicando
+  // qué es esto y qué pasa ahora, en vez de tirarlo a una pantalla vacía.
+  const justSubmitted = enviada === '1'
 
   return (
     <div className="biz-shell container">
@@ -86,9 +104,58 @@ export default async function MiNegocioPage() {
           )}
         </header>
 
+        {/* Bienvenida del onboarding: qué acaba de pasar, qué sigue y cómo sacarle partido. */}
+        {justSubmitted && (
+          <section className="biz-welcome" aria-label="Recibimos tu negocio">
+            <h2 className="biz-welcome__title">¡Listo! Recibimos tu negocio</h2>
+            <p className="biz-welcome__body">
+              Ahora lo investigamos y <strong>nosotros armamos su ficha completa</strong>: fotos,
+              descripción, horario y cómo llegar. Te enviamos un correo con el último paso para
+              verificar que el negocio es tuyo. Apenas lo confirmemos, la ficha queda asociada a tu
+              cuenta y <strong>podrás corregir tú mismo cualquier dato que hayamos dejado mal</strong>.
+            </p>
+            <p className="biz-welcome__body">
+              Esto es <strong>tu panel</strong>: acá vas a ver tus fichas, cuánta gente las visita,
+              las guarda y hace clic para llegar o escribirte — y desde acá las editas.
+            </p>
+            <ul className="biz-welcome__tips">
+              {GOOD_PRACTICES.map((tip) => (
+                <li key={tip}>{tip}</li>
+              ))}
+            </ul>
+          </section>
+        )}
+
+        {/* Solicitudes en curso: la ficha todavía no es suya (la aprobamos a mano), pero
+            tiene que ver que la mandó y que está en camino. */}
+        {pendingClaims.length > 0 && (
+          <section className="biz-pending" aria-label="Solicitudes en revisión">
+            <h2 className="biz-pending__title">En revisión</h2>
+            {pendingClaims.map((c) => (
+              <div key={c.id} className="biz-pending__row">
+                <div>
+                  <p className="biz-pending__name">{c.targetName}</p>
+                  <p className="biz-pending__meta">
+                    Enviado el {c.createdAt.toLocaleDateString('es-CL')}
+                  </p>
+                </div>
+                <span className="admin-badge admin-badge--pending_review">En revisión</span>
+              </div>
+            ))}
+            <p className="biz-pending__foot">
+              Revisamos cada solicitud a mano y te avisamos por correo. Cuando la aprobemos, la
+              ficha aparece acá y la puedes editar.
+            </p>
+          </section>
+        )}
+
         {!hasPlaces ? (
           <div className="biz-panel__empty">
-            <p>Todavía no gestionas ninguna ficha.</p>
+            <p>
+              {pendingClaims.length > 0
+                ? 'Todavía no gestionas ninguna ficha publicada.'
+                : 'Todavía no gestionas ninguna ficha.'}
+            </p>
             <p className="biz-panel__empty-sub">
               Si tu local ya está en Portal Panorama, búscalo y reclámalo. Si todavía no está,
               publícalo tú y armamos su ficha. Revisamos todo a mano y, al aprobarlo, aparecerá aquí.

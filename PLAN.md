@@ -44,6 +44,26 @@ remitente hasta aprobar ✓ · badge del admin ✓ · al aprobar: `ownerId` + pe
 `/mi-negocio` ✓ · duplicado cortado ✓. Rutas contra el dev server: `/para-negocios` 200 · `/mi-negocio/nuevo`
 sin sesión no renderiza el form y manda a `/registro?callbackUrl=/mi-negocio/nuevo` ✓.
 
+**🎨 Feedback del usuario al revisar la Etapa 3 (s31) → los 4 puntos, HECHOS:**
+1. **"Falta decir que nosotros la creamos pero él después corrige lo incorrecto"** → el copy lo dice ahora en la
+   landing (beneficio *"Corrige lo que esté mal"* + FAQ nuevo *"¿Y si la ficha tiene datos incorrectos?"*), en el
+   form-semilla y en la bienvenida del panel.
+2. **`/para-negocios` "todo muy junto"** → el hero se partió: ahora hay una sección **"Empieza por acá" con los
+   DOS caminos en tarjetas separadas** (*Tu local YA está → Reclama tu ficha* · *Tu local NO aparece → Publica tu
+   negocio*), cada uno con su propio CTA. El hero quedó solo con el lead + la nota.
+3. **"Sin sesión el botón Publicar tu negocio no sirve"** → **era el dev server**, no la ruta: yo había corrido
+   `next build` con `next dev` levantado y el build le pisó los chunks de `.next/` (el sitio salía sin CSS ni JS →
+   links muertos). ⚠️ **GOTCHA: nunca correr `next build` con el dev server arriba.** La ruta siempre estuvo bien
+   (redirige a `/registro?callbackUrl=/mi-negocio/nuevo`), verificado.
+4. **Onboarding explícito** → **Paso 1 de 2** (`/registro` detecta que viene del flujo de negocio: título *"Crea tu
+   cuenta de negocio"* + indicador de paso; el registro común no se ensucia) → **Paso 2 de 2** (form-semilla) → al
+   enviar **redirige al panel** (`/mi-negocio?enviada=1`) con **bienvenida**: qué acaba de pasar, qué es el panel y
+   3 buenas prácticas (fotos que convierten · horario/teléfono al día · corrige lo que quedó mal). Además el panel
+   ahora muestra **"En revisión"** con las solicitudes PENDING del usuario (`findPendingByClaimant` en el port +
+   `pendingClaims` en el dashboard): como la ficha no es suya hasta que el admin aprueba, antes desaparecía de su
+   vista y parecía que no había pasado nada. **150 tests verdes** (1 nuevo) · typecheck + lint + build OK · e2e:
+   la semilla no cuenta como ficha gestionada y sí aparece en "En revisión" ✓.
+
 **▶️ PRÓXIMO PASO (s32):** revisión visual del usuario (`/para-negocios` · `/mi-negocio/nuevo` · panel · badge
 del admin) y, con el OK, **PUSHEAR TODO junto** (etapas 1+2+3+4; las 2 migraciones —`add_business_accounts` y
 `add_place_clicks`— viajan en el build) y probar en prod. Ojo antes de pushear: sigue pendiente la **recepción

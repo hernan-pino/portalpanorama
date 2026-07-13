@@ -15,8 +15,8 @@ const PERKS: { title: string; body: string; soon?: boolean }[] = [
     body: 'Queda asociada a tu cuenta como dueño verificado. Nadie más puede gestionarla.',
   },
   {
-    title: 'Tu información al día',
-    body: '¿Cambió el horario, el teléfono o la carta? La mantienes actualizada para que la gente llegue bien.',
+    title: 'Corrige lo que esté mal',
+    body: 'La ficha la escribimos nosotros con datos públicos, así que algo puede quedar mal. ¿El horario cambió, el teléfono no es ese, el precio no calza? Lo arreglas tú mismo y se publica al tiro.',
   },
   {
     title: 'Publica tu negocio nuevo',
@@ -47,6 +47,10 @@ const FAQ = [
   {
     q: '¿Por qué mi local aparece sin que yo lo subiera?',
     a: 'Somos una guía editorial: nuestro equipo carga los lugares que valen la pena con datos públicos, como tu calificación de Google. Reclamar la ficha te da el control sobre ella.',
+  },
+  {
+    q: '¿Y si la ficha tiene datos incorrectos?',
+    a: 'Nosotros escribimos la ficha, pero el que sabe eres tú: al reclamarla (o al publicar tu negocio nuevo) puedes corregir directamente el horario, el teléfono, la descripción, el rango de precio, la carta, el sitio web y tus redes, además de subir tus propias fotos. Los cambios se publican al tiro, sin esperar aprobación. El nombre, la categoría y la dirección los ajustamos nosotros: escríbenos a hola@portalpanorama.cl.',
   },
   {
     q: '¿Cuánto cuesta?',
@@ -80,16 +84,41 @@ export default function ParaNegociosPage() {
         <h1 className="display biz-hero__title">Tu negocio, en su mejor versión</h1>
         <p className="biz-hero__lead">
           Portal Panorama es una guía editorial de los lugares que valen la pena en Santiago.
-          Si tu local ya aparece, es porque la gente lo recomienda — y puedes reclamar tu ficha
-          gratis para tomar el control de tu presencia. Si todavía no está,{' '}
-          <strong>publícalo tú</strong> y nosotros armamos su ficha.
+          Las fichas las escribimos nosotros, con datos reales — y su dueño puede tomar el control
+          para corregirlas y mantenerlas al día. Gratis.
         </p>
-        <div className="biz-hero__actions">
-          <Link href="/explorar" className="btn btn--primary">Busca tu local</Link>
-          <Link href="/mi-negocio/nuevo" className="btn btn--ghost">Publica tu negocio</Link>
-          <Link href="#como" className="biz-hero__link">Cómo funciona</Link>
-        </div>
         <p className="biz-hero__note">Gratis · sin tarjeta · verificación a cargo de nuestro equipo</p>
+      </section>
+
+      {/* Los dos caminos: cada uno con su puerta, para que nadie tenga que adivinar cuál es el suyo. */}
+      <section className="biz-section container">
+        <h2 className="biz-section__title">Empieza por acá</h2>
+        <div className="biz-paths">
+          <article className="biz-path">
+            <p className="biz-path__eyebrow">Tu local YA está en Portal Panorama</p>
+            <h3 className="biz-path__title">Reclama tu ficha</h3>
+            <p className="biz-path__body">
+              Búscalo, entra a su ficha y haz clic en <strong>“¿Este negocio es tuyo?”</strong>.
+              Verificamos que eres parte del equipo y la ficha queda asociada a tu cuenta: desde
+              ahí corriges lo que esté mal y subes tus fotos.
+            </p>
+            <Link href="/explorar" className="btn btn--primary">Busca tu local</Link>
+          </article>
+
+          <article className="biz-path">
+            <p className="biz-path__eyebrow">Tu local NO aparece todavía</p>
+            <h3 className="biz-path__title">Publica tu negocio</h3>
+            <p className="biz-path__body">
+              Creas tu cuenta, nos cuentas lo básico (nombre, dirección, rubro y un contacto) y{' '}
+              <strong>nosotros armamos la ficha completa</strong>: fotos, descripción, horario y
+              cómo llegar. Después la corriges tú si algo nos quedó mal.
+            </p>
+            <Link href="/mi-negocio/nuevo" className="btn btn--primary">Publica tu negocio</Link>
+          </article>
+        </div>
+        <p className="biz-paths__foot">
+          ¿Prefieres entender antes cómo funciona? <Link href="#como">Te lo explicamos paso a paso</Link>.
+        </p>
       </section>
 
       {/* Beneficios */}

@@ -4,6 +4,7 @@ import {
   PlaceClickCounts,
   PlaceClickRepository,
 } from '../ports/PlaceClickRepository'
+import { BusinessClaimRepository } from '../ports/BusinessClaimRepository'
 
 export interface DashboardChecklistItem {
   label: string
@@ -38,9 +39,18 @@ export interface DashboardTotals {
   avgCompletenessPct: number
 }
 
+// Solicitud en curso (reclamo o ficha recién enviada). Va aparte de `places`: la
+// ficha todavía no es suya hasta que el admin aprueba, pero tiene que ver que existe.
+export interface DashboardPendingClaim {
+  id: string
+  targetName: string
+  createdAt: Date
+}
+
 export interface BusinessDashboardOutput {
   places: DashboardPlace[]
   totals: DashboardTotals
+  pendingClaims: DashboardPendingClaim[]
 }
 
 // Qué campos cuentan para el "estado de tu ficha" y cuánto pesan. Todo lo que
@@ -68,10 +78,14 @@ export class GetBusinessDashboardUseCase {
   constructor(
     private readonly placeRepo: PlaceRepository,
     private readonly clickRepo: PlaceClickRepository,
+    private readonly claimRepo: BusinessClaimRepository,
   ) {}
 
   async execute(userId: string): Promise<BusinessDashboardOutput> {
-    const rows = await this.placeRepo.findManagedByUser(userId)
+    const [rows, pending] = await Promise.all([
+      this.placeRepo.findManagedByUser(userId),
+      this.claimRepo.findPendingByClaimant(userId),
+    ])
     // Un solo groupBy para todas las fichas del panel (no una query por ficha).
     const clicksByPlace = await this.clickRepo.countsByPlaceIds(rows.map((r) => r.id))
 
@@ -109,6 +123,14 @@ export class GetBusinessDashboardUseCase {
           : 0,
     }
 
-    return { places, totals }
+    return {
+      places,
+      totals,
+      pendingClaims: pending.map((c) => ({
+        id: c.id,
+        targetName: c.targetName,
+        createdAt: c.createdAt,
+      })),
+    }
   }
 }

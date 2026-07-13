@@ -243,7 +243,7 @@ export const container = {
 
   // ── Panel de negocio (dueño verificado) ─────────────────────────────
   getGetBusinessDashboardUseCase() {
-    return new GetBusinessDashboardUseCase(placeRepo, placeClickRepo)
+    return new GetBusinessDashboardUseCase(placeRepo, placeClickRepo, businessClaimRepo)
   },
 
   // Clic de contacto en la ficha (cómo llegar / web / IG / teléfono / carta / red).

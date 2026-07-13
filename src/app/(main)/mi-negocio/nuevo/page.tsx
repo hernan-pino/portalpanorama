@@ -21,12 +21,13 @@ export default async function NuevoNegocioPage() {
 
   return (
     <div className="legal container">
-      <p className="eyebrow">Para negocios</p>
-      <h1 className="display legal__title">Publica tu negocio</h1>
+      <p className="onboard-step">Paso 2 de 2 · Publica tu negocio</p>
+      <h1 className="display legal__title">Cuéntanos de tu local</h1>
 
       <p className="legal__lead">
-        Cuéntanos lo básico de tu local y nosotros armamos la ficha completa: la investigamos,
-        le sumamos fotos, descripción y horario, y la publicamos. Es gratis.{' '}
+        Solo lo básico: con eso <strong>nosotros investigamos tu negocio y armamos su ficha
+        completa</strong> (fotos, descripción, horario, cómo llegar) y la publicamos. Si algo nos
+        queda mal, <strong>tú mismo lo corriges</strong> después desde tu panel. Es gratis.{' '}
         <strong>¿Tu local ya está en Portal Panorama?</strong>{' '}
         <Link href="/explorar">Búscalo y reclámalo</Link> en vez de crearlo de nuevo.
       </p>

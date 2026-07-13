@@ -6,6 +6,7 @@ import {
   PlaceClickCounts,
   PlaceClickRepository,
 } from '../ports/PlaceClickRepository'
+import { BusinessClaimRepository, PendingClaimRow } from '../ports/BusinessClaimRepository'
 
 function row(id: string, over: Partial<OwnedPlaceRow> = {}): OwnedPlaceRow {
   return {
@@ -33,10 +34,17 @@ function counts(over: Partial<PlaceClickCounts>): PlaceClickCounts {
   return { ...EMPTY_CLICK_COUNTS, ...over }
 }
 
-function useCase(rows: OwnedPlaceRow[], clicks: Map<string, PlaceClickCounts>) {
+function useCase(
+  rows: OwnedPlaceRow[],
+  clicks: Map<string, PlaceClickCounts>,
+  pending: PendingClaimRow[] = [],
+) {
   const placeRepo = { findManagedByUser: vi.fn(async () => rows) } as unknown as PlaceRepository
   const clickRepo = { countsByPlaceIds: vi.fn(async () => clicks) } as unknown as PlaceClickRepository
-  return { uc: new GetBusinessDashboardUseCase(placeRepo, clickRepo), clickRepo }
+  const claimRepo = {
+    findPendingByClaimant: vi.fn(async () => pending),
+  } as unknown as BusinessClaimRepository
+  return { uc: new GetBusinessDashboardUseCase(placeRepo, clickRepo, claimRepo), clickRepo }
 }
 
 describe('GetBusinessDashboardUseCase — clics de contacto', () => {
@@ -70,5 +78,23 @@ describe('GetBusinessDashboardUseCase — clics de contacto', () => {
 
     expect(clickRepo.countsByPlaceIds).toHaveBeenCalledOnce()
     expect(clickRepo.countsByPlaceIds).toHaveBeenCalledWith(['a', 'b'])
+  })
+})
+
+describe('GetBusinessDashboardUseCase — solicitudes en curso', () => {
+  it('expone los reclamos PENDING del usuario aunque todavía no gestione ninguna ficha', async () => {
+    const pending: PendingClaimRow[] = [
+      { id: 'c1', targetName: 'Café Altura', targetType: 'PLACE', createdAt: new Date('2026-07-12') },
+    ]
+    const { uc } = useCase([], new Map(), pending)
+
+    const out = await uc.execute('user-1')
+
+    // La ficha recién enviada NO es suya hasta que el admin aprueba: no cuenta como
+    // gestionada, pero el panel igual tiene que mostrar que está en camino.
+    expect(out.places).toEqual([])
+    expect(out.pendingClaims).toEqual([
+      { id: 'c1', targetName: 'Café Altura', createdAt: new Date('2026-07-12') },
+    ])
   })
 })
