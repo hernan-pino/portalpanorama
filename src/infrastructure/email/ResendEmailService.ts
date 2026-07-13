@@ -5,12 +5,17 @@ import { renderEmail, paragraph, muted, escapeHtml } from './emailLayout'
 export class ResendEmailService implements EmailService {
   private resend?: Resend
   private readonly from: string
+  private readonly replyTo: string
 
   // No se valida la API key al construir: un servicio de email no debe tumbar
   // rutas que no mandan correo (el container instancia todos los adapters al cargar).
   // La key se exige recién al enviar (lazy), donde sí importa.
   constructor() {
     this.from = process.env.EMAIL_FROM ?? 'Portal Panorama <hola@portalpanorama.cl>'
+    // El remitente vive en el subdominio verificado en Resend (contacto.…), que NO
+    // recibe correo: sin esto, darle "Responder" a un correo nuestro manda el mensaje
+    // a un buzón que no existe. El Reply-To apunta al que sí tiene recepción.
+    this.replyTo = process.env.EMAIL_REPLY_TO ?? 'hola@portalpanorama.cl'
   }
 
   private client(): Resend {
@@ -22,6 +27,18 @@ export class ResendEmailService implements EmailService {
     return this.resend
   }
 
+  // Todo correo sale con el mismo remitente y el mismo Reply-To: que una plantilla
+  // nueva se olvide del segundo es exactamente cómo se pierden las respuestas.
+  private send(to: string, subject: string, html: string) {
+    return this.client().emails.send({
+      from: this.from,
+      replyTo: this.replyTo,
+      to,
+      subject,
+      html,
+    })
+  }
+
   async sendWelcome(to: string, name: string): Promise<void> {
     const html = renderEmail({
       preheader: 'Tu cuenta está lista. Empieza a descubrir y guardar lugares.',
@@ -31,12 +48,7 @@ export class ResendEmailService implements EmailService {
         paragraph('¿Por dónde empezar? Busca por comuna, categoría o lo que tengas ganas de hacer.'),
       button: { label: 'Explorar lugares', url: 'https://portalpanorama.cl/explorar' },
     })
-    await this.client().emails.send({
-      from: this.from,
-      to,
-      subject: '¡Bienvenido a Portal Panorama!',
-      html,
-    })
+    await this.send(to, '¡Bienvenido a Portal Panorama!', html)
   }
 
   async sendClaimReceived(to: string, name: string, targetName: string): Promise<void> {
@@ -48,12 +60,7 @@ export class ResendEmailService implements EmailService {
         paragraph('<strong>Falta un paso para verificarte:</strong> escríbenos desde el canal oficial del local — un mensaje directo desde su Instagram oficial a <strong>@portalpanorama.cl</strong>, o un correo desde el correo oficial del negocio a <strong>hola@portalpanorama.cl</strong> — mencionando tu nombre. Con eso confirmamos que el local es tuyo y aprobamos tu reclamo.') +
         muted('Te avisaremos por este mismo correo apenas quede aprobado.'),
     })
-    await this.client().emails.send({
-      from: this.from,
-      to,
-      subject: `Recibimos tu reclamo de ${targetName} — Portal Panorama`,
-      html,
-    })
+    await this.send(to, `Recibimos tu reclamo de ${targetName} — Portal Panorama`, html)
   }
 
   async sendClaimApproved(to: string, name: string, targetName: string): Promise<void> {
@@ -65,12 +72,7 @@ export class ResendEmailService implements EmailService {
         paragraph('Ya puedes entrar a tu panel de negocio para mantener tu información al día (horario, teléfono, descripción y más) y ver cuánta gente visita y guarda tu ficha.'),
       button: { label: 'Ir a mi panel de negocio', url: 'https://portalpanorama.cl/mi-negocio' },
     })
-    await this.client().emails.send({
-      from: this.from,
-      to,
-      subject: `Tu reclamo de ${targetName} fue aprobado — Portal Panorama`,
-      html,
-    })
+    await this.send(to, `Tu reclamo de ${targetName} fue aprobado — Portal Panorama`, html)
   }
 
   async sendClaimRejected(to: string, name: string, targetName: string, reason?: string): Promise<void> {
@@ -82,12 +84,7 @@ export class ResendEmailService implements EmailService {
         (reason ? paragraph(`<strong>Motivo:</strong> ${escapeHtml(reason)}`) : '') +
         paragraph('Si crees que es un error o tienes más antecedentes (por ejemplo, un documento o un teléfono del local donde podamos confirmar), responde este correo y lo vemos de nuevo.'),
     })
-    await this.client().emails.send({
-      from: this.from,
-      to,
-      subject: `Sobre tu reclamo de ${targetName} — Portal Panorama`,
-      html,
-    })
+    await this.send(to, `Sobre tu reclamo de ${targetName} — Portal Panorama`, html)
   }
 
   async sendPasswordReset(to: string, name: string, resetUrl: string): Promise<void> {
@@ -99,11 +96,6 @@ export class ResendEmailService implements EmailService {
         muted('Si no pediste esto, puedes ignorar este correo: tu contraseña no cambió.'),
       button: { label: 'Restablecer mi contraseña', url: resetUrl },
     })
-    await this.client().emails.send({
-      from: this.from,
-      to,
-      subject: 'Recupera tu contraseña — Portal Panorama',
-      html,
-    })
+    await this.send(to, 'Recupera tu contraseña — Portal Panorama', html)
   }
 }
