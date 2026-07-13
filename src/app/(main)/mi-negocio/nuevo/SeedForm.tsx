@@ -2,6 +2,7 @@
 import { useMemo, useState, useTransition } from 'react'
 import Link from 'next/link'
 import { createOwnedPlaceSeedAction } from './actions'
+import { PrivacyNote } from './PrivacyNote'
 import { trackEvent } from '@lib/analytics'
 
 const ROLES = ['Dueño/a', 'Representante legal', 'Encargado/a o administrador/a']
@@ -197,10 +198,7 @@ export function SeedForm({
         <Link href="/para-negocios" className="btn btn--ghost">Cancelar</Link>
       </div>
 
-      <p style={{ color: 'var(--fg-subtle)', fontSize: 'var(--t-body-sm)', margin: 0 }}>
-        Publicar tu negocio es gratis. Usaremos estos datos para armar tu ficha y verificar tu
-        vínculo con el negocio (<Link href="/privacidad">privacidad</Link>).
-      </p>
+      <PrivacyNote />
     </form>
   )
 }
