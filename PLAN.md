@@ -9,7 +9,50 @@ priorizado. Se actualiza cada vez que avanzamos. Liviano a propósito — para r
 
 ---
 
-## ▶️ RETOMAR AQUÍ — Cuentas de negocio (cierre s30, 2026-07-11)
+## ▶️ RETOMAR AQUÍ — Cuentas de negocio (cierre s31, 2026-07-12)
+
+**⏩ s31 (esta sesión): ETAPA 3 CONSTRUIDA — la puerta de entrada del negocio nuevo.** Ya existe el camino
+para el dueño cuyo local **no está** en el directorio: `/para-negocios` → **`/mi-negocio/nuevo`** (form-semilla:
+nombre · dirección · comuna · categoría+rubro · rol · teléfono o IG) → **`Place` PENDING_REVIEW** que cae en
+`/admin/lugares` con badge **"Del dueño"** → el admin la optimiza con la skill `ficha-lugar` y publica. Sin
+sesión, la ruta manda a `/registro?callbackUrl=/mi-negocio/nuevo` (el registro ya respetaba el callbackUrl, así
+que **cero maquinaria de auth nueva**). El panel suma CTA "Publicar otro negocio", empty state con las dos
+puertas, y las fichas PENDING ya no ofrecen "Ver ↗" (daba 404) sino una nota de "la estamos completando".
+
+**🔐 DECISIÓN DE DISEÑO (s31, revierte un supuesto de la s28): la semilla NO asigna la propiedad — pasa por el
+reclamo.** El `security-reviewer` encontró un **squatting real**: si la semilla grababa `ownerId = quien la
+manda` (sin verificar nada), un impostor podía enviar la ficha de un local ajeno y el **dueño real quedaba sin
+salida** (no podía crear —duplicado— ni reclamar —`TargetAlreadyOwnedError` porque "ya tenía dueño"). Fix
+elegido por el usuario: **la ficha nace SIN dueño + un `BusinessClaim` PENDING** del remitente; la propiedad
+(`ownerId` + `BusinessProfile` verificado) se asigna **solo al aprobar el reclamo** en `/admin/reclamos`. Reusa
+toda la moderación ya construida (bandeja, guard anti-TOCTOU, los 3 correos) y deja que **dos reclamos compitan**
+si alguien intenta squattear. Como el perfil nace al aprobar, se **borraron** el port `BusinessProfileRepository`
+y su impl Prisma que se habían escrito antes. Los otros 2 hallazgos también cerrados: rate limit ahora es por
+**IP (3/h) + por cuenta (5/24h)**, y `communeId` se valida contra el catálogo (`InvalidCommuneError`) en vez de
+morir como error crudo de FK.
+
+**🔁 Re-revisión del `security-reviewer`: los 3 hallazgos CERRADOS**, nada nuevo abierto. Dejó una nota menor
+(carrera preexistente: dos altas simultáneas del mismo nombre pasaban ambas el chequeo de duplicado y chocaban
+en el unique del slug con un P2002 crudo) → **cerrada igual**: `PrismaPlaceRepository.save` ahora traduce el
+P2002 del slug a `PlaceAlreadyExistsError`, así que el caller reacciona igual que con el duplicado detectado a
+tiempo (mandar a reclamar) en vez de reventar con un error de BD.
+
+**✅ Verificado:** typecheck + lint + `next build` OK · **148 tests verdes** (3 nuevos del use case) ·
+`architecture-guardian` sin violaciones de capas · **e2e contra la BD local**: semilla → Place PENDING sin dueño
++ claim PENDING ✓ · otro usuario todavía puede reclamarla (anti-squatting) ✓ · no aparece en el panel del
+remitente hasta aprobar ✓ · badge del admin ✓ · al aprobar: `ownerId` + perfil **verificado** + aparece en
+`/mi-negocio` ✓ · duplicado cortado ✓. Rutas contra el dev server: `/para-negocios` 200 · `/mi-negocio/nuevo`
+sin sesión no renderiza el form y manda a `/registro?callbackUrl=/mi-negocio/nuevo` ✓.
+
+**▶️ PRÓXIMO PASO (s32):** revisión visual del usuario (`/para-negocios` · `/mi-negocio/nuevo` · panel · badge
+del admin) y, con el OK, **PUSHEAR TODO junto** (etapas 1+2+3+4; las 2 migraciones —`add_business_accounts` y
+`add_place_clicks`— viajan en el build) y probar en prod. Ojo antes de pushear: sigue pendiente la **recepción
+de `hola@portalpanorama.cl`** (Resend solo envía) — sin eso, la verificación por correo del reclamo/semilla no
+tiene dónde llegar y queda solo el DM de Instagram.
+
+---
+
+## Cierre s30 (2026-07-11)
 
 **Dónde vamos:** construyendo el MVP de **cuentas de negocio** (lado gratis). Todo el trabajo está
 **en LOCAL, sin pushear** — decisión del usuario: no subir hasta que el flujo sirva de punta a punta

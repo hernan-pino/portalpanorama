@@ -19,14 +19,16 @@ const PERKS: { title: string; body: string; soon?: boolean }[] = [
     body: '¿Cambió el horario, el teléfono o la carta? La mantienes actualizada para que la gente llegue bien.',
   },
   {
+    title: 'Publica tu negocio nuevo',
+    body: '¿No está en la guía? Cuéntanos lo básico y nosotros investigamos y armamos su ficha completa.',
+  },
+  {
     title: 'Sube y ordena tus fotos',
     body: 'Muestra tu local como quieres que se vea, con tus propias imágenes.',
-    soon: true,
   },
   {
     title: 'Estadísticas de tu ficha',
-    body: 'Cuánta gente la visita, cuántos la guardan y cuántos piden cómo llegar.',
-    soon: true,
+    body: 'Cuánta gente la visita, cuántos la guardan y cuántos piden cómo llegar, tu web o tus redes.',
   },
   {
     title: 'Responde a la comunidad',
@@ -36,9 +38,9 @@ const PERKS: { title: string; body: string; soon?: boolean }[] = [
 ]
 
 const STEPS = [
-  { n: 1, title: 'Busca tu local', body: 'Encuéntralo en Portal Panorama y abre su ficha.' },
-  { n: 2, title: 'Reclama la ficha', body: 'Al final de la ficha, haz clic en “Reclamar esta ficha”. Necesitas una cuenta — tarda un minuto.' },
-  { n: 3, title: 'Verificamos y listo', body: 'Revisamos tu solicitud a mano y te respondemos por correo. Al aprobarla, la ficha es tuya.' },
+  { n: 1, title: 'Busca tu local', body: 'Encuéntralo en Portal Panorama y abre su ficha. Si todavía no está, publícalo tú: te pedimos solo lo básico.' },
+  { n: 2, title: 'Reclámalo o publícalo', body: 'Al final de la ficha, haz clic en “Reclamar esta ficha”. Necesitas una cuenta — tarda un minuto.' },
+  { n: 3, title: 'Verificamos y listo', body: 'Revisamos todo a mano y te respondemos por correo. Si era un local nuevo, armamos su ficha completa antes de publicarla.' },
 ]
 
 const FAQ = [
@@ -64,7 +66,7 @@ const FAQ = [
   },
   {
     q: '¿Mi local todavía no aparece?',
-    a: 'Pronto podrás crear su ficha desde tu cuenta de negocio. Mientras tanto, escríbenos a hola@portalpanorama.cl y lo evaluamos para el catálogo.',
+    a: 'Publícalo tú: cuéntanos lo básico (nombre, dirección, comuna, rubro y un contacto) y nosotros investigamos tu negocio y armamos su ficha completa —fotos, descripción, horario, cómo llegar— antes de publicarla. Es gratis y la revisamos a mano, así que puede tardar unos días.',
   },
 ]
 
@@ -79,11 +81,13 @@ export default function ParaNegociosPage() {
         <p className="biz-hero__lead">
           Portal Panorama es una guía editorial de los lugares que valen la pena en Santiago.
           Si tu local ya aparece, es porque la gente lo recomienda — y puedes reclamar tu ficha
-          gratis para tomar el control de tu presencia.
+          gratis para tomar el control de tu presencia. Si todavía no está,{' '}
+          <strong>publícalo tú</strong> y nosotros armamos su ficha.
         </p>
         <div className="biz-hero__actions">
           <Link href="/explorar" className="btn btn--primary">Busca tu local</Link>
-          <Link href="#como" className="btn btn--ghost">Cómo funciona</Link>
+          <Link href="/mi-negocio/nuevo" className="btn btn--ghost">Publica tu negocio</Link>
+          <Link href="#como" className="biz-hero__link">Cómo funciona</Link>
         </div>
         <p className="biz-hero__note">Gratis · sin tarjeta · verificación a cargo de nuestro equipo</p>
       </section>
@@ -155,7 +159,10 @@ export default function ParaNegociosPage() {
       {/* CTA final */}
       <section className="biz-cta container">
         <h2 className="biz-cta__title">¿Listo para tomar el control de tu ficha?</h2>
-        <Link href="/explorar" className="btn btn--primary">Busca tu local y reclámalo</Link>
+        <div className="biz-hero__actions">
+          <Link href="/explorar" className="btn btn--primary">Busca tu local y reclámalo</Link>
+          <Link href="/mi-negocio/nuevo" className="btn btn--ghost">Mi local no está</Link>
+        </div>
       </section>
     </div>
   )

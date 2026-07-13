@@ -88,6 +88,8 @@ import { ApproveBusinessClaimUseCase } from '@application/business/ApproveBusine
 import { RejectBusinessClaimUseCase } from '@application/business/RejectBusinessClaimUseCase'
 import { ListBusinessClaimsForAdminUseCase } from '@application/business/ListBusinessClaimsForAdminUseCase'
 import { GetBusinessDashboardUseCase } from '@application/business/GetBusinessDashboardUseCase'
+import { CreateOwnedPlaceSeedUseCase } from '@application/business/CreateOwnedPlaceSeedUseCase'
+import { GetSeedFormOptionsUseCase } from '@application/business/GetSeedFormOptionsUseCase'
 import { CountManagedPlacesUseCase } from '@application/business/CountManagedPlacesUseCase'
 import { GetOwnedPlaceForEditUseCase } from '@application/business/GetOwnedPlaceForEditUseCase'
 import { UpdateOwnedPlaceInfoUseCase } from '@application/business/UpdateOwnedPlaceInfoUseCase'
@@ -264,6 +266,22 @@ export const container = {
 
   getUpdateOwnedPlaceImagesUseCase() {
     return new UpdateOwnedPlaceImagesUseCase(placeRepo)
+  },
+
+  getGetSeedFormOptionsUseCase() {
+    return new GetSeedFormOptionsUseCase(categoryRepo, locationRepo)
+  },
+
+  // Tercera puerta de un Place: el dueño manda la semilla de su negocio nuevo. La
+  // ficha nace PENDING_REVIEW y SIN dueño + un reclamo; el admin la optimiza con la
+  // skill y, al aprobar el reclamo, le asigna la propiedad.
+  getCreateOwnedPlaceSeedUseCase() {
+    return new CreateOwnedPlaceSeedUseCase(
+      placeRepo,
+      locationRepo,
+      new CreatePlaceUseCase(placeRepo, tagRepo, categoryRepo),
+      new CreateBusinessClaimUseCase(businessClaimRepo, emailService),
+    )
   },
 
   // ── Sugerencias (footer) + buzón ────────────────────────────────────

@@ -15,6 +15,9 @@ export interface AdminRow {
   googleRating?: number
   visitCount: number
   saveCount: number
+  // Tiene un reclamo sin resolver. En PENDING_REVIEW = semilla mandada por su dueño
+  // desde /mi-negocio/nuevo: optimizarla con la skill `ficha-lugar` antes de publicar.
+  hasPendingClaim: boolean
 }
 
 // Filtro de estado. "ACTIVOS" = todo lo que no está archivado (el default): así los
@@ -129,6 +132,11 @@ export function PlacesAdminList({ places }: { places: AdminRow[] }) {
                 <tr key={p.id}>
                   <td>
                     <Link href={`/admin/lugares/${p.id}`} className="admin-table__name">{p.name}</Link>
+                    {p.hasPendingClaim && p.status === 'PENDING_REVIEW' && (
+                      <span className="admin-badge admin-badge--owner" title="La mandó su dueño desde “Publica tu negocio”: optimízala con la skill antes de publicar, y aprueba su reclamo en /admin/reclamos para darle la propiedad">
+                        Del dueño
+                      </span>
+                    )}
                   </td>
                   <td>{p.categoryName}</td>
                   <td>{p.communeName}</td>

@@ -73,24 +73,29 @@ export default async function MiNegocioPage() {
       {/* ── Contenido ── */}
       <main className="biz-main">
         <header className="biz-main__head">
-          <h1 className="biz-main__title">Hola{firstName ? `, ${firstName}` : ''}</h1>
-          <p className="biz-main__sub">
-            {hasPlaces
-              ? `Gestionas ${places.length} ${places.length === 1 ? 'ficha' : 'fichas'}. Mantenla completa para aparecer mejor.`
-              : 'Aquí verás y gestionarás las fichas de tu negocio.'}
-          </p>
+          <div>
+            <h1 className="biz-main__title">Hola{firstName ? `, ${firstName}` : ''}</h1>
+            <p className="biz-main__sub">
+              {hasPlaces
+                ? `Gestionas ${places.length} ${places.length === 1 ? 'ficha' : 'fichas'}. Mantenla completa para aparecer mejor.`
+                : 'Aquí verás y gestionarás las fichas de tu negocio.'}
+            </p>
+          </div>
+          {hasPlaces && (
+            <Link href="/mi-negocio/nuevo" className="btn btn--ghost btn--sm">+ Publicar otro negocio</Link>
+          )}
         </header>
 
         {!hasPlaces ? (
           <div className="biz-panel__empty">
             <p>Todavía no gestionas ninguna ficha.</p>
             <p className="biz-panel__empty-sub">
-              Si tu local ya está en Portal Panorama, búscalo y reclámalo. Revisamos cada reclamo a
-              mano y, al aprobarlo, aparecerá aquí.
+              Si tu local ya está en Portal Panorama, búscalo y reclámalo. Si todavía no está,
+              publícalo tú y armamos su ficha. Revisamos todo a mano y, al aprobarlo, aparecerá aquí.
             </p>
             <div className="biz-panel__empty-actions">
               <Link href="/explorar" className="btn btn--primary btn--sm">Buscar mi local</Link>
-              <Link href="/para-negocios" className="btn btn--ghost btn--sm">Cómo funciona</Link>
+              <Link href="/mi-negocio/nuevo" className="btn btn--ghost btn--sm">Publicar mi negocio</Link>
             </div>
           </div>
         ) : (
@@ -139,9 +144,19 @@ export default async function MiNegocioPage() {
                       </div>
                       <div className="biz-fiche__actions">
                         <Link href={`/mi-negocio/${p.slug}/editar`} className="btn btn--primary btn--sm">Editar</Link>
-                        <Link href={`/lugar/${p.slug}`} className="btn btn--ghost btn--sm" target="_blank">Ver ↗</Link>
+                        {/* Una ficha no publicada no tiene página pública: el link daría 404. */}
+                        {p.status === 'PUBLISHED' && (
+                          <Link href={`/lugar/${p.slug}`} className="btn btn--ghost btn--sm" target="_blank">Ver ↗</Link>
+                        )}
                       </div>
                     </div>
+
+                    {p.status === 'PENDING_REVIEW' && (
+                      <p className="biz-fiche__note">
+                        La estamos completando: investigamos tu negocio y le sumamos fotos, descripción
+                        y horario antes de publicarla. Te avisamos por correo cuando esté en línea.
+                      </p>
+                    )}
 
                     {/* Desglose real por ficha */}
                     <div className="biz-fiche__stats">

@@ -18,6 +18,7 @@ export default async function LugaresPage() {
     googleRating: p.googleRating,
     visitCount: p.visitCount,
     saveCount: p.saveCount,
+    hasPendingClaim: p.hasPendingClaim,
   }))
 
   return (

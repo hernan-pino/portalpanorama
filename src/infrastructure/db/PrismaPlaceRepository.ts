@@ -7,6 +7,7 @@ import { PriceRange } from '@domain/place/PriceRange'
 import { ReservationPolicy } from '@domain/place/ReservationPolicy'
 import { RainPolicy } from '@domain/place/RainPolicy'
 import { PlaceStatus } from '@domain/place/PlaceStatus'
+import { PlaceAlreadyExistsError } from '@domain/place/errors/PlaceAlreadyExistsError'
 import {
   CategoryRatingStat,
   OwnedPlaceRow,
@@ -22,6 +23,14 @@ import {
   PlaceRepository,
 } from '@application/ports/PlaceRepository'
 import { placeCardArgs, toPlaceCardView } from './placeCardView'
+
+// P2002 = choque de índice único. Solo nos interesa el del slug: es el que puede
+// perder una carrera entre dos altas del mismo nombre.
+function isUniqueSlugViolation(err: unknown): boolean {
+  if (!(err instanceof Prisma.PrismaClientKnownRequestError) || err.code !== 'P2002') return false
+  const target = err.meta?.target
+  return Array.isArray(target) ? target.includes('slug') : target === 'slug'
+}
 
 // El JSON de socialLinks viene como `Prisma.JsonValue`: lo validamos a [{network,url}]
 // y descartamos lo malformado (es informativo; nunca debe tumbar la ficha).
@@ -259,6 +268,19 @@ export class PrismaPlaceRepository implements PlaceRepository {
   // Upsert del encabezado + reemplazo total de imágenes y tags (el Place es el
   // agregado dueño de ambos). En transacción para no dejar estados a medias.
   async save(place: Place): Promise<void> {
+    try {
+      await this.persist(place)
+    } catch (err) {
+      // Dos envíos simultáneos del mismo nombre pueden pasar ambos el chequeo previo
+      // de duplicado y chocar recién acá, en el unique del slug. Se traduce al error
+      // de dominio para que el caller reaccione igual que con el duplicado detectado
+      // a tiempo (mandar a reclamar la ficha existente), no con un error crudo de BD.
+      if (isUniqueSlugViolation(err)) throw new PlaceAlreadyExistsError(place.slug.value)
+      throw err
+    }
+  }
+
+  private async persist(place: Place): Promise<void> {
     const data = toWriteData(place)
     await this.prisma.$transaction([
       this.prisma.place.upsert({
@@ -338,6 +360,7 @@ export class PrismaPlaceRepository implements PlaceRepository {
         category: { select: { name: true } },
         commune: { select: { name: true } },
         _count: { select: { visitHistory: true, collectionItems: true } },
+        claims: { where: { status: 'PENDING' }, select: { id: true }, take: 1 },
       },
     })
     return rows.map((r) => ({
@@ -352,6 +375,7 @@ export class PrismaPlaceRepository implements PlaceRepository {
       updatedAt: r.updatedAt,
       visitCount: r._count.visitHistory,
       saveCount: r._count.collectionItems,
+      hasPendingClaim: r.claims.length > 0,
     }))
   }
 

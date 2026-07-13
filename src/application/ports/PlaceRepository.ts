@@ -111,6 +111,10 @@ export interface PlaceAdminRow {
   // (CollectionItem, en cualquier lista). Las páginas vistas anónimas viven en GA4.
   visitCount: number
   saveCount: number
+  // ¿Tiene un reclamo sin resolver? Con status PENDING_REVIEW = es una semilla que
+  // mandó su dueño desde /mi-negocio/nuevo: hay que optimizarla con la skill antes
+  // de publicarla, y su propiedad se decide aprobando el reclamo.
+  hasPendingClaim: boolean
 }
 
 // ── Panel de negocio (dueño verificado) ──────────────────────────────────────
