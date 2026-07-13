@@ -23,6 +23,9 @@ const seedSchema = z
     role: z.enum(ROLES),
     phone: z.string().trim().max(40, 'Máximo 40 caracteres.').optional(),
     instagram: z.string().trim().max(120, 'Máximo 120 caracteres.').optional(),
+    // Rubro propuesto por el dueño cuando ninguno del catálogo le calza. No crea nada:
+    // viaja al admin con la solicitud y él decide si abre la subcategoría.
+    categorySuggestion: z.string().trim().max(80, 'Máximo 80 caracteres.').optional(),
   })
   // Sin un canal de contacto no podemos verificar que el negocio es suyo.
   .refine((d) => !!d.phone || !!d.instagram, {
@@ -56,6 +59,7 @@ export async function createOwnedPlaceSeedAction(formData: FormData): Promise<Ac
     role: formData.get('role'),
     phone: formData.get('phone') || undefined,
     instagram: formData.get('instagram') || undefined,
+    categorySuggestion: formData.get('categorySuggestion') || undefined,
   })
   if (!parsed.success) return { error: parsed.error.issues[0]?.message ?? 'Datos inválidos.' }
 

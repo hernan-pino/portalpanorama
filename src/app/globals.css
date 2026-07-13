@@ -2699,6 +2699,30 @@ select.form-input { cursor: pointer; }
   color: var(--accent-70); font: inherit; text-decoration: underline; text-underline-offset: 3px;
 }
 
+/* Lo que depende del dueño: va primero y destacado, nunca enterrado en un párrafo.
+   Sin este paso su ficha no avanza. */
+.wizard-todo {
+  text-align: left; background: var(--bg-sunken);
+  border-left: 3px solid var(--accent); border-radius: var(--r-md);
+  padding: var(--s-4) var(--s-5); margin: 0 0 var(--s-6);
+}
+.wizard-todo__label {
+  font-family: var(--font-mono); font-size: var(--t-tiny); text-transform: uppercase;
+  letter-spacing: var(--tr-wide); color: var(--accent-70); margin: 0 0 var(--s-2);
+}
+.wizard-todo__action { margin: 0 0 var(--s-2); font-size: var(--t-body); }
+.wizard-todo__alt { margin: 0 0 var(--s-2); font-size: var(--t-body-sm); color: var(--fg-muted); }
+.wizard-todo__why { margin: 0; font-size: var(--t-body-sm); color: var(--fg-subtle); }
+
+/* Pasos que corren por nuestra cuenta: numerados y de una línea, para escanear. */
+.wizard-next {
+  text-align: left; margin: 0 0 var(--s-6); padding-left: var(--s-5);
+  display: flex; flex-direction: column; gap: var(--s-2);
+}
+.wizard-next li { font-size: var(--t-body-sm); color: var(--fg-muted); }
+.wizard-next li strong { color: var(--fg); }
+.wizard-next--compact { margin-bottom: 0; }
+
 .wizard-done { text-align: center; }
 .wizard-done__check {
   display: grid; place-items: center; width: 48px; height: 48px; margin: 0 auto var(--s-4);
@@ -2875,7 +2899,8 @@ select.form-input { cursor: pointer; }
 }
 .biz-welcome__title { font-family: var(--font-display); font-weight: 500; font-size: clamp(20px, 3vw, 26px); letter-spacing: var(--tr-tight); margin: 0 0 var(--s-3); }
 .biz-welcome__body { color: var(--fg-muted); font-size: var(--t-body-sm); margin: 0 0 var(--s-3); max-width: 68ch; }
-.biz-welcome__tips { margin: var(--s-4) 0 0; padding-left: var(--s-5); display: flex; flex-direction: column; gap: var(--s-2); }
+.biz-welcome__lead { font-weight: 600; font-size: var(--t-body-sm); margin: var(--s-6) 0 var(--s-3); }
+.biz-welcome__tips { margin: 0; padding-left: var(--s-5); display: flex; flex-direction: column; gap: var(--s-2); }
 .biz-welcome__tips li { font-size: var(--t-body-sm); color: var(--fg); max-width: 68ch; }
 
 /* Solicitudes en curso (aún sin aprobar: la ficha todavía no es suya) */

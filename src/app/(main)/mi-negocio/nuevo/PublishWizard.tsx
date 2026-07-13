@@ -1,5 +1,5 @@
 'use client'
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { AccountStep } from './AccountStep'
@@ -25,6 +25,18 @@ export function PublishWizard({
 }) {
   const router = useRouter()
   const [step, setStep] = useState(isAuthenticated ? 1 : 0)
+  const topRef = useRef<HTMLOListElement>(null)
+
+  // Sin navegación no hay scroll automático: al avanzar, el paso nuevo aparecía
+  // fuera de pantalla (quedabas mirando el pie de página del paso anterior).
+  const firstRender = useRef(true)
+  useEffect(() => {
+    if (firstRender.current) {
+      firstRender.current = false
+      return
+    }
+    topRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+  }, [step])
 
   function handleAccountDone() {
     // La sesión ya existe (la cookie viajó en la respuesta de la action), pero el
@@ -36,7 +48,7 @@ export function PublishWizard({
 
   return (
     <>
-      <ol className="wizard-steps" aria-label="Pasos para publicar tu negocio">
+      <ol className="wizard-steps" aria-label="Pasos para publicar tu negocio" ref={topRef}>
         {STEPS.map((label, i) => (
           <li
             key={label}
@@ -73,27 +85,31 @@ export function PublishWizard({
         <div className="wizard-panel wizard-done">
           <p className="wizard-done__check" aria-hidden="true">✓</p>
           <h2 className="wizard-done__title">¡Listo! Recibimos tu negocio</h2>
-          <p className="wizard-panel__sub">
-            Ahora lo investigamos y armamos su ficha completa. Te enviamos un correo con el último
-            paso para verificar que el negocio es tuyo: apenas lo confirmemos, la ficha queda
-            asociada a tu cuenta y podrás editarla cuando quieras.
-          </p>
+
+          {/* Lo único que depende de él va primero y destacado: sin esto, su ficha no avanza. */}
+          <div className="wizard-todo">
+            <p className="wizard-todo__label">Te toca a ti — 1 paso</p>
+            <p className="wizard-todo__action">
+              Escríbenos <strong>desde el Instagram oficial de tu local</strong> a{' '}
+              <a href="https://instagram.com/portalpanorama.cl" target="_blank" rel="noopener noreferrer">@portalpanorama.cl</a>
+            </p>
+            <p className="wizard-todo__alt">
+              ¿No tienes Instagram? Manda un correo desde el correo del negocio a{' '}
+              <a href="mailto:hola@portalpanorama.cl">hola@portalpanorama.cl</a>.
+            </p>
+            <p className="wizard-todo__why">Así confirmamos que el negocio es tuyo y nadie más puede reclamarlo.</p>
+          </div>
+
+          <ol className="wizard-next">
+            <li><strong>Armamos tu ficha.</strong> Investigamos tu negocio y le sumamos fotos, descripción, horario y cómo llegar.</li>
+            <li><strong>Te verificamos</strong> con el mensaje que nos mandaste, y te avisamos por correo.</li>
+            <li><strong>La publicamos</strong> y queda en tu panel: desde ahí la editas cuando quieras.</li>
+          </ol>
 
           <div className="wizard-done__actions">
             <Link href="/mi-negocio?enviada=1" className="btn btn--primary">Ir a mi panel</Link>
             <Link href="/explorar" className="btn btn--ghost">Ver el portal</Link>
           </div>
-
-          <dl className="wizard-done__meta">
-            <div>
-              <dt>Próximo paso</dt>
-              <dd>Verifícate desde el canal oficial de tu local (DM de Instagram o correo).</dd>
-            </div>
-            <div>
-              <dt>Soporte</dt>
-              <dd><a href="mailto:hola@portalpanorama.cl">hola@portalpanorama.cl</a></dd>
-            </div>
-          </dl>
         </div>
       )}
     </>

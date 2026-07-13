@@ -29,6 +29,7 @@ export function SeedForm({
   onDone: () => void
 }) {
   const [categoryId, setCategoryId] = useState('')
+  const [suggestingCategory, setSuggestingCategory] = useState(false)
   const [name, setName] = useState('')
   const [error, setError] = useState<{ message: string; duplicate?: boolean } | null>(null)
   const [isPending, startTransition] = useTransition()
@@ -121,8 +122,37 @@ export function SeedForm({
           <option value="" disabled>{categoryId ? 'Elige el rubro' : 'Elige primero la categoría'}</option>
           {subcategories.map((s) => <option key={s.id} value={s.id}>{s.name}</option>)}
         </select>
-        <p className="form-hint">Si ninguno calza exacto, elige el más parecido: lo afinamos nosotros.</p>
+        <p className="form-hint">
+          Elige el más parecido. ¿Ninguno calza?{' '}
+          <button
+            type="button"
+            className="wizard-panel__switch"
+            onClick={() => setSuggestingCategory(true)}
+            hidden={suggestingCategory}
+          >
+            Propón el tuyo
+          </button>
+        </p>
       </div>
+
+      {/* El catálogo lo controla el admin, así que la propuesta no crea el rubro: viaja
+          con la solicitud y él decide si tiene sentido abrirlo. */}
+      {suggestingCategory && (
+        <div>
+          <label className="form-label" htmlFor="seed-suggestion">¿Cuál es tu rubro?</label>
+          <input
+            id="seed-suggestion"
+            name="categorySuggestion"
+            className="form-input"
+            maxLength={80}
+            placeholder="Ej: cervecería artesanal"
+          />
+          <p className="form-hint">
+            Lo revisamos: si tiene sentido, lo agregamos al catálogo y lo usamos en tu ficha.
+            Mientras tanto queda el rubro que elegiste arriba.
+          </p>
+        </div>
+      )}
 
       <div>
         <label className="form-label" htmlFor="seed-role">¿Cuál es tu rol en el negocio?</label>
@@ -143,16 +173,12 @@ export function SeedForm({
       </div>
 
       <div className="claim-verify">
-        <p className="claim-verify__title">Qué pasa después</p>
-        <p className="claim-verify__body">
-          Con estos datos investigamos tu negocio y armamos su ficha completa (fotos, descripción,
-          horario, cómo llegar). Para confirmar que el negocio es tuyo, te vamos a pedir un mensaje{' '}
-          <strong>desde su canal oficial</strong>: un mensaje directo desde el Instagram del local a{' '}
-          <a href="https://instagram.com/portalpanorama.cl" target="_blank" rel="noopener noreferrer">@portalpanorama.cl</a>,
-          o un correo desde el correo del negocio a{' '}
-          <a href="mailto:hola@portalpanorama.cl">hola@portalpanorama.cl</a>. Revisamos todo a mano,
-          así que puede tardar unos días.
-        </p>
+        <p className="claim-verify__title">Qué pasa al enviar</p>
+        <ol className="wizard-next wizard-next--compact">
+          <li><strong>Armamos tu ficha</strong> con fotos, descripción, horario y cómo llegar.</li>
+          <li><strong>Te pedimos un mensaje</strong> desde el Instagram o el correo oficial de tu local, para confirmar que es tuyo.</li>
+          <li><strong>La publicamos</strong> y la editas desde tu panel. Revisamos a mano: puede tardar unos días.</li>
+        </ol>
       </div>
 
       {error && (

@@ -77,3 +77,16 @@ describe('CreateOwnedPlaceSeedUseCase', () => {
     expect(createPlace.execute).not.toHaveBeenCalled()
   })
 })
+
+describe('CreateOwnedPlaceSeedUseCase — rubro propuesto', () => {
+  it('lleva el rubro propuesto al admin en la solicitud (no crea la subcategoría)', async () => {
+    const { uc, createPlace, createClaim } = setup(null)
+
+    await uc.execute({ ...seed, categorySuggestion: 'cervecería artesanal' })
+
+    // La ficha se crea con el rubro del catálogo que el dueño eligió; la propuesta es
+    // solo una señal para el admin, que decide si abre la subcategoría nueva.
+    expect(vi.mocked(createPlace.execute).mock.calls[0][0].subcategoryId).toBe('sub-1')
+    expect(vi.mocked(createClaim.execute).mock.calls[0][0].message).toContain('cervecería artesanal')
+  })
+})

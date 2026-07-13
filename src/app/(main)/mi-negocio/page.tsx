@@ -38,9 +38,9 @@ const SOON_ITEMS = ['Reseñas', 'Estadísticas avanzadas', 'Eventos', 'Publicida
 // Lo que le sirve saber al dueño recién llegado. No son promesas de features: son
 // las tres cosas que mueven la aguja de su ficha.
 const GOOD_PRACTICES = [
-  'Sube fotos propias: fachada para reconocer el local al llegar, interior y tu producto estrella. Es lo primero que mira la gente.',
-  'Mantén el horario y el teléfono al día: es la razón #1 por la que alguien no llega.',
-  'Revisa lo que escribimos: si algo quedó mal (horario, precio, teléfono), lo corriges tú mismo desde el editor.',
+  'Sube tus fotos: fachada, interior y tu producto estrella.',
+  'Mantén el horario y el teléfono al día.',
+  'Corrige lo que hayamos dejado mal.',
 ]
 
 // Panel de negocio (etapa 4): las fichas que el dueño verificado gestiona, con su
@@ -104,20 +104,33 @@ export default async function MiNegocioPage({
           )}
         </header>
 
-        {/* Bienvenida del onboarding: qué acaba de pasar, qué sigue y cómo sacarle partido. */}
+        {/* Bienvenida del onboarding. Primero lo que él tiene que hacer (si no, su ficha
+            no avanza); después lo que hacemos nosotros. Escaneable, no un muro de texto. */}
         {justSubmitted && (
           <section className="biz-welcome" aria-label="Recibimos tu negocio">
             <h2 className="biz-welcome__title">¡Listo! Recibimos tu negocio</h2>
-            <p className="biz-welcome__body">
-              Ahora lo investigamos y <strong>nosotros armamos su ficha completa</strong>: fotos,
-              descripción, horario y cómo llegar. Te enviamos un correo con el último paso para
-              verificar que el negocio es tuyo. Apenas lo confirmemos, la ficha queda asociada a tu
-              cuenta y <strong>podrás corregir tú mismo cualquier dato que hayamos dejado mal</strong>.
-            </p>
-            <p className="biz-welcome__body">
-              Esto es <strong>tu panel</strong>: acá vas a ver tus fichas, cuánta gente las visita,
-              las guarda y hace clic para llegar o escribirte — y desde acá las editas.
-            </p>
+
+            <div className="wizard-todo">
+              <p className="wizard-todo__label">Te toca a ti — 1 paso</p>
+              <p className="wizard-todo__action">
+                Escríbenos <strong>desde el Instagram oficial de tu local</strong> a{' '}
+                <a href="https://instagram.com/portalpanorama.cl" target="_blank" rel="noopener noreferrer">@portalpanorama.cl</a>
+              </p>
+              <p className="wizard-todo__alt">
+                ¿No tienes Instagram? Manda un correo desde el correo del negocio a{' '}
+                <a href="mailto:hola@portalpanorama.cl">hola@portalpanorama.cl</a>.
+              </p>
+              <p className="wizard-todo__why">Así confirmamos que el negocio es tuyo y nadie más puede reclamarlo.</p>
+            </div>
+
+            <p className="biz-welcome__lead">Qué hacemos nosotros:</p>
+            <ol className="wizard-next">
+              <li><strong>Armamos tu ficha</strong> con fotos, descripción, horario y cómo llegar.</li>
+              <li><strong>Te avisamos por correo</strong> cuando quede publicada.</li>
+              <li><strong>Aparece acá</strong> y la editas cuando quieras: lo que dejemos mal, lo corriges tú.</li>
+            </ol>
+
+            <p className="biz-welcome__lead">Para que rinda:</p>
             <ul className="biz-welcome__tips">
               {GOOD_PRACTICES.map((tip) => (
                 <li key={tip}>{tip}</li>

@@ -21,6 +21,18 @@ export interface OwnedPlaceSeedInput {
   role?: string
   phone?: string
   instagram?: string
+  /** Rubro que el dueño propone porque ninguno del catálogo le calza. No crea la
+   *  subcategoría: viaja al admin en la solicitud y él decide si la abre. */
+  categorySuggestion?: string
+}
+
+// Nota para el admin en la bandeja de reclamos: de dónde salió la ficha y, si el dueño
+// propuso un rubro que no existe, cuál — es la señal para evaluar abrir la subcategoría.
+function seedMessage(input: OwnedPlaceSeedInput): string {
+  const base = 'Ficha creada por el dueño desde “Publica tu negocio”.'
+  return input.categorySuggestion
+    ? `${base} Rubro propuesto (no está en el catálogo): “${input.categorySuggestion}”.`
+    : base
 }
 
 // Tercera puerta de entrada de un Place (las otras dos: carga del admin y reclamo de
@@ -77,7 +89,7 @@ export class CreateOwnedPlaceSeedUseCase {
       placeId,
       targetName: input.name,
       claimantRole: input.role,
-      message: 'Ficha creada por el dueño desde “Publica tu negocio”.',
+      message: seedMessage(input),
       contactPhone: input.phone,
     })
 
