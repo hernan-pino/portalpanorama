@@ -14,6 +14,7 @@ export default async function ReclamosPage() {
     targetName: c.targetName,
     targetSlug: c.targetSlug,
     targetIsPublic: c.targetIsPublic,
+    targetDetail: c.targetDetail,
     claimantName: c.claimantName,
     claimantEmail: c.claimantEmail,
     claimantRole: c.claimantRole,

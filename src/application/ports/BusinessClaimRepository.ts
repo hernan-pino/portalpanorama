@@ -1,6 +1,21 @@
 import { BusinessClaim } from '@domain/business/BusinessClaim'
 import { ClaimStatus } from '@domain/business/ClaimStatus'
 
+/**
+ * Lo que el dueño declaró del negocio. Vive en el Place (la semilla de "publica tu
+ * negocio" lo graba ahí), no en el reclamo — pero el admin lo necesita EN LA BANDEJA
+ * para poder decidir sin saltar a otra pantalla.
+ */
+export interface ClaimTargetDetail {
+  address: string | null
+  communeName: string | null
+  categoryName: string | null
+  subcategoryName: string | null
+  phone: string | null
+  instagram: string | null
+  isPublished: boolean
+}
+
 // Fila de la bandeja de reclamos del admin: el reclamo con su objetivo resuelto
 // (nombre/slug del lugar o la marca) y quién lo pide.
 export interface ClaimAdminRow {
@@ -14,6 +29,8 @@ export interface ClaimAdminRow {
    * nacen PENDING_REVIEW: no tienen /lugar/{slug} todavía y linkearlas daba 404.
    */
   targetIsPublic: boolean
+  /** Datos del negocio para revisar en la bandeja. null en marcas (no tienen ubicación propia). */
+  targetDetail: ClaimTargetDetail | null
   claimantName: string
   claimantEmail: string
   claimantRole: string | null

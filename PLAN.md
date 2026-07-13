@@ -50,6 +50,39 @@ nuevos del use case) · `architecture-guardian` sin violaciones de capas · **ba
 cero scroll horizontal, cero errores JS**, menú correcto en cada estado · desktop del panel sin regresión ·
 **BD local devuelta a su estado original** (las cuentas de prueba sembradas para el barrido fueron borradas).
 
+### 🧾 Revisión de reclamos: la bandeja ahora deja DECIDIR (opción "A", pedida por el usuario en la s32)
+
+**El problema que levantó el usuario:** *"al revisar el reclamo de crear una ficha, ¿cómo apruebo o niego sin
+ver la info que llenaron?"*. Tenía razón: lo que el dueño declara (dirección · comuna · categoría/rubro ·
+teléfono · IG) **se guarda en el `Place` PENDING_REVIEW, no en el `BusinessClaim`** — la bandeja solo mostraba
+quién pedía. **Fix:** el botón "Revisar" ahora despliega un **panel** con (a) *Lo que declaró del negocio*
+(todos los campos de la semilla + si la ficha está publicada o falta completarla), (b) *Quién lo pide*
+(persona, cuenta, rol, contacto, mensaje —incluido el **rubro propuesto** si pidió uno fuera del catálogo—),
+(c) una nota que fija el criterio: **"lo que estás aprobando es la IDENTIDAD, no los datos"** (que haya escrito
+desde el IG oficial o el correo del local; los datos se corrigen en el editor), y (d) las acciones + "Abrir en
+el editor ↗". De paso, la tabla bajó de **8 a 5 columnas** (rol/mensaje/contacto se fueron al panel): con 8 no
+cabía y se leía de lado. Port: `ClaimTargetDetail` + `targetDetail` en `ClaimAdminRow`.
+
+**📌 El flujo real del admin, escrito (no estaba en ninguna parte):**
+1. Llega el badge en `/admin/reclamos` (y en `/admin/lugares` con la etiqueta "Del dueño").
+2. "Revisar" → **panel con todo**: se verifica la **identidad** (DM del IG oficial o correo del local, decisión s28).
+3. Se **completa la ficha**: hoy el admin le pide a Claude la skill **`ficha-lugar`** (fotos, descripción, horario,
+   tags, rating) y la carga en el editor → publica. ⚠️ **Este paso es MANUAL y vive fuera de la app.**
+4. Se vuelve a la bandeja y se **aprueba** → recién ahí: `ownerId` + `BusinessProfile` verificado + correo al dueño.
+
+**⬜ ANOTADO PARA LA PRÓXIMA SESIÓN — opción "B": enriquecer la ficha desde el admin.** El usuario preguntó por
+qué la ficha no se arma sola "con nuestro proceso". Hoy **la skill `ficha-lugar` no vive dentro de la app** (corre
+en Claude Code). La idea: un botón **"Investigar y completar"** en la ficha pendiente. **El obstáculo real a
+resolver antes de construir:** el enriquecimiento con datos de Google (`enrich-ratings`) funciona **por
+`place_id`**, y **la semilla no lo trae** (el dueño no sabe qué es) → habría que **resolver el `place_id` desde
+nombre + dirección**, con riesgo de emparejar el local equivocado. **Decisión tomada (s32): se pospone** — hoy no
+hay ningún negocio real entrando; automatizar un flujo que todavía no ocurre es apostar a ciegas.
+
+**🎨 Fix de la s32 al paso (`/para-negocios` en celular):** el contenido chocaba con los dos bordes de la pantalla.
+Causa: `.biz-hero`, `.biz-section` y `.biz-cta` **también son `.container`**, y su shorthand `padding: X 0`
+**pisaba el `padding-inline` del container** → 0px lateral. Pasados a `padding-block`. ⚠️ **Regla para el rediseño:
+en una clase que se combine con `.container`, usar `padding-block`, nunca el shorthand `padding`.**
+
 **▶️ PRÓXIMO PASO (s33):** (1) **revisión visual del usuario** de los 6 fixes y, con el OK, **pushear a prod**
 (los 2 hoyos rojos están vivos en producción ahora mismo; no hay migraciones nuevas, el diff es solo código).
 (2) Luego, **sistema de diseño + brief para Claude Design** (punto 2 del orden acordado).

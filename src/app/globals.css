@@ -2350,6 +2350,47 @@ select.form-input { cursor: pointer; }
 .admin-inbox-section__title { font-size: var(--t-h4); margin-bottom: var(--s-1); }
 .admin-inbox__msg { max-width: 32ch; white-space: normal; color: var(--fg-muted); }
 
+/* Panel de revisión de un reclamo: todo lo necesario para decidir, sin salir de la bandeja. */
+.claim-review__row > td { background: var(--bg-sunken); padding: var(--s-5) var(--s-4); }
+.claim-review { display: grid; gap: var(--s-5); }
+.claim-review__cols {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: var(--s-6);
+  align-items: start;
+}
+.claim-review__h {
+  font-size: var(--t-body-sm);
+  font-family: var(--font-mono);
+  text-transform: uppercase;
+  letter-spacing: .06em;
+  color: var(--fg-muted);
+  margin: 0 0 var(--s-3);
+}
+.claim-review__dl { display: grid; gap: var(--s-2); margin: 0; }
+.claim-review__dl > div { display: grid; grid-template-columns: 96px minmax(0, 1fr); gap: var(--s-3); }
+.claim-review__dl dt { color: var(--fg-muted); }
+.claim-review__dl dd { margin: 0; white-space: normal; overflow-wrap: anywhere; }
+.claim-review__empty { color: var(--fg-muted); margin: 0; }
+.claim-review__note {
+  margin: var(--s-4) 0 0;
+  padding: var(--s-3);
+  border-left: 2px solid var(--accent-60);
+  background: var(--bg-raised);
+  color: var(--fg-muted);
+  white-space: normal;
+}
+.claim-review__actions {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--s-3);
+  flex-wrap: wrap;
+  padding-top: var(--s-4);
+  border-top: 1px solid var(--surface-line);
+}
+.claim-review__actions .form-input { flex: 1; min-width: 260px; }
+.claim-review__btns { display: flex; gap: var(--s-2); }
+
 /* Acciones de fila */
 .admin-row-actions { display: flex; align-items: center; gap: var(--s-2); flex-wrap: wrap; justify-content: flex-end; }
 .admin-row-actions__error { font-size: var(--t-mono); color: var(--error); }
@@ -2652,7 +2693,10 @@ select.form-input { cursor: pointer; }
 .biz .container { max-width: 900px; }
 
 /* Hero */
-.biz-hero { text-align: center; padding: var(--s-20) 0 var(--s-12); }
+/* padding-block, NO el shorthand: estas secciones también son .container, y un
+   `padding: X 0` le pisaba el padding-inline → en el celular el contenido quedaba
+   pegado a los dos bordes de la pantalla. */
+.biz-hero { text-align: center; padding-block: var(--s-20) var(--s-12); }
 .biz-hero__title { font-size: clamp(32px, 6vw, 52px); margin: var(--s-3) 0 0; }
 .biz-hero__lead {
   font-size: var(--t-body-lg, 18px); color: var(--fg-muted);
@@ -2770,7 +2814,7 @@ select.form-input { cursor: pointer; }
 .biz-hero__note { font-family: var(--font-mono); font-size: var(--t-tiny); color: var(--fg-subtle); margin-top: var(--s-5); letter-spacing: 0.02em; }
 
 /* Secciones */
-.biz-section { padding: var(--s-10) 0; border-top: 1px solid var(--surface-line-soft); }
+.biz-section { padding-block: var(--s-10); border-top: 1px solid var(--surface-line-soft); }
 .biz-section__title {
   font-family: var(--font-display); font-weight: 500;
   font-size: clamp(22px, 4vw, 30px); letter-spacing: var(--tr-tight);
@@ -2842,7 +2886,7 @@ select.form-input { cursor: pointer; }
 .claim-verify__body { font-size: var(--t-body-sm); color: var(--fg-muted); margin: 0; line-height: var(--lh-loose, 1.6); }
 
 /* CTA final */
-.biz-cta { text-align: center; padding: var(--s-12) 0 0; }
+.biz-cta { text-align: center; padding-block: var(--s-12) 0; }
 
 /* Ayuda por campo (el "?" junto a la etiqueta) → burbuja flotante */
 .field-help { position: relative; display: inline-flex; align-items: center; }

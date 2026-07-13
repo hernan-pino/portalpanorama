@@ -132,7 +132,21 @@ export class PrismaBusinessClaimRepository implements BusinessClaimRepository {
         createdAt: true,
         reviewedAt: true,
         claimant: { select: { name: true, email: true } },
-        place: { select: { id: true, name: true, slug: true, status: true } },
+        place: {
+          select: {
+            id: true,
+            name: true,
+            slug: true,
+            status: true,
+            // Lo que el dueño llenó en la semilla: el admin lo revisa en la bandeja.
+            address: true,
+            phone: true,
+            instagram: true,
+            commune: { select: { name: true } },
+            category: { select: { name: true } },
+            subcategory: { select: { name: true } },
+          },
+        },
         brand: { select: { id: true, name: true, slug: true } },
       },
     })
@@ -144,6 +158,17 @@ export class PrismaBusinessClaimRepository implements BusinessClaimRepository {
       targetSlug: r.place?.slug ?? r.brand?.slug ?? '',
       // Una marca siempre tiene página; un lugar, solo si está publicado.
       targetIsPublic: r.place ? r.place.status === 'PUBLISHED' : true,
+      targetDetail: r.place
+        ? {
+            address: r.place.address,
+            communeName: r.place.commune?.name ?? null,
+            categoryName: r.place.category?.name ?? null,
+            subcategoryName: r.place.subcategory?.name ?? null,
+            phone: r.place.phone,
+            instagram: r.place.instagram,
+            isPublished: r.place.status === 'PUBLISHED',
+          }
+        : null,
       claimantName: r.claimant.name,
       claimantEmail: r.claimant.email,
       claimantRole: r.claimantRole,
