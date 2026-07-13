@@ -9,7 +9,48 @@ priorizado. Se actualiza cada vez que avanzamos. Liviano a propósito — para r
 
 ---
 
-## ▶️ RETOMAR AQUÍ — Cuentas de negocio (cierre s31, 2026-07-12)
+## ▶️ RETOMAR AQUÍ — Plan de acción acordado (cierre s31, 2026-07-12)
+
+**✅ CUENTAS DE NEGOCIO: EN PRODUCCIÓN.** Push `7a8f9bb..00f9069` (31 commits) → deploy **Ready** → las 2 migraciones
+(`add_business_accounts` + `add_place_clicks`) corrieron en prod y **verificado en vivo**: `BusinessProfile`/`BusinessClaim`/
+`PlaceClick` responden en la BD de prod, **385 lugares publicados intactos**, `/para-negocios` (2 caminos) · `/mi-negocio/nuevo`
+(wizard 3 pasos) · CTA "Publica tu negocio" + buscador en el header · CTA de reclamo en las fichas, todo 200 y con el contenido
+nuevo. **`hola@portalpanorama.cl` ya recibe** (ver bloque del correo abajo). El lado negocio está completo de punta a punta.
+
+### 📋 ORDEN ACORDADO CON EL USUARIO (s31) — no cambiarlo sin OK
+
+1. **s32 — Barrido de flujos + navegación** (empezado y cortado en s31; rehacer completo): recorrer cada ruta en los 4
+   estados (sin sesión · usuario común · dueño con ficha · admin), seguir cada CTA y cada link, cazar links muertos,
+   estados vacíos y callejones sin salida. **Precedente que justifica el barrido:** el usuario encontró solo el hoyo del
+   panel inalcanzable con solicitud pendiente (arreglado en `73086d6`) — hay más. **Más los pendientes reales de su lista**
+   (ver ⬜ abajo, son chicos).
+2. **s33 — Sistema de diseño + brief para Claude Design.** El usuario quiere un **mini rebrand**: no le gusta la
+   jerarquía de color (cansa la vista), quiere más uso de color y tipografías, y **detecta bien el problema de fondo:
+   NO hay sistema de diseño establecido**, solo tokens acumulados en `globals.css` — cambiarlo después será caro. Él lo
+   hará con **Claude Design**; **Claude prepara el paquete**: auditoría del estado actual (jerarquía/contraste/densidad),
+   inventario de TODAS las pantallas y flujos, y los tokens/constraints que el diseño nuevo debe respetar. Sin esto,
+   Claude Design devuelve pantallas bonitas pero inconsistentes con lo construido.
+3. **s34 — Implementar el rediseño.**
+4. **Carga de lugares (en paralelo, cuando el usuario tenga las listas con place_id).** Verticales candidatas:
+   cevicherías · brunch · plazas/parques · el lote "complementos de cita" (chocolaterías/florerías/plantas). Meta 500.
+5. **Publicar en grupos y foros (GTM).** **DESPUÉS del rediseño** — decisión razonada: llevar gente a una UI que al
+   propio dueño le cansa la vista quema la única primera impresión.
+6. **Eventos.** Recién cuando haya **tracción real y orgánica** (decisión del usuario).
+
+### ⬜ Pendientes REALES de la lista del usuario (s31)
+El usuario listó 10 cosas; **6 ya estaban hechas y en vivo** (s25/s27) y no las había visto — verificadas en prod:
+feedback al guardar + "✓ guardado" · selector de orden en /explorar · badge de nuevo en el admin · `/como-ordenamos`
+(el score explicado en simple) · chips clickeables en la ficha · búsqueda tokenizada ("café para trabajar" matchea).
+**Lo que SÍ falta:**
+- **Reseñas desglosadas por tema** (atención/sabor/accesibilidad…). ⚠️ Ojo: ni siquiera existe el form de reseñas.
+- **Distancia desde mi ubicación** en la tarjeta (permiso de geolocalización).
+- **Recomendador IA del panorama completo** ("dónde comer helado con mi pareja" → arma el panorama). Es el NORTE del
+  producto, no un quick win: hoy la búsqueda hace *matching* de frases, no *recomendación*.
+- **Estacionamientos:** ya triaged (s28) → **dato de ficha, NO fichas propias**.
+
+---
+
+## Cuentas de negocio — bitácora (s28-s31)
 
 **⏩ s31 (esta sesión): ETAPA 3 CONSTRUIDA — la puerta de entrada del negocio nuevo.** Ya existe el camino
 para el dueño cuyo local **no está** en el directorio: `/para-negocios` → **`/mi-negocio/nuevo`** (form-semilla:
