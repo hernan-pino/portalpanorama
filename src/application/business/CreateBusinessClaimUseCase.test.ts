@@ -14,6 +14,7 @@ function makeRepo(overrides: Partial<BusinessClaimRepository> = {}): BusinessCla
     targetState: vi.fn(async () => 'FREE' as const),
     listForAdmin: vi.fn(async () => []),
     findPendingByClaimant: vi.fn(async () => []),
+    countPendingByClaimant: vi.fn(async () => 0),
     countPending: vi.fn(async () => 0),
     persistApproval: vi.fn(async () => {}),
     persistRejection: vi.fn(async () => {}),

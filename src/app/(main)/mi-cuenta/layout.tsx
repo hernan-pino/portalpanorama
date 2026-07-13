@@ -19,8 +19,10 @@ export default async function MiCuentaLayout({ children }: { children: React.Rea
   const data = await getUserDashboard(session.user.id)
   const { user, collections, history } = data
 
-  // ¿Gestiona alguna ficha? Muestra el cruce a "Mi negocio" en el sidebar.
-  const hasBusiness = (await container.getCountManagedPlacesUseCase().execute(session.user.id)) > 0
+  // ¿Gestiona una ficha o tiene una solicitud en curso? Muestra el cruce a "Mi negocio"
+  // en el sidebar (quien recién mandó su negocio todavía no gestiona nada, pero tiene
+  // que poder entrar a seguirlo).
+  const hasBusiness = await container.getHasBusinessAccessUseCase().execute(session.user.id)
 
   const firstName = user.name.split(' ')[0]
   const mes = MESES_ES[user.createdAt.getMonth()].toUpperCase()
@@ -64,8 +66,12 @@ export default async function MiCuentaLayout({ children }: { children: React.Rea
             </div>
           </div>
 
-          {/* Buttons */}
+          {/* Buttons — el cruce al panel de negocio va acá arriba, junto a la acción
+              principal: en el sidebar quedaba enterrado. */}
           <div style={{ display: 'flex', gap: 'var(--s-3)', alignItems: 'center', flexShrink: 0 }}>
+            {hasBusiness && (
+              <Link href="/mi-negocio" className="btn btn--ghost btn--sm">Mi negocio</Link>
+            )}
             <Link href="/mi-cuenta?tab=perfil" className="btn btn--primary btn--sm">Editar perfil</Link>
           </div>
         </div>

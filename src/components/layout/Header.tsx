@@ -11,11 +11,12 @@ export async function Header() {
   const user = session?.user
   const role = (user as { role?: string } | undefined)?.role
 
-  // ¿Mostrar el acceso a "Mi negocio"? Solo si el usuario gestiona alguna ficha.
-  // Count liviano (indexado por ownerId); los no-dueños dan 0 y no ven el link.
+  // ¿Mostrar el acceso a "Mi negocio"? Si gestiona una ficha O tiene una solicitud en
+  // curso: recién enviada todavía no es dueño de nada, y sin esto no tendría por dónde
+  // volver a ver en qué va.
   const hasBusiness =
     user?.id && role !== UserRole.ADMIN
-      ? (await container.getCountManagedPlacesUseCase().execute(user.id)) > 0
+      ? await container.getHasBusinessAccessUseCase().execute(user.id)
       : false
 
   return (

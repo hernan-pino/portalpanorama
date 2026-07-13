@@ -95,6 +95,10 @@ export class PrismaBusinessClaimRepository implements BusinessClaimRepository {
     }))
   }
 
+  async countPendingByClaimant(claimantId: string): Promise<number> {
+    return this.prisma.businessClaim.count({ where: { claimantId, status: 'PENDING' } })
+  }
+
   async listForAdmin(): Promise<ClaimAdminRow[]> {
     const rows = await this.prisma.businessClaim.findMany({
       orderBy: { createdAt: 'desc' },

@@ -91,6 +91,7 @@ import { GetBusinessDashboardUseCase } from '@application/business/GetBusinessDa
 import { CreateOwnedPlaceSeedUseCase } from '@application/business/CreateOwnedPlaceSeedUseCase'
 import { GetSeedFormOptionsUseCase } from '@application/business/GetSeedFormOptionsUseCase'
 import { CountManagedPlacesUseCase } from '@application/business/CountManagedPlacesUseCase'
+import { HasBusinessAccessUseCase } from '@application/business/HasBusinessAccessUseCase'
 import { GetOwnedPlaceForEditUseCase } from '@application/business/GetOwnedPlaceForEditUseCase'
 import { UpdateOwnedPlaceInfoUseCase } from '@application/business/UpdateOwnedPlaceInfoUseCase'
 import { UpdateOwnedPlaceImagesUseCase } from '@application/business/UpdateOwnedPlaceImagesUseCase'
@@ -254,6 +255,12 @@ export const container = {
   // Liviano: ¿el usuario gestiona algún negocio? (acceso al panel en el header).
   getCountManagedPlacesUseCase() {
     return new CountManagedPlacesUseCase(placeRepo)
+  },
+
+  // ¿Ve la puerta al panel? Gestiona una ficha O tiene una solicitud en curso (recién
+  // enviada todavía no gestiona nada, y así igual puede seguirla).
+  getHasBusinessAccessUseCase() {
+    return new HasBusinessAccessUseCase(placeRepo, businessClaimRepo)
   },
 
   getGetOwnedPlaceForEditUseCase() {

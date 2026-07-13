@@ -99,9 +99,14 @@ export default async function MiNegocioPage({
                 : 'Aquí verás y gestionarás las fichas de tu negocio.'}
             </p>
           </div>
-          {hasPlaces && (
-            <Link href="/mi-negocio/nuevo" className="btn btn--ghost btn--sm">+ Publicar otro negocio</Link>
-          )}
+          {/* Cruce simétrico al de /mi-cuenta: la vuelta al perfil personal va visible
+              acá arriba, no solo en el sidebar. */}
+          <div className="biz-main__actions">
+            <Link href="/mi-cuenta" className="btn btn--ghost btn--sm">Mi cuenta</Link>
+            {hasPlaces && (
+              <Link href="/mi-negocio/nuevo" className="btn btn--primary btn--sm">+ Publicar otro negocio</Link>
+            )}
+          </div>
         </header>
 
         {/* Bienvenida del onboarding. Primero lo que él tiene que hacer (si no, su ficha

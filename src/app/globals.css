@@ -2890,6 +2890,7 @@ select.form-input { cursor: pointer; }
 .biz-main__head { margin-bottom: var(--s-6); display: flex; align-items: flex-start; justify-content: space-between; gap: var(--s-4); flex-wrap: wrap; }
 .biz-main__title { font-family: var(--font-display); font-weight: 500; font-size: clamp(26px, 5vw, 38px); letter-spacing: var(--tr-tight); font-variation-settings: "opsz" 60; margin: var(--s-1) 0 0; }
 .biz-main__sub { color: var(--fg-muted); margin: var(--s-2) 0 0; }
+.biz-main__actions { display: flex; gap: var(--s-2); align-items: center; flex-shrink: 0; }
 .biz-main__foot { margin-top: var(--s-10); font-size: var(--t-body-sm); color: var(--fg-subtle); border-top: 1px solid var(--surface-line-soft); padding-top: var(--s-5); }
 
 /* Bienvenida del onboarding (llega desde “Publica tu negocio”) */

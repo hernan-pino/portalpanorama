@@ -48,6 +48,8 @@ export interface BusinessClaimRepository {
   listForAdmin(): Promise<ClaimAdminRow[]>
   /** Solicitudes PENDING del propio usuario, para su panel. */
   findPendingByClaimant(claimantId: string): Promise<PendingClaimRow[]>
+  /** ¿Tiene solicitudes en curso? (liviano: decide si ve la puerta al panel). */
+  countPendingByClaimant(claimantId: string): Promise<number>
   /** Reclamos PENDING → badge "nuevo" en la navegación del admin. */
   countPending(): Promise<number>
   /**
