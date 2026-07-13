@@ -86,7 +86,7 @@ export default async function LoginPage({
           </p>
         )}
 
-        {googleAuthEnabled && <GoogleButton divider="below" />}
+        {googleAuthEnabled && <GoogleButton divider="below" redirectTo={callbackUrl} />}
         <LoginForm callbackUrl={callbackUrl} deemphasized={googleAuthEnabled} />
       </div>
 

@@ -353,6 +353,22 @@ a { color: inherit; text-decoration: none; }
 /* Acciones de sesión lado a lado: el botón "Salir" va dentro de un <form> (block),
    sin esto se apila bajo el link de cuenta/admin en desktop. */
 .topbar__auth { display: flex; align-items: center; gap: var(--s-2); }
+
+/* Buscador del header: ícono plegado que despliega la búsqueda real (con sugerencias). */
+.topbar__search { position: relative; display: flex; }
+.topbar__icon-btn {
+  display: grid; place-items: center; width: 34px; height: 34px;
+  background: none; border: 1px solid transparent; border-radius: var(--r-pill);
+  color: var(--fg-muted); cursor: pointer;
+}
+.topbar__icon-btn:hover { color: var(--fg); border-color: var(--surface-line); }
+.topbar__icon-btn svg { width: 18px; height: 18px; }
+.topbar__search-panel {
+  position: absolute; top: calc(100% + var(--s-3)); right: 0; z-index: 40;
+  width: min(92vw, 420px); padding: var(--s-4);
+  background: var(--bg-raised); border: 1px solid var(--surface-line);
+  border-radius: var(--r-lg); box-shadow: var(--shadow-lg, 0 12px 32px rgb(0 0 0 / 12%));
+}
 .icon-btn {
   width: 40px; height: 40px;
   display: inline-flex; align-items: center; justify-content: center;
@@ -2642,6 +2658,66 @@ select.form-input { cursor: pointer; }
 .onboard-step {
   font-family: var(--font-mono); font-size: var(--t-mono-sm); text-transform: uppercase;
   letter-spacing: var(--tr-wide); color: var(--accent-70); margin: 0 0 var(--s-3);
+}
+
+/* ---------- Wizard "Publica tu negocio" (cuenta → datos → listo, sin recargar) ---------- */
+.wizard-steps {
+  display: flex; align-items: flex-start; gap: var(--s-2);
+  list-style: none; margin: var(--s-8) 0 var(--s-8); padding: 0; max-width: 640px;
+}
+.wizard-steps__item { flex: 1; display: flex; flex-direction: column; align-items: center; gap: var(--s-2); position: relative; }
+/* La línea que une los pasos nace del propio ítem: no hay nodos vacíos de adorno. */
+.wizard-steps__item + .wizard-steps__item::before {
+  content: ''; position: absolute; top: 14px; right: 50%; left: -50%; height: 1px;
+  background: var(--surface-line); z-index: 0;
+}
+.wizard-steps__item.is-done::before, .wizard-steps__item.is-active::before { background: var(--accent); }
+.wizard-steps__num {
+  position: relative; z-index: 1;
+  display: grid; place-items: center; width: 28px; height: 28px; border-radius: 50%;
+  border: 1px solid var(--surface-line); background: var(--bg);
+  font-family: var(--font-mono); font-size: var(--t-tiny); color: var(--fg-subtle);
+}
+.wizard-steps__item.is-active .wizard-steps__num { background: var(--fg); border-color: var(--fg); color: var(--bg); }
+.wizard-steps__item.is-done .wizard-steps__num { background: var(--accent); border-color: var(--accent); color: var(--paper-05); }
+.wizard-steps__label {
+  font-family: var(--font-mono); font-size: var(--t-tiny); text-transform: uppercase;
+  letter-spacing: var(--tr-wide); color: var(--fg-subtle); text-align: center;
+}
+.wizard-steps__item.is-active .wizard-steps__label { color: var(--fg); }
+
+.wizard-panel {
+  background: var(--bg-raised); border: 1px solid var(--surface-line);
+  border-radius: var(--r-xl); padding: var(--s-8); max-width: 640px;
+}
+.wizard-panel__title { font-family: var(--font-display); font-weight: 500; font-size: clamp(22px, 3vw, 28px); letter-spacing: var(--tr-tight); margin: 0 0 var(--s-3); }
+.wizard-panel__sub { color: var(--fg-muted); font-size: var(--t-body-sm); margin: 0 0 var(--s-6); }
+.wizard-form { display: flex; flex-direction: column; gap: var(--s-4); }
+.wizard-panel__foot { margin: var(--s-5) 0 0; font-size: var(--t-body-sm); color: var(--fg-muted); }
+.wizard-panel__switch {
+  background: none; border: none; padding: 0; cursor: pointer;
+  color: var(--accent-70); font: inherit; text-decoration: underline; text-underline-offset: 3px;
+}
+
+.wizard-done { text-align: center; }
+.wizard-done__check {
+  display: grid; place-items: center; width: 48px; height: 48px; margin: 0 auto var(--s-4);
+  border-radius: 50%; background: var(--accent); color: var(--paper-05); font-size: 22px;
+}
+.wizard-done__title { font-family: var(--font-display); font-weight: 500; font-size: clamp(24px, 4vw, 32px); letter-spacing: var(--tr-tight); margin: 0 0 var(--s-3); }
+.wizard-done__actions { display: flex; gap: var(--s-3); justify-content: center; flex-wrap: wrap; margin-bottom: var(--s-6); }
+.wizard-done__meta {
+  display: grid; grid-template-columns: 1fr 1fr; gap: var(--s-5); text-align: left;
+  border-top: 1px solid var(--surface-line-soft); padding-top: var(--s-5); margin: 0;
+}
+.wizard-done__meta dt {
+  font-family: var(--font-mono); font-size: var(--t-tiny); text-transform: uppercase;
+  letter-spacing: var(--tr-wide); color: var(--fg-subtle); margin-bottom: var(--s-2);
+}
+.wizard-done__meta dd { margin: 0; font-size: var(--t-body-sm); color: var(--fg-muted); }
+@media (max-width: 640px) {
+  .wizard-panel { padding: var(--s-6) var(--s-5); }
+  .wizard-done__meta { grid-template-columns: 1fr; }
 }
 
 /* Los dos caminos del dueño: reclamar lo que ya existe vs. publicar lo que no está. */

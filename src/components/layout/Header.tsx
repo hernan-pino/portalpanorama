@@ -4,6 +4,7 @@ import { container } from '@lib/container'
 import { UserRole } from '@domain/user/UserRole'
 import { signOutAction } from '@/app/actions/auth'
 import { MobileNav } from './MobileNav'
+import { HeaderSearch } from './HeaderSearch'
 
 export async function Header() {
   const session = await auth()
@@ -37,6 +38,7 @@ export async function Header() {
 
           {/* Actions */}
           <div className="topbar__actions">
+            <HeaderSearch />
             <div className="topbar__auth">
               {user ? (
                 <AuthenticatedActions name={user.name ?? ''} role={role} hasBusiness={hasBusiness} />
@@ -55,11 +57,24 @@ export async function Header() {
   )
 }
 
+// El CTA del lado negocio dispara el flujo completo (crea la cuenta dentro del propio
+// wizard), por eso también se ofrece a quien no tiene sesión.
+function PublishBusinessCta() {
+  return (
+    <Link href="/mi-negocio/nuevo" className="btn btn--primary btn--sm">
+      Publica tu negocio
+    </Link>
+  )
+}
+
 function GuestActions() {
   return (
-    <Link href="/login" className="btn btn--primary btn--sm">
-      Iniciar sesión
-    </Link>
+    <>
+      <Link href="/login" className="btn btn--ghost btn--sm">
+        Iniciar sesión
+      </Link>
+      <PublishBusinessCta />
+    </>
   )
 }
 
@@ -88,10 +103,12 @@ function AuthenticatedActions({
   // CONSUMER
   return (
     <>
-      {hasBusiness && (
+      {hasBusiness ? (
         <Link href="/mi-negocio" className="btn btn--ghost btn--sm">
           Mi negocio
         </Link>
+      ) : (
+        <PublishBusinessCta />
       )}
       <Link href="/mi-cuenta" className="btn btn--ghost btn--sm">
         {firstName}

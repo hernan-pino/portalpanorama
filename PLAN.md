@@ -64,6 +64,21 @@ sin sesión no renderiza el form y manda a `/registro?callbackUrl=/mi-negocio/nu
    vista y parecía que no había pasado nada. **150 tests verdes** (1 nuevo) · typecheck + lint + build OK · e2e:
    la semilla no cuenta como ficha gestionada y sí aparece en "En revisión" ✓.
 
+**🧙 2ª ronda de feedback (s31, con refs de Claude Design tipo checkout): WIZARD EN UNA SOLA PÁGINA.** El usuario
+pidió que el registro/login **no sea otra página** sino un paso del propio flujo, con stepper, y un CTA en el header
+que lo dispare. Hecho: **`/mi-negocio/nuevo` es ahora un wizard de 3 pasos sin recargas** — (1) **Tu cuenta**:
+login/registro **integrado** (Google arriba + email/contraseña, con toggle "ya tengo cuenta"); actions gemelas de
+`/registro` y `/login` que **NO redirigen** (`signIn(..., { redirect: false })` → devuelven resultado y el wizard
+avanza; `router.refresh()` para que el header vea la sesión nueva) · (2) **Datos del negocio** (el form-semilla) ·
+(3) **Listo** (confirmación con "Ir a mi panel" + próximo paso + soporte). Quien ya tiene sesión **entra directo al
+paso 2**. Google es la única salida del sitio (lo exige OAuth), pero **vuelve al wizard**: `signInWithGoogle` ahora
+acepta `redirectTo` (antes iba SIEMPRE a `/explorar` e **ignoraba el callbackUrl** — de paso quedó arreglado también
+en `/login` y `/registro`). **Header:** CTA **"Publica tu negocio"** (a invitados —el wizard les crea la cuenta— y a
+usuarios sin negocio; los que ya tienen ficha siguen viendo "Mi negocio") + **buscador plegado** (ícono que despliega
+el `SearchBar` real con sugerencias), ambos pedidos del usuario. **Verificado:** typecheck + lint + build OK · 149
+tests · e2e de rutas: el wizard **ya no redirige a `/registro`**, muestra los 3 pasos, Google lleva
+`redirectTo=/mi-negocio/nuevo`, y el header trae CTA + buscador.
+
 **▶️ PRÓXIMO PASO (s32):** revisión visual del usuario (`/para-negocios` · `/mi-negocio/nuevo` · panel · badge
 del admin) y, con el OK, **PUSHEAR TODO junto** (etapas 1+2+3+4; las 2 migraciones —`add_business_accounts` y
 `add_place_clicks`— viajan en el build) y probar en prod. Ojo antes de pushear: sigue pendiente la **recepción

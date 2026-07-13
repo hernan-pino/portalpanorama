@@ -1,33 +1,33 @@
 'use client'
 import { useMemo, useState, useTransition } from 'react'
 import Link from 'next/link'
-import { useRouter } from 'next/navigation'
 import { createOwnedPlaceSeedAction } from './actions'
 import { trackEvent } from '@lib/analytics'
 
 const ROLES = ['Dueño/a', 'Representante legal', 'Encargado/a o administrador/a']
 
-interface CategoryOption {
+export interface CategoryOption {
   id: string
   name: string
   subcategories: { id: string; name: string }[]
 }
-interface CommuneOption {
+export interface CommuneOption {
   id: string
   name: string
 }
 
-// Form-semilla: lo mínimo que el dueño sabe de memoria. La ficha final la arma el
-// admin (fotos, descripción, tags, reputación) antes de publicarla — por eso acá no
-// se piden. Ver BUSINESS_ACCOUNTS_SPEC §6.
+// Paso 2 del wizard (form-semilla): lo mínimo que el dueño sabe de memoria. La ficha
+// final la arma el admin (fotos, descripción, tags, reputación) antes de publicarla —
+// por eso acá no se piden. Ver BUSINESS_ACCOUNTS_SPEC §6.
 export function SeedForm({
   categories,
   communes,
+  onDone,
 }: {
   categories: CategoryOption[]
   communes: CommuneOption[]
+  onDone: () => void
 }) {
-  const router = useRouter()
   const [categoryId, setCategoryId] = useState('')
   const [name, setName] = useState('')
   const [error, setError] = useState<{ message: string; duplicate?: boolean } | null>(null)
@@ -49,8 +49,7 @@ export function SeedForm({
         return
       }
       trackEvent('crear_ficha_negocio', {})
-      // Último paso del onboarding: aterriza en su panel, que le explica qué sigue.
-      router.push('/mi-negocio?enviada=1')
+      onDone()
     })
   }
 
@@ -169,7 +168,7 @@ export function SeedForm({
         <button type="submit" className="btn btn--primary" disabled={isPending}>
           {isPending ? 'Enviando…' : 'Enviar mi negocio'}
         </button>
-        <Link href="/mi-negocio" className="btn btn--ghost">Cancelar</Link>
+        <Link href="/para-negocios" className="btn btn--ghost">Cancelar</Link>
       </div>
 
       <p style={{ color: 'var(--fg-subtle)', fontSize: 'var(--t-body-sm)', margin: 0 }}>

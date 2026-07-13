@@ -7,9 +7,12 @@ import { signInWithGoogle } from './oauth-actions'
 export function GoogleButton({
   label = 'Continuar con Google',
   divider = 'below',
+  redirectTo,
 }: {
   label?: string
   divider?: 'above' | 'below'
+  /** Dónde aterrizar al volver de Google (por defecto /explorar). */
+  redirectTo?: string
 }) {
   const separator = (
     <div
@@ -31,6 +34,7 @@ export function GoogleButton({
     <>
       {divider === 'above' && separator}
       <form action={signInWithGoogle}>
+        {redirectTo && <input type="hidden" name="redirectTo" value={redirectTo} />}
         <button
           type="submit"
           className="btn btn--primary"
