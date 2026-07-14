@@ -9,10 +9,9 @@ priorizado. Se actualiza cada vez que avanzamos. Liviano a propósito — para r
 
 ---
 
-## ▶️ RETOMAR AQUÍ — s33 (2026-07-13): el modal de guardar, unificado (SIN COMMITEAR)
+## ▶️ RETOMAR AQUÍ — s33 (2026-07-13): el modal de guardar, unificado (EN PROD)
 
-**⚠️ Lo primero al volver:** hay trabajo **en el working tree, sin commitear y sin pushear**. Falta correr
-`npx next build` (⛔ **con el dev server abajo**) y, con eso OK, commitear + pushear. El resto ya está verificado.
+**✅ Commiteado y pusheado** (`7a7e56c`) → deploy de Vercel. Sin migraciones: el diff es solo código + CSS.
 
 **La s32 SÍ está en prod.** Se verificó en vivo (el CSS de prod ya trae `.biz-hero{…padding-block…}`): el push
 `db8329f` se hizo y el deploy quedó Ready. El plan decía "falta pushear" — estaba desactualizado, ya no.
@@ -43,9 +42,17 @@ como disparadores delgados. **Se borró el popover `.ficha__pop`** (CSS muerto).
 **✅ Verificado:** typecheck + lint OK · **158 tests verdes** · **navegador headless en iPhone 13**, sin sesión y con
 sesión (usuario registrado por la UI): los 3 puntos de entrada abren el modal **montado en `body`, cubriendo el
 viewport y centrado**, la ficha anónima **ya no redirige**, guardar actualiza el botón ("Guardado en Favoritos") + el
-toast + el check "✓ guardado" · cero errores de consola · **BD local devuelta a su estado** (los 4 usuarios de prueba
+toast + el check "✓ guardado" · cero errores de consola · **`next build` OK** (con el dev server abajo) ·
+`architecture-guardian` sin violaciones de capas · **BD local devuelta a su estado** (los 4 usuarios de prueba
 borrados por id exacto; quedan los 4 originales).
-**⬜ Falta:** `next build` (con el dev abajo) → commit → push.
+
+**⚠️ Gotcha reincidente (ya son 3 veces): el `position: fixed` atrapado.** Le pasó al menú móvil (s32, por el
+`backdrop-filter` del header) y ahora al modal de guardar (s33, por la tarjeta). **Regla: todo overlay va montado en
+`<body>` con `createPortal`, nunca colgando del componente que lo dispara.** Anotarlo en los constraints del rediseño.
+
+**▶️ PRÓXIMO PASO (s34):** el **punto 2 del orden acordado — sistema de diseño + brief para Claude Design**:
+auditoría del estado actual (jerarquía de color/contraste/densidad), inventario de TODAS las pantallas y flujos, y los
+tokens/constraints que el diseño nuevo debe respetar (incluidos los 2 gotchas de CSS de arriba).
 
 ---
 
