@@ -9,7 +9,47 @@ priorizado. Se actualiza cada vez que avanzamos. Liviano a propósito — para r
 
 ---
 
-## ▶️ RETOMAR AQUÍ — Cierre s32 (2026-07-13): barrido de flujos HECHO, 6 hoyos arreglados
+## ▶️ RETOMAR AQUÍ — s33 (2026-07-13): el modal de guardar, unificado (SIN COMMITEAR)
+
+**⚠️ Lo primero al volver:** hay trabajo **en el working tree, sin commitear y sin pushear**. Falta correr
+`npx next build` (⛔ **con el dev server abajo**) y, con eso OK, commitear + pushear. El resto ya está verificado.
+
+**La s32 SÍ está en prod.** Se verificó en vivo (el CSS de prod ya trae `.biz-hero{…padding-block…}`): el push
+`db8329f` se hizo y el deploy quedó Ready. El plan decía "falta pushear" — estaba desactualizado, ya no.
+
+**✅ Revisión visual del usuario de los 6 fixes de la s32:** puntos **1 a 4 OK**. Salieron **3 hallazgos nuevos**,
+los tres ya arreglados en esta sesión:
+
+1. **🟡 El menú del admin en celular se cortaba.** Los links (Lugares · Nuevo · Marcas · Tags · Usuarios ·
+   **Reclamos**) no caben y `.admin-nav__links` no scrolleaba → **no se llegaba a Reclamos**. **Fix:** fila
+   deslizable con el dedo (`overflow-x:auto` + `nowrap`), mismo patrón que el panel del dueño. *Nota del usuario:
+   el admin en celular no es prioridad, siempre lo usa en el PC.*
+2. **🔴 El modal de guardar quedaba atrapado dentro de la tarjeta.** El corazón renderizaba
+   `.save-modal__scrim` (`position: fixed`) **dentro del DOM de la tarjeta**: al haber un ancestro con
+   `transform`/`filter`/`contain`, ese ancestro se vuelve el containing block y el modal se recortaba dentro del
+   carrusel ("lo mejor valorado"). **Es el mismo gotcha del `backdrop-filter` del header (s32).**
+3. **🔴 La barra fija de abajo abría el menú fuera de pantalla.** El popover de la ficha era
+   `position:absolute; top:calc(100% + 8px)` → colgado del botón pegado al borde inferior, se dibujaba **abajo,
+   fuera de la vista**. Y **sin sesión el botón "Guardar" de la ficha mandaba derecho al login**, sin avisar por qué
+   (el corazón sí mostraba popup — incoherente).
+
+**🧩 Decisión del usuario: UN SOLO modal centrado para todo.** Los tres puntos de entrada (corazón de la tarjeta ·
+botón de la ficha · barra fija de móvil) abren ahora el **mismo modal centrado con el fondo oscurecido**, en los dos
+estados (anónimo → invitación a entrar/registrarse conservando el lugar; con sesión → sus listas). Implementado como
+**`src/components/place/SaveModal.tsx`**, montado en `<body>` con **`createPortal`** (lo que mata el problema de
+raíz), con cierre por Escape/click afuera/botón ×, y bloqueo del scroll de fondo. `SaveHeart` y `SaveButton` quedaron
+como disparadores delgados. **Se borró el popover `.ficha__pop`** (CSS muerto).
+
+**✅ Verificado:** typecheck + lint OK · **158 tests verdes** · **navegador headless en iPhone 13**, sin sesión y con
+sesión (usuario registrado por la UI): los 3 puntos de entrada abren el modal **montado en `body`, cubriendo el
+viewport y centrado**, la ficha anónima **ya no redirige**, guardar actualiza el botón ("Guardado en Favoritos") + el
+toast + el check "✓ guardado" · cero errores de consola · **BD local devuelta a su estado** (los 4 usuarios de prueba
+borrados por id exacto; quedan los 4 originales).
+**⬜ Falta:** `next build` (con el dev abajo) → commit → push.
+
+---
+
+## Cierre s32 (2026-07-13): barrido de flujos HECHO, 6 hoyos arreglados
 
 **Se hizo el punto 1 del orden acordado: el barrido de flujos en los 4 estados** (sin sesión · usuario común ·
 dueño con ficha · admin), recorriendo cada ruta y cada CTA con sesiones HTTP reales + **navegador headless en
@@ -83,9 +123,8 @@ Causa: `.biz-hero`, `.biz-section` y `.biz-cta` **también son `.container`**, y
 **pisaba el `padding-inline` del container** → 0px lateral. Pasados a `padding-block`. ⚠️ **Regla para el rediseño:
 en una clase que se combine con `.container`, usar `padding-block`, nunca el shorthand `padding`.**
 
-**▶️ PRÓXIMO PASO (s33):** (1) **revisión visual del usuario** de los 6 fixes y, con el OK, **pushear a prod**
-(los 2 hoyos rojos están vivos en producción ahora mismo; no hay migraciones nuevas, el diff es solo código).
-(2) Luego, **sistema de diseño + brief para Claude Design** (punto 2 del orden acordado).
+**✅ CERRADO (s33):** los 6 fixes se pushearon (`db8329f`) y **están en prod, verificados en vivo**. La revisión
+visual del usuario dio OK en los puntos 1-4 y levantó 3 hallazgos nuevos → ver el bloque "RETOMAR AQUÍ" de arriba.
 
 **⬜ Lo que el barrido NO cubrió (sigue pendiente de la lista del usuario):** reseñas desglosadas por tema (no
 existe el form de reseñas) · distancia desde mi ubicación · recomendador IA del panorama completo.

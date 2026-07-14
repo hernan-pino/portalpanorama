@@ -182,6 +182,7 @@ export default async function LugarPage({ params }: PageProps) {
   const saveButton = (
     <SaveButton
       placeId={place.id}
+      placeName={place.name}
       isLoggedIn={!!userId}
       isSaved={isSaved}
       savedInIds={savedInIds}
