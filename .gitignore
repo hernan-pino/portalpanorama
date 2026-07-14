@@ -18,3 +18,6 @@ tmp/
 
 # Refs de diseño (PNGs pesados, input de Claude design) — no al historial
 design_briefs/*_ref/
+
+# Capturas del paquete de Claude Design: regenerables con scripts/design-shots.ts
+design_briefs/claude_design/capturas/

@@ -9,7 +9,56 @@ priorizado. Se actualiza cada vez que avanzamos. Liviano a propósito — para r
 
 ---
 
-## ▶️ RETOMAR AQUÍ — s33 (2026-07-13): el modal de guardar, unificado (EN PROD)
+## ▶️ RETOMAR AQUÍ — s34 (2026-07-13): el paquete para Claude Design, LISTO para subir
+
+**El punto 2 del orden acordado (sistema de diseño) quedó armado.** Vive en
+**[design_briefs/claude_design/](design_briefs/claude_design/)**.
+
+**🔎 El hallazgo que define el formato del paquete: Claude Design NO puede navegar a un link** (dice
+textual su doc: *"Claude Design cannot browse live URLs"*). Solo ve lo que se le sube: **capturas,
+codebase (repo o `/design-sync`) y documentos**. O sea, "que vea la página" = **hay que fotografiarla**.
+Su prompt rinde más si trae **objetivo · layout · contenido · audiencia**, y **por partes** (auditoría →
+sistema → pantalla por pantalla) en vez de todo de una.
+
+**📦 Qué contiene el paquete:**
+- **`00_PROMPT.md`** — los 3 prompts listos para pegar, en orden, + cómo darle feedback.
+- **`01_BRIEF.md`** — el producto, **"el organizador"** (el usuario ideal), el tono chileno, el
+  diagnóstico del problema (5 puntos) y qué se espera de vuelta.
+- **`02_INVENTARIO_PANTALLAS.md`** — las **35 pantallas** priorizadas 🔴/🟡/⚪, los 4 flujos y los 10
+  componentes que se repiten.
+- **`03_SISTEMA_ACTUAL.md`** — todos los tokens de hoy + **las restricciones técnicas que el diseño debe
+  respetar** (los 2 gotchas de CSS de la s32/s33, fotos imperfectas, solo modo claro).
+- **`capturas/`** — **74 capturas** (37 pantallas × móvil 390px y desktop 1440px), de página completa,
+  con la BD real (384 lugares), en los **4 estados de sesión**. Móvil primero (mobile-first).
+
+**🧭 Alcance acordado con el usuario: mini rebrand con el sistema abierto** — Claude Design propone
+libremente **paleta, uso de color y escala tipográfica** (lo que al usuario le molesta), pero **atado al
+inventario de componentes y a los nombres de tokens existentes**, para que implementarlo sea un cambio de
+tokens + arreglos puntuales y no reescribir las 3.049 líneas de `globals.css`.
+
+**🔁 El camino de vuelta existe (importante):** la herramienta **`DesignSync`** de Claude Code puede
+**leer y escribir el proyecto de Claude Design**. Cuando el usuario termine de diseñar, **no hay que
+copiar nada a mano**: se bajan los tokens/componentes y se traducen al repo.
+
+**🛠️ Reproducible:** `scripts/design-shots-setup.ts` (siembra cuentas de prueba) ·
+`scripts/design-shots.ts` (las 74 capturas, `--solo=05,23` para algunas) ·
+`scripts/design-shots-compress.ts` (PNG → JPEG: **90 MB → 19 MB**, si no es inviable subirlas).
+Las capturas quedaron **fuera de git** (regenerables). **BD local devuelta a su estado** (2 cuentas de
+prueba borradas, `ownerId` de Osaka de vuelta a null: 384 lugares · 4 usuarios · 0 owned · 0 profiles).
+
+⚠️ **Gotcha nuevo (costó una tanda de 74 capturas):** en el form de login, el primer
+`button[type=submit]` es el de **Google** (va arriba, es el método preferido). Un script que lo clickee
+se va a `accounts.google.com` y **todas las capturas con sesión salen como pantalla de login**. Hay que
+apuntar a "Ingresar con email".
+
+**▶️ PRÓXIMO PASO (s35):** el usuario sube el paquete a **claude.ai/design** y corre el Prompt 1
+(auditoría) → Prompt 2 (el sistema) → Prompt 3 (pantalla por pantalla, empezando por la ficha). Cuando
+tenga el sistema, decir **"trae el diseño de Claude Design"** y se baja con `DesignSync` para
+implementarlo (eso es la s36 = punto 3 del orden acordado).
+
+---
+
+## Cierre s33 (2026-07-13): el modal de guardar, unificado (EN PROD)
 
 **✅ Commiteado y pusheado** (`7a7e56c`) → deploy de Vercel. Sin migraciones: el diff es solo código + CSS.
 
@@ -151,7 +200,9 @@ nuevo. **`hola@portalpanorama.cl` ya recibe** (ver bloque del correo abajo). El 
 1. ✅ **s32 — Barrido de flujos + navegación** (HECHO 2026-07-13 — ver el bloque de arriba: 6 hoyos encontrados y
    arreglados, 2 de ellos en el camino feliz de lo que ya estaba en prod. La intuición del usuario era correcta:
    "hay más"). **Falta el push a prod con su OK.**
-2. **s33 — Sistema de diseño + brief para Claude Design.** El usuario quiere un **mini rebrand**: no le gusta la
+2. ✅ **s34 — Sistema de diseño + brief para Claude Design** (HECHO 2026-07-13 — el paquete está en
+   `design_briefs/claude_design/`: 4 documentos + 74 capturas. Ver el bloque "RETOMAR AQUÍ").
+   El usuario quiere un **mini rebrand**: no le gusta la
    jerarquía de color (cansa la vista), quiere más uso de color y tipografías, y **detecta bien el problema de fondo:
    NO hay sistema de diseño establecido**, solo tokens acumulados en `globals.css` — cambiarlo después será caro. Él lo
    hará con **Claude Design**; **Claude prepara el paquete**: auditoría del estado actual (jerarquía/contraste/densidad),
