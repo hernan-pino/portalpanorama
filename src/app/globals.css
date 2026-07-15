@@ -30,6 +30,7 @@
   --ink-muted:   #6A6254;  /* secundario (AA sobre card y page) */
   --ink-faint:   #9C9384;  /* SOLO decorativo/disabled, nunca texto informativo */
   --ink-inverse: #FFFDF8;
+  --ink-inverse-muted: rgba(255, 253, 248, 0.62);  /* texto tenue sobre superficie oscura (footer, plan premium, lightbox) */
 
   /* ---------- ACCIÓN — un solo dueño: el botón primario es tinta ---------- */
   --action:       #1F1913;
@@ -700,13 +701,11 @@ main:has(.explorar) + .footer { margin-top: 0; }
   border-bottom: 1px solid rgba(246,242,234,0.12);
 }
 .footer h4 {
-  font-family: var(--font-mono);
-  font-size: var(--t-mono);
-  font-weight: 500;
-  letter-spacing: var(--tr-wider);
+  font: 650 var(--t-eyebrow)/1.2 var(--font-sans);
+  letter-spacing: var(--track-eyebrow);
   text-transform: uppercase;
   margin: 0 0 var(--s-4);
-  color: var(--paper-30);
+  color: var(--ink-inverse-muted);
 }
 .footer ul { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 10px; font-size: var(--t-body-sm); }
 .footer ul a { transition: color var(--d-fast); }
@@ -827,8 +826,8 @@ main:has(.explorar) + .footer { margin-top: 0; }
   letter-spacing: var(--tr-tight); margin: 0;
 }
 .home-social__note {
-  font-family: var(--font-mono); font-size: var(--t-mono-sm);
-  letter-spacing: var(--tr-wide); color: var(--fg-subtle);
+  font: 650 var(--t-eyebrow)/1.2 var(--font-sans);
+  letter-spacing: var(--track-eyebrow); text-transform: uppercase; color: var(--ink-muted);
 }
 .home-social__chips { display: flex; gap: var(--s-2); overflow-x: auto; padding-bottom: 4px; scrollbar-width: none; flex-wrap: nowrap; }
 .home-social__chips::-webkit-scrollbar { display: none; }
@@ -1039,7 +1038,7 @@ main:has(.explorar) + .footer { margin-top: 0; }
 .cat-chip:hover { border-color: var(--ink-100); }
 .cat-chip.is-active { background: var(--ink-100); color: var(--paper-00); border-color: var(--ink-100); }
 .cat-chip__count { font-family: var(--font-mono); font-size: var(--t-mono-sm); color: var(--fg-subtle); }
-.cat-chip.is-active .cat-chip__count { color: var(--paper-30); }
+.cat-chip.is-active .cat-chip__count { color: var(--ink-inverse-muted); }
 .sub-strip { display: flex; flex-wrap: wrap; gap: var(--s-2); }
 
 /* shell: rail + main */
@@ -1308,7 +1307,7 @@ button.ficha__hero-img { cursor: zoom-in; }
 .ficha__lb-img.is-zoom { transform: scale(1.8); cursor: zoom-out; }
 .ficha__lb-cap {
   display: flex; align-items: center; gap: var(--s-3);
-  color: var(--paper-30); font-size: var(--t-body-sm);
+  color: var(--ink-inverse-muted); font-size: var(--t-body-sm);
 }
 .ficha__lb-cap .mono { letter-spacing: var(--tr-wide); }
 .ficha__lb-btn {
@@ -1390,10 +1389,12 @@ button.ficha__hero-img { cursor: zoom-in; }
   margin: 0 0 var(--s-4);
 }
 .ficha__taggroup { margin-top: var(--s-4); }
+/* Label de grupo = eyebrow sans (rediseño s35): reemplaza el mono-10px apagado.
+   El mono queda solo para datos duros (horario/precio/teléfono), no para labels. */
 .ficha__taglabel {
-  font-family: var(--font-mono); font-size: var(--t-tiny);
-  letter-spacing: var(--tr-wide); text-transform: uppercase;
-  color: var(--fg-subtle); margin-bottom: var(--s-2);
+  font: 650 var(--t-eyebrow)/1.2 var(--font-sans);
+  letter-spacing: var(--track-eyebrow); text-transform: uppercase;
+  color: var(--ink-muted); margin-bottom: var(--s-2);
 }
 .ficha__tags { display: flex; flex-wrap: wrap; gap: var(--s-2); }
 
@@ -1413,9 +1414,9 @@ button.ficha__hero-img { cursor: zoom-in; }
 .ficha__drow .ic { color: var(--accent-70); padding-top: 2px; }
 .ficha__drow .ic .ico { width: 18px; height: 18px; }
 .ficha__drow .k {
-  font-family: var(--font-mono); font-size: var(--t-mono-sm);
-  letter-spacing: var(--tr-wide); text-transform: uppercase;
-  color: var(--fg-subtle); margin-bottom: 5px;
+  font: 650 var(--t-eyebrow)/1.2 var(--font-sans);
+  letter-spacing: var(--track-eyebrow); text-transform: uppercase;
+  color: var(--ink-muted); margin-bottom: 5px;
 }
 .ficha__drow .v { font-size: var(--t-body); line-height: var(--lh-normal); color: var(--fg); white-space: pre-line; }
 
@@ -1423,7 +1424,7 @@ button.ficha__hero-img { cursor: zoom-in; }
 .ficha__price { display: flex; align-items: center; gap: var(--s-3); }
 .ficha__price-bars { display: flex; gap: var(--s-1); }
 .ficha__price-bar { width: 22px; height: 5px; border-radius: 3px; background: var(--surface-line); opacity: .55; }
-.ficha__price-bar.is-on { background: var(--accent-60); opacity: 1; }
+.ficha__price-bar.is-on { background: var(--ink-strong); opacity: 1; }
 .ficha__price-label { font-family: var(--font-mono); font-size: var(--t-body-sm); font-weight: 500; color: var(--fg); }
 
 /* badge de línea de metro (color oficial dinámico) */
@@ -1447,8 +1448,8 @@ button.ficha__hero-img { cursor: zoom-in; }
 .ficha__crow:hover { border-color: var(--ink-100); }
 .ficha__crow .ci { color: var(--accent-70); display: flex; flex: 0 0 auto; }
 .ficha__crow .ck {
-  display: block; font-family: var(--font-mono); font-size: var(--t-tiny);
-  letter-spacing: var(--tr-wide); text-transform: uppercase; color: var(--fg-subtle);
+  display: block; font: 650 var(--t-eyebrow)/1.2 var(--font-sans);
+  letter-spacing: var(--track-eyebrow); text-transform: uppercase; color: var(--ink-muted);
 }
 .ficha__crow .cv {
   display: block; font-size: var(--t-body-sm); font-weight: 500; margin-top: 1px;
@@ -1920,7 +1921,7 @@ button.ficha__hero-img { cursor: zoom-in; }
 }
 .plan__price .num { font-size: 64px; letter-spacing: var(--tr-tight); }
 .plan__price .unit { font-family: var(--font-mono); font-size: var(--t-mono); color: var(--fg-muted); text-transform: uppercase; letter-spacing: var(--tr-wide); }
-.plan--premium .plan__price .unit { color: var(--paper-30); }
+.plan--premium .plan__price .unit { color: var(--ink-inverse-muted); }
 .plan-list { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; }
 .plan-list li {
   display: grid;

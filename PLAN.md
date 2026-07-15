@@ -30,11 +30,28 @@ tarjeta más densa — cuidado al agregarle cosas.
   navegador iPhone 13: la tarjeta queda limpia (foto enmarcada + corazón · kicker · nombre Fraunces · fila
   `★ 5.0 (4.480) · $$$ · ● L6`).
 
-**▶️ PRÓXIMO PASO (s36):** **revisión visual del usuario** de la etapa 2 ya sin tags (con OK antes de
-seguir). Luego **etapa 3 — barrido pantalla por pantalla**: la **ficha** (sus `.chip` grises → familias de
-tag agrupadas, si el usuario las quiere ahí; ojo: acaba de rechazarlas en la tarjeta), home (matar el
-`filtra por contexto` en mono-10px), auth, paneles y admin. **Nada pusheado aún** — el push del rediseño
-(que arrastra el fix de imágenes parqueado) va cuando el usuario lo apruebe.
+**✅ Etapa 2 aprobada por el usuario (s35): "las tarjetas están bien".**
+
+**✅ ETAPA 3 — primer barrido, arrancado (s35).** Decisión del usuario para los tags de la ficha:
+**sobrio, sin color de capa** (los chips ordenados; el título de sección hace el trabajo — coherente con
+que rechazó el color en la tarjeta). Solo CSS, sin markup ni datos:
+- **Ficha:** los labels de sección (`.ficha__taglabel` "CON QUIÉN"/"IDEAL PARA"), de datos prácticos
+  (`.ficha__drow .k` "PRECIO"/"HORARIO") y de contacto (`.ficha__crow .ck` "TELÉFONO"/"SITIO WEB") pasan
+  del **mono-10px apagado al eyebrow sans** (12px/650/caps, `--ink-muted`, legible). Las **barras de precio**
+  dejan de ser naranjas → tinta (naranjo = solo selección). Los chips quedan sobrios (ya repintados).
+- **Home:** el `filtra por contexto` pasa de mono lowercase a eyebrow sans.
+- **🐛 Regresión de la capa de alias, cazada y arreglada:** `--paper-30` (antes gris claro) lo había
+  aliaseado a `--border` (rgba oscuro) → **rompía 4 usos de "texto claro sobre superficie oscura"**: el
+  header del footer quedaba casi invisible, y también el contador del chip de categoría activo, el caption
+  del lightbox y el precio del plan premium. Fix: token nuevo **`--ink-inverse-muted`** (light 62%) y los 4
+  repuntados. El footer h4 además pasó al eyebrow.
+- **✅ Verificado:** typecheck + lint + **`next build` OK** · **158 tests verdes** · navegador iPhone 13:
+  ficha (labels legibles, chips sobrios, precio en tinta), home (eyebrow), footer (headers legibles otra vez).
+
+**▶️ PRÓXIMO PASO (s36):** **revisión visual del usuario** de la etapa 3 (ficha + home + footer). Con OK,
+seguir el barrido en las pantallas que faltan (auth, paneles de negocio, admin — heredaron la paleta en la
+etapa 1 pero pueden tener labels mono-10px sueltos y detalles). **Nada pusheado aún** — el push del rediseño
+(que arrastra el fix de imágenes parqueado) va cuando el usuario apruebe el conjunto.
 
 ---
 
