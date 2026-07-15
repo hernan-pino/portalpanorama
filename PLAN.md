@@ -66,6 +66,12 @@ que rechazó el color en la tarjeta). Solo CSS, sin markup ni datos:
 - **✅ Verificado:** typecheck + lint + **`next build` OK** · **158 tests verdes** · navegador desktop
   (1280: 2 cols, tarjeta sticky al scrollear) + móvil (390: imagen enmarcada, orden correcto, swipe).
 
+- **🐛 Fix (revisión del usuario):** en desktop los íconos de "Guardar"/"Cómo llegar" no salían (en móvil
+  sí). Causa: `svg { max-width: 100% }` aplastaba el ícono a **width:0** como ítem flex dentro de los botones
+  angostos de la tarjeta (340px); en móvil los botones son anchos y no se apretaban. Fix: `flex: none` en
+  `.ico`. Verificado en headless (los 3 svg a 18px) + `next build` OK (hubo que borrar `.next` — traía
+  basura de dev del server que maté; gotcha conocido).
+
 **▶️ PRÓXIMO PASO (s36):** **revisión visual del usuario** del nuevo layout de la ficha (desktop + móvil).
 Con OK, seguir el barrido en lo que falta (auth, paneles de negocio, admin — labels mono sueltos y detalles).
 **Nada pusheado aún** — el push del rediseño (que arrastra el fix de imágenes parqueado) va cuando el usuario
