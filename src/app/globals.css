@@ -481,93 +481,101 @@ a { color: inherit; text-decoration: none; }
   background-image: repeating-linear-gradient(135deg, transparent 0 11px, var(--paper-20) 11px 12px);
 }
 
-/* ---------- Place card (tarjeta de lugar — reescritura 4E §3) ----------
-   Foto 4:3 con rating de Google superpuesto (oro) + corazón de guardar;
-   cuerpo (categoría·comuna + nombre); pie con precio compacto + badge de
-   línea de metro. Los opcionales se ocultan con gracia. */
-.place-card { position: relative; height: 100%; }
+/* =========================================================
+   PRIMITIVOS DEL SISTEMA (rediseño s35) — tag por capa, rating,
+   metro-punto, precio. Compartidos por la tarjeta y (etapa 3) la
+   ficha. "Relieve = tocable, plano = se lee": el tag es plano.
+   ========================================================= */
+.eyebrow {
+  font: 650 var(--t-eyebrow)/1.2 var(--font-sans);
+  letter-spacing: var(--track-eyebrow); text-transform: uppercase; color: var(--ink-muted);
+}
+/* Tag informativo (plano, teñido por capa). El punto ● es la firma de la capa. */
+.tag {
+  display: inline-flex; align-items: center; gap: 6px; padding: 4px 9px;
+  border-radius: var(--r-sm); font: 550 12.5px/1.3 var(--font-sans); white-space: nowrap;
+}
+.tag__dot { width: 6px; height: 6px; border-radius: 50%; flex: none; background: currentColor; }
+.tag--audience   { background: var(--tag-audience-bg);   color: var(--tag-audience-fg); }   .tag--audience .tag__dot   { background: var(--tag-audience-dot); }
+.tag--occasion   { background: var(--tag-occasion-bg);   color: var(--tag-occasion-fg); }   .tag--occasion .tag__dot   { background: var(--tag-occasion-dot); }
+.tag--vibe       { background: var(--tag-vibe-bg);       color: var(--tag-vibe-fg); }       .tag--vibe .tag__dot       { background: var(--tag-vibe-dot); }
+.tag--experience { background: var(--tag-experience-bg); color: var(--tag-experience-fg); } .tag--experience .tag__dot { background: var(--tag-experience-dot); }
+.tag--service    { background: var(--tag-service-bg);    color: var(--tag-service-fg); }    .tag--service .tag__dot    { background: var(--tag-service-dot); }
+.tag--specific   { background: var(--tag-specific-bg);   color: var(--tag-specific-fg); }   .tag--specific .tag__dot   { background: var(--tag-specific-dot); }
+.tag--cuisine    { background: var(--tag-specific-bg);   color: var(--tag-specific-fg); }   .tag--cuisine .tag__dot    { background: var(--tag-specific-dot); }
+/* Rating de Google (baja de la foto a la fila de datos) */
+.rating { display: inline-flex; align-items: baseline; gap: 5px; }
+.rating__star { color: var(--star); display: inline-flex; align-self: center; }
+.rating__val { font: 600 14px/1 var(--font-sans); color: var(--ink-strong); }
+.rating__count { font: 500 var(--t-data-sm)/1 var(--font-mono); color: var(--ink-muted); }
+/* Precio compacto */
+.price { font: 600 13.5px/1 var(--font-sans); letter-spacing: .04em; color: var(--ink-strong); }
+.price__off { color: var(--ink-faint); font-weight: 500; }
+/* Metro: color oficial en un punto de 7px + código en mono (nunca círculo lleno) */
+.metro { display: inline-flex; align-items: center; gap: 5px; font: 500 var(--t-data-sm)/1 var(--font-mono); color: var(--ink-muted); }
+.metro__dot { width: 7px; height: 7px; border-radius: 50%; flex: none; }
+
+/* ---------- Place card (tarjeta de lugar — rediseño s35) ----------
+   Foto ENMARCADA (inset con padding y radio): la foto chillona no gana,
+   la decisión se lee en el cuerpo. Sobre la foto solo el corazón. Cuerpo:
+   kicker (categoría·barrio) · nombre (Fraunces) · hasta 2 tags de contexto
+   social · fila de datos (rating de Google · precio · metro-punto). */
+.place-card {
+  position: relative; height: 100%;
+  background: var(--surface-card);
+  border-radius: var(--r-lg);
+  box-shadow: var(--shadow-1);
+  padding: 8px;
+  transition: transform var(--d-normal) var(--ease-out), box-shadow var(--d-normal) var(--ease-out);
+}
+.place-card:hover { transform: translateY(-2px); box-shadow: var(--shadow-3); }
 .place-card__link {
   display: flex; flex-direction: column; height: 100%;
-  background: var(--bg-raised);
-  border: 1px solid var(--surface-line-soft);
-  border-radius: var(--r-md);
-  overflow: hidden;
-  box-shadow: var(--shadow-2);
   text-decoration: none; color: inherit;
-  transition: transform var(--d-normal) var(--ease-out),
-              border-color var(--d-fast) var(--ease-out),
-              box-shadow var(--d-normal) var(--ease-out);
 }
-.place-card__link:hover {
-  transform: translateY(-2px);
-  border-color: var(--ink-100);
-  box-shadow: var(--shadow-3);
+.place-card__media {
+  position: relative; aspect-ratio: 4/3; overflow: hidden;
+  border-radius: var(--r-md); background: var(--surface-sunken);
 }
-.place-card__media { position: relative; aspect-ratio: 4/3; background: var(--bg-sunken); }
-.place-card__rating {
-  position: absolute; left: 10px; top: 10px; z-index: 2;
-  display: inline-flex; align-items: center; gap: 4px;
-  padding: 3px 9px; border-radius: var(--r-pill);
-  background: rgba(28, 25, 23, 0.72); color: var(--paper-00);
-  font-size: 12px; font-weight: 600;
-  backdrop-filter: blur(2px);
-}
-.place-card__rating svg { color: var(--star); }
-.place-card__rating .cnt { font-weight: 400; font-size: 11px; opacity: 0.85; }
-.place-card__body { padding: var(--s-4); display: flex; flex-direction: column; gap: 8px; flex: 1; }
-.place-card__meta {
+.place-card__body { padding: 10px 6px 6px; display: flex; flex-direction: column; gap: 6px; flex: 1; }
+.place-card__kicker {
+  font: 650 var(--t-eyebrow)/1.2 var(--font-sans);
+  letter-spacing: var(--track-eyebrow); text-transform: uppercase; color: var(--ink-muted);
   display: flex; align-items: center; gap: var(--s-2);
-  font-family: var(--font-mono);
-  font-size: var(--t-mono-sm);
-  letter-spacing: var(--tr-wide);
-  text-transform: uppercase;
-  color: var(--fg-muted);
 }
-.place-card__meta .dot { width: 3px; height: 3px; background: currentColor; border-radius: 50%; opacity: 0.6; }
+.place-card__kicker .dot { width: 3px; height: 3px; background: currentColor; border-radius: 50%; opacity: 0.55; }
 .place-card__title {
-  font-family: var(--font-display);
-  font-size: 21px;
-  font-weight: 500;
-  line-height: var(--lh-snug);
-  letter-spacing: var(--tr-tight);
-  font-variation-settings: "opsz" 60;
-  color: var(--fg);
+  font: 600 var(--t-title)/var(--lh-tight) var(--font-display);
+  letter-spacing: var(--tr-tight); color: var(--ink-strong); margin: 0;
 }
-.place-card__foot {
-  margin-top: auto; padding-top: 6px;
-  display: flex; align-items: center; justify-content: space-between; gap: var(--s-2);
+.place-card__tags { display: flex; flex-wrap: wrap; gap: 4px; }
+.place-card__meta {
+  margin-top: auto; padding-top: 4px;
+  display: flex; align-items: center; gap: var(--s-3); flex-wrap: wrap;
 }
-.place-card__price {
-  font-family: var(--font-mono); font-size: 13px; font-weight: 600;
-  color: var(--fg); letter-spacing: 0.04em;
-}
-.place-card__metro { display: inline-flex; gap: 4px; }
-.metro-badge {
-  display: inline-flex; align-items: center; justify-content: center;
-  min-width: 22px; height: 20px; padding: 0 5px;
-  border-radius: var(--r-pill); color: #fff;
-  font-family: var(--font-mono); font-size: 11px; font-weight: 700;
-}
+.place-card__metro { display: inline-flex; align-items: center; gap: var(--s-2); }
 
-/* corazón de guardar (isla cliente sobre la foto) */
+/* corazón de guardar (isla cliente sobre la foto, enmarcada) */
 .save-heart {
-  position: absolute; right: 10px; top: 10px; z-index: 3;
-  width: 34px; height: 34px; border-radius: 50%;
-  background: rgba(246, 242, 234, 0.92); color: var(--ink-100);
+  position: absolute; right: 14px; top: 14px; z-index: 3;
+  width: 36px; height: 36px; border-radius: 50%;
+  background: rgba(255, 253, 248, 0.94); color: var(--ink-strong);
   display: inline-flex; align-items: center; justify-content: center;
-  border: 1px solid var(--surface-line-soft);
-  cursor: pointer; transition: transform var(--d-fast), color var(--d-fast);
+  box-shadow: var(--shadow-2);
+  cursor: pointer; transition: transform var(--d-fast), background var(--d-fast), color var(--d-fast);
 }
 .save-heart:hover { transform: scale(1.08); }
-.save-heart.is-saved { color: var(--accent-60); }
+.save-heart.is-saved { background: var(--brand); color: #fff; }
 
-/* variante lista (foto chica + cuerpo a la derecha) */
-.place-card--list .place-card__link { flex-direction: row; align-items: stretch; }
-.place-card--list .place-card__media { width: 160px; aspect-ratio: auto; flex-shrink: 0; }
-.place-card--list .place-card__body { padding: var(--s-4) var(--s-5); }
+/* variante lista (foto chica a la izquierda + cuerpo a la derecha) */
+.place-card--list .place-card__link { flex-direction: row; align-items: stretch; gap: 12px; }
+.place-card--list .place-card__media { width: 132px; aspect-ratio: 1/1; flex-shrink: 0; align-self: stretch; }
+/* padding-right reserva el espacio del corazón para que el kicker no quede tapado */
+.place-card--list .place-card__body { padding: 4px 2px; padding-right: 34px; }
+.place-card--list .save-heart { right: 10px; top: 10px; width: 32px; height: 32px; }
 @media (max-width: 560px) {
-  .place-card--list .place-card__media { width: 112px; }
-  .place-card--list .place-card__title { font-size: 18px; }
+  .place-card--list .place-card__media { width: 104px; }
+  .place-card--list .place-card__title { font-size: 17px; }
 }
 
 /* Modal único de guardar (corazón de la tarjeta + botón de la ficha + barra fija).

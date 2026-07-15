@@ -449,7 +449,14 @@ export class PrismaPlaceRepository implements PlaceRepository {
       },
       orderBy: { score: 'desc' },
       take: RELATED_POOL,
-      select: { ...placeCardArgs.select, categoryId: true, communeId: true, tags: { select: { tagId: true } } },
+      // Reemplaza el select de tags de placeCardArgs por uno más amplio: la afinidad
+      // necesita TODOS los tagId, y el mapper igual filtra por capa para el display.
+      select: {
+        ...placeCardArgs.select,
+        categoryId: true,
+        communeId: true,
+        tags: { select: { tagId: true, tag: { select: { name: true, layer: true } } } },
+      },
     })
 
     const ranked = candidates

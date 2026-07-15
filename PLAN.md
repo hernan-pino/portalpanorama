@@ -9,7 +9,37 @@ priorizado. Se actualiza cada vez que avanzamos. Liviano a propósito — para r
 
 ---
 
-## ▶️ RETOMAR AQUÍ — s35 (2026-07-14): rediseño ETAPA 1 (Fundación) HECHA en local
+## ▶️ RETOMAR AQUÍ — s35 (2026-07-14): rediseño ETAPAS 1 y 2 HECHAS en local
+
+**✅ ETAPA 2 — La tarjeta con contexto social (esta sesión, con OK del usuario a la etapa 1).**
+El diferenciador del producto —la filtrabilidad por contexto social— **ya se ve en la grilla**, no solo
+al entrar a la ficha.
+- **Datos:** `PlaceCardView` suma `contextTags` (hasta 2, prioridad AUDIENCE→VIBE→OCCASION). El select
+  **compartido** `placeCardView.ts` los trae en **un solo punto** → las 6 consultas que arman tarjetas
+  (search/explorar · relacionados · destacados de lista · hijos de ficha · colección · marca · historial)
+  los reciben gratis. **Fix de colisión:** `findRelated` sobrescribía `tags` con solo `tagId` (para su
+  afinidad) → habría roto el mapper; ahora trae `tagId + tag{name,layer}` y el mapper filtra por capa.
+- **Componente + CSS:** `PlaceCard` reescrito al spec del sistema → **foto enmarcada** (inset, la foto
+  chillona ya no gana), **tags de contexto con punto de capa** (6 familias de color), **rating de Google
+  bajado de la foto a la fila de datos**, **metro como punto de 7px** (murió el `metro-badge` círculo
+  lleno). Sembré los **primitivos del sistema** (`.tag`+6 familias, `.rating`, `.metro__dot`, `.price`,
+  `.eyebrow`) que la **ficha reusará en la etapa 3**. Ambas variantes (grid/list) funcionan; **fix** al
+  paso: en `list` el corazón tapaba el kicker → `padding-right` que le reserva el espacio.
+- **✅ Verificado:** typecheck + lint + **`next build` OK** · **158 tests verdes** · navegador iPhone 13:
+  explorar (grid y lista) muestra los tags con su color + metro-punto; la tarjeta se lee de un vistazo.
+  ⚠️ **El riel "Lo mejor valorado" de la home puede mostrar tarjetas sin tags un rato**: usa
+  `getSearchPlacesUseCase` cacheado (`unstable_cache`, 1h) → sirve objetos viejos hasta revalidar; NO es
+  bug (explorar usa el mismo path y sí trae tags). En prod se refresca al deployar/revalidar.
+
+**▶️ PRÓXIMO PASO (s36):** **revisión visual del usuario** de la etapa 2 (con OK antes de seguir). Luego
+**etapa 3 — barrido pantalla por pantalla**: la **ficha** convierte sus `.chip` grises en las 6 familias
+de tag agrupadas (reusa los primitivos ya sembrados) + eyebrow sans en vez del mono-10px; después home
+(matar el `filtra por contexto` en mono-10px), auth, paneles y admin. **Nada pusheado aún** — el push del
+rediseño (que arrastra el fix de imágenes parqueado) va cuando el usuario lo apruebe.
+
+---
+
+## Etapa 1 — Fundación (s35): tokens + fuentes + botón unificado
 
 **El sistema de Claude Design ya está bajado y aplicado a la app.** Lo bajé con `DesignSync` del
 proyecto **"Portal Panorama audit"** (`ed1f20fb-5a11-4e47-9b45-9519e27ed842`): 5 archivos de tokens +

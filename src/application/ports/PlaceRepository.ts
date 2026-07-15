@@ -18,6 +18,10 @@ export interface PlaceCardView {
   // Líneas de metro de la estación más cercana (M2M: normalmente 1, a veces 2).
   // La tarjeta muestra el/los badge(s) con su color oficial. Vacío si no aplica.
   metroLines?: { code: string; color: string }[]
+  // Tags de contexto social para la grilla (rediseño s35): hasta 2, priorizando
+  // AUDIENCE → VIBE → OCCASION. Es el diferenciador del producto hecho visible en
+  // la tarjeta (antes solo aparecía al entrar a la ficha). `layer` pinta la familia.
+  contextTags?: { name: string; layer: string }[]
   score: number
 }
 

@@ -31,12 +31,24 @@ const PRICE_COMPACT: Record<string, string> = {
   OVER_30000: '$$$$',
 }
 
+// Capa de tag → familia de color del sistema (rediseño s35). Cada familia lleva su
+// matiz + punto; así el organizador escanea "¿con quién?" sin leer todos los tags.
+const TAG_LAYER_CLASS: Record<string, string> = {
+  AUDIENCE: 'tag--audience',
+  OCCASION: 'tag--occasion',
+  VIBE: 'tag--vibe',
+  EXPERIENCE: 'tag--experience',
+  SERVICE: 'tag--service',
+  SPECIFIC: 'tag--specific',
+  CUISINE: 'tag--cuisine',
+}
+
 const fmtCount = (n: number) => n.toLocaleString('es-CL')
 
 // La tarjeta de lugar (mini-ficha). Componente más repetido del producto: explorar,
-// home y "También te puede gustar". Composición acordada (4E §3): foto 4:3 con rating
-// de Google superpuesto + corazón, cuerpo (categoría·comuna · nombre), pie con precio
-// compacto + badge de línea de metro. Los opcionales se ocultan con gracia.
+// home y "También te puede gustar". Rediseño s35: foto enmarcada (la decisión se lee
+// en el cuerpo, no en la foto), tags de contexto social visibles en la grilla, rating
+// de Google bajado a la fila de datos, y metro como punto de color (no círculo lleno).
 export function PlaceCard({ place, save, variant = 'grid' }: Props) {
   const media = (
     <div className="place-card__media">
@@ -45,58 +57,67 @@ export function PlaceCard({ place, save, variant = 'grid' }: Props) {
           src={place.coverUrl}
           alt={place.name}
           fill
-          sizes={variant === 'list' ? '120px' : '(max-width: 720px) 50vw, 320px'}
+          sizes={variant === 'list' ? '132px' : '(max-width: 720px) 50vw, 320px'}
           style={{ objectFit: 'cover' }}
         />
       ) : (
         <div className="placeholder-stripe" style={{ width: '100%', height: '100%' }} />
       )}
-      {place.googleRating != null && (
-        <span className="place-card__rating">
-          <StarGlyph />
-          <span className="num">{place.googleRating.toFixed(1)}</span>
-          {place.googleReviewCount != null && (
-            <span className="cnt">({fmtCount(place.googleReviewCount)})</span>
-          )}
-        </span>
-      )}
     </div>
   )
 
-  const meta = (
-    <>
-      <div className="place-card__meta">
+  const body = (
+    <div className="place-card__body">
+      <span className="place-card__kicker">
         <span>{place.categoryName}</span>
         <span className="dot" aria-hidden="true" />
         <span>{place.neighborhoodName ?? place.communeName}</span>
-      </div>
+      </span>
       <h3 className="place-card__title">{place.name}</h3>
-    </>
-  )
 
-  const foot = (place.priceRange || place.metroLines?.length) ? (
-    <div className="place-card__foot">
-      {place.priceRange && (
-        <span className="place-card__price">{PRICE_COMPACT[place.priceRange] ?? place.priceRange}</span>
-      )}
-      {place.metroLines && place.metroLines.length > 0 && (
-        <span className="place-card__metro">
-          {place.metroLines.slice(0, 2).map((l) => (
-            <span key={l.code} className="metro-badge" style={{ background: l.color }}>{l.code}</span>
+      {place.contextTags && place.contextTags.length > 0 && (
+        <span className="place-card__tags">
+          {place.contextTags.map((t) => (
+            <span key={t.name} className={`tag ${TAG_LAYER_CLASS[t.layer] ?? 'tag--specific'}`}>
+              <span className="tag__dot" aria-hidden="true" />
+              {t.name}
+            </span>
           ))}
         </span>
       )}
+
+      <div className="place-card__meta">
+        {place.googleRating != null && (
+          <span className="rating">
+            <span className="rating__star"><StarGlyph /></span>
+            <span className="rating__val">{place.googleRating.toFixed(1)}</span>
+            {place.googleReviewCount != null && (
+              <span className="rating__count">({fmtCount(place.googleReviewCount)})</span>
+            )}
+          </span>
+        )}
+        {place.priceRange && (
+          <span className="price">{PRICE_COMPACT[place.priceRange] ?? place.priceRange}</span>
+        )}
+        {place.metroLines && place.metroLines.length > 0 && (
+          <span className="place-card__metro">
+            {place.metroLines.slice(0, 2).map((l) => (
+              <span key={l.code} className="metro">
+                <span className="metro__dot" style={{ background: l.color }} aria-hidden="true" />
+                {l.code}
+              </span>
+            ))}
+          </span>
+        )}
+      </div>
     </div>
-  ) : null
+  )
 
   return (
     <article className={`place-card place-card--${variant}`}>
       <Link href={`/lugar/${place.slug}`} className="place-card__link">
         {media}
-        <div className="place-card__body">
-          {meta}
-          {foot}
-        </div>
+        {body}
       </Link>
       {save && (
         <SaveHeart
