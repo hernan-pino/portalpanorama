@@ -1293,7 +1293,11 @@ button.ficha__hero-img { cursor: zoom-in; }
   }
   /* dentro de la tarjeta el encabezado no necesita el padding-top del flujo móvil */
   .ficha__aside .ficha__head { padding-top: 0; }
-  .ficha__aside .ficha__cta { margin-top: var(--s-4); }
+  .ficha__aside .ficha__cta { margin-top: var(--s-4); gap: var(--s-2); }
+  /* La tarjeta es angosta (340px): se aprietan los botones para que quepan los 3 en
+     una fila (Guardar · Cómo llegar · Compartir) sin que Compartir se salga. */
+  .ficha__aside .ficha__cta .btn { padding-left: var(--s-3); padding-right: var(--s-3); gap: var(--s-1); }
+  .ficha__aside .ficha__cta > .btn--icon { flex: 0 0 42px; }
 }
 
 /* — Tira de miniaturas (navegables, abren el lightbox) — */
