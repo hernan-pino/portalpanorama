@@ -1,5 +1,5 @@
 'use client'
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import Image from 'next/image'
 
 interface GalleryImage { url: string; alt?: string; credit?: string }
@@ -22,6 +22,17 @@ export function Gallery({ images, name, actions }: Props) {
   const close = useCallback(() => { setOpen(false); setZoom(false) }, [])
   const go = useCallback((d: number) => { setZoom(false); setIndex((p) => (p + d + total) % total) }, [total])
   const openAt = (i: number) => { if (total === 0) return; setIndex(i); setZoom(false); setOpen(true) }
+
+  // Deslizar entre fotos en el lightbox (gestos en móvil). Umbral de 40px para no
+  // confundir un toque con un swipe; no navega si la foto está con zoom.
+  const touchStartX = useRef<number | null>(null)
+  const onTouchStart = (e: React.TouchEvent) => { touchStartX.current = e.changedTouches[0].clientX }
+  const onTouchEnd = (e: React.TouchEvent) => {
+    if (touchStartX.current == null || zoom || total < 2) { touchStartX.current = null; return }
+    const dx = e.changedTouches[0].clientX - touchStartX.current
+    if (Math.abs(dx) > 40) go(dx < 0 ? 1 : -1)
+    touchStartX.current = null
+  }
 
   useEffect(() => {
     if (!open) return
@@ -72,7 +83,12 @@ export function Gallery({ images, name, actions }: Props) {
             <button type="button" className="ficha__lb-btn ficha__lb-prev" aria-label="Anterior"
               onClick={(e) => { e.stopPropagation(); go(-1) }}>‹</button>
           )}
-          <figure className="ficha__lb-fig" onClick={(e) => e.stopPropagation()}>
+          <figure
+            className="ficha__lb-fig"
+            onClick={(e) => e.stopPropagation()}
+            onTouchStart={onTouchStart}
+            onTouchEnd={onTouchEnd}
+          >
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src={images[index].url}

@@ -48,10 +48,28 @@ que rechazó el color en la tarjeta). Solo CSS, sin markup ni datos:
 - **✅ Verificado:** typecheck + lint + **`next build` OK** · **158 tests verdes** · navegador iPhone 13:
   ficha (labels legibles, chips sobrios, precio en tinta), home (eyebrow), footer (headers legibles otra vez).
 
-**▶️ PRÓXIMO PASO (s36):** **revisión visual del usuario** de la etapa 3 (ficha + home + footer). Con OK,
-seguir el barrido en las pantallas que faltan (auth, paneles de negocio, admin — heredaron la paleta en la
-etapa 1 pero pueden tener labels mono-10px sueltos y detalles). **Nada pusheado aún** — el push del rediseño
-(que arrastra el fix de imágenes parqueado) va cuando el usuario apruebe el conjunto.
+**✅ Etapa 3 (typografía ficha/home/footer) aprobada por el usuario (s35): "ya si me parece".**
+
+**✅ REDISEÑO DE LAYOUT DE LA FICHA (s35), pedido del usuario tras aprobar lo anterior.** Tres cambios:
+1. **Desktop a 2 columnas:** izquierda galería + descripción + datos/tags; **derecha una tarjeta sticky**
+   con identidad (categoría/nombre/ubicación/rating) + acciones (Guardar/Cómo llegar/Compartir). Estructura:
+   `.ficha__wrap > .ficha__body` (grid) con 3 hijos — `.ficha__gallery-col` (col1 row1), `.ficha__aside`
+   (col2, `grid-row:1/span 2`, `position:sticky`), `.ficha__content` (col1 row2). En móvil colapsa a 1
+   col con el orden correcto (galería → identidad → acciones → contenido). Reemplazó a `.ficha__sheet`.
+2. **Imagen contenida (no a sangre):** el hero vive dentro del wrap con `--content-pad` + `border-radius`
+   → en móvil ya no ocupa el 100% (tiene márgenes y esquinas), en desktop es la columna izquierda.
+3. **Lightbox con swipe** en móvil: `onTouchStart/onTouchEnd` en `Gallery.tsx` (umbral 40px, no navega con
+   zoom). Verificado en headless: deslizar avanza 01/03 → 02/03.
+- **🐛 Bug de sticky cazado:** `html, body { overflow-x: hidden }` creaba un contenedor de scroll que
+  **rompía `position: sticky`**. Cambiado a **`overflow-x: clip`** (recorta sin crear scroll container).
+  Verificado que los overlays (menú móvil, modal de guardar) siguen bien tras el cambio.
+- **✅ Verificado:** typecheck + lint + **`next build` OK** · **158 tests verdes** · navegador desktop
+  (1280: 2 cols, tarjeta sticky al scrollear) + móvil (390: imagen enmarcada, orden correcto, swipe).
+
+**▶️ PRÓXIMO PASO (s36):** **revisión visual del usuario** del nuevo layout de la ficha (desktop + móvil).
+Con OK, seguir el barrido en lo que falta (auth, paneles de negocio, admin — labels mono sueltos y detalles).
+**Nada pusheado aún** — el push del rediseño (que arrastra el fix de imágenes parqueado) va cuando el usuario
+apruebe el conjunto.
 
 ---
 

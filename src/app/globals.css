@@ -194,7 +194,10 @@
 
 /* ---------- Base reset ---------- */
 *, *::before, *::after { box-sizing: border-box; }
-html, body { margin: 0; padding: 0; overflow-x: hidden; }
+/* overflow-x: clip (no `hidden`) evita el scroll horizontal SIN crear un contenedor
+   de scroll — así `position: sticky` sigue funcionando en descendientes (tarjeta de
+   la ficha). `hidden` rompía el sticky. */
+html, body { margin: 0; padding: 0; overflow-x: clip; }
 body {
   background: var(--surface-page);
   color: var(--ink);
@@ -1212,27 +1215,29 @@ main:has(.explorar) + .footer { margin-top: 0; }
   padding-bottom: var(--s-16);
 }
 
-/* — Hero — */
+/* — Hero (enmarcado, ya no a sangre) — */
 .ficha__hero { position: relative; }
 .ficha__hero-img {
   position: relative;
   display: block;
   width: 100%;
-  height: clamp(260px, 44vw, 440px);
+  height: clamp(240px, 42vw, 420px);
   background: var(--bg-sunken);
   overflow: hidden;
   border: 0;
   padding: 0;
+  border-radius: var(--r-lg);
 }
 button.ficha__hero-img { cursor: zoom-in; }
 .ficha__hero-img::after {
   content: "";
   position: absolute; inset: 0;
-  background: linear-gradient(180deg, rgba(20,17,15,.34) 0%, transparent 24%, transparent 70%, rgba(20,17,15,.28) 100%);
+  border-radius: var(--r-lg);
+  background: linear-gradient(180deg, rgba(20,17,15,.28) 0%, transparent 22%, transparent 72%, rgba(20,17,15,.24) 100%);
   pointer-events: none;
 }
 .ficha__hero-fabs {
-  position: absolute; top: var(--s-4); right: var(--content-pad);
+  position: absolute; top: var(--s-3); right: var(--s-3);
   z-index: 3; display: flex; gap: var(--s-2);
 }
 .ficha__fab {
@@ -1254,23 +1259,43 @@ button.ficha__hero-img { cursor: zoom-in; }
   -webkit-backdrop-filter: blur(3px); backdrop-filter: blur(3px);
   padding: 3px 8px; border-radius: var(--r-pill);
 }
-.ficha__credit { right: var(--content-pad); }
-.ficha__counter { left: var(--content-pad); letter-spacing: 0.04em; }
+.ficha__credit { right: var(--s-3); }
+.ficha__counter { left: var(--s-3); letter-spacing: 0.04em; }
 
-/* — Lámina de contenido — */
-.ficha__sheet {
+/* — Layout: 2 columnas en desktop (contenido / tarjeta de acciones), 1 en móvil.
+   El wrap contiene la ficha (la imagen ya no va a sangre: queda enmarcada dentro
+   del ancho del contenido, con su padding lateral). (rediseño s35) — */
+.ficha__wrap {
   position: relative; z-index: 2;
-  margin: var(--s-5) auto 0;
   max-width: 1120px;
-  padding: 0 var(--content-pad);
+  margin: 0 auto;
+  padding: var(--s-5) var(--content-pad) 0;
+}
+.ficha__body { display: grid; grid-template-columns: 1fr; gap: var(--s-5); }
+.ficha__gallery-col, .ficha__content { min-width: 0; }
+@media (min-width: 900px) {
+  .ficha__body {
+    grid-template-columns: minmax(0, 1fr) 340px;
+    column-gap: var(--s-10);
+    align-items: start;
+  }
+  .ficha__gallery-col { grid-column: 1; grid-row: 1; }
+  .ficha__content { grid-column: 1; grid-row: 2; }
+  .ficha__aside {
+    grid-column: 2; grid-row: 1 / span 2;
+    position: sticky; top: 84px; align-self: start;
+    background: var(--surface-card);
+    border-radius: var(--r-lg);
+    box-shadow: var(--shadow-1);
+    padding: var(--s-5) var(--s-5) var(--s-6);
+  }
+  /* dentro de la tarjeta el encabezado no necesita el padding-top del flujo móvil */
+  .ficha__aside .ficha__head { padding-top: 0; }
+  .ficha__aside .ficha__cta { margin-top: var(--s-4); }
 }
 
 /* — Tira de miniaturas (navegables, abren el lightbox) — */
-.ficha__thumbs-wrap {
-  max-width: 1120px;
-  margin: 0 auto;
-  padding: var(--s-3) var(--content-pad) 0;
-}
+.ficha__thumbs-wrap { margin-top: var(--s-3); }
 .ficha__thumbs {
   display: flex; gap: var(--s-2);
   overflow-x: auto; scrollbar-width: none;

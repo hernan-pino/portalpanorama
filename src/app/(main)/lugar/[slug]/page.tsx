@@ -202,14 +202,20 @@ export default async function LugarPage({ params }: PageProps) {
         dangerouslySetInnerHTML={{ __html: safeJsonLd(placeJsonLd(place)) }}
       />
 
-      {/* ── Hero + galería navegable (lightbox) ── */}
-      <Gallery
-        images={place.images}
-        name={place.name}
-        actions={<ShareButton name={place.name} variant="fab" />}
-      />
+      <div className="ficha__wrap">
+        <div className="ficha__body">
 
-      <div className="ficha__sheet">
+          {/* ── Galería navegable (columna izquierda en desktop) ── */}
+          <div className="ficha__gallery-col">
+            <Gallery
+              images={place.images}
+              name={place.name}
+              actions={<ShareButton name={place.name} variant="fab" />}
+            />
+          </div>
+
+          {/* ── Identidad + acciones (columna derecha, sticky en desktop) ── */}
+          <aside className="ficha__aside">
 
         {/* encabezado */}
         <div className="ficha__head">
@@ -286,6 +292,11 @@ export default async function LugarPage({ params }: PageProps) {
           )}
           <ShareButton name={place.name} variant="button" />
         </div>
+
+          </aside>
+
+          {/* ── Contenido (columna izquierda en desktop) ── */}
+          <div className="ficha__content">
 
         {/* descripción + tags clave (los más útiles para decidir: con quién / ocasión) */}
         {(place.description || audience.length > 0 || occasion.length > 0) && (
@@ -479,7 +490,10 @@ export default async function LugarPage({ params }: PageProps) {
           <div className="ficha__report-hr" />
           <ReportButton placeId={place.id} />
         </div>
-      </div>
+
+          </div>{/* .ficha__content */}
+        </div>{/* .ficha__body */}
+      </div>{/* .ficha__wrap */}
 
       {/* barra de acción fija (móvil) — aparece al scrollear, no de entrada */}
       <StickyActionBar>
