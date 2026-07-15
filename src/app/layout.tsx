@@ -1,5 +1,5 @@
 import type { Metadata } from 'next'
-import { Fraunces, Inter_Tight } from 'next/font/google'
+import { Fraunces, Instrument_Sans, Geist_Mono } from 'next/font/google'
 import './globals.css'
 import { Header } from '@components/layout/Header'
 import { GoogleAnalytics } from '@components/analytics/GoogleAnalytics'
@@ -13,9 +13,18 @@ const fraunces = Fraunces({
   axes: ['opsz', 'SOFT', 'WONK'],
 })
 
-const interTight = Inter_Tight({
+// Instrument Sans reemplaza a Inter Tight como fuente de toda la UI (rediseño s34).
+const instrumentSans = Instrument_Sans({
   subsets: ['latin'],
   variable: '--font-inter-tight',
+  display: 'swap',
+})
+
+// Geist Mono ahora se carga de verdad (antes era solo un fallback string): el sistema
+// la reserva para datos duros — horario, precio CLP, teléfono, contadores.
+const geistMono = Geist_Mono({
+  subsets: ['latin'],
+  variable: '--font-geist-mono',
   display: 'swap',
 })
 
@@ -39,7 +48,7 @@ export default function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="es" className={`${fraunces.variable} ${interTight.variable}`}>
+    <html lang="es" className={`${fraunces.variable} ${instrumentSans.variable} ${geistMono.variable}`}>
       <body>
         <Header />
         {children}

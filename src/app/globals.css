@@ -5,118 +5,126 @@
    Editorial moderno minimal con calidez chilena
    ========================================================= */
 
+/* =========================================================
+   SISTEMA DE DISEÑO (rediseño s34, vía Claude Design)
+   Regla madre: cada color, cada peso y cada forma tiene UN
+   trabajo. Los tokens NUEVOS son el contrato; debajo, una capa
+   de ALIAS mantiene vivos los nombres viejos apuntando a los
+   nuevos, para que las pantallas aún no migradas cambien de
+   piel sin romperse. Fuente: proyecto "Portal Panorama audit".
+   ========================================================= */
 :root {
-  /* ---------- Color: Neutrals (papel crema cálido) ---------- */
-  --paper-00: #FBF8F2;
-  --paper-05: #F6F2EA;
-  --paper-10: #EFEAE0;
-  --paper-20: #E4DDCF;
-  --paper-30: #C9C0AE;
-  --paper-40: #9A9282;
-  --paper-50: #6B6557;
+  /* ---------- SUPERFICIES — la jerarquía la hace la luz, no los bordes de 1px ---------- */
+  --surface-page:   #F2ECE1;  /* fondo de página (papel profundo) */
+  --surface-card:   #FFFDF8;  /* tarjeta / contenido (papel luz) */
+  --surface-raised: #FFFFFF;  /* modal, popover, menú (+ shadow-pop) */
+  --surface-sunken: #E9E2D3;  /* pozos: inputs, zebra, skeleton */
+  --surface-ink:    #211B15;  /* footer, toast, inversos */
 
-  --ink-90: #2A2622;
-  --ink-95: #1C1916;
-  --ink-100: #14110F;
+  --border-soft: rgba(32, 26, 20, 0.08);
+  --border:      rgba(32, 26, 20, 0.18);
 
-  /* ---------- Color: Accent (Atardecer) ---------- */
-  --accent-soft: oklch(0.92 0.04 45);
-  --accent-50:   oklch(0.78 0.10 45);
-  --accent-60:   oklch(0.62 0.16 45);
-  --accent-70:   oklch(0.52 0.17 38);
-  --accent-80:   oklch(0.42 0.14 32);
+  /* ---------- TINTA ---------- */
+  --ink-strong:  #1F1913;  /* titulares, cifras */
+  --ink:         #352E25;  /* texto corrido */
+  --ink-muted:   #6A6254;  /* secundario (AA sobre card y page) */
+  --ink-faint:   #9C9384;  /* SOLO decorativo/disabled, nunca texto informativo */
+  --ink-inverse: #FFFDF8;
 
-  /* ---------- Color: Rating (estrellas de Google) ---------- */
-  /* Oro/ámbar cálido afinado a oklch para sentirse nativo en la paleta crema.
-     NO es el acento sunset: el rating no debe competir con los CTA. (decisión 4E) */
+  /* ---------- ACCIÓN — un solo dueño: el botón primario es tinta ---------- */
+  --action:       #1F1913;
+  --action-hover: #3C3427;
+  --action-fg:    #FFFDF8;
+
+  /* ---------- MARCA / SELECCIÓN — el naranjo atardecer, trabajo exclusivo ---------- */
+  --brand:        oklch(0.62 0.16 45);   /* gráfico: logo, corazón lleno */
+  --brand-fill:   oklch(0.54 0.16 42);   /* fondo seleccionado, texto blanco (AA) */
+  --brand-strong: oklch(0.47 0.15 40);   /* naranjo como TEXTO sobre claro (AA) */
+  --brand-tint:   oklch(0.94 0.03 48);   /* fondo suave de estado guardado */
+
+  /* ---------- LINK — tinta subrayada ---------- */
+  --link:           var(--ink-strong);
+  --link-underline: oklch(0.62 0.16 45 / 0.45);
+  --link-hover:     var(--brand-strong);
+
+  /* ---------- RATING — ocre estrella (sin cambio, ya era correcto) ---------- */
   --star: oklch(0.748 0.128 74);
 
-  /* ---------- Color: Semantic ---------- */
-  --success: oklch(0.58 0.12 155);
-  --warning: oklch(0.72 0.14 75);
-  --error:   oklch(0.55 0.20 25);
-  --info:    oklch(0.55 0.10 230);
+  /* ---------- SEMÁNTICOS — mismo L/C, distinto matiz ---------- */
+  --ok:         oklch(0.50 0.10 155);  --ok-tint:    oklch(0.94 0.035 155);
+  --warn:       oklch(0.50 0.11 75);   --warn-tint:  oklch(0.95 0.04 85);
+  --error:      oklch(0.50 0.16 27);   --error-tint: oklch(0.94 0.03 27);
+  --info:       oklch(0.50 0.09 240);  --info-tint:  oklch(0.94 0.025 240);
 
-  /* ---------- Color: Premium signal ---------- */
-  --premium-ink: var(--ink-100);
-  --premium-bg:  var(--paper-00);
-  --premium-line: var(--ink-100);
+  /* ---------- TAGS: LAS 6 CAPAS — familias por matiz, hermanadas por L/C ---------- */
+  --tag-audience-bg:   oklch(0.93 0.04 40);   --tag-audience-fg:   oklch(0.40 0.08 40);   --tag-audience-dot:  oklch(0.60 0.13 40);
+  --tag-occasion-bg:   oklch(0.93 0.04 350);  --tag-occasion-fg:   oklch(0.40 0.08 350);  --tag-occasion-dot:  oklch(0.60 0.13 350);
+  --tag-vibe-bg:       oklch(0.93 0.04 160);  --tag-vibe-fg:       oklch(0.40 0.08 160);  --tag-vibe-dot:      oklch(0.58 0.12 160);
+  --tag-experience-bg: oklch(0.93 0.05 85);   --tag-experience-fg: oklch(0.40 0.08 85);   --tag-experience-dot:oklch(0.62 0.13 85);
+  --tag-service-bg:    oklch(0.93 0.03 245);  --tag-service-fg:    oklch(0.40 0.07 245);  --tag-service-dot:   oklch(0.58 0.10 245);
+  --tag-specific-bg:   #EFE9DC;               --tag-specific-fg:   #57503F;               --tag-specific-dot:  #9C9384;
 
-  /* ---------- Surfaces (aliases semánticos) ---------- */
-  --bg: #f4f4f4;
-  --bg-raised: var(--paper-00);
-  --bg-sunken: var(--paper-10);
-  --surface-line: var(--paper-30);
-  --surface-line-soft: var(--paper-20);
+  /* ---------- METRO — color oficial demovido a un punto de 7px ---------- */
+  --metro-l1: #C8362B; --metro-l2: #C9A227; --metro-l3: #7B4B2A; --metro-l4: #2D5FA8;
+  --metro-l4a: #2E9AAF; --metro-l5: #3E8E5E; --metro-l6: #7B4E8E;
 
-  --fg: var(--ink-100);
-  --fg-muted: var(--paper-50);
-  --fg-subtle: var(--paper-40);
+  /* ---------- Spacing (base 4px, se conserva) ---------- */
+  --s-1: 4px;  --s-2: 8px;  --s-3: 12px; --s-4: 16px; --s-5: 20px;
+  --s-6: 24px; --s-8: 32px; --s-10: 40px; --s-12: 48px; --s-16: 64px;
+  --s-20: 80px; --s-24: 96px; --s-32: 128px;
 
-  --accent: var(--accent-60);
-  --accent-hover: var(--accent-70);
-  --on-accent: var(--paper-00);
-
-  /* ---------- Spacing (base 4px) ---------- */
-  --s-1: 4px;
-  --s-2: 8px;
-  --s-3: 12px;
-  --s-4: 16px;
-  --s-5: 20px;
-  --s-6: 24px;
-  --s-8: 32px;
-  --s-10: 40px;
-  --s-12: 48px;
-  --s-16: 64px;
-  --s-20: 80px;
-  --s-24: 96px;
-  --s-32: 128px;
-
-  /* ---------- Radii ---------- */
+  /* ---------- Radii — pill=tocable · 16 tarjeta · 10 foto/input · 6 tag plano · 20 modal ---------- */
   --r-xs: 2px;
-  --r-sm: 4px;
-  --r-md: 8px;
-  --r-lg: 12px;
+  --r-sm: 6px;
+  --r-md: 10px;
+  --r-lg: 16px;
   --r-xl: 20px;
   --r-pill: 999px;
 
-  /* ---------- Shadows ---------- */
+  /* ---------- Shadows — 4 niveles cálidos; relieve = tocable ---------- */
   --shadow-0: none;
-  --shadow-1: 0 1px 0 rgba(20, 17, 15, 0.04);
-  --shadow-2: 0 1px 2px rgba(20, 17, 15, 0.05), 0 0 0 1px rgba(20, 17, 15, 0.04);
-  --shadow-3: 0 8px 24px -8px rgba(20, 17, 15, 0.18), 0 0 0 1px rgba(20, 17, 15, 0.06);
-  --shadow-pop: 0 24px 48px -16px rgba(20, 17, 15, 0.25);
+  --shadow-1: 0 1px 2px rgba(32,26,20,.05), 0 2px 10px -2px rgba(32,26,20,.06);  /* tarjeta en reposo */
+  --shadow-2: 0 1px 0 rgba(32,26,20,.04), 0 1px 4px rgba(32,26,20,.09);          /* control tocable */
+  --shadow-3: 0 12px 28px -10px rgba(32,26,20,.22);                              /* hover levantado */
+  --shadow-pop: 0 32px 64px -24px rgba(32,26,20,.35);                            /* modal / menú */
+  --focus-ring: 0 0 0 2px var(--surface-card), 0 0 0 4px var(--brand-strong);
 
   /* ---------- Typography ---------- */
-  --font-display: var(--font-fraunces), "Times New Roman", serif;
-  --font-sans:    var(--font-inter-tight), "Helvetica Neue", Arial, sans-serif;
-  --font-mono:    "Geist Mono", "JetBrains Mono", ui-monospace, monospace;
+  --font-display: var(--font-fraunces), Georgia, serif;
+  --font-sans:    var(--font-inter-tight), system-ui, sans-serif;   /* Instrument Sans */
+  --font-mono:    var(--font-geist-mono), ui-monospace, monospace;
 
-  /* Type scale (display) — usa Fraunces */
-  --t-display-xl: clamp(56px, 9vw, 132px);
-  --t-display-lg: clamp(44px, 6vw, 88px);
-  --t-display-md: clamp(36px, 4.5vw, 64px);
-  --t-display-sm: clamp(28px, 3vw, 44px);
+  /* Display (Fraunces) — portadas y héroes */
+  --t-display-xl: clamp(44px, 9vw, 112px);
+  --t-display-lg: clamp(36px, 6vw, 72px);
+  --t-display-md: clamp(28px, 4.5vw, 48px);
+  --t-display-sm: clamp(26px, 3vw, 40px);
 
-  /* Type scale (UI) */
-  --t-h1: 32px;
-  --t-h2: 24px;
+  /* Editorial + UI */
+  --t-h1: 28px;
+  --t-h2: 22px;
   --t-h3: 19px;
   --t-h4: 16px;
+  --t-title: 19px;          /* NOMBRE del lugar en la tarjeta (Fraunces 600) */
+  --t-kpi: 36px;            /* cifras del panel de negocio (Fraunces 600) */
+  --t-body-lg: 17px;
   --t-body: 15px;
-  --t-body-sm: 13px;
-  --t-mono: 12px;
-  --t-mono-sm: 11px;
-  --t-tiny: 10px;
+  --t-body-sm: 13.5px;
+  --t-label: 13px;          /* label de formulario: sans 600, sentence case */
+  --t-eyebrow: 12px;        /* kicker/grupo: sans 650, caps — reemplaza al mono 10px */
+  --t-data: 13px;           /* dato duro (mono) */
+  --t-data-sm: 12px;        /* PISO absoluto. Bajo 12px no existe texto. */
 
   /* Line heights */
-  --lh-tight: 1.02;
+  --lh-body: 1.55;
+  --lh-tight: 1.15;
   --lh-snug: 1.18;
   --lh-normal: 1.45;
   --lh-loose: 1.6;
 
   /* Letter spacing */
-  --tr-tight: -0.025em;
+  --track-eyebrow: 0.07em;
+  --tr-tight: -0.02em;
   --tr-normal: -0.005em;
   --tr-wide: 0.06em;
   --tr-wider: 0.14em;
@@ -132,40 +140,95 @@
   --content-max: 1440px;
   --content-pad: clamp(20px, 4vw, 56px);
   --grid-gutter: clamp(16px, 2vw, 24px);
+  --hit-min: 44px;
+
+  /* =========================================================
+     CAPA DE COMPATIBILIDAD — nombres viejos → tokens nuevos.
+     No agregar nombres viejos nuevos acá; al migrar una pantalla,
+     cambiar sus clases a los tokens de arriba y borrar el alias.
+     ========================================================= */
+  --paper-00: var(--surface-card);
+  --paper-05: var(--surface-sunken);
+  --paper-10: var(--surface-sunken);
+  --paper-20: var(--border-soft);
+  --paper-30: var(--border);
+  --paper-40: var(--ink-faint);
+  --paper-50: var(--ink-muted);
+  --ink-90:  var(--ink);
+  --ink-95:  var(--ink-strong);
+  --ink-100: var(--ink-strong);
+
+  --accent-soft: var(--brand-tint);
+  --accent-50:   var(--brand);
+  --accent-60:   var(--brand);
+  --accent-70:   var(--brand-strong);
+  --accent-80:   var(--brand-strong);
+
+  --success: var(--ok);
+  --warning: var(--warn);
+
+  --premium-ink:  var(--ink-strong);
+  --premium-bg:   var(--surface-card);
+  --premium-line: var(--ink-strong);
+
+  --bg:        var(--surface-page);
+  --bg-raised: var(--surface-card);
+  --bg-sunken: var(--surface-sunken);
+  --surface-line:      var(--border);
+  --surface-line-soft: var(--border-soft);
+
+  --fg:        var(--ink);
+  --fg-muted:  var(--ink-muted);
+  --fg-subtle: var(--ink-faint);
+
+  --accent:       var(--brand);
+  --accent-hover: var(--brand-strong);
+  --on-accent:    #FFFDF8;
+
+  --t-body-xs: 13px;
+  --t-mono:    var(--t-data);
+  --t-mono-sm: var(--t-data-sm);
+  --t-tiny:    var(--t-data-sm);
 }
 
 /* ---------- Base reset ---------- */
 *, *::before, *::after { box-sizing: border-box; }
 html, body { margin: 0; padding: 0; overflow-x: hidden; }
 body {
-  background: var(--bg);
-  color: var(--fg);
+  background: var(--surface-page);
+  color: var(--ink);
   font-family: var(--font-sans);
   font-size: var(--t-body);
-  line-height: var(--lh-normal);
+  line-height: var(--lh-body);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   text-rendering: optimizeLegibility;
-  font-feature-settings: "ss01", "cv11";
 }
 img, svg { display: block; max-width: 100%; }
 button { font: inherit; color: inherit; background: none; border: 0; cursor: pointer; padding: 0; }
 input, textarea, select { font: inherit; color: inherit; }
+/* Link editorial: tinta con subrayado naranjo tenue; el color del texto no cambia. */
 a { color: inherit; text-decoration: none; }
-.link { color: var(--accent); text-decoration: underline; text-underline-offset: 2px; }
-.link:hover { opacity: .8; }
+.link {
+  color: var(--link);
+  text-decoration: underline;
+  text-decoration-color: var(--link-underline);
+  text-decoration-thickness: 1.5px;
+  text-underline-offset: 3px;
+}
+.link:hover { color: var(--link-hover); text-decoration-color: currentColor; }
 
 /* ---------- Selection ---------- */
-::selection { background: var(--accent-60); color: var(--paper-00); }
+::selection { background: var(--brand-fill); color: #FFFDF8; }
 
 /* ---------- Scrollbar ---------- */
-* { scrollbar-width: thin; scrollbar-color: var(--paper-30) transparent; }
+* { scrollbar-width: thin; scrollbar-color: var(--border) transparent; }
 
-/* ---------- Focus visible ---------- */
+/* ---------- Focus visible — anillo doble visible sobre cualquier superficie ---------- */
 :focus-visible {
-  outline: 2px solid var(--accent-60);
-  outline-offset: 2px;
-  border-radius: var(--r-xs);
+  outline: none;
+  box-shadow: var(--focus-ring);
+  border-radius: var(--r-sm);
 }
 
 /* ---------- Utility ---------- */
@@ -211,10 +274,12 @@ a { color: inherit; text-decoration: none; }
   user-select: none;
 }
 .btn:active { transform: translateY(1px); }
-.btn--primary { background: var(--ink-100); color: var(--paper-00); }
-.btn--primary:hover { background: var(--accent-70); }
-.btn--accent { background: var(--accent-60); color: var(--paper-00); }
-.btn--accent:hover { background: var(--accent-70); }
+/* La acción es tinta. El naranjo dejó de ser botón (decisión #1 del rediseño):
+   .btn--accent queda como alias de compatibilidad → también es tinta. */
+.btn--primary { background: var(--action); color: var(--action-fg); }
+.btn--primary:hover { background: var(--action-hover); }
+.btn--accent { background: var(--action); color: var(--action-fg); }
+.btn--accent:hover { background: var(--action-hover); }
 .btn--ghost {
   background: transparent;
   color: var(--fg);
@@ -912,11 +977,11 @@ main:has(.explorar) + .footer { margin-top: 0; }
 .searchbar__btn {
   flex: 0 0 auto; height: 40px; padding: 0 var(--s-5);
   border: none; border-radius: var(--r-pill);
-  background: var(--accent-60); color: var(--paper-00);
+  background: var(--action); color: var(--action-fg);
   font-family: var(--font-sans); font-size: var(--t-body-sm); font-weight: 600;
   cursor: pointer; transition: background var(--d-fast);
 }
-.searchbar__btn:hover { background: var(--accent-70); }
+.searchbar__btn:hover { background: var(--action-hover); }
 
 /* dropdown de sugerencias (autocompletado) */
 .searchbox { position: relative; }

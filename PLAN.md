@@ -9,7 +9,46 @@ priorizado. Se actualiza cada vez que avanzamos. Liviano a propósito — para r
 
 ---
 
-## ▶️ RETOMAR AQUÍ — s34 (2026-07-13): el paquete para Claude Design, LISTO para subir
+## ▶️ RETOMAR AQUÍ — s35 (2026-07-14): rediseño ETAPA 1 (Fundación) HECHA en local
+
+**El sistema de Claude Design ya está bajado y aplicado a la app.** Lo bajé con `DesignSync` del
+proyecto **"Portal Panorama audit"** (`ed1f20fb-5a11-4e47-9b45-9519e27ed842`): 5 archivos de tokens +
+`components.css` + readme con **7 decisiones**. Guardado en repo como referencia: **`design_briefs/claude_design/sistema/`**
+(`SISTEMA.md` + `components.css`). **Todo en LOCAL, sin pushear.**
+
+**Alcance del rediseño acordado (s35):** el usuario dejó la profundidad a mi criterio → **mini rebrand
+con el sistema abierto**: Claude Design propuso paleta/tipografía/componentes libres, pero aterrizados
+como **cambio de tokens + capa de compatibilidad**, no reescritura de las 3.049 líneas. Plan en 3 etapas
+(ver `sistema/SISTEMA.md`): **1 Fundación** ✅ · **2 Tarjeta con contexto social** ⬜ · **3 Barrido
+pantalla por pantalla** ⬜.
+
+**✅ ETAPA 1 — Fundación (esta sesión):**
+- **Tokens nuevos en `globals.css`** (superficies por luz no por bordes · acción=tinta · naranjo=marca/
+  selección con trabajo exclusivo · 6 familias de tag · metro demovido a punto · radios/sombras cálidos)
+  **+ una capa de ALIAS** (nombres viejos `--bg`/`--fg`/`--accent`/`--paper-*`/`--ink-*` → tokens nuevos):
+  **las ~590 clases que aún no migro repintan solas**, sin tocar markup.
+- **Fuentes con `next/font`:** Inter Tight → **Instrument Sans** (mantuve la variable `--font-inter-tight`
+  como alias) · **Geist Mono** ahora se carga de verdad (antes era fallback string) · Fraunces sigue.
+- **Botón unificado a tinta** (lo único que el reskin no arregla solo, decisión #1): `.btn--primary`,
+  `.btn--accent` (alias) y `.searchbar__btn` dejan de ser naranjos. **El "Guardar" de la ficha y el
+  "Buscar" de la home ya son negros.**
+- **NO se tocó ningún `.tsx` de markup** (salvo `layout.tsx` por las fuentes). Lo que necesita estructura
+  nueva —tags en la tarjeta, puntos de capa en la ficha, metro como punto— es **etapa 2/3** a propósito.
+- **✅ Verificado:** typecheck + lint + **`next build` OK** (dev server abajo) · **navegador headless
+  iPhone 13**: home/explorar/ficha repintadas, superficies se separan, botones en tinta, Fraunces titula,
+  naranjo calmado. Sin tests nuevos (cambio solo visual). ⚠️ Pendiente natural de etapa 2/3 y visible en
+  las capturas: los tags siguen grises idénticos (necesitan las 6 familias + markup) y el metro sigue
+  como círculo lleno.
+
+**▶️ PRÓXIMO PASO (s36):** **revisión visual del usuario** de la etapa 1 en las 3 pantallas núcleo (con su
+OK antes de seguir). Después, **etapa 2 — la tarjeta con contexto social**: sumar tags por capa + score al
+read model `PlaceCardView` y a las ~6 consultas que lo arman, foto enmarcada, y metro como punto de 7px.
+**Ojo: nada de esto está pusheado** — el push a prod del rediseño va cuando el usuario lo apruebe, y
+arrastra el fix de imágenes parqueado (ver "Pendientes operativos").
+
+---
+
+## Cierre s34 (2026-07-13): el paquete para Claude Design, subido y con auditoría de vuelta
 
 **El punto 2 del orden acordado (sistema de diseño) quedó armado.** Vive en
 **[design_briefs/claude_design/](design_briefs/claude_design/)**.
@@ -391,6 +430,16 @@ rechazo de reclamo lo pide literalmente!) mandaba el mensaje al vacío. Ahora to
   a reenviar al Gmail son 30s en Routing rules.
 
 **🔧 Pendientes operativos (del usuario / infra):**
+- 🖼️ **PARQUEADO hasta cerrar el rediseño — se agotó el free tier de Image Optimization de Vercel**
+  (5.000 transformaciones/mes) → **las imágenes NO se ven en prod**. Causa: Next pide **hasta 8 anchos
+  por foto**, así que 384 lugares × varias fotos queman miles de transformaciones. (No fue el barrido de
+  capturas de la s34: corrió en `localhost`, donde optimiza la máquina local, no Vercel.)
+  **Plan de 2 tiempos acordado con el usuario:** (1) **parche inmediato** = `images: { unoptimized: true }`
+  en `next.config.ts` — las fotos ya se guardan procesadas (WebP q80, máx 2000px), así que se ven, aunque
+  pesadas; (2) **la cura, al terminar el diseño** = **pre-generar 3 anchos (400/800/1600) con `sharp` al
+  subir** + loader propio → **cero transformaciones de Vercel para siempre**, gratis, y más rápido que hoy
+  (requiere script que reprocese las fotos ya cargadas). ⚠️ Antes de aplicar el parche, **mirar el
+  bandwidth de Vercel Blob** en el dashboard: apagar la optimización le carga el tráfico a esa cuota.
 - **Deliverability:** los correos caen en "Promociones" de Gmail → bajar el tono "marketing" de los transaccionales
   (el DMARC del dominio ya existe: `p=none`).
 - **Nota del security-reviewer (s29, fuera de alcance):** `login` no tiene rate limiting (registro/recuperar sí) → cerrarlo con el mismo patrón `rateLimitDurable('login:${ip}', …)` cuando se toque auth.
