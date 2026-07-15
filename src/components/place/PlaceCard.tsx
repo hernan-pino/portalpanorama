@@ -31,24 +31,13 @@ const PRICE_COMPACT: Record<string, string> = {
   OVER_30000: '$$$$',
 }
 
-// Capa de tag → familia de color del sistema (rediseño s35). Cada familia lleva su
-// matiz + punto; así el organizador escanea "¿con quién?" sin leer todos los tags.
-const TAG_LAYER_CLASS: Record<string, string> = {
-  AUDIENCE: 'tag--audience',
-  OCCASION: 'tag--occasion',
-  VIBE: 'tag--vibe',
-  EXPERIENCE: 'tag--experience',
-  SERVICE: 'tag--service',
-  SPECIFIC: 'tag--specific',
-  CUISINE: 'tag--cuisine',
-}
-
 const fmtCount = (n: number) => n.toLocaleString('es-CL')
 
 // La tarjeta de lugar (mini-ficha). Componente más repetido del producto: explorar,
 // home y "También te puede gustar". Rediseño s35: foto enmarcada (la decisión se lee
-// en el cuerpo, no en la foto), tags de contexto social visibles en la grilla, rating
-// de Google bajado a la fila de datos, y metro como punto de color (no círculo lleno).
+// en el cuerpo, no en la foto), rating de Google bajado a la fila de datos, y metro
+// como punto de color (no círculo lleno). Los tags de contexto se probaron en la
+// grilla y se descartaron por decisión del usuario (s35): recargaban la tarjeta.
 export function PlaceCard({ place, save, variant = 'grid' }: Props) {
   const media = (
     <div className="place-card__media">
@@ -74,17 +63,6 @@ export function PlaceCard({ place, save, variant = 'grid' }: Props) {
         <span>{place.neighborhoodName ?? place.communeName}</span>
       </span>
       <h3 className="place-card__title">{place.name}</h3>
-
-      {place.contextTags && place.contextTags.length > 0 && (
-        <span className="place-card__tags">
-          {place.contextTags.map((t) => (
-            <span key={t.name} className={`tag ${TAG_LAYER_CLASS[t.layer] ?? 'tag--specific'}`}>
-              <span className="tag__dot" aria-hidden="true" />
-              {t.name}
-            </span>
-          ))}
-        </span>
-      )}
 
       <div className="place-card__meta">
         {place.googleRating != null && (

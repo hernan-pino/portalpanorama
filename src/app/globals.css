@@ -482,27 +482,15 @@ a { color: inherit; text-decoration: none; }
 }
 
 /* =========================================================
-   PRIMITIVOS DEL SISTEMA (rediseño s35) — tag por capa, rating,
-   metro-punto, precio. Compartidos por la tarjeta y (etapa 3) la
-   ficha. "Relieve = tocable, plano = se lee": el tag es plano.
+   PRIMITIVOS DEL SISTEMA (rediseño s35) — eyebrow, rating,
+   metro-punto, precio. Los usa la tarjeta. (Las 6 familias de
+   tag de color se probaron en la tarjeta y se descartaron; si
+   la ficha las quiere en la etapa 3, se reintroducen ahí.)
    ========================================================= */
 .eyebrow {
   font: 650 var(--t-eyebrow)/1.2 var(--font-sans);
   letter-spacing: var(--track-eyebrow); text-transform: uppercase; color: var(--ink-muted);
 }
-/* Tag informativo (plano, teñido por capa). El punto ● es la firma de la capa. */
-.tag {
-  display: inline-flex; align-items: center; gap: 6px; padding: 4px 9px;
-  border-radius: var(--r-sm); font: 550 12.5px/1.3 var(--font-sans); white-space: nowrap;
-}
-.tag__dot { width: 6px; height: 6px; border-radius: 50%; flex: none; background: currentColor; }
-.tag--audience   { background: var(--tag-audience-bg);   color: var(--tag-audience-fg); }   .tag--audience .tag__dot   { background: var(--tag-audience-dot); }
-.tag--occasion   { background: var(--tag-occasion-bg);   color: var(--tag-occasion-fg); }   .tag--occasion .tag__dot   { background: var(--tag-occasion-dot); }
-.tag--vibe       { background: var(--tag-vibe-bg);       color: var(--tag-vibe-fg); }       .tag--vibe .tag__dot       { background: var(--tag-vibe-dot); }
-.tag--experience { background: var(--tag-experience-bg); color: var(--tag-experience-fg); } .tag--experience .tag__dot { background: var(--tag-experience-dot); }
-.tag--service    { background: var(--tag-service-bg);    color: var(--tag-service-fg); }    .tag--service .tag__dot    { background: var(--tag-service-dot); }
-.tag--specific   { background: var(--tag-specific-bg);   color: var(--tag-specific-fg); }   .tag--specific .tag__dot   { background: var(--tag-specific-dot); }
-.tag--cuisine    { background: var(--tag-specific-bg);   color: var(--tag-specific-fg); }   .tag--cuisine .tag__dot    { background: var(--tag-specific-dot); }
 /* Rating de Google (baja de la foto a la fila de datos) */
 .rating { display: inline-flex; align-items: baseline; gap: 5px; }
 .rating__star { color: var(--star); display: inline-flex; align-self: center; }
@@ -548,7 +536,6 @@ a { color: inherit; text-decoration: none; }
   font: 600 var(--t-title)/var(--lh-tight) var(--font-display);
   letter-spacing: var(--tr-tight); color: var(--ink-strong); margin: 0;
 }
-.place-card__tags { display: flex; flex-wrap: wrap; gap: 4px; }
 .place-card__meta {
   margin-top: auto; padding-top: 4px;
   display: flex; align-items: center; gap: var(--s-3); flex-wrap: wrap;
