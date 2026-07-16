@@ -3,6 +3,10 @@ import { ALLOWED_IMAGE_HOSTS } from './src/lib/imageHosts'
 
 const nextConfig: NextConfig = {
   images: {
+    // Loader propio (src/lib/imageLoader.ts): sirve los anchos pre-generados en Blob
+    // en vez de llamar al optimizador de Vercel (cuota de transformaciones agotada).
+    loader: 'custom',
+    loaderFile: './src/lib/imageLoader.ts',
     // Derivado de la lista única en src/lib/imageHosts.ts (el form de admin
     // valida contra la misma lista al guardar imágenes).
     remotePatterns: ALLOWED_IMAGE_HOSTS.map((hostname) => ({

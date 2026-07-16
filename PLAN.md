@@ -9,7 +9,80 @@ priorizado. Se actualiza cada vez que avanzamos. Liviano a propósito — para r
 
 ---
 
-## ▶️ RETOMAR AQUÍ — s35 (2026-07-14): rediseño ETAPAS 1 y 2 HECHAS en local
+## ▶️ RETOMAR AQUÍ — s36 (2026-07-15): barrido de auth + paneles de negocio
+
+**✅ BARRIDO DE AUTH (login · registro · recuperar · nueva contraseña), aprobado por el usuario.**
+- **Avisos de éxito naranjo → verde** (`--ok-tint`): el notice de login ("Tu cuenta se creó…") y el
+  success de "recuperar contraseña". El naranjo es solo marca/selección; un aviso "todo bien" no debe
+  robarse ese color.
+- **Captions del panel oscuro:** `--paper-40` (que el alias volvió un taupe apagado) → `--ink-inverse-muted`
+  (crema cálido, legible sobre el panel negro). Mismo patrón del fix del footer en etapa 3.
+- **`PasswordMeter`:** usaba tokens fantasma (`--warning`/`--success` que no existen → hex hardcodeado) y
+  naranjo en el nivel medio → escala semántica real `--error → --warn → --ok`, sin naranjo.
+- **🐛 Voseo cazado:** "Pedí uno nuevo" (recuperar/nueva, enlace inválido) → "Pide uno nuevo" (tuteo CL).
+- **Pedido del usuario:** en **login y registro** el panel editorial ("Lo bueno de la ciudad…") **se oculta
+  en móvil/tablet** (solo el form + Google) vía modificador `.auth-shell--compact`; **recuperar y nueva
+  contraseña conservan su panel** (el usuario dijo "quedó bien"). En desktop las 4 siguen a 2 columnas.
+
+**✅ BARRIDO DE PANELES DE NEGOCIO (`/para-negocios` · `/mi-negocio` dashboard · editor de ficha).**
+La capa de alias los repintó bien: botones en tinta, naranjo solo como acento (KPIs, barra "Estado de tu
+ficha", badge "PORTADA" = selección). Único fix: el "✓ Cambios guardados" del editor, naranjo → `--ok`
+(verde). **Decisión:** los rótulos chicos en mono (PARA NEGOCIOS, CUÁNTO CUESTA, PANEL DE NEGOCIO…) **se
+dejan** — en páginas amplias se leen como epígrafes de revista, no como el mono apagado que sí se cambió en
+la ficha. Verificado con cuenta de dueño sembrada (`design-shots-setup.ts`) y **BD restaurada con `--clean`**.
+
+- **✅ Verificado:** typecheck + lint limpios · navegador (auth móvil/tablet/desktop + panel del dueño y
+  editor logueados). **Nada pusheado aún.**
+
+**✅ BARRIDO DE ADMIN (`/admin/lugares`, nuevo, reclamos, marcas, usuarios, listas).** Verificado logueado
+como admin (cuenta del seed permanente). Ya estaba coherente (mono editorial, botones tinta, badges de
+estado verde/crema). El formulario "Nuevo lugar" impecable. **🐛 Bug de layout cazado y arreglado:** en las
+tablas anchas (Lugares, Usuarios) la columna de acciones (Editar/Archivar/Eliminar · Hacer admin) se
+**recortaba en el borde derecho** porque `.admin-page` estaba capado a 920px y la tabla necesitaba más →
+subido a **1120px**. Verificado: las acciones se ven completas y el formulario no se estiró feo.
+
+**✅ ZONAS MENORES REVISADAS (mi-cuenta + perfil · términos · privacidad · cómo ordenamos · guías).**
+Todas coherentes, **sin cambios necesarios**: los mensajes de éxito de perfil/contraseña usan `--success`
+(existe vía alias → `--ok` verde), el avatar de mi-cuenta usa `--accent-30` como acento de marca intencional,
+y las legales/guías ya eran editoriales limpias. Verificado en navegador (mi-cuenta logueado + públicas).
+
+**🐛 2 arreglos de la revisión del usuario (s36):**
+1. **Metro roto en las listas/guías (`/lista/[slug]`):** la tarjeta destacada usaba `.metro-badge`, clase que
+   **murió en la etapa 2** → salían cuadrados de color. Migrado al patrón nuevo de la `PlaceCard`
+   (`.metro` + `.metro__dot`: punto de color + código). `.metro-badge` ya no se usa en ningún componente.
+2. **Orden de datos prácticos en la ficha:** el usuario pidió **metro segundo** → el `DataRow` de Metro se
+   movió justo después de Precio (antes: Precio · Horario · Reserva · Pagos · Metro; ahora: Precio · Metro ·
+   Horario · Reserva · Pagos…). Verificado en `/lugar/faraon-usach` (L1 correcto, metro 2º).
+
+**✅ FIX DE IMÁGENES — LA CURA (partes 1 y 2 hechas + script listo, s36).** Decisión del usuario:
+**cura completa, no parche** ("si no hay tráfico real es el momento de dejarlo bien; un parche que botas es
+trabajo perdido"). Reemplaza el optimizador de Vercel (cuota de transformaciones agotada) por un pipeline
+propio → **0 transformaciones para siempre**.
+- **Parte 1 — pipeline de subida:** `SharpImageProcessor.compressResponsive` genera **3 anchos (400/800/1600)
+  webp**; `VercelBlobStorageService.uploadResponsive` los sube con base común `…-<ancho>.webp` (id cuid, sin
+  addRandomSuffix) y devuelve la canónica (`-1600`). Ports actualizados (`ImageProcessor`/`StorageService`),
+  ambos use cases (`UploadPlaceImage` + `ImportImageFromUrl`) y el adapter backup (UploadThing) migrados.
+- **Parte 2 — loader propio:** `src/lib/imageLoader.ts` + `next.config` (`loader: 'custom'`). `next/image`
+  deja de llamar a Vercel: elige el bucket pre-generado más cercano. Las URLs que no siguen la convención
+  (legacy sin reprocesar) pasan tal cual → **se ven igual** (servidas directo de Blob). ⇒ deployear ESTO ya
+  hace visibles las fotos de prod aunque no se reprocesen.
+- **Parte 3 — script `scripts/reprocess-images-responsive.ts`:** idempotente, `--dry-run`/`--limit=N`. **NO
+  borra los blobs viejos** (store compartido con prod). Convierte legacy → responsive. Dry-run local:
+  **1.102 fotos · 24 logos · 9 portadas**. Probado con `--limit=3`: las reprocesadas rinden con srcset de 3
+  tamaños y **0 `_next/image`** (verificado en `/guias`).
+- **✅ Verificado:** typecheck + lint + **158 tests verdes** · subida real end-to-end (3 blobs + limpieza) ·
+  loader cableado (todas las imágenes con src directo a Blob).
+- **▶️ Falta:** commit + **push** (deploy → fotos visibles por passthrough + optimizador apagado) → correr
+  el reprocesamiento **una vez contra PROD** (con `DATABASE_URL` de prod; idempotente). **Nada pusheado aún.**
+
+**▶️ PRÓXIMO PASO (s37):** el **barrido del rediseño está COMPLETO** (home/ficha/footer s35; auth + negocio
++ admin + zonas menores s36). Todo con typecheck + lint limpios, revisado en navegador, **nada pusheado**.
+Falta: **revisión visual del usuario del conjunto** y, con su OK, **push a prod** — que arrastra el **fix de
+imágenes parqueado** (`unoptimized: true` inmediato + la cura con `sharp`, ver "Pendientes operativos").
+
+---
+
+## s35 (2026-07-14): rediseño ETAPAS 1 y 2 HECHAS en local
 
 **✅ ETAPA 2 — La tarjeta de lugar, rediseñada (esta sesión, con OK del usuario a la etapa 1).**
 `PlaceCard` reescrito al spec del sistema: **foto enmarcada** (inset, la foto chillona ya no gana),

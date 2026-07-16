@@ -18,7 +18,7 @@ export class ImportImageFromUrlUseCase {
 
   async execute(input: ImportImageFromUrlInput): Promise<{ url: string }> {
     const { buffer } = await this.fetcher.fetch(input.url)
-    const processed = await this.processor.compress(buffer)
+    const processed = await this.processor.compressResponsive(buffer)
 
     // Nombre desde el último segmento del path, sin extensión; fallback 'imagen'.
     let base = 'imagen'
@@ -29,10 +29,11 @@ export class ImportImageFromUrlUseCase {
       /* URL ya validada en el fetcher; si falla, queda el fallback */
     }
 
-    const url = await this.storage.upload(
-      processed.buffer,
-      `${base}.${processed.extension}`,
+    const url = await this.storage.uploadResponsive(
+      processed.variants,
+      base,
       processed.mimeType,
+      processed.extension,
     )
     return { url }
   }

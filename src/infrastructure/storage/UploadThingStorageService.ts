@@ -7,6 +7,7 @@
 //   3) tener UPLOADTHING_TOKEN seteado.
 import { UTApi } from 'uploadthing/server'
 import { StorageService } from '@application/ports/StorageService'
+import { ResponsiveVariant } from '@application/ports/ImageProcessor'
 
 const ALLOWED_MIME_TYPES = new Set(['image/jpeg', 'image/png', 'image/webp', 'image/gif'])
 const MAX_FILE_SIZE_BYTES = 5 * 1024 * 1024 // 5 MB
@@ -21,7 +22,21 @@ export class UploadThingStorageService implements StorageService {
     this.utapi = new UTApi()
   }
 
-  async upload(buffer: Buffer, filename: string, mimeType: string): Promise<string> {
+  // Backup no cableado: UploadThing devuelve keys opacas (no la convención
+  // `-<ancho>.webp` que usa el loader), así que sube solo la variante mayor y la
+  // sirve a tamaño único. Si algún día se cablea, migrar a un storage con nombres
+  // predecibles (como Vercel Blob) para aprovechar los 3 anchos.
+  async uploadResponsive(
+    variants: ResponsiveVariant[],
+    baseName: string,
+    mimeType: string,
+    extension: string,
+  ): Promise<string> {
+    const largest = variants.reduce((a, b) => (b.width > a.width ? b : a))
+    return this.upload(largest.buffer, `${baseName}.${extension}`, mimeType)
+  }
+
+  private async upload(buffer: Buffer, filename: string, mimeType: string): Promise<string> {
     if (!ALLOWED_MIME_TYPES.has(mimeType)) {
       throw new Error(`Tipo de archivo no permitido: ${mimeType}`)
     }

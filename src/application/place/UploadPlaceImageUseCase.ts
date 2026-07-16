@@ -15,12 +15,13 @@ export class UploadPlaceImageUseCase {
   ) {}
 
   async execute(input: UploadPlaceImageInput): Promise<{ url: string }> {
-    const processed = await this.processor.compress(input.buffer)
+    const processed = await this.processor.compressResponsive(input.buffer)
     const base = input.filename.replace(/\.[^.]+$/, '').trim() || 'imagen'
-    const url = await this.storage.upload(
-      processed.buffer,
-      `${base}.${processed.extension}`,
+    const url = await this.storage.uploadResponsive(
+      processed.variants,
+      base,
       processed.mimeType,
+      processed.extension,
     )
     return { url }
   }
