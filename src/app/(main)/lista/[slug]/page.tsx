@@ -143,7 +143,10 @@ export default async function ListaPage({ params }: PageProps) {
                     {place.metroLines && place.metroLines.length > 0 && (
                       <span className="curated-feature__fact">
                         {place.metroLines.slice(0, 2).map((l) => (
-                          <span key={l.code} className="metro-badge" style={{ background: l.color }}>{l.code}</span>
+                          <span key={l.code} className="metro">
+                            <span className="metro__dot" style={{ background: l.color }} aria-hidden="true" />
+                            {l.code}
+                          </span>
                         ))}
                       </span>
                     )}

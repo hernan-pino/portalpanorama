@@ -316,6 +316,18 @@ export default async function LugarPage({ params }: PageProps) {
                 <PriceScale value={place.priceRange} />
               </DataRow>
             )}
+            {place.metroStation && (
+              <DataRow icon={<MetroIcon />} k="Metro">
+                <span style={{ display: 'inline-flex', alignItems: 'center', gap: 'var(--s-2)' }}>
+                  {place.metroStation.name}
+                  <span className="ficha__metro-lines">
+                    {place.metroStation.lines.map((l) => (
+                      <span key={l.code} className="ficha__metro-line" style={{ background: l.color }}>{l.code}</span>
+                    ))}
+                  </span>
+                </span>
+              </DataRow>
+            )}
             {place.schedule && <DataRow icon={<ClockIcon />} k="Horario">{place.schedule}</DataRow>}
             {place.reservation && (
               <DataRow icon={<TicketIcon />} k="Reserva">
@@ -327,18 +339,6 @@ export default async function LugarPage({ params }: PageProps) {
                 <div className="ficha__tags" style={{ marginTop: 2 }}>
                   {place.paymentMethods.map((m) => <span key={m} className="chip">{m}</span>)}
                 </div>
-              </DataRow>
-            )}
-            {place.metroStation && (
-              <DataRow icon={<MetroIcon />} k="Metro">
-                <span style={{ display: 'inline-flex', alignItems: 'center', gap: 'var(--s-2)' }}>
-                  {place.metroStation.name}
-                  <span className="ficha__metro-lines">
-                    {place.metroStation.lines.map((l) => (
-                      <span key={l.code} className="ficha__metro-line" style={{ background: l.color }}>{l.code}</span>
-                    ))}
-                  </span>
-                </span>
               </DataRow>
             )}
             {hasAccess && (
