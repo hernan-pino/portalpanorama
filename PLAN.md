@@ -9,7 +9,32 @@ priorizado. Se actualiza cada vez que avanzamos. Liviano a propósito — para r
 
 ---
 
-## ▶️ RETOMAR AQUÍ — s36 (2026-07-15): barrido de auth + paneles de negocio
+## ▶️ RETOMAR AQUÍ — s36 (2026-07-16): 🚀 REDISEÑO + FIX DE IMÁGENES EN PROD
+
+**✅ TODO EL REDISEÑO ESTÁ EN PRODUCCIÓN Y VERIFICADO EN VIVO.** Push `ea072b4..a9d89b1` (4 commits:
+barrido auth/negocio/admin · fix de metro · pipeline de imágenes responsive · fix de build). Deploy
+`portal-panorama-pkzajvbtq` **Ready**. Verificado en `portal-panorama.vercel.app/explorar`: **las fotos
+CARGAN** (200, servidas directo de Blob), rediseño live, metro como punto (`●L6`), **0 `_next/image`**
+(optimizador de Vercel desconectado → adiós al problema de las 5k transformaciones).
+
+**🐛 El primer push falló y se arregló:** `next build` typechequea todo el proyecto y `scripts/design-shots.ts`
+importa `playwright` (dev tool, no está en `package.json` → Vercel no lo resuelve). Como el rediseño nunca se
+había pusheado, fue el 1er deploy que incluía ese script. Fix: **`scripts/` excluido del `tsconfig`** (corren
+con `tsx`, no son parte del build). El deploy fallido **no tocó prod** (falló en build; `migrate deploy` fue
+no-op, BD intacta). Gotcha nuevo: **el build de Vercel typechequea `scripts/`** — herramientas de dev con
+deps que no están en package.json rompen el build.
+
+**⏸️ PENDIENTE (no urgente): reprocesar las 1.135 imágenes legacy a responsive.** Hoy se sirven a tamaño
+completo (passthrough) — se ven bien, pero pesan. El script `scripts/reprocess-images-responsive.ts` está
+listo, pero **la corrida completa = ~3.400 subidas a Blob = "Advanced Operations"**, y esa cuota está apretada
+(1.2K/2K/mes en Hobby). Como Blob Data Transfer tiene holgura (1.5/10 GB) y **no hay tráfico real**, servir
+las viejas a tamaño completo no molesta. Correr el reprocesamiento contra prod **cuando haya tráfico / plan
+Pro / por tandas mensuales**. Las fotos NUEVAS ya salen responsive. (Estado de cuotas verificado por el
+usuario: Transformations 5.1K/5K PASADO — el problema, ahora en 0; Blob con holgura.)
+
+---
+
+## s36 (2026-07-15): barrido de auth + paneles de negocio
 
 **✅ BARRIDO DE AUTH (login · registro · recuperar · nueva contraseña), aprobado por el usuario.**
 - **Avisos de éxito naranjo → verde** (`--ok-tint`): el notice de login ("Tu cuenta se creó…") y el
