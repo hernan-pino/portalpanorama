@@ -22,7 +22,7 @@ export default async function LoginPage({
     : '/registro'
 
   return (
-    <div className="auth-shell">
+    <div className="auth-shell auth-shell--compact">
 
       {/* ── Art panel ── */}
       <div className="auth-shell__art">
@@ -35,12 +35,12 @@ export default async function LoginPage({
           <h2>
             Lo bueno de la ciudad, <em>curado</em> como revista.
           </h2>
-          <p style={{ fontFamily: 'var(--font-mono)', fontSize: 'var(--t-mono-sm)', letterSpacing: 'var(--tr-wider)', textTransform: 'uppercase', color: 'var(--paper-40)', marginTop: 'var(--s-5)' }}>
+          <p style={{ fontFamily: 'var(--font-mono)', fontSize: 'var(--t-mono-sm)', letterSpacing: 'var(--tr-wider)', textTransform: 'uppercase', color: 'var(--ink-inverse-muted)', marginTop: 'var(--s-5)' }}>
             — Editorial · Santiago 2026
           </p>
         </blockquote>
 
-        <p style={{ fontFamily: 'var(--font-mono)', fontSize: 'var(--t-mono-sm)', letterSpacing: 'var(--tr-wide)', textTransform: 'uppercase', color: 'var(--paper-40)' }}>
+        <p style={{ fontFamily: 'var(--font-mono)', fontSize: 'var(--t-mono-sm)', letterSpacing: 'var(--tr-wide)', textTransform: 'uppercase', color: 'var(--ink-inverse-muted)' }}>
           Portal Panorama · Otoño 2026
         </p>
       </div>
@@ -77,7 +77,7 @@ export default async function LoginPage({
             style={{
               fontSize: 'var(--t-body-sm)',
               padding: 'var(--s-3) var(--s-4)',
-              background: 'color-mix(in oklab, var(--accent) 10%, transparent)',
+              background: 'var(--ok-tint)',
               borderRadius: 'var(--r-md)',
               marginBottom: 'var(--s-6)',
             }}

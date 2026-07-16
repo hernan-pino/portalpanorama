@@ -13,7 +13,7 @@ export function RequestResetForm() {
         style={{
           fontSize: 'var(--t-body-sm)',
           padding: 'var(--s-4)',
-          background: 'color-mix(in oklab, var(--accent) 8%, transparent)',
+          background: 'var(--ok-tint)',
           borderRadius: 'var(--r-md)',
           color: 'var(--fg-default)',
         }}

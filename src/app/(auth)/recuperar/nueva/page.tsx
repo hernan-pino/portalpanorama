@@ -23,7 +23,7 @@ export default async function NuevaPasswordPage({
             Elige una contraseña <em>nueva</em>.
           </h2>
         </blockquote>
-        <p style={{ fontFamily: 'var(--font-mono)', fontSize: 'var(--t-mono-sm)', letterSpacing: 'var(--tr-wide)', textTransform: 'uppercase', color: 'var(--paper-40)' }}>
+        <p style={{ fontFamily: 'var(--font-mono)', fontSize: 'var(--t-mono-sm)', letterSpacing: 'var(--tr-wide)', textTransform: 'uppercase', color: 'var(--ink-inverse-muted)' }}>
           Portal Panorama · Otoño 2026
         </p>
       </div>
@@ -59,7 +59,7 @@ export default async function NuevaPasswordPage({
           <p style={{ color: 'var(--fg-muted)', fontSize: 'var(--t-body-sm)', marginTop: 'var(--s-6)' }}>
             El enlace está incompleto o es inválido.{' '}
             <Link href="/recuperar" className="link">
-              Pedí uno nuevo
+              Pide uno nuevo
             </Link>
             .
           </p>

@@ -17,7 +17,7 @@ export default function RecuperarPage() {
             ¿Olvidaste tu <em>contraseña</em>? No pasa nada.
           </h2>
         </blockquote>
-        <p style={{ fontFamily: 'var(--font-mono)', fontSize: 'var(--t-mono-sm)', letterSpacing: 'var(--tr-wide)', textTransform: 'uppercase', color: 'var(--paper-40)' }}>
+        <p style={{ fontFamily: 'var(--font-mono)', fontSize: 'var(--t-mono-sm)', letterSpacing: 'var(--tr-wide)', textTransform: 'uppercase', color: 'var(--ink-inverse-muted)' }}>
           Portal Panorama · Otoño 2026
         </p>
       </div>

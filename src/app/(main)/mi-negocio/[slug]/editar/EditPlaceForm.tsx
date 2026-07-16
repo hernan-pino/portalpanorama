@@ -153,7 +153,7 @@ export function EditPlaceForm({ slug, initial }: { slug: string; initial: EditIn
       </div>
 
       {error && <p style={{ color: 'var(--error)', fontSize: 'var(--t-body-sm)', margin: 0 }}>{error}</p>}
-      {saved && <p style={{ color: 'var(--accent-70)', fontSize: 'var(--t-body-sm)', margin: 0 }}>✓ Cambios guardados. Ya se ven en tu ficha.</p>}
+      {saved && <p style={{ color: 'var(--ok)', fontSize: 'var(--t-body-sm)', margin: 0 }}>✓ Cambios guardados. Ya se ven en tu ficha.</p>}
 
       <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--s-3)' }}>
         <button type="submit" className="btn btn--primary" disabled={isPending}>

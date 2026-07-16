@@ -2247,6 +2247,13 @@ select.form-input { cursor: pointer; }
   .auth-shell { grid-template-columns: 1fr; min-height: auto; height: auto; }
   .auth-shell__art { min-height: 200px; padding: var(--s-8); }
   .auth-shell__form { padding: var(--s-8); max-width: none; }
+  /* Login y registro: en móvil/tablet sin el panel editorial — solo el form (+ Google).
+     Recuperar y nueva contraseña NO llevan el modificador, así conservan su panel. */
+  .auth-shell--compact .auth-shell__art { display: none; }
+  .auth-shell--compact .auth-shell__form {
+    min-height: calc(100dvh - 72px);
+    justify-content: flex-start;
+  }
   .footer__top { grid-template-columns: 1fr 1fr; }
   /* Hamburger: aparece en tablet/móvil */
   .mobile-nav-btn { display: flex; }
@@ -2347,7 +2354,7 @@ select.form-input { cursor: pointer; }
 
 /* margin-inline:auto centra el contenido ahora que el nav es barra superior
    (antes lo alineaba el sidebar de la izquierda). */
-.admin-page { padding: var(--s-6) var(--s-8); max-width: 920px; margin-inline: auto; }
+.admin-page { padding: var(--s-6) var(--s-8); max-width: 1120px; margin-inline: auto; }
 .admin-page__head {
   display: flex; align-items: flex-start; justify-content: space-between;
   gap: var(--s-4); margin-bottom: var(--s-6);

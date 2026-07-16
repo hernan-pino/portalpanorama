@@ -4,9 +4,9 @@ import { evaluatePassword } from '@domain/user/PasswordPolicy'
 const METER_COLORS = [
   'var(--error)',
   'var(--error)',
-  'var(--warning, #d08700)',
-  'var(--accent)',
-  'var(--success, #1a7f37)',
+  'var(--warn)',
+  'var(--ok)',
+  'var(--ok)',
 ]
 
 export function PasswordMeter({ password }: { password: string }) {
