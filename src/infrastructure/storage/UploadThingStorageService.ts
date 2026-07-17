@@ -22,6 +22,15 @@ export class UploadThingStorageService implements StorageService {
     this.utapi = new UTApi()
   }
 
+  // Backup no cableado: UploadThing sirve desde utfs.io.
+  isOwnUrl(url: string): boolean {
+    try {
+      return new URL(url).host.toLowerCase().endsWith('utfs.io')
+    } catch {
+      return false
+    }
+  }
+
   // Backup no cableado: UploadThing devuelve keys opacas (no la convención
   // `-<ancho>.webp` que usa el loader), así que sube solo la variante mayor y la
   // sirve a tamaño único. Si algún día se cablea, migrar a un storage con nombres

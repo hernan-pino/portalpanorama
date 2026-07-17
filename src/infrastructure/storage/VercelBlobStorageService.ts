@@ -7,9 +7,28 @@ import { ResponsiveVariant } from '@application/ports/ImageProcessor'
 // (*.public.blob.vercel-storage.com) ya está en la allowlist de next/image.
 // Alternativa no cableada: UploadThingStorageService (ver ese archivo).
 export class VercelBlobStorageService implements StorageService {
+  // Host propio, derivado del token (`vercel_blob_rw_<storeId>_<secreto>`): el blob
+  // se sirve desde `<storeId>.public.blob.vercel-storage.com`, en minúsculas. Se
+  // deriva en vez de hardcodearse para que el store de cada entorno se reconozca solo.
+  private readonly ownHost: string | null
+
   constructor() {
-    if (!process.env.BLOB_READ_WRITE_TOKEN) {
+    const token = process.env.BLOB_READ_WRITE_TOKEN
+    if (!token) {
       throw new Error('BLOB_READ_WRITE_TOKEN is not set')
+    }
+    const storeId = token.split('_')[3]
+    this.ownHost = storeId ? `${storeId.toLowerCase()}.public.blob.vercel-storage.com` : null
+  }
+
+  // Reconoce solo NUESTRO store, no cualquier blob de Vercel: dar por propia la URL
+  // de un store ajeno sería hotlinkearlo.
+  isOwnUrl(url: string): boolean {
+    if (!this.ownHost) return false
+    try {
+      return new URL(url).host.toLowerCase() === this.ownHost
+    } catch {
+      return false
     }
   }
 

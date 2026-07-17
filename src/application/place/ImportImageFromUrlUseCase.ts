@@ -17,6 +17,11 @@ export class ImportImageFromUrlUseCase {
   ) {}
 
   async execute(input: ImportImageFromUrlInput): Promise<{ url: string }> {
+    // Si ya es nuestra, no se re-sube: la URL sirve tal cual. El store es compartido
+    // entre entornos, así que re-ingestar en prod una ficha ya cargada en local
+    // duplicaba blobs y quemaba cuota ("Advanced Operations") por nada.
+    if (this.storage.isOwnUrl(input.url)) return { url: input.url }
+
     const { buffer } = await this.fetcher.fetch(input.url)
     const processed = await this.processor.compressResponsive(buffer)
 
