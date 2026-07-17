@@ -9,35 +9,49 @@ const week = (hours: string): OpeningHoursDay[] =>
   }))
 
 describe('formatSchedule', () => {
-  it('agrupa la semana completa con el mismo tramo', () => {
-    expect(formatSchedule(week('10:00–20:30'))).toBe('Lu–Do 10:00–20:30 h.')
+  it('la semana uniforme queda en UNA sola línea', () => {
+    expect(formatSchedule(week('10:00–20:30'))).toBe('Lu–Do 10:00–20:30')
   })
 
-  it('separa el día cerrado del resto', () => {
+  it('pone el día cerrado en su lugar de la semana, no al final', () => {
     const hours = week('10:00–18:00').map((h) => (h.day === 'lunes' ? { ...h, hours: 'cerrado' } : h))
-    expect(formatSchedule(hours)).toBe('Ma–Do 10:00–18:00 h. Lunes cerrado.')
+    expect(formatSchedule(hours)).toBe('Lu cerrado\nMa–Do 10:00–18:00')
   })
 
-  it('lista varios días cerrados', () => {
+  it('agrupa días cerrados consecutivos como cualquier otro valor', () => {
     const hours = week('09:00–18:00').map((h) =>
       h.day === 'sábado' || h.day === 'domingo' ? { ...h, hours: 'cerrado' } : h,
     )
-    expect(formatSchedule(hours)).toBe('Lu–Vi 09:00–18:00 h. Sábado y domingo cerrado.')
+    expect(formatSchedule(hours)).toBe('Lu–Vi 09:00–18:00\nSá–Do cerrado')
   })
 
-  it('separa grupos con tramos distintos y deja el día suelto sin rango', () => {
+  it('una línea por grupo, en orden de semana', () => {
     const hours = week('09:00–18:00').map((h) => {
       if (h.day === 'sábado') return { ...h, hours: '10:00–14:00' }
       if (h.day === 'domingo') return { ...h, hours: 'cerrado' }
       return h
     })
-    expect(formatSchedule(hours)).toBe('Lu–Vi 09:00–18:00 h. Sá 10:00–14:00 h. Domingo cerrado.')
+    expect(formatSchedule(hours)).toBe('Lu–Vi 09:00–18:00\nSá 10:00–14:00\nDo cerrado')
+  })
+
+  it('el caso que motivó el cambio: cada día distinto queda escaneable', () => {
+    // Jardín Pura Vida — era una frase corrida ilegible en una línea.
+    const hours: OpeningHoursDay[] = [
+      { day: 'lunes', hours: '11:30–20:30' },
+      { day: 'martes', hours: '10:30–20:30' },
+      { day: 'miércoles', hours: 'cerrado' },
+      { day: 'jueves', hours: '10:30–15:30' },
+      { day: 'viernes', hours: '11:00–21:00' },
+      { day: 'sábado', hours: '11:00–21:30' },
+      { day: 'domingo', hours: '10:30–21:00' },
+    ]
+    expect(formatSchedule(hours)).toBe(
+      'Lu 11:30–20:30\nMa 10:30–20:30\nMi cerrado\nJu 10:30–15:30\nVi 11:00–21:00\nSá 11:00–21:30\nDo 10:30–21:00',
+    )
   })
 
   it('conserva la jornada partida tal cual', () => {
-    expect(formatSchedule(week('10:00–14:00, 16:00–20:00'))).toBe(
-      'Lu–Do 10:00–14:00, 16:00–20:00 h.',
-    )
+    expect(formatSchedule(week('10:00–14:00, 16:00–20:00'))).toBe('Lu–Do 10:00–14:00, 16:00–20:00')
   })
 
   it('reconoce el 24/7', () => {
@@ -51,7 +65,7 @@ describe('formatSchedule', () => {
       { day: 'martes', hours: '12:00–20:00' },
       { day: 'miércoles', hours: '10:00–18:00' },
     ]
-    expect(formatSchedule(hours)).toBe('Lu 10:00–18:00 h. Ma 12:00–20:00 h. Mi 10:00–18:00 h.')
+    expect(formatSchedule(hours)).toBe('Lu 10:00–18:00\nMa 12:00–20:00\nMi 10:00–18:00')
   })
 
   it('devuelve undefined sin grilla, con grilla vacía o si todos los días están cerrados', () => {
@@ -65,7 +79,7 @@ describe('formatSchedule', () => {
       { day: 'lunes', hours: '10:00–18:00' },
       { day: 'martes', hours: '10:00–18:00' },
     ]
-    expect(formatSchedule(hours)).toBe('Lu–Ma 10:00–18:00 h.')
+    expect(formatSchedule(hours)).toBe('Lu–Ma 10:00–18:00')
   })
 })
 

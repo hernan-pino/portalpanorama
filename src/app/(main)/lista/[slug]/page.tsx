@@ -153,7 +153,10 @@ export default async function ListaPage({ params }: PageProps) {
                     {place.schedule && (
                       <span className="curated-feature__fact curated-feature__schedule">
                         <ClockGlyph />
-                        <span>{place.schedule}</span>
+                        {/* La tarjeta es de una línea (trunca con ellipsis): mostramos
+                            solo el primer tramo. El horario completo, día por día,
+                            vive en la ficha. */}
+                        <span>{place.schedule.split('\n')[0]}</span>
                       </span>
                     )}
                   </div>

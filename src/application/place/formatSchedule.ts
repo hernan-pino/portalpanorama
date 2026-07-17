@@ -28,8 +28,6 @@ const ORDER: OpeningHoursDay['day'][] = [
   'domingo',
 ]
 
-const capitalize = (s: string) => s.charAt(0).toUpperCase() + s.slice(1)
-
 // Un tramo de más de 16 h corridas no es el horario real de un local: los 24/7 llegan
 // como "24 horas". Casi siempre es dato malo del proveedor — CH3 Gourmet publica el
 // viernes como "12:30 AM to 9:10 PM" (00:30–21:10) cuando el resto de la semana abre
@@ -61,6 +59,14 @@ function spanMinutes(hours: string): number {
 
 // Devuelve undefined cuando no hay grilla utilizable: el caller decide (no inventamos
 // un horario ni escribimos un string vacío en la ficha).
+//
+// Formato: UNA LÍNEA POR GRUPO de días consecutivos con el mismo tramo, en orden de
+// semana ("Lu–Vi 09:00–18:00\nSá 10:00–14:00\nDo cerrado"). Degrada solo: si toda la
+// semana abre igual queda en una línea; si cada día es distinto, quedan 7 líneas cortas.
+// Una línea corrida se volvía ilegible justo en ese caso (feedback del usuario, s37).
+// El día cerrado va EN SU LUGAR de la semana, no relegado al final: se escanea la
+// columna de días de corrido. Por eso "cerrado" es un valor más y lo agrupa el mismo
+// algoritmo, sin caso especial.
 export function formatSchedule(hours: OpeningHoursDay[] | undefined): string | undefined {
   if (!hours || hours.length === 0) return undefined
 
@@ -74,14 +80,12 @@ export function formatSchedule(hours: OpeningHoursDay[] | undefined): string | u
   if (week.every((d) => byDay.get(d) === '24 horas')) {
     return 'Abierto las 24 horas, todos los días.'
   }
+  // Solo días cerrados: dato inútil, que lo vea un humano.
+  if (week.every((d) => byDay.get(d) === 'cerrado')) return undefined
 
-  const closed = week.filter((d) => byDay.get(d) === 'cerrado')
-  const open = week.filter((d) => byDay.get(d) !== 'cerrado')
-  if (open.length === 0) return undefined // solo días cerrados: dato inútil, que lo vea un humano
-
-  // Agrupa días CONSECUTIVOS (en el orden de la semana) con el mismo tramo.
+  // Agrupa días CONSECUTIVOS con el mismo valor ("cerrado" incluido).
   const groups: { days: OpeningHoursDay['day'][]; hours: string }[] = []
-  for (const day of open) {
+  for (const day of week) {
     const value = byDay.get(day)!
     const last = groups[groups.length - 1]
     const isConsecutive =
@@ -90,22 +94,13 @@ export function formatSchedule(hours: OpeningHoursDay[] | undefined): string | u
     else groups.push({ days: [day], hours: value })
   }
 
-  const parts = groups.map((g) => {
-    const label =
-      g.days.length === 1
-        ? ABBR[g.days[0]]
-        : `${ABBR[g.days[0]]}–${ABBR[g.days[g.days.length - 1]]}`
-    return g.hours === '24 horas' ? `${label} 24 horas` : `${label} ${g.hours} h`
-  })
-
-  let out = parts.join('. ')
-  if (closed.length > 0) {
-    // Solo el primero va en mayúscula: abre la frase ("Sábado y domingo cerrado").
-    const list =
-      closed.length === 1
-        ? capitalize(closed[0])
-        : `${closed.slice(0, -1).join(', ')} y ${closed[closed.length - 1]}`
-    out += `. ${capitalize(list)} cerrado`
-  }
-  return `${out}.`
+  return groups
+    .map((g) => {
+      const label =
+        g.days.length === 1
+          ? ABBR[g.days[0]]
+          : `${ABBR[g.days[0]]}–${ABBR[g.days[g.days.length - 1]]}`
+      return `${label} ${g.hours}`
+    })
+    .join('\n')
 }
