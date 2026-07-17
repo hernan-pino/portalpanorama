@@ -9,7 +9,86 @@ priorizado. Se actualiza cada vez que avanzamos. Liviano a propósito — para r
 
 ---
 
-## ▶️ RETOMAR AQUÍ — s36 (2026-07-16): 🚀 REDISEÑO + FIX DE IMÁGENES EN PROD
+## ▶️ RETOMAR AQUÍ — s37 (2026-07-16): 🚀 33 LUGARES NUEVOS EN PROD + EL HORARIO SALE DE GOOGLE
+
+**✅ 33 LUGARES CARGADOS Y EN PRODUCCIÓN** (13 chocolaterías · 12 florerías · 8 tiendas de plantas, todas
+del Gran Santiago, ≥4.3★). **Prod: 390 → 423 lugares · 385 → 418 publicados.** Todas con foto y horario.
+Verificado en vivo. Push `7e2adc5..821103f` (4 commits), deploys Ready.
+
+**🔑 EL HALLAZGO DE LA SESIÓN: el horario siempre estuvo disponible y nadie lo usaba.** El
+`ApifyRatingProvider` pedía los datos a Google y **botaba `openingHours`** — solo mapeaba rating/fotos/
+coords. Por eso los lotes se trababan en `PENDING_REVIEW` "sin horario" (pasó en el lote de ramen s23 y
+en éste). Ahora `enrich-ratings.ts --with-schedule` lo trae: **desbloqueó 18 de 19 fichas** y llenó
+**las 48 publicadas sin horario que arrastraba prod desde junio → 0**. También trae
+`temporarilyClosed`/`permanentlyClosed`, que resuelve "¿este local sigue operando?" — la duda que la
+investigación web NO puede confirmar (caso Bruxelles y su robo: Google dice que opera).
+
+**🛡️ TRES REGLAS QUE AHORA SE APLICAN SOLAS** (antes dependían de que alguien mirara):
+1. **`ingest-fichas.ts` no publica fichas incompletas.** El criterio vivía en `_meta.requiere_revision`,
+   que el agente investigador setea mirando **solo el horario** → se colaban fichas sin foto (6 en esta
+   misma sesión; el usuario las cazó a ojo). El guardia `motivosIncompleta()` ahora es del pipeline.
+2. **`implausibleDays()` rechaza horarios absurdos de Google.** Un tramo de +16 h corridas no se escribe.
+   Caso real: Google publica el viernes de CH3 Gourmet como "12:30 AM" cuando el resto de la semana abre
+   12:30 PM. Un bar que cierra a las 02:00 NO se marca (el tramo cruza el día).
+3. **`domain/place/tagLimits.ts` es la fuente única de los topes de tags.**
+
+**🐛 BUG LATENTE ENCONTRADO Y ARREGLADO: 38 lugares publicados no se podían abrir en el editor del admin.**
+Tenían 4 tags OCCASION contra un tope de 3 → `Place.create()` reventaba al hidratarlos desde la BD. Las
+páginas públicas no se veían afectadas (usan read models, no hidratan la entidad), por eso nadie lo notó.
+A los 38 les sobraba **siempre el mismo tag: "Para días de lluvia" (38/38)**. El arreglo obvio —borrárselo—
+era el malo: un museo o un escape room **SON** el panorama de día de lluvia. **El tope de 3 era lo que
+estaba mal** → subido a 4 (AUDIENCE ya era 4). El número vivía en **4 copias a mano** (entidad, `LAYER_CAPS`
+del form —"espejo del dominio", decía el comentario—, el label "(máx. 3)" y los comentarios de `TagLayer`)
+y por eso se desincronizaron.
+
+**💸 REUSO DE BLOB (`821103f`): re-ingestar en prod ya no duplica imágenes.** El store es **compartido**
+entre local y prod, así que las 76 fotos ya estaban ahí. `StorageService.isOwnUrl()` (el adapter deriva su
+host del token, no lo hardcodea) → el ingestor las reusa. **228 subidas → 0, verificado contando el store
+antes y después (1.444 = 1.444).** Deja de ser un impuesto por tanda (van ~400 lugares/mes).
+
+**📊 Cuotas de Blob, medidas de verdad (no estimadas):** **1.444 archivos · 167 MB · 16,3% del giga.**
+⚠️ Corrige un susto de la s36: **"la cuota apretada" era la equivocada.** Son tres cuotas distintas —
+*Advanced Operations* (~2K) y *Data Transfer* (10 GB) **se resetean cada mes**; solo **Storage (1 GB) es
+acumulativo**, y ahí sobra espacio. El reprocesamiento de las **1.174 imágenes legacy** (vs 270 responsive)
+sigue parqueado, pero **no por falta de espacio**.
+
+**🧹 Nota interna filtrada a producción.** Pétalos Florería tenía publicado *"conviene que un humano revise
+el negocio en terreno **antes de publicar**"* — el agente hablándonos a nosotros, en vivo. Junto con 5
+avisos de "no logramos confirmar el horario" que quedaron caducos al llenarlo. Los 6 limpiados (prod +
+local) y caché invalidada. **⚠️ Lección: nadie lee las descripciones al publicar.**
+
+**⬜ PENDIENTE (chico):**
+- **3 descripciones con avisos caducos + info real mezclada** — La Bottega Gandolini, La Rústica Pizzeria,
+  Kame House. Dicen cosas útiles ("es un local chico", "cierra más temprano los domingos") junto al aviso
+  obsoleto. Es reescribir copy → decisión del usuario.
+- **Puede haber más `place_id` corruptos.** Confitería Torres tenía uno malo en la BD (búsqueda exacta →
+  0 items; el real se resolvió por texto). La señal es `✗ Google no devolvió ningún lugar` al enriquecer.
+- **`renamedTo` quedó como código muerto** en `Place.ts` (`c2202fc`): lo usó un script one-off. Deuda menor.
+
+**▶️ PRÓXIMO PASO (s38):** seguir cargando (el pipeline quedó afilado: ingestar + `--with-schedule
+--with-photos` resuelve casi todo sin re-investigar) o **GTM**, que era el punto 5 del orden acordado y ya
+no tiene el rediseño como bloqueo.
+
+### 🧰 Cómo cargar un lote ahora (el flujo quedó distinto)
+```bash
+# 1. Investigar (agente investigador-lugares) → tmp/fichas/<lote>/*.json
+# 2. Ingestar a LOCAL (dry primero). Lo incompleto queda en PENDING_REVIEW solo.
+npx tsx --env-file=.env.local scripts/ingest-fichas.ts tmp/fichas/<lote> --dry
+# 3. Desbloquear lo que quedó en revisión, desde Google (NO re-investigar):
+npx tsx --env-file=.env.local scripts/enrich-ratings.ts --force --with-schedule --with-photos <ids...>
+# 4. Exportar local → prod (0 subidas de Blob, 0 Apify) e ingestar contra la BD de prod
+# 5. Invalidar caché o los lugares NO aparecen aunque estén en la BD:
+curl -X POST https://portal-panorama.vercel.app/api/revalidate -H "x-revalidate-secret: $REVALIDATE_SECRET"
+```
+⚠️ **`DATABASE_URL` de prod está marcada *Sensitive* en Vercel: `vercel env pull` la trae VACÍA.** Se saca
+de Neon → branch **`prod`** (¡no `production`, que es el molde del que se clonó!) → endpoint
+`ep-billowing-dream-act3f6q5`. Ya documentado en la s26 y me lo volví a topar por no leerlo.
+⚠️ **Cada consulta a Apify tarda ~40 s:** más de ~14 lugares se pasa del timeout de 10 min → background.
+Es idempotente (no pisa horarios ni fotos existentes), re-correrlo es seguro.
+
+---
+
+## s36 (2026-07-16): 🚀 REDISEÑO + FIX DE IMÁGENES EN PROD
 
 **✅ TODO EL REDISEÑO ESTÁ EN PRODUCCIÓN Y VERIFICADO EN VIVO.** Push `ea072b4..a9d89b1` (4 commits:
 barrido auth/negocio/admin · fix de metro · pipeline de imágenes responsive · fix de build). Deploy
