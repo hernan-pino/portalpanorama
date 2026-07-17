@@ -6,9 +6,15 @@
 //   npx tsx --env-file=.env.local scripts/ingest-fichas.ts [carpeta-o-archivo] [--review] [--dry]
 //   (por defecto: tmp/fichas/*.json — cada .json es una ficha; o un array de fichas)
 //
-// Publicación: cada ficha se PUBLICA salvo que ella misma pida revisión
-// (`_meta.requiere_revision: true`, p. ej. cerrado temporalmente / dato dudoso), que
-// quedan en PENDING_REVIEW para mirarlas a mano. `--review` fuerza TODO a PENDING_REVIEW.
+// Publicación: una ficha se PUBLICA solo si está 100% — con horario Y con foto. Si le
+// falta cualquiera de las dos, queda en PENDING_REVIEW aunque la ficha no lo pida: el
+// agente investigador solo vigila el horario, así que el mínimo lo garantiza el
+// pipeline, no su criterio. También queda en revisión si la ficha lo pide
+// (`_meta.requiere_revision: true`, p. ej. cerrado temporalmente / dato dudoso).
+// `--review` fuerza TODO a PENDING_REVIEW.
+//
+// ¿Ficha en revisión por falta de horario o foto? `enrich-ratings.ts --with-schedule
+// --with-photos <id>` las trae de Google y suele desbloquearla sin investigar de nuevo.
 //
 // Flujo completo: [agente investigador] escribe los JSON → este script los ingesta y
 // publica (las dudosas quedan en revisión) → revisás esas pocas en /admin/lugares.
@@ -308,6 +314,16 @@ async function resolveFicha(
   }
 }
 
+// Lo que una ficha necesita para publicarse sola. Sin horario no se puede planificar
+// el panorama; sin foto la tarjeta sale con placeholder y se lee como error. Ninguna
+// de las dos se arregla mirando para el lado: si falta, queda en PENDING_REVIEW.
+function motivosIncompleta(input: PlaceWriteInput): string[] {
+  const faltan: string[] = []
+  if (!input.schedule?.trim()) faltan.push('horario')
+  if (input.images.length === 0) faltan.push('foto')
+  return faltan
+}
+
 function loadFichas(target: string): FichaJSON[] {
   const out: FichaJSON[] = []
   const readOne = (file: string) => {
@@ -391,9 +407,18 @@ async function main() {
         if (brandId) input.brandId = brandId
       }
 
-      // Revisión: la ficha la pide (cerrado/dudoso) o se forzó con --review.
-      const review = forceReview || f._meta?.requiere_revision === true
-      const motivo = f._meta?.motivo_revision?.trim()
+      // Revisión: la ficha la pide (cerrado/dudoso), se forzó con --review, o le
+      // falta algo para estar 100%. Lo último NO se delega al agente investigador:
+      // él solo vigila el horario, así que fichas sin foto se colaban publicadas.
+      // El pipeline es el que garantiza el mínimo, no el juicio de quien investiga.
+      const incompleta = motivosIncompleta(input)
+      const review = forceReview || f._meta?.requiere_revision === true || incompleta.length > 0
+      const motivo =
+        incompleta.length > 0
+          ? [f._meta?.motivo_revision?.trim(), `falta: ${incompleta.join(' + ')}`]
+              .filter(Boolean)
+              .join(' · ')
+          : f._meta?.motivo_revision?.trim()
 
       if (dry) {
         nameToId.set(norm(input.name), 'dry') // así un hijo del mismo lote resuelve a su padre

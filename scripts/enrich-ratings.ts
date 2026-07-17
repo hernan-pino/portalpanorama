@@ -14,6 +14,9 @@
 //                     coordenadas); implica --force. Las coords curadas nunca se pisan.
 //   --with-photos     además rehospeda hasta 3 fotos de Google Maps en las fichas SIN
 //                     imágenes (no pisa las curadas). Ignorado en --dry.
+//   --with-schedule   además escribe el horario que publica Google en las fichas SIN
+//                     horario (no pisa los curados: llevan matices que Google no da).
+//                     Avisa ⛔ si Google marca el local cerrado (temporal o permanente).
 //
 // Requiere APIFY_TOKEN en el entorno (.env.local). Costo: ~US$1,50/1.000 lugares;
 // para tu volumen entra en el free de Apify.
@@ -55,11 +58,13 @@ async function main() {
   const noCoords = args.includes('--no-coords')
   const force = args.includes('--force') || noCoords
   const withPhotos = args.includes('--with-photos') && !dry
+  const withSchedule = args.includes('--with-schedule')
   const ids = args.filter((a) => !a.startsWith('--'))
 
   if (dry) console.log('— MODO DRY: resuelve el match y el score, NO escribe —')
   if (noCoords) console.log('— Backfill de coordenadas: solo lugares no-archivados sin lat/lng —')
   if (withPhotos) console.log('— Fotos: rehospedo hasta 3 de Google Maps en las fichas sin imágenes —')
+  if (withSchedule) console.log('— Horario: escribo el de Google en las fichas que no tienen uno —')
   const targets = await selectTargets(ids, force, noCoords)
   console.log(`${targets.length} lugar(es) a enriquecer\n`)
 
@@ -70,13 +75,16 @@ async function main() {
   let notFound = 0
   let needsCheck = 0
   let coordsSet = 0
+  let scheduleSet = 0
+  const closed: string[] = []
+  const suspect: string[] = []
 
   for (const t of targets) {
     try {
-      const res = await uc.execute({ placeId: t.id, force, dryRun: dry })
+      const res = await uc.execute({ placeId: t.id, force, dryRun: dry, withSchedule })
       if (res.status === 'skipped') {
         skipped++
-        console.log(`· ${t.name} — ya tiene rating (usá --force para refrescar)`)
+        console.log(`· ${t.name} — ya tiene rating (usa --force para refrescar)`)
         continue
       }
       if (res.status === 'not-found') {
@@ -98,6 +106,22 @@ async function main() {
       )
       if (res.coordsSet) coordsSet++
       if (!res.nameMatch) needsCheck++
+      if (res.scheduleSet) {
+        scheduleSet++
+        console.log(`    🕒 horario: ${res.scheduleSet}`)
+      }
+      if (res.scheduleSuspect) {
+        suspect.push(t.name)
+        const days = res.scheduleSuspect.map((d) => `${d.day} ${d.hours}`).join(' · ')
+        console.log(`    🕒⚠️  horario NO escrito, Google trae un tramo absurdo: ${days}`)
+      }
+      // Google sabe si el local dejó de operar. Es el dato que la investigación web
+      // no puede confirmar y el motivo de varias fichas trabadas en revisión.
+      if (res.result.permanentlyClosed || res.result.temporarilyClosed) {
+        const kind = res.result.permanentlyClosed ? 'CERRADO PERMANENTEMENTE' : 'cerrado temporalmente'
+        closed.push(`${t.name} (${kind})`)
+        console.log(`    ⛔ Google lo marca ${kind} — NO publicar`)
+      }
 
       if (photosUc && r.photoUrls.length > 0) {
         const ph = await photosUc.execute({ placeId: t.id, photoUrls: r.photoUrls, max: 3 })
@@ -114,10 +138,19 @@ async function main() {
   console.log(
     `\nResumen: ${updated} enriquecido(s)` +
       `${dry ? ' (DRY, no se escribió)' : ''}, ${skipped} omitido(s), ${notFound} sin match` +
-      `, 📍 ${coordsSet} con coords nuevas.`,
+      `, 📍 ${coordsSet} con coords nuevas` +
+      `${withSchedule ? `, 🕒 ${scheduleSet} con horario nuevo` : ''}.`,
   )
   if (needsCheck > 0) {
-    console.log(`⚠️  ${needsCheck} con match dudoso (marcados REVISAR): confirmá a mano en /admin/lugares.`)
+    console.log(`⚠️  ${needsCheck} con match dudoso (marcados REVISAR): confírmalos a mano en /admin/lugares.`)
+  }
+  if (closed.length > 0) {
+    console.log(`\n⛔ ${closed.length} que Google marca cerrado(s) — NO publicar:`)
+    closed.forEach((c) => console.log(`   · ${c}`))
+  }
+  if (suspect.length > 0) {
+    console.log(`\n🕒⚠️  ${suspect.length} sin horario escrito (dato malo de Google) — cárgalo a mano:`)
+    suspect.forEach((s) => console.log(`   · ${s}`))
   }
 }
 

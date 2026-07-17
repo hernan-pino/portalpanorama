@@ -16,10 +16,24 @@ export interface RatingQuery {
   knownPlaceId?: string
 }
 
+// Un día de la grilla semanal, ya normalizado por el adapter (el formato crudo del
+// proveedor —"10 AM to 8:30 PM"— no cruza el port). `hours` viene en 24h local:
+// "10:00–20:30", "10:00–14:00, 16:00–20:00" (jornada partida), "cerrado" o "24 horas".
+export interface OpeningHoursDay {
+  day: 'lunes' | 'martes' | 'miércoles' | 'jueves' | 'viernes' | 'sábado' | 'domingo'
+  hours: string
+}
+
 export interface RatingResult {
   googlePlaceId: string
   googleRating?: number
   googleReviewCount?: number
+  // Grilla semanal según Google. Vacía/ausente si el local no la publica.
+  openingHours?: OpeningHoursDay[]
+  // Estado operativo según Google. Un local cerrado no debería quedar publicado:
+  // el caller decide qué hacer (acá solo se informa).
+  temporarilyClosed?: boolean
+  permanentlyClosed?: boolean
   // Lo que devolvió Google (nombre + dirección del local que matcheó), para que el
   // humano confirme que es el lugar correcto antes de fiarse del dato.
   matchedName?: string

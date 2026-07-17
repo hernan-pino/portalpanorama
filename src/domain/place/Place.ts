@@ -275,6 +275,21 @@ export class Place {
     })
   }
 
+  // Renombra la ficha. El slug va explícito porque regenerarlo o conservarlo es
+  // decisión del caller, no de la entidad: una ficha ya publicada conserva el suyo
+  // (su URL circula), pero una que nunca se publicó puede regenerarlo sin costo.
+  renamedTo(name: string, slug: Slug): Place {
+    return Place.create({ ...this.toProps(), name, slug, updatedAt: new Date() })
+  }
+
+  // Setea el horario de atención. Es texto libre editorial: Google solo da la grilla
+  // semanal, los matices ("último ingreso 17:15") los escribe un humano. La decisión
+  // de NO pisar un horario curado a mano la toma el use case (acá solo se asigna).
+  // No cambia el estado de la ficha.
+  withSchedule(schedule: string): Place {
+    return new Place({ ...this.toProps(), schedule, updatedAt: new Date() })
+  }
+
   // Setea las coordenadas (lat/lng) del lugar. La decisión de NO pisar coords curadas
   // a mano la toma el use case (acá solo se asignan). No cambia el estado de la ficha.
   withCoordinates(lat: number, lng: number): Place {

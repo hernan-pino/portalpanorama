@@ -3,6 +3,7 @@ import {
   RatingQuery,
   RatingResult,
   RatingLookupError,
+  OpeningHoursDay,
 } from '@application/ports/PlaceRatingProvider'
 
 // Adapter de reputación sobre Apify (actor "Google Maps Scraper", compass/crawler-
@@ -121,6 +122,9 @@ export class ApifyRatingProvider implements PlaceRatingProvider {
       photoUrls: extractPhotos(item).slice(0, MAX_PHOTOS),
       latitude: numeric(item.location?.lat),
       longitude: numeric(item.location?.lng),
+      openingHours: extractOpeningHours(item),
+      temporarilyClosed: item.temporarilyClosed === true,
+      permanentlyClosed: item.permanentlyClosed === true,
     }
   }
 }
@@ -141,6 +145,87 @@ interface ApifyPlaceItem {
   imageUrls?: unknown
   images?: unknown
   location?: { lat?: number; lng?: number }
+  openingHours?: unknown
+  temporarilyClosed?: boolean
+  permanentlyClosed?: boolean
+}
+
+const DAYS: OpeningHoursDay['day'][] = [
+  'lunes',
+  'martes',
+  'miércoles',
+  'jueves',
+  'viernes',
+  'sábado',
+  'domingo',
+]
+
+// El actor devuelve `openingHours: [{ day: 'jueves', hours: '10 AM to 8:30 PM' }]` —
+// día en español (pedimos language:'es') pero el tramo en formato inglés. Traducimos
+// al contrato del port (24h local) para que ese detalle del vendor no se filtre.
+function extractOpeningHours(item: ApifyPlaceItem): OpeningHoursDay[] | undefined {
+  if (!Array.isArray(item.openingHours)) return undefined
+  const out: OpeningHoursDay[] = []
+  for (const raw of item.openingHours) {
+    if (!raw || typeof raw !== 'object') continue
+    const { day, hours } = raw as Record<string, unknown>
+    if (typeof day !== 'string' || typeof hours !== 'string') continue
+    const normalizedDay = DAYS.find((d) => stripAccents(d) === stripAccents(day))
+    if (!normalizedDay) continue
+    out.push({ day: normalizedDay, hours: normalizeHours(hours) })
+  }
+  return out.length > 0 ? out : undefined
+}
+
+function stripAccents(s: string): string {
+  return s
+    .normalize('NFD')
+    .replace(/[̀-ͯ]/g, '')
+    .toLowerCase()
+    .trim()
+}
+
+// "10 AM to 8:30 PM" → "10:00–20:30" · "10 AM to 1 PM, 3 to 8 PM" → "10:00–13:00, 15:00–20:00"
+// Cerrado / 24 horas se reconocen en ambos idiomas. Si no se puede parsear, se
+// devuelve el texto tal cual: mejor un dato crudo visible que uno inventado.
+function normalizeHours(raw: string): string {
+  const text = raw.trim()
+  const flat = stripAccents(text)
+  if (!flat) return text
+  if (flat.includes('closed') || flat.includes('cerrado')) return 'cerrado'
+  if (flat.includes('24 hours') || flat.includes('24 horas')) return '24 horas'
+
+  const ranges = text.split(',')
+  const parsed: string[] = []
+  for (const range of ranges) {
+    // Separador "to" (en) o "a" (es), tolerante a guiones.
+    const parts = range.split(/\s+(?:to|a)\s+|–|—|-/i).map((p) => p.trim())
+    if (parts.length !== 2) return text
+    // El meridiano puede venir solo en el extremo ("3 to 8 PM"): hereda del final.
+    const end = parseTime(parts[1])
+    const start = parseTime(parts[0], meridiemOf(parts[1]))
+    if (!start || !end) return text
+    parsed.push(`${start}–${end}`)
+  }
+  return parsed.join(', ')
+}
+
+function meridiemOf(s: string): 'AM' | 'PM' | undefined {
+  const m = s.match(/\b(AM|PM)\b/i)
+  return m ? (m[1].toUpperCase() as 'AM' | 'PM') : undefined
+}
+
+// "8:30 PM" → "20:30" · "10 AM" → "10:00" · "22:00" → "22:00"
+function parseTime(s: string, inherited?: 'AM' | 'PM'): string | null {
+  const m = s.trim().match(/^(\d{1,2})(?::(\d{2}))?\s*(AM|PM)?$/i)
+  if (!m) return null
+  let hour = Number(m[1])
+  const minute = m[2] ?? '00'
+  const meridiem = (m[3]?.toUpperCase() as 'AM' | 'PM' | undefined) ?? inherited
+  if (meridiem === 'PM' && hour !== 12) hour += 12
+  if (meridiem === 'AM' && hour === 12) hour = 0
+  if (hour > 24 || Number(minute) > 59) return null
+  return `${String(hour).padStart(2, '0')}:${minute}`
 }
 
 function numeric(v: unknown): number | undefined {

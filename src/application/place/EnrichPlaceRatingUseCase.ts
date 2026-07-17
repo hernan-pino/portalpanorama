@@ -2,7 +2,8 @@ import { Score } from '@domain/place/Score'
 import { PlaceNotFoundError } from '@domain/place/errors/PlaceNotFoundError'
 import { PlaceRepository } from '../ports/PlaceRepository'
 import { LocationRepository } from '../ports/LocationRepository'
-import { PlaceRatingProvider, RatingResult } from '../ports/PlaceRatingProvider'
+import { PlaceRatingProvider, RatingResult, OpeningHoursDay } from '../ports/PlaceRatingProvider'
+import { formatSchedule, implausibleDays } from './formatSchedule'
 
 export interface EnrichPlaceRatingInput {
   placeId: string
@@ -11,6 +12,9 @@ export interface EnrichPlaceRatingInput {
   force?: boolean
   // Resuelve y calcula todo pero NO persiste (previsualizar el match antes de escribir).
   dryRun?: boolean
+  // Además del rating, escribir el horario que publica Google en las fichas que NO
+  // tienen uno. Nunca pisa un horario curado a mano (lleva matices que Google no da).
+  withSchedule?: boolean
 }
 
 // Resultado discriminado para que el caller (script) decida qué loguear/verificar.
@@ -23,6 +27,12 @@ export type EnrichPlaceRatingResult =
       // true si se tomaron las coords de Google porque la ficha no tenía (las curadas
       // a mano nunca se pisan); false si ya tenía coords o Google no las trajo.
       coordsSet: boolean
+      // El horario que se escribió desde Google, o undefined si no se pidió, la ficha
+      // ya tenía uno, o Google no publica grilla.
+      scheduleSet?: string
+      // Días con horario no creíble (tramos absurdos). Si hay alguno NO se escribe
+      // nada: que lo resuelva un humano en vez de publicar un dato malo.
+      scheduleSuspect?: OpeningHoursDay[]
     }
   | { status: 'skipped'; reason: 'already-has-rating' }
   | { status: 'not-found' }
@@ -73,6 +83,22 @@ export class EnrichPlaceRatingUseCase {
       enriched = enriched.withCoordinates(result.latitude!, result.longitude!)
     }
 
+    // Horario: solo si se pidió y la ficha NO tiene uno. Un horario escrito a mano
+    // lleva matices que Google no publica ("último ingreso 17:15"), así que gana.
+    // Si algún día viene con un tramo absurdo, no se escribe NADA: un horario malo
+    // es peor que ninguno (la ficha se queda en revisión y lo arregla un humano).
+    let scheduleSet: string | undefined
+    let scheduleSuspect: OpeningHoursDay[] | undefined
+    if (input.withSchedule && !place.schedule?.trim()) {
+      const suspect = implausibleDays(result.openingHours)
+      if (suspect.length > 0) {
+        scheduleSuspect = suspect
+      } else {
+        scheduleSet = formatSchedule(result.openingHours)
+        if (scheduleSet) enriched = enriched.withSchedule(scheduleSet)
+      }
+    }
+
     // Re-bate el score con el prior C actual (por categoría, con fallback al global).
     const [globalAverage, categoryStats] = await Promise.all([
       this.placeRepo.globalAverageRating(),
@@ -93,6 +119,8 @@ export class EnrichPlaceRatingUseCase {
       nameMatch: isLikelyMatch(place.name, result.matchedName),
       score,
       coordsSet,
+      scheduleSet,
+      scheduleSuspect,
     }
   }
 }
