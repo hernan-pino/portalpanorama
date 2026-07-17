@@ -1,5 +1,6 @@
 import { Slug } from '@domain/shared/Slug'
 import { TagLayer } from '@domain/catalog/TagLayer'
+import { TAG_LIMITS } from './tagLimits'
 import { PlaceStatus } from './PlaceStatus'
 import { PriceRange } from './PriceRange'
 import { ReservationPolicy } from './ReservationPolicy'
@@ -149,9 +150,11 @@ export class Place {
 
   // Topes por capa (decisión 2026-06-14). Solo las capas subjetivas topean; las
   // objetivas (EXPERIENCE/SERVICE/SPECIFIC) no tienen tope duro ("más info = mejor").
-  static readonly MAX_AUDIENCE_TAGS = 4
-  static readonly MAX_OCCASION_TAGS = 3
-  static readonly MAX_VIBE_TAGS = 3
+  // Los números viven en `tagLimits.ts`: es la fuente única que también lee el form
+  // del admin (antes cada uno tenía su copia y se desincronizaron).
+  static readonly MAX_AUDIENCE_TAGS = TAG_LIMITS[TagLayer.AUDIENCE]
+  static readonly MAX_OCCASION_TAGS = TAG_LIMITS[TagLayer.OCCASION]
+  static readonly MAX_VIBE_TAGS = TAG_LIMITS[TagLayer.VIBE]
 
   private constructor(props: PlaceProps) {
     this.id = props.id

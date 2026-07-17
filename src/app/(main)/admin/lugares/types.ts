@@ -1,3 +1,5 @@
+import { tagLimitFor } from '@domain/place/tagLimits'
+
 // DTO plano que viaja del form (cliente) a la server action. Todo string porque
 // son valores de <input>/<select>; la action valida y coacciona con Zod. Las
 // imágenes y tags se modelan como arrays serializables.
@@ -116,11 +118,18 @@ export const STATUS_LABELS: Record<string, string> = {
   ARCHIVED: 'Archivado',
 }
 
-// Etiquetas de las 7 capas de tags (para agrupar los checkboxes en el form).
+// Etiquetas de las 7 capas de tags (para agrupar los checkboxes en el form). El
+// "(máx. N)" sale del dominio, no se escribe a mano: si el tope cambia, el label
+// lo sigue solo.
+const withCap = (label: string, layer: string) => {
+  const cap = tagLimitFor(layer)
+  return cap ? `${label} (máx. ${cap})` : label
+}
+
 export const TAG_LAYER_LABELS: Record<string, string> = {
-  AUDIENCE: '¿Con quién? (máx. 4)',
-  OCCASION: 'Ideal para (máx. 3)',
-  VIBE: 'Vibe (máx. 3)',
+  AUDIENCE: withCap('¿Con quién?', 'AUDIENCE'),
+  OCCASION: withCap('Ideal para', 'OCCASION'),
+  VIBE: withCap('Vibe', 'VIBE'),
   EXPERIENCE: 'Experiencia',
   SERVICE: 'Servicios y acceso',
   CUISINE: 'Tipo de comida',

@@ -1,6 +1,7 @@
 'use client'
 import { useMemo, useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
+import { tagLimitFor } from '@domain/place/tagLimits'
 import type { PlaceFormOptions } from '@application/place/GetPlaceFormOptionsUseCase'
 import type { PlaceEditView } from '@application/place/GetPlaceForEditUseCase'
 import { ALLOWED_IMAGE_HOSTS } from '@lib/imageHosts'
@@ -148,8 +149,6 @@ export function PlaceForm({ options, initial }: PlaceFormProps) {
     layer,
     tags: visibleTags.filter((t) => t.layer === layer),
   })).filter((g) => g.tags.length > 0)
-  // Topes por capa subjetiva (espejo del dominio). Las objetivas no topean.
-  const LAYER_CAPS: Record<string, number> = { AUDIENCE: 4, OCCASION: 3, VIBE: 3 }
   const layerCount = (layer: string) =>
     values.tagIds.filter((id) =>
       options.tags.some((t) => t.id === id && t.layer === layer),
@@ -157,7 +156,7 @@ export function PlaceForm({ options, initial }: PlaceFormProps) {
 
   function toggleTag(id: string, layer: string) {
     const selected = values.tagIds.includes(id)
-    const cap = LAYER_CAPS[layer]
+    const cap = tagLimitFor(layer)
     if (!selected && cap !== undefined && layerCount(layer) >= cap) return
     set('tagIds', selected ? values.tagIds.filter((t) => t !== id) : [...values.tagIds, id])
   }
