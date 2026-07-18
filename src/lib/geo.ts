@@ -36,3 +36,29 @@ export function formatDistance(km: number): string {
   const rounded = km < 10 ? Math.round(km * 10) / 10 : Math.round(km)
   return `a ${rounded.toLocaleString('es-CL')} km de ti`
 }
+
+// Bajo este umbral el dato útil es el tiempo caminando, no los metros (s38).
+const WALKABLE_KM = 1.5
+// Caminar no sigue la línea recta: las calles obligan a rodear. 1.3 es el factor de
+// rodeo habitual en malla urbana — evita prometer un tiempo optimista.
+const DETOUR_FACTOR = 1.3
+// Paso promedio a pie en ciudad.
+const WALK_KMH = 5
+
+// Cómo se muestra una distancia. `walking` distingue el caso "se camina" para que la
+// UI elija el ícono (peatón vs pin) sin repetir el umbral.
+export interface DistanceLabel {
+  text: string
+  walking: boolean
+}
+
+// Bajo 1,5 km devuelve "a 12 min a pie" (estimado sobre la distancia recta corregida
+// por rodeo); sobre eso, la distancia en línea recta. NO es una ruta real: no
+// consultamos ninguna API de rutas, así que el tiempo es una aproximación honesta.
+export function describeDistance(km: number): DistanceLabel {
+  if (km < WALKABLE_KM) {
+    const minutes = Math.max(1, Math.round(((km * DETOUR_FACTOR) / WALK_KMH) * 60))
+    return { text: `a ${minutes} min a pie`, walking: true }
+  }
+  return { text: formatDistance(km), walking: false }
+}

@@ -9,6 +9,7 @@ import { SortSelect } from '@components/search/SortSelect'
 import { PlaceCard, type SaveContext } from '@components/place/PlaceCard'
 import { LoginEventTracker } from '@components/analytics/LoginEventTracker'
 import { NearMeButton } from '@components/geo/NearMeButton'
+import { NearMePrompt } from '@components/geo/NearMePrompt'
 import { Collection } from '@domain/collection/Collection'
 import { parseSearchParams, type RawSearchParams } from '@lib/parseSearchParams'
 
@@ -221,6 +222,9 @@ export default async function ExplorarPage({ searchParams }: PageProps) {
               <Link href="/explorar" className="active-filters__clear">limpiar</Link>
             </div>
           )}
+
+          {/* Ofrece la ubicación a los pocos segundos, una sola vez (s38). */}
+          <NearMePrompt />
 
           {/* Barra de resultados */}
           <div className="results-bar">
