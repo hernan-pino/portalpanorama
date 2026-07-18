@@ -42,12 +42,19 @@ describe('describeDistance', () => {
   it('bajo 1,5 km muestra el tiempo caminando', () => {
     const d = describeDistance(0.8)
     expect(d.walking).toBe(true)
-    // 0,8 km × 1,3 de rodeo ÷ 5 km/h ≈ 12,5 min
-    expect(d.text).toBe('a 12 min a pie')
+    // 2 min fijos + 0,8 km × 1,4 de rodeo ÷ 5 km/h ≈ 15,4 min
+    expect(d.text).toBe('a 15 min a pie')
   })
 
-  it('nunca baja de 1 min, por muy cerca que esté', () => {
-    expect(describeDistance(0.01).text).toBe('a 1 min a pie')
+  // El caso que destapó la calibración vieja: 130 m en línea recta daban "2 min"
+  // cuando caminarlo tomaba ~5. Los minutos fijos (esquina, cruce, semáforo) pesan
+  // más que la caminata a esta escala.
+  it('no subestima las distancias muy cortas', () => {
+    expect(describeDistance(0.13).text).toBe('a 4 min a pie')
+  })
+
+  it('nunca baja del piso fijo, por muy pegado que esté', () => {
+    expect(describeDistance(0.001).text).toBe('a 2 min a pie')
   })
 
   it('desde 1,5 km vuelve a la distancia en línea recta', () => {

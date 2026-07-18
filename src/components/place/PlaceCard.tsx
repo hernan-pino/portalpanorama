@@ -21,6 +21,9 @@ interface Props {
   place: PlaceCardView
   save?: SaveContext
   variant?: 'grid' | 'list'
+  // El carrusel del home usa tarjetas angostas: ahí la distancia empuja la fila de
+  // datos a una segunda línea y se ve apretada. Se apaga por página (s38).
+  showDistance?: boolean
 }
 
 // Precio compacto: bucket → símbolo escaneable ($…$$$$, Gratis como texto).
@@ -39,7 +42,7 @@ const fmtCount = (n: number) => n.toLocaleString('es-CL')
 // en el cuerpo, no en la foto), rating de Google bajado a la fila de datos, y metro
 // como punto de color (no círculo lleno). Los tags de contexto se probaron en la
 // grilla y se descartaron por decisión del usuario (s35): recargaban la tarjeta.
-export function PlaceCard({ place, save, variant = 'grid' }: Props) {
+export function PlaceCard({ place, save, variant = 'grid', showDistance = true }: Props) {
   const media = (
     <div className="place-card__media">
       {place.coverUrl ? (
@@ -88,7 +91,9 @@ export function PlaceCard({ place, save, variant = 'grid' }: Props) {
             ))}
           </span>
         )}
-        <PlaceDistance lat={place.lat} lng={place.lng} className="place-card__dist" />
+        {showDistance && (
+          <PlaceDistance lat={place.lat} lng={place.lng} className="place-card__dist" />
+        )}
       </div>
     </div>
   )

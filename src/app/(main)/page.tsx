@@ -181,7 +181,7 @@ async function HomeContent() {
           <PlaceRail>
             {places.map((place) => (
               <div key={place.id} className="home-rail__item">
-                <PlaceCard place={place} save={save} />
+                <PlaceCard place={place} save={save} showDistance={false} />
               </div>
             ))}
           </PlaceRail>

@@ -39,11 +39,15 @@ export function formatDistance(km: number): string {
 
 // Bajo este umbral el dato útil es el tiempo caminando, no los metros (s38).
 const WALKABLE_KM = 1.5
-// Caminar no sigue la línea recta: las calles obligan a rodear. 1.3 es el factor de
-// rodeo habitual en malla urbana — evita prometer un tiempo optimista.
-const DETOUR_FACTOR = 1.3
+// Caminar no sigue la línea recta: las calles obligan a rodear. 1.4 en malla urbana.
+const DETOUR_FACTOR = 1.4
 // Paso promedio a pie en ciudad.
 const WALK_KMH = 5
+// Minutos que no dependen de la distancia: salir del edificio, llegar a la esquina,
+// cruzar, esperar el semáforo. A 150 m esta fricción PESA MÁS que la caminata misma,
+// y sin ella el cálculo quedaba en la mitad del tiempo real (probado en la calle,
+// s38: decía 2 min donde eran ~5).
+const FIXED_MIN = 2
 
 // Cómo se muestra una distancia. `walking` distingue el caso "se camina" para que la
 // UI elija el ícono (peatón vs pin) sin repetir el umbral.
@@ -52,12 +56,16 @@ export interface DistanceLabel {
   walking: boolean
 }
 
-// Bajo 1,5 km devuelve "a 12 min a pie" (estimado sobre la distancia recta corregida
-// por rodeo); sobre eso, la distancia en línea recta. NO es una ruta real: no
-// consultamos ninguna API de rutas, así que el tiempo es una aproximación honesta.
+// Bajo 1,5 km devuelve "a 8 min a pie"; sobre eso, la distancia en línea recta.
+//
+// El tiempo es una ESTIMACIÓN, no una ruta: no consultamos ninguna API de rutas (cobra
+// por consulta y serían ~24 por carga). Se calibró contra caminatas reales y tiende a
+// quedar corto en distancias muy cortas, donde el trazado de la manzana manda. Ante la
+// duda conviene que sobre-estime: llegar antes de lo dicho no molesta a nadie.
 export function describeDistance(km: number): DistanceLabel {
   if (km < WALKABLE_KM) {
-    const minutes = Math.max(1, Math.round(((km * DETOUR_FACTOR) / WALK_KMH) * 60))
+    const walked = (km * DETOUR_FACTOR) / WALK_KMH * 60
+    const minutes = Math.max(1, Math.round(FIXED_MIN + walked))
     return { text: `a ${minutes} min a pie`, walking: true }
   }
   return { text: formatDistance(km), walking: false }

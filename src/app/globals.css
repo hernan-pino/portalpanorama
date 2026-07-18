@@ -1120,11 +1120,17 @@ main:has(.explorar) + .footer { margin-top: 0; }
 .active-chip__x { font-size: 15px; line-height: 1; opacity: 0.7; }
 .active-filters__clear { font-size: var(--t-body-sm); color: var(--fg-muted); text-decoration: underline; }
 
-/* barra de resultados */
+/* barra de resultados — grid de 3 áreas para poder recolocarlas en móvil sin tocar
+   el orden del DOM (el conteo se lee primero en lectores de pantalla). */
 .results-bar {
-  display: flex; justify-content: space-between; align-items: end; gap: var(--s-3);
+  display: grid; align-items: end; gap: var(--s-3);
+  grid-template-columns: 1fr auto auto;
+  grid-template-areas: "count controls view";
   padding-bottom: var(--s-4); border-bottom: 1px solid var(--surface-line); margin-bottom: var(--s-6);
 }
+.results-bar__count { grid-area: count; }
+.results-bar__controls { grid-area: controls; }
+.results-bar__view { grid-area: view; }
 .results-bar__count {
   font-family: var(--font-display); font-size: 26px;
   letter-spacing: var(--tr-tight); font-variation-settings: "opsz" 60;
@@ -1136,20 +1142,24 @@ main:has(.explorar) + .footer { margin-top: 0; }
 }
 .results-bar__controls { display: inline-flex; align-items: center; gap: var(--s-3); flex-shrink: 0; flex-wrap: wrap; justify-content: end; }
 
-/* En móvil los 3 controles (Cerca de mí · Ordenar · vista) no caben junto al conteo:
-   se salían de la pantalla. Pasan a una segunda fila y el conteo baja de tamaño —
-   nada se esconde y la barra no crece de más (s38). */
+/* En móvil los 3 controles no caben junto al conteo: se salían de la pantalla. La
+   vista sube a la derecha del conteo (dos anclas, una por esquina) y "Cerca de mí" +
+   orden bajan a una fila propia — dos filas parejas en vez de tres sueltas (s38). */
 @media (max-width: 560px) {
   .results-bar {
-    flex-direction: column; align-items: stretch; gap: var(--s-3);
+    grid-template-columns: 1fr auto;
+    grid-template-areas:
+      "count view"
+      "controls controls";
+    align-items: center; row-gap: var(--s-4);
   }
-  .results-bar__count { font-size: 20px; }
-  .results-bar__controls {
-    display: flex; justify-content: flex-start; gap: var(--s-2); width: 100%;
-  }
-  .results-bar__controls > * { flex-shrink: 1; min-width: 0; }
+  .results-bar__count { font-size: 21px; }
+  .results-bar__controls { display: flex; justify-content: flex-start; gap: var(--s-2); }
+  .results-bar__controls > * { min-width: 0; }
+  .sort-select { flex: 1; min-width: 0; }
   .sort-select__label { display: none; }
-  .sort-select select, .nearme { height: 34px; font-size: var(--t-body-sm); }
+  .sort-select select { width: 100%; }
+  .sort-select select, .nearme { height: 36px; font-size: var(--t-body-sm); }
 }
 
 /* selector de orden (sesión 27) */

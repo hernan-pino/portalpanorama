@@ -227,17 +227,20 @@ export default async function ExplorarPage({ searchParams }: PageProps) {
           <NearMePrompt />
 
           {/* Barra de resultados */}
+          {/* Grid de 3 áreas (conteo · controles · vista): en móvil la vista sube
+              junto al conteo y los controles bajan a una fila propia. */}
           <div className="results-bar">
             <div className="results-bar__count">
-              <strong>{result.total}</strong> {result.total === 1 ? 'lugar' : 'lugares'}
+              <strong>{result.total}</strong>{' '}
+              {result.total === 1 ? 'lugar' : 'lugares'}
             </div>
             <div className="results-bar__controls">
               <NearMeButton />
               <SortSelect />
-              <div className="toggle-group" role="group" aria-label="Vista">
-                <Link href={viewHref('grid')} aria-pressed={f.view === 'grid'}><GridIcon /> Grid</Link>
-                <Link href={viewHref('lista')} aria-pressed={f.view === 'lista'}><ListIcon /> Lista</Link>
-              </div>
+            </div>
+            <div className="toggle-group results-bar__view" role="group" aria-label="Vista">
+              <Link href={viewHref('grid')} aria-pressed={f.view === 'grid'}><GridIcon /> Grid</Link>
+              <Link href={viewHref('lista')} aria-pressed={f.view === 'lista'}><ListIcon /> Lista</Link>
             </div>
           </div>
 
