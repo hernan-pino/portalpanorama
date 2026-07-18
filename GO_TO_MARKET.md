@@ -7,6 +7,12 @@ operativo de la **Fase A** de [STRATEGY.md](STRATEGY.md).
 - **El porqué / la secuencia A-B-C:** [STRATEGY.md](STRATEGY.md) · **Estado y backlog del día a día:** [PLAN.md](PLAN.md)
 - **Qué es el producto / norte permanente:** [PRD.md](PRD.md)
 
+> ⚠️ **Nota de estado (2026-07-17):** el **calendario y el checklist de julio** de más abajo quedaron
+> **desincronizados con la carga real** — se cargó por verticales distintas a lo planeado (ramen, sushi,
+> chocolaterías, florerías, plantas) y vamos en **423 lugares**. El **marco estratégico** de este doc
+> (tablero de metas, ritmo semanal, mapa diferido, Apify de 2 cuentas) sigue vigente; el **detalle
+> semana-a-semana es histórico**. El roadmap operativo vivo está en [PLAN.md](PLAN.md).
+
 **Creado:** 2026-06-28 (sesión 15). **Perfil de trabajo del usuario:** empezó un trabajo nuevo →
 **~10 h/semana** en bloques de **~50 min/día**, **keyboard-first** (cargar lugares + escribir guías),
 **difusión liviana** (anuncios puntuales en foros + redes creadas, listas para cuando hagan falta).
