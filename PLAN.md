@@ -11,27 +11,49 @@ para retomar rápido. Se actualiza cada vez que avanzamos.
 
 ## ▶️ ROADMAP — próximos pasos (acordado s38, 2026-07-17)
 
-> **▶️ RETOMAR (fin s38, 2026-07-18):** 📍 distancia **HECHA, verificada y revisada por el usuario**
-> (con ajustes). **Próximo paso: 🅿️ estacionamientos** (punto 1 de la tanda). ⚠️ **Hay trabajo sin
-> commitear en el working tree** (distancia + reorganización de docs + backlog) — decidir si commitear al
-> arrancar. Nada pusheado.
+> **▶️ RETOMAR (fin s38, 2026-07-18):** 📍 distancia **EN PROD y probada en el teléfono** por el usuario,
+> con dos rondas de ajustes sobre feedback real. Árbol limpio, todo pusheado (`a37d452`).
+> **Próximo paso: 🅿️ estacionamientos** (punto 1 de la tanda).
+> ⚠️ **Deuda abierta:** 14 lugares publicados en **prod** siguen sin `lat`/`lng` (arreglado en local, no
+> en prod) → va con la próxima tanda de carga, con `enrich-ratings --no-coords`.
 
 El orden que definió el usuario. No se salta un paso sin OK explícito.
 
 **🔨 1. AHORA — features cortas con datos que YA tenemos**
-- [x] **📍 Distancia desde tu ubicación ✅ HECHO + revisado por el usuario (s38, local).** "a X km/m de ti"
-  en tarjeta + ficha + **toda página con tarjetas** (home, guías, listas). **UX:** botón opt-in "Cerca de
-  mí" en /explorar · sin prompt automático · sin permiso no aparece nada. **Arquitectura:** `lib/geo.ts`
-  (haversine + formato CL, puro) · `UserLocationProvider` **montado en el layout de `(main)`** → contexto
-  global, recuerda la ubicación por la sesión de pestaña (sessionStorage) · `NearMeButton` · `PlaceDistance`
-  (isla cliente, no renderiza sin coords). `lat`/`lng` expuestos en `PlaceCardView`. **Ajustes de la
-  revisión del usuario:** (a) **pop-up explicativo propio** antes del permiso nativo ("usamos tu ubicación
-  solo para la distancia, no la guardamos" — el diálogo nativo NO se puede estilar, esto es el pre-prompt) ·
-  (b) la distancia sale también en la **home** (provider global) · (c) **"¿Cómo ordenamos?"** se movió de la
-  barra de resultados al **pie del panel de filtros** ("¿Quieres saber cómo ordenamos las fichas?") · (d)
-  aviso de error del botón por causa (permiso bloqueado / ubicación del SO apagada / timeout), apilado bajo
-  el botón para no desbordar la barra. **✅ Verificado:** typecheck + lint + 179 tests + navegador (pop-up →
-  activar → 23 distancias en /explorar, 11 en home, ficha; 0 errores de consola). **Falta:** commit + push.
+- [x] **📍 Distancia desde tu ubicación ✅ EN PROD, probada en el teléfono (s38).** "a X min a pie / a X km
+  de ti" en la tarjeta de **/explorar, guías y listas** + la ficha. **NO** en el carrusel del home: esas
+  tarjetas son angostas y el dato empujaba la fila de datos a una segunda línea (se apaga con la prop
+  `showDistance`, no hardcodeado en la tarjeta).
+
+  **Arquitectura:** `lib/geo.ts` (haversine + formato CL, puro, 11 tests) · `UserLocationProvider` en el
+  layout de `(main)` → contexto global · `NearMeButton` (opt-in manual) · `NearMePrompt` (ofrece activar a
+  los 6 s) · `GeoAskDialog` (pop-up compartido, por `createPortal`) · `PlaceDistance` (isla cliente).
+  `lat`/`lng` expuestos en `PlaceCardView`.
+
+  **⚠️ La lección de la sesión — el permiso del navegador es la fuente de verdad, no `sessionStorage`.**
+  La v1 guardaba la ubicación solo en `sessionStorage` y la trataba como verdad: en el teléfono se perdía
+  al cambiar de página y había que apretar "Cerca de mí" de nuevo en cada una (y por eso tampoco salía en
+  la ficha ni en el home — *un* bug con tres caras). Ahora, al montar, se consulta la **Permissions API**:
+  si el usuario ya concedió, se vuelve a pedir la posición y el navegador **no abre ningún diálogo**. El
+  opt-out manual (la X) se recuerda aparte, si no el auto-restore lo pisaría.
+
+  **UX del permiso:** pop-up explicativo propio ANTES del nativo (el nativo no se puede estilar). El
+  automático sale a los **6 s** en /explorar y **una sola vez en la vida** (`localStorage`); no al entrar,
+  porque en iOS un rechazo es casi irreversible y quema el permiso para siempre. El botón queda como vía
+  manual. Aviso de error por causa (permiso bloqueado / ubicación del SO apagada / timeout).
+
+  **"X min a pie" bajo 1,5 km — calibrado contra la calle, no a ojo.** v1 usaba solo un factor de rodeo
+  (×1,3) y **subestimaba feo**: 130 m en línea recta daban "2 min" donde caminarlo tomaba ~5. Buena parte
+  del tiempo de caminar **no escala con la distancia** (salir, llegar a la esquina, cruzar, semáforo) y a
+  150 m esa fricción pesa más que la caminata. Fórmula actual: **2 min fijos + ×1,4 de rodeo ÷ 5 km/h**,
+  sesgada a sobre-estimar (llegar antes no molesta; llegar después sí). Sobre 1,5 km vuelve a km en línea
+  recta. **No** consultamos API de rutas: cobra por consulta y serían ~24 por carga.
+
+  **Íconos:** peatón SOLO con tiempos; pin con distancias. Nunca prometer "caminando" a 5 km.
+  **Layout:** la distancia va al borde derecho de la tarjeta (único dato que depende del usuario, no del
+  lugar) · barra de resultados = grid de 3 áreas, en móvil la vista sube junto al conteo y "Cerca de mí" +
+  orden bajan a una fila propia · **"¿Cómo ordenamos?"** se movió al pie del panel de filtros.
+  **✅ Verificado:** typecheck + lint + 190 tests + build + el usuario en su iPhone.
 - [ ] **🅿️ Estacionamientos como dato de ficha** — dato clickeable que abre un pop-up liviano (nombre ·
   dirección · pagado/gratis). NO fichas propias del catálogo (decisión s28). Insumo futuro del recomendador IA.
 - [ ] **⭐ Tal vez reseñas por dimensión / o alguna deuda menor** — si queda espacio. Reseñas = notas por
@@ -60,6 +82,16 @@ resolvieron, aprendizajes, stack, habilidades. Materia prima: [docs/historico/PL
 - ✅ **Rediseño completo en prod** (mini rebrand con Claude Design: tokens, tipografía, tarjeta, ficha, auth, paneles).
 - ✅ **Cuentas de negocio en prod** (reclamar ficha · publicar negocio nuevo · panel del dueño · moderación admin).
 - ✅ **Pipeline de carga afilado** (s37): el horario sale de Google, el ingestor no publica fichas incompletas, reuso de Blob (0 subidas duplicadas). Ver runbook abajo.
+
+**Pendientes chicos de la s38:**
+- **14 lugares publicados en PROD sin `lat`/`lng`** (florerías, viveros y chocolaterías de un lote donde el
+  ingestor no guardó las coords) → no muestran distancia. **Ya corregido en local**, falta prod: se acordó
+  hacerlo con la próxima tanda de carga (`enrich-ratings --no-coords`, ~16 consultas a Apify). Local quedó
+  en **417 publicados, 0 sin coords**.
+- **Fichas de prueba `dfsd` y `dsfad`** (13-jul) en `PENDING_REVIEW` — no salen en público, pero el
+  backfill les puso fotos y coords de Isla de Maipo y Buin. Borrarlas desde `/admin/lugares`.
+- "Entrelagos Bombonería 1850" quedó matcheada como "Chocolatería Entrelagos" (misma dirección, Agustinas
+  1035): el match es correcto, solo cambió el nombre en Google.
 
 **Pendientes chicos de la s37:**
 - 3 descripciones con avisos caducos + info real mezclada (La Bottega Gandolini · La Rústica Pizzeria · Kame House) → reescribir copy.
