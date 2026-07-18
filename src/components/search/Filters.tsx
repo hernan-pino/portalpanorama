@@ -1,5 +1,6 @@
 'use client'
 import { useState, useTransition, Suspense } from 'react'
+import Link from 'next/link'
 import { useRouter, useSearchParams } from 'next/navigation'
 import type { PlaceFacets, FacetCount } from '@application/ports/SearchService'
 
@@ -147,6 +148,11 @@ function FiltersInner({ facets }: Props) {
           Sin reserva
         </button>
       </Section>
+
+      {/* Ayuda: cómo se ordenan las fichas (bajó desde la barra de resultados, s38) */}
+      <Link href="/como-ordenamos" className="filters__how">
+        ¿Quieres saber cómo ordenamos las fichas?
+      </Link>
     </div>
   )
 

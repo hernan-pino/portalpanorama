@@ -13,6 +13,9 @@ export const placeCardArgs = Prisma.validator<Prisma.PlaceDefaultArgs>()({
     googleRating: true,
     googleReviewCount: true,
     score: true,
+    // Coordenadas: alimentan "a X de ti" (distancia calculada en el cliente).
+    lat: true,
+    lng: true,
     category: { select: { name: true } },
     commune: { select: { name: true } },
     neighborhood: { select: { name: true } },
@@ -43,5 +46,7 @@ export function toPlaceCardView(row: PlaceCardRow): PlaceCardView {
     googleReviewCount: row.googleReviewCount ?? undefined,
     metroLines: row.metroStation?.lines.map((l) => ({ code: l.code, color: l.color })),
     score: row.score,
+    lat: row.lat ?? undefined,
+    lng: row.lng ?? undefined,
   }
 }

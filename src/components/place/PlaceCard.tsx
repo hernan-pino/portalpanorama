@@ -2,6 +2,7 @@ import Image from 'next/image'
 import Link from 'next/link'
 import type { PlaceCardView } from '@application/ports/PlaceRepository'
 import { SaveHeart } from './SaveHeart'
+import { PlaceDistance } from '@components/geo/PlaceDistance'
 
 // Contexto de guardado: si viene, la tarjeta muestra el corazón cableado al flujo
 // de listas. Se resuelve una vez por página (sesión + listas + lugares guardados) y
@@ -87,6 +88,7 @@ export function PlaceCard({ place, save, variant = 'grid' }: Props) {
             ))}
           </span>
         )}
+        <PlaceDistance lat={place.lat} lng={place.lng} className="place-card__dist" />
       </div>
     </div>
   )

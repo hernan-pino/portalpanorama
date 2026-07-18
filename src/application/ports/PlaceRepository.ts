@@ -19,6 +19,10 @@ export interface PlaceCardView {
   // La tarjeta muestra el/los badge(s) con su color oficial. Vacío si no aplica.
   metroLines?: { code: string; color: string }[]
   score: number
+  // Coordenadas: alimentan "a X de ti" (distancia calculada en el cliente contra la
+  // ubicación del usuario). Opcionales — no todo lugar tiene lat/lng.
+  lat?: number
+  lng?: number
 }
 
 // Ficha completa para la página de detalle. Todo lo que se renderiza, con los

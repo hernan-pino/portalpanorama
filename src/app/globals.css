@@ -547,6 +547,9 @@ a { color: inherit; text-decoration: none; }
   display: flex; align-items: center; gap: var(--s-3); flex-wrap: wrap;
 }
 .place-card__metro { display: inline-flex; align-items: center; gap: var(--s-2); }
+/* "a X de ti": distancia calculada en el cliente (isla PlaceDistance). Mismo peso
+   visual que el resto de la fila de datos; naranjo suave para diferenciar del rating. */
+.place-card__dist { font: 500 var(--t-data-sm)/1 var(--font-mono); color: var(--accent); white-space: nowrap; }
 
 /* corazón de guardar (isla cliente sobre la foto, enmarcada) */
 .save-heart {
@@ -1053,6 +1056,14 @@ main:has(.explorar) + .footer { margin-top: 0; }
 /* panel de filtros (acordeón) */
 .filters__rail { position: sticky; top: var(--s-6); display: flex; flex-direction: column; }
 .filters__rail-head { margin-bottom: var(--s-2); }
+/* Link de ayuda al pie del panel de filtros (rail + sheet): cómo se ordenan las fichas */
+.filters__how {
+  display: inline-block; margin-top: var(--s-4); padding-top: var(--s-3);
+  border-top: 1px solid var(--surface-line);
+  font-size: var(--t-body-sm); color: var(--fg-muted);
+  text-decoration: underline; text-underline-offset: 3px;
+}
+.filters__how:hover { color: inherit; }
 .filters__trigger { display: none; }
 .filter-acc { border-top: 1px solid var(--surface-line); }
 .filter-acc:first-of-type { border-top: 0; }
@@ -1138,6 +1149,35 @@ main:has(.explorar) + .footer { margin-top: 0; }
   text-underline-offset: 3px; white-space: nowrap;
 }
 .results-bar__how:hover { color: inherit; }
+
+/* Botón "Cerca de mí" (opt-in de geolocalización, s38). El aviso de error se apila
+   BAJO el botón (columna) para no ensanchar la barra de resultados. */
+.nearme-wrap { display: inline-flex; flex-direction: column; align-items: flex-start; gap: 4px; }
+.nearme {
+  height: 38px; padding: 0 var(--s-3); display: inline-flex; align-items: center; gap: 6px;
+  border: 1px solid var(--surface-line); border-radius: var(--r-pill);
+  background: var(--bg-raised); color: inherit; cursor: pointer;
+  font: inherit; font-size: var(--t-body-sm); white-space: nowrap;
+  transition: border-color var(--d-fast), background var(--d-fast), color var(--d-fast);
+}
+.nearme:hover:not(:disabled) { border-color: var(--ink-100); }
+.nearme:disabled { opacity: 0.6; cursor: default; }
+.nearme--on { background: var(--accent); border-color: var(--accent); color: var(--paper-00); }
+.nearme--on:hover { background: var(--accent); }
+.nearme__x { font-size: 15px; line-height: 1; opacity: 0.85; }
+.nearme__note { font-size: 11px; color: var(--fg-muted); max-width: 240px; line-height: 1.3; }
+
+/* Pop-up "para qué usamos tu ubicación" (paso previo al permiso nativo, s38).
+   Reusa el shell .save-modal; solo centra el contenido y suma el ícono. */
+.geo-ask { text-align: center; }
+.geo-ask .save-modal__lead { text-align: center; }
+.geo-ask__icon {
+  width: 48px; height: 48px; border-radius: 50%;
+  display: inline-flex; align-items: center; justify-content: center;
+  background: var(--surface-sunken); color: var(--accent);
+  margin: var(--s-2) auto var(--s-3);
+}
+.geo-ask__hint { margin-top: var(--s-3); font-size: 11px; color: var(--fg-muted); }
 .toggle-group { display: inline-flex; border: 1px solid var(--surface-line); border-radius: var(--r-pill); padding: 3px; flex-shrink: 0; }
 .toggle-group a {
   height: 32px; padding: 0 var(--s-3); border-radius: var(--r-pill);
@@ -1375,6 +1415,9 @@ button.ficha__hero-img { cursor: zoom-in; }
   color: var(--fg-muted);
 }
 .ficha__loc .ico { color: var(--accent-70); }
+/* "a X de ti" en la ficha: separado de la ubicación por un punto medio */
+.ficha__dist { color: var(--accent); font-weight: 500; }
+.ficha__dist::before { content: "·"; margin: 0 var(--s-2) 0 0; color: var(--fg-muted); font-weight: 400; }
 .ficha__rating {
   display: flex; align-items: center; gap: var(--s-2);
   margin-top: var(--s-3);

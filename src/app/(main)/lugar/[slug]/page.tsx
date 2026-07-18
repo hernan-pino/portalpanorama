@@ -15,6 +15,7 @@ import { Collection } from '@domain/collection/Collection'
 import { ContactRow } from './ContactRow'
 import { PlaceCard } from '@components/place/PlaceCard'
 import { PlaceRail } from '@components/place/PlaceRail'
+import { PlaceDistance } from '@components/geo/PlaceDistance'
 import { Gallery } from './Gallery'
 import { StickyActionBar } from './StickyActionBar'
 import { PointsList } from './PointsList'
@@ -242,6 +243,7 @@ export default async function LugarPage({ params }: PageProps) {
           <div className="ficha__loc">
             <PinIcon />
             <span>{place.neighborhood ? `${place.neighborhood.name} · ` : ''}{place.commune.name}</span>
+            <PlaceDistance lat={place.lat} lng={place.lng} className="ficha__dist" />
           </div>
 
           {place.parent && (

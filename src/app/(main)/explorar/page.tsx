@@ -8,6 +8,7 @@ import { Filters } from '@components/search/Filters'
 import { SortSelect } from '@components/search/SortSelect'
 import { PlaceCard, type SaveContext } from '@components/place/PlaceCard'
 import { LoginEventTracker } from '@components/analytics/LoginEventTracker'
+import { NearMeButton } from '@components/geo/NearMeButton'
 import { Collection } from '@domain/collection/Collection'
 import { parseSearchParams, type RawSearchParams } from '@lib/parseSearchParams'
 
@@ -227,7 +228,7 @@ export default async function ExplorarPage({ searchParams }: PageProps) {
               <strong>{result.total}</strong> {result.total === 1 ? 'lugar' : 'lugares'}
             </div>
             <div className="results-bar__controls">
-              <Link href="/como-ordenamos" className="results-bar__how">¿Cómo ordenamos?</Link>
+              <NearMeButton />
               <SortSelect />
               <div className="toggle-group" role="group" aria-label="Vista">
                 <Link href={viewHref('grid')} aria-pressed={f.view === 'grid'}><GridIcon /> Grid</Link>
