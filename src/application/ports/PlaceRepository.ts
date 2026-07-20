@@ -1,6 +1,7 @@
 import { Place } from '@domain/place/Place'
 import { PriceRange } from '@domain/place/PriceRange'
 import { ReservationPolicy } from '@domain/place/ReservationPolicy'
+import { ParkingOption } from '@domain/place/ParkingOption'
 
 // Tarjeta de lugar para grillas/relacionados. Denormalizada (nombres resueltos),
 // no es el agregado de dominio: es un read-model para la UI.
@@ -48,6 +49,7 @@ export interface PlaceDetailView {
   priceRange?: string
   reservation?: string
   paymentMethods: string[]
+  parkingOptions: string[]
   schedule?: string
   phone?: string
   website?: string
@@ -164,6 +166,9 @@ export interface OwnerEditableFields {
   reservation?: ReservationPolicy
   accessDetail?: string
   reference?: string
+  // Dónde estacionar. Lo puebla Google (enrich), pero el dueño es quien de verdad
+  // sabe: su edición manda sobre el dato automático. El form manda el set completo.
+  parkingOptions?: ParkingOption[]
 }
 
 // Foto gestionada por el dueño. La URL siempre nace de NUESTRO storage (subida o

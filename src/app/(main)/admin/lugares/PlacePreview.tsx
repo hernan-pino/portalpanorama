@@ -3,9 +3,10 @@ import { useEffect, useMemo } from 'react'
 import type { PlaceFormOptions } from '@application/place/GetPlaceFormOptionsUseCase'
 import type { PlaceFormValues } from './types'
 import { PRICE_OPTIONS, RESERVATION_OPTIONS, RAIN_OPTIONS } from './types'
+import { parkingLabel } from '@components/place/parkingLabels'
 import {
   PinIcon, WalletIcon, ClockIcon, TicketIcon, CardIcon, MetroIcon,
-  AccessIcon, UmbrellaIcon, PhoneIcon, GlobeIcon, InstagramIcon, MenuIcon, Stars,
+  AccessIcon, CarIcon, UmbrellaIcon, PhoneIcon, GlobeIcon, InstagramIcon, MenuIcon, Stars,
 } from '@/app/(main)/lugar/[slug]/icons'
 import { PointsList } from '@/app/(main)/lugar/[slug]/PointsList'
 import { RichText } from '@/app/(main)/lugar/[slug]/RichText'
@@ -76,6 +77,7 @@ export function PlacePreview({ values, options, onClose }: PlacePreviewProps) {
       reviews: Number.isFinite(reviews) ? reviews : undefined,
       cover: images[0],
       paymentMethods: values.paymentMethods,
+      parkingOptions: values.parkingOptions,
     }
   }, [values, options])
 
@@ -175,6 +177,15 @@ export function PlacePreview({ values, options, onClose }: PlacePreviewProps) {
                   <DataRow icon={<CardIcon />} k="Pagos">
                     <div className="ficha__tags" style={{ marginTop: 2 }}>
                       {v.paymentMethods.map((m) => <span key={m} className="chip">{m}</span>)}
+                    </div>
+                  </DataRow>
+                )}
+                {v.parkingOptions.length > 0 && (
+                  <DataRow icon={<CarIcon />} k="Estacionamiento">
+                    <div className="ficha__tags" style={{ marginTop: 2 }}>
+                      {v.parkingOptions.map((o) => (
+                        <span key={o} className="chip">{parkingLabel(o)}</span>
+                      ))}
                     </div>
                   </DataRow>
                 )}

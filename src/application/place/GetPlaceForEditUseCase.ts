@@ -31,6 +31,7 @@ export interface PlaceEditView {
   priceRange?: string
   reservation?: string
   paymentMethods: string[]
+  parkingOptions: string[]
   schedule?: string
 
   phone?: string
@@ -84,6 +85,7 @@ export class GetPlaceForEditUseCase {
       priceRange: place.priceRange,
       reservation: place.reservation,
       paymentMethods: [...place.paymentMethods],
+      parkingOptions: [...place.parkingOptions],
       schedule: place.schedule,
       phone: place.phone,
       website: place.website,

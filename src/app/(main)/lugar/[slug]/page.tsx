@@ -27,8 +27,9 @@ import { DirectionsLink } from './DirectionsLink'
 import { placeJsonLd } from './jsonLd'
 import {
   PinIcon, WalletIcon, ClockIcon, TicketIcon, CardIcon, MetroIcon,
-  AccessIcon, UmbrellaIcon, PhoneIcon, GlobeIcon, InstagramIcon, MenuIcon, StarIcon, Stars,
+  AccessIcon, CarIcon, UmbrellaIcon, PhoneIcon, GlobeIcon, InstagramIcon, MenuIcon, StarIcon, Stars,
 } from './icons'
+import { parkingLabel } from '@components/place/parkingLabels'
 
 interface PageProps {
   params: Promise<{ slug: string }>
@@ -155,7 +156,14 @@ export default async function LugarPage({ params }: PageProps) {
   const experience = place.tags.filter((t) => t.layer === 'EXPERIENCE')
   const specific = place.tags.filter((t) => t.layer === 'SPECIFIC')
   const cuisine = place.tags.filter((t) => t.layer === 'CUISINE')
-  const service = place.tags.filter((t) => t.layer === 'SERVICE')
+  // Los tags de estacionamiento se sacan de "Servicios y acceso" y bajan a la fila de
+  // Estacionamiento: si no, el mismo dato salía dos veces en la ficha. Se muestran igual
+  // (siguen filtrando en /explorar, cosa que el dato de Google NO hace), solo cambian de
+  // sitio. "Requiere auto" se queda: habla de cómo llegar, no de dónde dejar el auto.
+  const PARKING_TAG_SLUGS = ['estacionamiento-propio', 'estacionamiento-cercano']
+  const allService = place.tags.filter((t) => t.layer === 'SERVICE')
+  const service = allService.filter((t) => !PARKING_TAG_SLUGS.includes(t.slug))
+  const parkingTags = allService.filter((t) => PARKING_TAG_SLUGS.includes(t.slug))
 
   const hasContact = !!(
     place.phone || place.website || place.instagram || place.menuUrl || place.socialLinks.length
@@ -352,6 +360,26 @@ export default async function LugarPage({ params }: PageProps) {
                       <Link key={t.slug} href={`/explorar?acceso=${t.slug}`} className="chip">{t.name}</Link>
                     ))}
                   </div>
+                )}
+              </DataRow>
+            )}
+            {(parkingTags.length > 0 || place.parkingOptions.length > 0) && (
+              <DataRow icon={<CarIcon />} k="Estacionamiento">
+                <div className="ficha__tags" style={{ marginTop: 2 }}>
+                  {/* Primero lo curado por nosotros (clickeable: filtra), después el
+                      detalle de Google (informativo). */}
+                  {parkingTags.map((t) => (
+                    <Link key={t.slug} href={`/explorar?acceso=${t.slug}`} className="chip">{t.name}</Link>
+                  ))}
+                  {place.parkingOptions.map((o) => (
+                    <span key={o} className="chip">{parkingLabel(o)}</span>
+                  ))}
+                </div>
+                {/* El dato de Google es colaborativo (la pestaña "Acerca de" de Maps):
+                    se informa la fuente en vez de prometer que hay dónde dejar el auto.
+                    Si solo hay tags curados, no corresponde atribuirlo a Google. */}
+                {place.parkingOptions.length > 0 && (
+                  <div className="ficha__drow-note">El detalle sale de Google. Puede haber cambiado.</div>
                 )}
               </DataRow>
             )}

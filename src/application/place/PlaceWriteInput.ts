@@ -1,6 +1,7 @@
 import { PriceRange } from '@domain/place/PriceRange'
 import { ReservationPolicy } from '@domain/place/ReservationPolicy'
 import { RainPolicy } from '@domain/place/RainPolicy'
+import { ParkingOption } from '@domain/place/ParkingOption'
 
 // Imagen entrante (sin id; el use case lo genera). La URL ya es de storage propio
 // (la subida ocurre en presentation/infra antes de llamar al use case).
@@ -45,6 +46,7 @@ export interface PlaceWriteInput {
   priceRange?: PriceRange
   reservation?: ReservationPolicy
   paymentMethods: string[]
+  parkingOptions: ParkingOption[]
   schedule?: string
 
   phone?: string

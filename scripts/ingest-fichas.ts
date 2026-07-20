@@ -293,6 +293,10 @@ async function resolveFicha(
     priceRange: toPrice(f.presupuesto_operacion?.rango_precio),
     reservation: toReservation(f.presupuesto_operacion?.reserva),
     paymentMethods: (f.presupuesto_operacion?.metodos_pago ?? []).map((s) => s.trim()).filter(Boolean),
+    // Siempre vacío: el estacionamiento NO sale de la investigación web (el agente lo
+    // inventaría) sino de la sección "Estacionamiento" de Google, que escribe el paso
+    // de enrich-ratings sobre las fichas que no lo tienen.
+    parkingOptions: [],
     schedule: f.presupuesto_operacion?.horario ?? undefined,
     phone: f.contacto_redes?.telefono ?? undefined,
     website: normalizeUrl(f.contacto_redes?.sitio_web),

@@ -44,6 +44,9 @@ export function MetroIcon(p: IconProps) {
 export function AccessIcon(p: IconProps) {
   return <Svg className={p.className}><circle cx="11" cy="3.6" r="1.5" /><path d="M8.2 6.3l3 1 2.3 1.1-1.8.6M11.2 7.3V11h-3a3.5 3.5 0 1 0 3.4 4.3" /><path d="M11.2 11l2.4 4.4h2" /></Svg>
 }
+export function CarIcon(p: IconProps) {
+  return <Svg className={p.className}><path d="M3.4 13.2V9.6l1.6-3.4a1.5 1.5 0 0 1 1.4-.9h7.2a1.5 1.5 0 0 1 1.4.9l1.6 3.4v3.6" /><path d="M3.4 9.6h13.2" /><circle cx="6.6" cy="13.2" r="1.4" /><circle cx="13.4" cy="13.2" r="1.4" /><path d="M8 13.2h4" /></Svg>
+}
 export function UmbrellaIcon(p: IconProps) {
   return <Svg className={p.className}><path d="M2.6 10a7.4 7.4 0 0 1 14.8 0z" /><path d="M10 10v5.6a1.7 1.7 0 0 1-3.4 0" /><path d="M10 4.2V2.6" /></Svg>
 }

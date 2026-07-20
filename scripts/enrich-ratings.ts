@@ -23,6 +23,7 @@
 import { prisma } from '../src/lib/db'
 import { container } from '../src/lib/container'
 import { PlaceStatus } from '../src/domain/place/PlaceStatus'
+import { parkingLabel } from '../src/components/place/parkingLabels'
 
 interface Target {
   id: string
@@ -76,6 +77,7 @@ async function main() {
   let needsCheck = 0
   let coordsSet = 0
   let scheduleSet = 0
+  let parkingSet = 0
   const closed: string[] = []
   const suspect: string[] = []
 
@@ -110,6 +112,10 @@ async function main() {
         scheduleSet++
         console.log(`    🕒 horario: ${res.scheduleSet}`)
       }
+      if (res.parkingSet) {
+        parkingSet++
+        console.log(`    🅿️  estacionamiento: ${res.parkingSet.map(parkingLabel).join(' · ')}`)
+      }
       if (res.scheduleSuspect) {
         suspect.push(t.name)
         const days = res.scheduleSuspect.map((d) => `${d.day} ${d.hours}`).join(' · ')
@@ -139,7 +145,8 @@ async function main() {
     `\nResumen: ${updated} enriquecido(s)` +
       `${dry ? ' (DRY, no se escribió)' : ''}, ${skipped} omitido(s), ${notFound} sin match` +
       `, 📍 ${coordsSet} con coords nuevas` +
-      `${withSchedule ? `, 🕒 ${scheduleSet} con horario nuevo` : ''}.`,
+      `${withSchedule ? `, 🕒 ${scheduleSet} con horario nuevo` : ''}` +
+      `, 🅿️ ${parkingSet} con estacionamiento nuevo.`,
   )
   if (needsCheck > 0) {
     console.log(`⚠️  ${needsCheck} con match dudoso (marcados REVISAR): confírmalos a mano en /admin/lugares.`)

@@ -17,6 +17,7 @@ function makeProps(overrides: Partial<PlaceProps> = {}): PlaceProps {
     subcategoryId: 'sub_1',
     communeId: 'com_1',
     paymentMethods: [],
+    parkingOptions: [],
     socialLinks: [],
     score: 0,
     isPremium: false,

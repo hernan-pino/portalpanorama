@@ -7,6 +7,7 @@ import { CACHE_TAGS } from '@lib/cachedReads'
 import { ALLOWED_IMAGE_HOSTS, isAllowedImageUrl } from '@lib/imageHosts'
 import { PriceRange } from '@domain/place/PriceRange'
 import { ReservationPolicy } from '@domain/place/ReservationPolicy'
+import { ParkingOption } from '@domain/place/ParkingOption'
 import { PlaceNotFoundError } from '@domain/place/errors/PlaceNotFoundError'
 import { UnauthorizedBusinessAccessError } from '@domain/business/errors/UnauthorizedBusinessAccessError'
 import { ImageFetchError } from '@application/ports/ImageFetcher'
@@ -43,6 +44,9 @@ const editSchema = z.object({
   reservation: z.nativeEnum(ReservationPolicy).optional().or(z.literal('')),
   accessDetail: z.string().trim().max(300).optional(),
   reference: z.string().trim().max(300).optional(),
+  // Checkboxes: el form manda el set completo (vacío = "no hay dónde estacionar",
+  // que es una respuesta válida y distinta de "no lo sé"). El dueño gana sobre Google.
+  parkingOptions: z.array(z.nativeEnum(ParkingOption)).default([]),
 })
 
 function clean(v: string | undefined): string | undefined {
@@ -85,6 +89,7 @@ export async function updateOwnedPlaceAction(formData: FormData): Promise<Action
     reservation: formData.get('reservation') || undefined,
     accessDetail: formData.get('accessDetail') || undefined,
     reference: formData.get('reference') || undefined,
+    parkingOptions: formData.getAll('parkingOptions'),
   })
   if (!parsed.success) return { error: parsed.error.issues[0]?.message ?? 'Datos inválidos.' }
 
@@ -107,6 +112,7 @@ export async function updateOwnedPlaceAction(formData: FormData): Promise<Action
       reservation: (d.reservation || undefined) as ReservationPolicy | undefined,
       accessDetail: clean(d.accessDetail),
       reference: clean(d.reference),
+      parkingOptions: d.parkingOptions,
     })
   } catch (err) {
     if (err instanceof UnauthorizedBusinessAccessError) return { error: 'No gestionas esta ficha.' }

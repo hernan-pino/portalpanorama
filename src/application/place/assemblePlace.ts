@@ -39,6 +39,7 @@ export function assemblePlace(params: {
     priceRange: input.priceRange,
     reservation: input.reservation,
     paymentMethods: input.paymentMethods,
+    parkingOptions: input.parkingOptions,
     schedule: input.schedule,
     phone: input.phone,
     website: input.website,

@@ -25,13 +25,14 @@ import {
   TAG_LAYER_LABELS,
   TAG_LAYER_ORDER,
 } from './types'
+import { PARKING_EDIT_OPTIONS } from '@components/place/parkingLabels'
 
 const BLANK: PlaceFormValues = {
   name: '', description: '', menuUrl: '',
   categoryId: '', subcategoryId: '', secondaryCategoryId: '', secondarySubcategoryId: '',
   address: '', communeId: '', neighborhoodId: '', lat: '', lng: '', metroStationId: '',
   accessDetail: '', reference: '', rainPolicy: '',
-  priceRange: '', reservation: '', paymentMethods: [], schedule: '',
+  priceRange: '', reservation: '', paymentMethods: [], parkingOptions: [], schedule: '',
   phone: '', website: '', instagram: '', socialLinks: [],
   googlePlaceId: '', googleRating: '', googleReviewCount: '',
   isPremium: false, parentId: '', brandId: '', tagIds: [], images: [], points: [],
@@ -59,6 +60,7 @@ function fromInitial(p: PlaceEditView): PlaceFormValues {
     priceRange: p.priceRange ?? '',
     reservation: p.reservation ?? '',
     paymentMethods: [...p.paymentMethods],
+    parkingOptions: [...p.parkingOptions],
     schedule: p.schedule ?? '',
     phone: p.phone ?? '',
     website: p.website ?? '',
@@ -141,6 +143,15 @@ export function PlaceForm({ options, initial }: PlaceFormProps) {
     set('paymentMethods', values.paymentMethods.includes(method)
       ? values.paymentMethods.filter((m) => m !== method)
       : [...values.paymentMethods, method])
+  }
+
+  // Estacionamiento: mismo control de chips. Acá la lista de opciones NO se une con
+  // lo guardado (a diferencia de pagos): es un enum cerrado, un valor fuera de la
+  // lista es un código muerto y no debe quedar seleccionable.
+  function toggleParking(option: string) {
+    set('parkingOptions', values.parkingOptions.includes(option)
+      ? values.parkingOptions.filter((o) => o !== option)
+      : [...values.parkingOptions, option])
   }
 
   // Tags condicionales (ej. tipo de cocina) solo si su categoría = la principal.
@@ -494,6 +505,21 @@ export function PlaceForm({ options, initial }: PlaceFormProps) {
               )
             })}
           </div>
+        </div>
+        <div className="form-row">
+          <span className="form-label">Estacionamiento</span>
+          <div className="chip-set">
+            {PARKING_EDIT_OPTIONS.map((o) => {
+              const on = values.parkingOptions.includes(o.value)
+              return (
+                <button key={o.value} type="button" className="chip" aria-pressed={on}
+                  onClick={() => toggleParking(o.value)}>
+                  {o.label}
+                </button>
+              )
+            })}
+          </div>
+          <p className="form-hint">Lo llena solo el enrich desde Google. Edítalo si Google no trae nada o se equivoca.</p>
         </div>
         <div className="form-row">
           <label className="form-label" htmlFor="schedule">Horario</label>

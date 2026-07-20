@@ -30,6 +30,7 @@ function makeInput(overrides: Partial<PlaceWriteInput> = {}): PlaceWriteInput {
     subcategoryId: 'sub_resto',
     communeId: 'com_1',
     paymentMethods: [],
+    parkingOptions: [],
     socialLinks: [],
     tagIds: [],
     images: [],

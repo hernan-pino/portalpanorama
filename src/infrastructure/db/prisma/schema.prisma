@@ -452,6 +452,7 @@ model Place {
   priceRange     PriceRange?
   reservation    ReservationPolicy?
   paymentMethods String[] // métodos de pago (informativo, no filtro MVP)
+  parkingOptions String[] // dónde estacionar: OWN_FREE | OWN_PAID | STREET_FREE | STREET_PAID | VALET | HARD. Lo puebla Google (enrich); el dueño lo corrige.
   schedule       String?            @db.Text // horario en texto libre (estructurado = puerta abierta)
 
   // Contacto / redes

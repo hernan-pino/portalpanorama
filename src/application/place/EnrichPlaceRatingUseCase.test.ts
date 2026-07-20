@@ -17,6 +17,7 @@ function makePlace(overrides: Partial<PlaceProps> = {}): Place {
     subcategoryId: 'sub_1',
     communeId: 'com_vitacura',
     paymentMethods: [],
+    parkingOptions: [],
     socialLinks: [],
     score: 0,
     isPremium: false,

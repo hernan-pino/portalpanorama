@@ -4,6 +4,7 @@ import { PlaceRepository } from '../ports/PlaceRepository'
 import { LocationRepository } from '../ports/LocationRepository'
 import { PlaceRatingProvider, RatingResult, OpeningHoursDay } from '../ports/PlaceRatingProvider'
 import { formatSchedule, implausibleDays } from './formatSchedule'
+import { ParkingOption } from '@domain/place/ParkingOption'
 
 export interface EnrichPlaceRatingInput {
   placeId: string
@@ -33,6 +34,9 @@ export type EnrichPlaceRatingResult =
       // Días con horario no creíble (tramos absurdos). Si hay alguno NO se escribe
       // nada: que lo resuelva un humano en vez de publicar un dato malo.
       scheduleSuspect?: OpeningHoursDay[]
+      // Dónde estacionar, escrito desde Google. undefined si la ficha ya tenía dato
+      // (no se pisa) o si Google no publica la sección.
+      parkingSet?: ParkingOption[]
     }
   | { status: 'skipped'; reason: 'already-has-rating' }
   | { status: 'not-found' }
@@ -99,6 +103,16 @@ export class EnrichPlaceRatingUseCase {
       }
     }
 
+    // Estacionamiento: solo si la ficha NO tiene dato. Google lo publica, pero el dueño
+    // lo corrige desde su panel y esa corrección gana — no podemos distinguir "lo puso
+    // Google" de "lo arregló el dueño", así que ante la duda no se pisa. Ausente en
+    // Google ≠ "no tiene estacionamiento": por eso un resultado vacío tampoco borra.
+    const parkingSet =
+      place.parkingOptions.length === 0 && (result.parkingOptions?.length ?? 0) > 0
+    if (parkingSet) {
+      enriched = enriched.withParkingOptions(result.parkingOptions!)
+    }
+
     // Re-bate el score con el prior C actual (por categoría, con fallback al global).
     const [globalAverage, categoryStats] = await Promise.all([
       this.placeRepo.globalAverageRating(),
@@ -121,6 +135,7 @@ export class EnrichPlaceRatingUseCase {
       coordsSet,
       scheduleSet,
       scheduleSuspect,
+      parkingSet: parkingSet ? result.parkingOptions : undefined,
     }
   }
 }

@@ -75,6 +75,7 @@ export default async function EditarFichaPage({ params }: PageProps) {
           reservation: place.reservation ?? '',
           accessDetail: place.accessDetail ?? '',
           reference: place.reference ?? '',
+          parkingOptions: place.parkingOptions ?? [],
         }}
       />
     </div>

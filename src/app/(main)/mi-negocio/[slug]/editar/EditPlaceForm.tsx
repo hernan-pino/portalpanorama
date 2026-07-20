@@ -6,6 +6,7 @@ import { updateOwnedPlaceAction } from './actions'
 import { OwnerSocialLinks, type SocialLinkRow } from './OwnerSocialLinks'
 import { OwnerSchedule } from './OwnerSchedule'
 import { parseSchedule } from './scheduleFormat'
+import { PARKING_EDIT_OPTIONS } from '@components/place/parkingLabels'
 
 const PRICE_OPTIONS = [
   { value: '', label: 'Sin especificar' },
@@ -35,6 +36,7 @@ export interface EditInitial {
   reservation: string
   accessDetail: string
   reference: string
+  parkingOptions: string[]
 }
 
 export function EditPlaceForm({ slug, initial }: { slug: string; initial: EditInitial }) {
@@ -142,6 +144,21 @@ export function EditPlaceForm({ slug, initial }: { slug: string; initial: EditIn
         </label>
         <input id="f-access" name="accessDetail" className="form-input"
           defaultValue={initial.accessDetail} maxLength={300} placeholder="Ej: 2° piso, entrada por el pasaje" />
+      </div>
+
+      <div>
+        <span className="form-label">
+          Estacionamiento <FieldHelp tip="Dónde pueden dejar el auto tus clientes. Lo tomamos de Google, pero tú sabes mejor: marca lo que corresponda y tu respuesta manda. Si no hay dónde estacionar, déjalo todo desmarcado." />
+        </span>
+        <div className="owner-checks">
+          {PARKING_EDIT_OPTIONS.map((o) => (
+            <label key={o.value} className="owner-check">
+              <input type="checkbox" name="parkingOptions" value={o.value}
+                defaultChecked={initial.parkingOptions.includes(o.value)} />
+              <span>{o.label}</span>
+            </label>
+          ))}
+        </div>
       </div>
 
       <div>

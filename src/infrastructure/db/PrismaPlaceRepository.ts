@@ -7,6 +7,7 @@ import { PriceRange } from '@domain/place/PriceRange'
 import { ReservationPolicy } from '@domain/place/ReservationPolicy'
 import { RainPolicy } from '@domain/place/RainPolicy'
 import { PlaceStatus } from '@domain/place/PlaceStatus'
+import { isParkingOption } from '@domain/place/ParkingOption'
 import { PlaceAlreadyExistsError } from '@domain/place/errors/PlaceAlreadyExistsError'
 import {
   CategoryRatingStat,
@@ -80,6 +81,9 @@ function toPlaceDomain(row: PlaceAggregateRow): Place {
     priceRange: (row.priceRange as PriceRange | null) ?? undefined,
     reservation: (row.reservation as ReservationPolicy | null) ?? undefined,
     paymentMethods: row.paymentMethods,
+    // Se filtra contra el enum: la columna es String[], así que un código viejo que
+    // quedara en la BD tras renombrar una opción no debe entrar al dominio.
+    parkingOptions: row.parkingOptions.filter(isParkingOption),
     schedule: row.schedule ?? undefined,
     phone: row.phone ?? undefined,
     website: row.website ?? undefined,
@@ -144,6 +148,7 @@ function toWriteData(place: Place) {
     priceRange: (place.priceRange as $Enums.PriceRange | undefined) ?? null,
     reservation: (place.reservation as $Enums.ReservationPolicy | undefined) ?? null,
     paymentMethods: [...place.paymentMethods],
+    parkingOptions: [...place.parkingOptions],
     schedule: place.schedule ?? null,
     phone: place.phone ?? null,
     website: place.website ?? null,
@@ -217,6 +222,7 @@ function toPlaceDetailView(row: PlaceDetailRow): PlaceDetailView {
     priceRange: row.priceRange ?? undefined,
     reservation: row.reservation ?? undefined,
     paymentMethods: row.paymentMethods,
+    parkingOptions: row.parkingOptions,
     schedule: row.schedule ?? undefined,
     phone: row.phone ?? undefined,
     website: row.website ?? undefined,
@@ -595,6 +601,7 @@ export class PrismaPlaceRepository implements PlaceRepository {
         reservation: true,
         accessDetail: true,
         reference: true,
+        parkingOptions: true,
         socialLinks: true,
         ownerId: true,
         category: { select: { name: true } },
@@ -623,6 +630,7 @@ export class PrismaPlaceRepository implements PlaceRepository {
       reservation: (r.reservation as ReservationPolicy | null) ?? undefined,
       accessDetail: r.accessDetail ?? undefined,
       reference: r.reference ?? undefined,
+      parkingOptions: r.parkingOptions.filter(isParkingOption),
       ownerId: r.ownerId,
       brandOwnerId: r.brand?.ownerId ?? null,
       images: r.images.map((img) => ({
@@ -653,6 +661,11 @@ export class PrismaPlaceRepository implements PlaceRepository {
     // así un save parcial nunca borra las redes existentes). El form manda el set completo.
     if (fields.socialLinks !== undefined) {
       data.socialLinks = fields.socialLinks.length ? fields.socialLinks : Prisma.DbNull
+    }
+    // Mismo criterio que socialLinks: undefined = no tocar. Acá importa doble, porque
+    // el dato lo puebla el enrich de Google y un save parcial no debe borrarlo.
+    if (fields.parkingOptions !== undefined) {
+      data.parkingOptions = fields.parkingOptions
     }
     await this.prisma.place.update({ where: { id: placeId }, data })
   }

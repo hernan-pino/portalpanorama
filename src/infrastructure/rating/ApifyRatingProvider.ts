@@ -5,6 +5,7 @@ import {
   RatingLookupError,
   OpeningHoursDay,
 } from '@application/ports/PlaceRatingProvider'
+import { ParkingOption, PARKING_OPTIONS } from '@domain/place/ParkingOption'
 
 // Adapter de reputación sobre Apify (actor "Google Maps Scraper", compass/crawler-
 // google-places). Resuelve nombre+comuna → rating/reseñas/place_id + fotos del lugar.
@@ -125,6 +126,7 @@ export class ApifyRatingProvider implements PlaceRatingProvider {
       openingHours: extractOpeningHours(item),
       temporarilyClosed: item.temporarilyClosed === true,
       permanentlyClosed: item.permanentlyClosed === true,
+      parkingOptions: extractParking(item),
     }
   }
 }
@@ -148,6 +150,7 @@ interface ApifyPlaceItem {
   openingHours?: unknown
   temporarilyClosed?: boolean
   permanentlyClosed?: boolean
+  additionalInfo?: unknown
 }
 
 const DAYS: OpeningHoursDay['day'][] = [
@@ -226,6 +229,84 @@ function parseTime(s: string, inherited?: 'AM' | 'PM'): string | null {
   if (meridiem === 'AM' && hour === 12) hour = 0
   if (hour > 24 || Number(minute) > 59) return null
   return `${String(hour).padStart(2, '0')}:${minute}`
+}
+
+// El actor expone la pestaña "Acerca de" como `additionalInfo: { Sección: [{ etiqueta: bool }] }`.
+// Nos interesa SOLO la sección "Estacionamiento".
+//
+// ⚠️ Acotarse a esa sección es obligatorio, no una optimización: "Estacionamiento accesible
+// para personas en silla de ruedas" vive bajo "Accesibilidad" y NO significa que haya dónde
+// estacionar. Buscar la palabra suelta en todo additionalInfo daría falsos positivos (un mall
+// sin dato de estacionamiento aparecería como que sí tiene).
+//
+// Vocabulario observado en una muestra de 14 lugares (language:'es'):
+//   Hay suficiente espacio · Es un poco difícil encontrar espacio
+//   Estacionamiento gratuito · Estacionamiento pagado                    (sin decir dónde)
+//   Estacionamiento gratuito/pagado en la calle
+//   Estacionamiento en el lugar · Garage de estacionamiento pagado
+//   Garage de stacionamiento gratuito                                    (sic: typo de Google)
+//   Servicio de estacionamiento                                          (valet)
+export function extractParking(item: { additionalInfo?: unknown }): ParkingOption[] | undefined {
+  const info = item.additionalInfo
+  if (!info || typeof info !== 'object') return undefined
+  const section = (info as Record<string, unknown>)['Estacionamiento']
+  if (!Array.isArray(section)) return undefined
+
+  const found = new Set<ParkingOption>()
+  let onSiteUnpriced = false // "Estacionamiento en el lugar", sin decir si cobra
+  let genericFree = false
+  let genericPaid = false
+
+  for (const entry of section) {
+    if (!entry || typeof entry !== 'object') continue
+    for (const [label, value] of Object.entries(entry as Record<string, unknown>)) {
+      // Google usa booleanos: un `false` es "no tiene", no "tiene".
+      if (value !== true) continue
+      const t = stripAccents(label)
+
+      if (t.includes('dificil')) { found.add(ParkingOption.HARD); continue }
+      if (t.includes('suficiente espacio')) { found.add(ParkingOption.EASY); continue }
+      // "Servicio de estacionamiento" = valet. Va antes que el resto porque también
+      // contiene "estacionamiento" y si no lo cazaría otra rama.
+      if (t.includes('servicio de')) { found.add(ParkingOption.VALET); continue }
+
+      // De acá abajo, solo etiquetas de estacionamiento propiamente tal. Se compara
+      // contra "stacionamiento" (sin la "e") a propósito: es subcadena tanto de
+      // "estacionamiento" como del "stacionamiento" mal escrito que devuelve Google.
+      if (!t.includes('stacionamiento')) continue
+
+      const free = t.includes('gratuito') || t.includes('gratis')
+      const paid = t.includes('pagado') || t.includes('de pago')
+      const street = t.includes('en la calle')
+      const onSite = t.includes('en el lugar') || t.includes('garage')
+
+      if (street && free) found.add(ParkingOption.STREET_FREE)
+      else if (street && paid) found.add(ParkingOption.STREET_PAID)
+      else if (onSite && free) found.add(ParkingOption.OWN_FREE)
+      else if (onSite && paid) found.add(ParkingOption.OWN_PAID)
+      else if (onSite) onSiteUnpriced = true
+      else if (free) genericFree = true
+      else if (paid) genericPaid = true
+    }
+  }
+
+  // "Estacionamiento en el lugar" sin precio + el genérico "gratuito"/"pagado" que
+  // suele acompañarlo → el costo del genérico aplica al propio.
+  if (onSiteUnpriced) {
+    if (genericFree) found.add(ParkingOption.OWN_FREE)
+    else if (genericPaid) found.add(ParkingOption.OWN_PAID)
+  }
+
+  // El genérico es un roll-up de los específicos: si ya sabemos DÓNDE, no lo repetimos.
+  // Solo sobrevive cuando es la única pista del costo.
+  const hasFree = found.has(ParkingOption.OWN_FREE) || found.has(ParkingOption.STREET_FREE)
+  const hasPaid = found.has(ParkingOption.OWN_PAID) || found.has(ParkingOption.STREET_PAID)
+  if (genericFree && !hasFree) found.add(ParkingOption.FREE)
+  if (genericPaid && !hasPaid) found.add(ParkingOption.PAID)
+
+  // Orden estable (el del enum), no el de llegada: la ficha debe verse igual siempre.
+  const out = PARKING_OPTIONS.filter((o) => found.has(o))
+  return out.length > 0 ? out : undefined
 }
 
 function numeric(v: unknown): number | undefined {

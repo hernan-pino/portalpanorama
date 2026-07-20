@@ -73,6 +73,7 @@ export class CreateOwnedPlaceSeedUseCase {
       instagram: input.instagram,
       // El resto de la ficha lo completa el admin con la skill; la semilla no los pide.
       paymentMethods: [],
+      parkingOptions: [],
       socialLinks: [],
       tagIds: [],
       images: [],

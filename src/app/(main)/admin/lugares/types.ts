@@ -47,6 +47,7 @@ export interface PlaceFormValues {
   priceRange: string
   reservation: string
   paymentMethods: string[] // multi-selección
+  parkingOptions: string[] // multi-selección; lo puebla el enrich de Google
   schedule: string
 
   phone: string

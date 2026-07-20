@@ -105,6 +105,7 @@ async function seed() {
       communeId: commune.id,
       priceRange: s.priceRange,
       paymentMethods: ['Efectivo', 'Débito', 'Crédito'],
+      parkingOptions: [],
       socialLinks: [],
       googleRating: s.googleRating,
       googleReviewCount: s.googleReviewCount,

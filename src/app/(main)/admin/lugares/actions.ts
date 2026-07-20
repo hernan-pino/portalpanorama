@@ -10,6 +10,7 @@ import { ImageFetchError } from '@application/ports/ImageFetcher'
 import { PriceRange } from '@domain/place/PriceRange'
 import { ReservationPolicy } from '@domain/place/ReservationPolicy'
 import { RainPolicy } from '@domain/place/RainPolicy'
+import { ParkingOption } from '@domain/place/ParkingOption'
 import type { PlaceWriteInput } from '@application/place/PlaceWriteInput'
 import type { PlaceFormValues } from './types'
 
@@ -87,6 +88,9 @@ const placeSchema = z
     ]),
     reservation: optionalEnum(['REQUIRED', 'WALK_IN', 'RECOMMENDED']),
     paymentMethods: z.array(z.string()).optional().default([]),
+    // Enum cerrado (a diferencia de paymentMethods, que es texto libre): un código
+    // desconocido es un bug del cliente, no un valor nuevo del negocio.
+    parkingOptions: z.array(z.nativeEnum(ParkingOption)).optional().default([]),
     schedule: optionalText,
 
     phone: optionalText,
@@ -158,6 +162,7 @@ function toWriteInput(d: ParsedPlace): PlaceWriteInput {
     priceRange: d.priceRange as PriceRange | undefined,
     reservation: d.reservation as ReservationPolicy | undefined,
     paymentMethods,
+    parkingOptions: d.parkingOptions,
     schedule: d.schedule,
     phone: d.phone,
     website: d.website,

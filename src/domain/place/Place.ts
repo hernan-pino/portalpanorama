@@ -5,6 +5,7 @@ import { PlaceStatus } from './PlaceStatus'
 import { PriceRange } from './PriceRange'
 import { ReservationPolicy } from './ReservationPolicy'
 import { RainPolicy } from './RainPolicy'
+import { ParkingOption } from './ParkingOption'
 import { InvalidPlaceTransitionError } from './errors/InvalidPlaceTransitionError'
 import { TagLimitExceededError } from './errors/TagLimitExceededError'
 import { PlaceCycleError } from './errors/PlaceCycleError'
@@ -72,6 +73,7 @@ export interface PlaceProps {
   readonly priceRange?: PriceRange
   readonly reservation?: ReservationPolicy
   readonly paymentMethods: ReadonlyArray<string>
+  readonly parkingOptions: ReadonlyArray<ParkingOption>
   readonly schedule?: string
 
   // Contacto / redes
@@ -128,6 +130,7 @@ export class Place {
   readonly priceRange?: PriceRange
   readonly reservation?: ReservationPolicy
   readonly paymentMethods: ReadonlyArray<string>
+  readonly parkingOptions: ReadonlyArray<ParkingOption>
   readonly schedule?: string
   readonly phone?: string
   readonly website?: string
@@ -178,6 +181,7 @@ export class Place {
     this.priceRange = props.priceRange
     this.reservation = props.reservation
     this.paymentMethods = props.paymentMethods
+    this.parkingOptions = props.parkingOptions
     this.schedule = props.schedule
     this.phone = props.phone
     this.website = props.website
@@ -293,6 +297,13 @@ export class Place {
     return new Place({ ...this.toProps(), schedule, updatedAt: new Date() })
   }
 
+  // Setea dónde se puede estacionar. Lo puebla el enrich desde Google; la decisión de
+  // NO pisar lo que corrigió el dueño la toma el use case (acá solo se asigna).
+  // No cambia el estado de la ficha.
+  withParkingOptions(parkingOptions: ReadonlyArray<ParkingOption>): Place {
+    return new Place({ ...this.toProps(), parkingOptions, updatedAt: new Date() })
+  }
+
   // Setea las coordenadas (lat/lng) del lugar. La decisión de NO pisar coords curadas
   // a mano la toma el use case (acá solo se asignan). No cambia el estado de la ficha.
   withCoordinates(lat: number, lng: number): Place {
@@ -344,6 +355,7 @@ export class Place {
       priceRange: this.priceRange,
       reservation: this.reservation,
       paymentMethods: this.paymentMethods,
+      parkingOptions: this.parkingOptions,
       schedule: this.schedule,
       phone: this.phone,
       website: this.website,

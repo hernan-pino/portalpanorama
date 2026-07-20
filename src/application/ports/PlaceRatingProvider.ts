@@ -2,6 +2,7 @@
 // a partir de su nombre + comuna. La implementación concreta (Outscraper) vive en
 // infraestructura; el dominio/aplicación solo conoce esta interfaz. Permite mockear
 // en tests y cambiar de proveedor sin tocar el use case.
+import { ParkingOption } from '@domain/place/ParkingOption'
 
 export interface RatingQuery {
   // Nombre del lugar tal como lo conoce la gente (lo que se busca en Maps).
@@ -45,6 +46,9 @@ export interface RatingResult {
   // persiste; conviene NO pisar coords curadas a mano (Google a veces apunta al techo).
   latitude?: number
   longitude?: number
+  // Dónde estacionar, según la sección "Estacionamiento" de Google. Ausente si Google
+  // no la publica (pasa seguido, incluso en malls): ausente ≠ "no tiene".
+  parkingOptions?: ParkingOption[]
 }
 
 // Error accionable y seguro de mostrar (sin filtrar internals: keys, endpoints).
