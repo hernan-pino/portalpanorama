@@ -11,15 +11,29 @@ para retomar rápido. Se actualiza cada vez que avanzamos.
 
 ## ▶️ ROADMAP — próximos pasos (acordado s38, 2026-07-17)
 
-> **▶️ RETOMAR (fin s39, 2026-07-19):** 🅿️ estacionamiento **hecho y verificado en local, SIN
-> commitear ni pushear** — el árbol tiene los cambios sin commit para revisión. Sale de Google, sin
+> **▶️ RETOMAR (fin s39, 2026-07-19):** 🅿️ estacionamiento **cerrado, commiteado en local, SIN
+> pushear** (`cdf1b7b` + `3eb62f0`, árbol limpio, `ahead 2` de origin/main). Sale de Google, sin
 > carga a mano. **Sin backfill masivo a propósito** (cuida la cuota de Apify para llegar a 500).
-> **Próximo paso: revisar el diff y commitear**, después el punto 2 (cargar hacia 500) o el rework
-> del home (backlog, encaja antes del GTM).
-> ⚠️ **Deuda abierta:** 14 lugares publicados en **prod** siguen sin `lat`/`lng` (arreglado en local, no
-> en prod) → va con la próxima tanda de carga, con `enrich-ratings --no-coords`.
-> ⚠️ **Ojo:** `scripts/` está fuera del typecheck (`tsconfig.json` lo excluye). Al tocar un script,
-> chequearlo aparte con un tsconfig que lo incluya.
+>
+> **▶️ PRÓXIMO PASO: la tanda de carga.** Se decidió que el push a prod viaje CON ella, porque el
+> mismo `enrich` hace triple trabajo de una sola pasada y no gasta cuota dos veces:
+>   1. avanza hacia los 500 (faltan ~77)
+>   2. estrena estacionamiento en prod **con dato real** en vez de vacío
+>   3. salda los **14 lugares sin `lat`/`lng` en prod** (`enrich-ratings --no-coords`), deuda de la s38
+>
+> **Orden acordado (s39), con ~10 h/semana:** `carga → rework del home → GTM`. No llevar tráfico a
+> una landing que no convence. **Reseñas quedan DESPUÉS del lanzamiento** (ver bloque propio abajo).
+>
+> ⚠️ Al pushear: la migración corre sola (`prisma migrate deploy` está en el build), pero **hay que
+> invalidar caché** o los cambios no se ven aunque estén en la BD (comando en el runbook).
+> ⚠️ En prod el campo nace vacío en los 423: la fila no aparecerá hasta correr el enrich. Los 4
+> lugares enriquecidos de prueba (Osaka · Doña Tina · Kaizen · Ramen Ryoma) tienen el dato **solo en local**.
+> ⚠️ **`scripts/` está fuera del typecheck** (`tsconfig.json` lo excluye): tocar un script y ver
+> "typecheck ✅" no significa nada. Chequearlo aparte con un tsconfig que lo incluya.
+>
+> **Limpiezas chicas que viajan en el mismo viaje:** borrar las fichas de prueba `dfsd` y `dsfad`
+> (PENDING_REVIEW) y reescribir 3 descripciones con avisos caducos (La Bottega Gandolini · La
+> Rústica Pizzeria · Kame House).
 
 El orden que definió el usuario. No se salta un paso sin OK explícito.
 
@@ -103,8 +117,9 @@ El orden que definió el usuario. No se salta un paso sin OK explícito.
   **Hallazgo del entorno:** `scripts/` está excluido de `tsconfig.json` → `npm run typecheck` **no**
   valida los scripts. Al chequearlos aparte se encontró que el ingestor habría reventado en runtime
   (`[...place.parkingOptions]` sobre `undefined`) y que `seed-test-places.ts` estaba roto.
-- [ ] **⭐ Tal vez reseñas por dimensión / o alguna deuda menor** — si queda espacio. Reseñas = notas por
-  dimensión (ambiente · rapidez · accesibilidad · sabor), nota del lugar = promedio (idea registrada, STRATEGY §4).
+- [ ] ~~⭐ Reseñas por dimensión~~ → **APLAZADAS a después del lanzamiento (decidido s39).** Ver el
+  bloque "⭐ Reseñas — dónde quedaron" más abajo: el espacio de esta tanda se lo comió estacionamiento,
+  y hay una razón de fondo para no hacerlas ahora (no hay tráfico todavía).
 
 **📦 2. Cargar hacia 500 lugares** — vas en **423** (418 publicados) → faltan ~77. Pipeline afilado (runbook abajo).
 
@@ -145,6 +160,36 @@ resolvieron, aprendizajes, stack, habilidades. Materia prima: [docs/historico/PL
 - Posibles `place_id` corruptos más en la BD (señal: `✗ Google no devolvió ningún lugar` al enriquecer).
 - `renamedTo` quedó como código muerto en `Place.ts` (deuda menor).
 - Reprocesar las 1.174 imágenes legacy a responsive — parqueado, no urge (se ven bien; sobra espacio de Storage).
+
+---
+
+## ⭐ Reseñas — dónde quedaron (auditado s39)
+
+**Están a medio construir desde la Fase 1/3, y a propósito.** El código dice
+*"las reseñas propias son v2 (decisión B.7/C.1): la sección existe vacía en el MVP"*.
+
+| Capa | Estado |
+|---|---|
+| Schema Prisma (`Review`) | ✅ `rating Int` 1-5 · `body` · `response` (respuesta del negocio) · único por usuario+target · polimórfico (`ReviewTarget`) |
+| Dominio (`src/domain/review/`) | ✅ `Review.ts`, `ReviewTarget.ts`, errores |
+| Use cases (`src/application/review/`) | ❌ no existe |
+| Repositorio Prisma | ❌ no existe |
+| Container (DI) | ❌ sin cablear |
+| UI — pestaña "Mis reseñas" en `/mi-cuenta` | ⚠️ existe y dice **"Próximamente"** (`tabs/Resenas.tsx`) |
+
+**⚠️ La trampa al retomar: el schema construido y la idea actual de producto YA NO COINCIDEN.**
+La BD guarda una nota simple (`rating Int` 1-5), pero la idea registrada después (STRATEGY §4,
+2026-06-24) son **notas por dimensión** (ambiente · rapidez · accesibilidad · sabor) con la nota del
+lugar = promedio, para poder decir "comida 5/5 pero atención 2/5". Retomar reseñas **no es terminar
+lo que falta**: es primero decidir si el modelo cambia a multi-dimensión — y esa decisión va ANTES
+de escribir use cases sobre el modelo viejo.
+
+**Por qué se aplazan (s39):** las reseñas son palanca de **retención** (STRATEGY §1), y hoy no hay
+tráfico porque no se ha lanzado. Construirlas ahora deja un formulario impecable con 0 reseñas, y
+423 fichas diciendo "sé el primero en opinar" transmiten abandono, no comunidad. El orden correcto
+es **cargar → home → GTM → tráfico real → reseñas**.
+**Dependencias sin resolver:** moderación (qué se hace con una reseña falsa o difamatoria) y la
+revisión legal de términos/privacidad que ya está en el backlog.
 
 ---
 
