@@ -11,11 +11,15 @@ para retomar rápido. Se actualiza cada vez que avanzamos.
 
 ## ▶️ ROADMAP — próximos pasos (acordado s38, 2026-07-17)
 
-> **▶️ RETOMAR (fin s38, 2026-07-18):** 📍 distancia **EN PROD y probada en el teléfono** por el usuario,
-> con dos rondas de ajustes sobre feedback real. Árbol limpio, todo pusheado (`a37d452`).
-> **Próximo paso: 🅿️ estacionamientos** (punto 1 de la tanda).
+> **▶️ RETOMAR (fin s39, 2026-07-19):** 🅿️ estacionamiento **hecho y verificado en local, SIN
+> commitear ni pushear** — el árbol tiene los cambios sin commit para revisión. Sale de Google, sin
+> carga a mano. **Sin backfill masivo a propósito** (cuida la cuota de Apify para llegar a 500).
+> **Próximo paso: revisar el diff y commitear**, después el punto 2 (cargar hacia 500) o el rework
+> del home (backlog, encaja antes del GTM).
 > ⚠️ **Deuda abierta:** 14 lugares publicados en **prod** siguen sin `lat`/`lng` (arreglado en local, no
 > en prod) → va con la próxima tanda de carga, con `enrich-ratings --no-coords`.
+> ⚠️ **Ojo:** `scripts/` está fuera del typecheck (`tsconfig.json` lo excluye). Al tocar un script,
+> chequearlo aparte con un tsconfig que lo incluya.
 
 El orden que definió el usuario. No se salta un paso sin OK explícito.
 
@@ -54,8 +58,51 @@ El orden que definió el usuario. No se salta un paso sin OK explícito.
   lugar) · barra de resultados = grid de 3 áreas, en móvil la vista sube junto al conteo y "Cerca de mí" +
   orden bajan a una fila propia · **"¿Cómo ordenamos?"** se movió al pie del panel de filtros.
   **✅ Verificado:** typecheck + lint + 190 tests + build + el usuario en su iPhone.
-- [ ] **🅿️ Estacionamientos como dato de ficha** — dato clickeable que abre un pop-up liviano (nombre ·
-  dirección · pagado/gratis). NO fichas propias del catálogo (decisión s28). Insumo futuro del recomendador IA.
+- [x] **🅿️ Estacionamiento como dato de ficha ✅ HECHO en local (s39). Falta push a prod.**
+  Una fila más en "Datos prácticos": propio gratis/pagado · en la calle gratis/pagado · valet ·
+  "suele haber espacio"/"cuesta encontrar espacio". **Sale de Google, no se carga a mano.**
+
+  **⚠️ Se descartó lo que decía este plan: la lista de estacionamientos cercanos en un pop-up.**
+  Es una peor versión de Google Maps (quien necesita estacionar abre Waze igual), llenarla a mano
+  para 423 lugares son días de trabajo por un dato que envejece y no se puede verificar desde el
+  escritorio, y si solo lo llena el dueño queda visible en ~0 fichas (**hoy hay 0 lugares
+  reclamados**). También se descartó **cargar estacionamientos como catálogo propio por comuna**
+  y ordenarlos con la feature de distancia: es un segundo catálogo del tamaño del actual, de una
+  entidad que nadie viene a navegar acá.
+
+  **Lo que se hizo:** el actor de Apify que ya se usa devuelve `additionalInfo → "Estacionamiento"`
+  (la pestaña "Acerca de" de Maps) **en la misma llamada** que rating/fotos/horario. Cero consultas
+  extra, cero trabajo manual, se llena solo en cada tanda. Campo `parkingOptions String[]` (molde de
+  `paymentMethods`, no Json ni tabla). El dueño lo corrige desde su panel y **su edición gana**: el
+  enrich solo escribe si la ficha no tiene dato.
+
+  **La sonda antes de programar evitó 3 bugs que habría escrito a ciegas** (se sondearon 14 lugares
+  reales para capturar el vocabulario, que no se puede adivinar):
+  1. **La trampa de accesibilidad:** "Estacionamiento accesible para silla de ruedas" vive bajo
+     *Accesibilidad*, no bajo *Estacionamiento*. Buscar la palabra suelta habría hecho aparecer
+     estacionamiento donde Google nunca lo dijo (Mall Sport, que no publica la sección).
+  2. **Typo del propio Google:** `"Garage de stacionamiento gratuito"`, sin la "e".
+  3. **El genérico es un roll-up:** "Estacionamiento gratuito" (el más común) convive con
+     "gratuito en la calle" → se suprime si ya sabemos dónde, si no el dato salía dos veces.
+
+  **Cobertura real: ~70%** (10 de 14 con info útil, 3 sin sección, 1 solo con "hay espacio"). El
+  fallo es siempre **por omisión**: si Google no sabe, la fila no aparece — nadie lee "no tiene".
+
+  **Solapamiento resuelto:** ya existían tags curados "Estacionamiento propio" (37) y
+  "Estacionamiento cercano" (59) que **sí filtran** en /explorar. En vez de borrarlos (habría perdido
+  filtrabilidad en 96 lugares), bajaron a la misma fila: el tag primero (clickeable, filtra) y el
+  detalle de Google después. Las etiquetas no repiten la palabra "estacionamiento" porque la fila
+  ya se llama así.
+
+  **⛔ Decisión: NO se hace backfill masivo de los 423.** Son ~4,7 h y 423 consultas de la cuota de
+  Apify — la misma que se necesita para llegar a 500 lugares, que es la prioridad. Se llena solo con
+  las tandas nuevas y con los enriquecimientos que ya se corran.
+
+  **✅ Verificado:** typecheck + lint + **201 tests** (190 + 11 nuevos con payloads reales de Apify)
+  + build + enrich real contra Apify sobre 4 lugares + ficha en el navegador (con dato y sin dato).
+  **Hallazgo del entorno:** `scripts/` está excluido de `tsconfig.json` → `npm run typecheck` **no**
+  valida los scripts. Al chequearlos aparte se encontró que el ingestor habría reventado en runtime
+  (`[...place.parkingOptions]` sobre `undefined`) y que `seed-test-places.ts` estaba roto.
 - [ ] **⭐ Tal vez reseñas por dimensión / o alguna deuda menor** — si queda espacio. Reseñas = notas por
   dimensión (ambiente · rapidez · accesibilidad · sabor), nota del lugar = promedio (idea registrada, STRATEGY §4).
 
@@ -123,6 +170,9 @@ curl -X POST https://portal-panorama.vercel.app/api/revalidate -H "x-revalidate-
 ## 📋 Backlog vivo (no bloquea el día a día salvo lo marcado)
 
 **Diferenciador / producto:**
+- **Filtrar por estacionamiento en /explorar** — el `String[]` de `parkingOptions` deja la puerta
+  abierta (Postgres admite índice GIN), pero hoy solo filtran los tags curados. Tiene sentido recién
+  cuando el campo esté poblado en buena parte del catálogo.
 - **🏠 Rework del home (layout + secciones + SEO).** El usuario siente que el home **está mal armado y le
   faltan secciones**; sumar contenido y **mejorar el SEO** de la página. Es un rediseño de la landing (no
   un ajuste chico) → definir qué secciones faltan, jerarquía y copy indexable. Encaja bien antes de GTM.
