@@ -11,29 +11,53 @@ para retomar rápido. Se actualiza cada vez que avanzamos.
 
 ## ▶️ ROADMAP — próximos pasos (acordado s38, 2026-07-17)
 
-> **▶️ RETOMAR (fin s39, 2026-07-19):** 🅿️ estacionamiento **cerrado, commiteado en local, SIN
-> pushear** (`cdf1b7b` + `3eb62f0`, árbol limpio, `ahead 2` de origin/main). Sale de Google, sin
-> carga a mano. **Sin backfill masivo a propósito** (cuida la cuota de Apify para llegar a 500).
+> **▶️ RETOMAR (fin s40, 2026-07-24):** 🏢 **el MUT completo YA EN PROD.** Primer contenedor grande
+> cargado: 98 hijos, **93 publicados**, colgando del padre. Prod pasó de 418 → **511 lugares**.
+> Todo pusheado (`693068e`, árbol limpio) y verificado en el sitio real. Gasto Apify de la tanda:
+> ~US$1,9 de ~US$6.
 >
-> **▶️ PRÓXIMO PASO: la tanda de carga.** Se decidió que el push a prod viaje CON ella, porque el
-> mismo `enrich` hace triple trabajo de una sola pasada y no gasta cuota dos veces:
->   1. avanza hacia los 500 (faltan ~77)
->   2. estrena estacionamiento en prod **con dato real** en vez de vacío
->   3. salda los **14 lugares sin `lat`/`lng` en prod** (`enrich-ratings --no-coords`), deuda de la s38
+> **Tres bugs de fondo que la carga destapó y quedaron arreglados (valen para toda carga futura):**
+>   1. **Bug del meridiano de Google** — publica algunos "12:30 PM" como "12:30 a.m." → llegaba
+>      00:30, el tramo quedaba absurdo y se botaba LA SEMANA ENTERA. `correctMiddayMisparse()` en
+>      `formatSchedule.ts` lo corrige; si un día es irrecuperable descarta SOLO ese día.
+>   2. **Faltaba el paso de publicación** — desde la s37 el investigador no trae horario/fotos (los
+>      trae Google), así que toda ficha nace PENDING_REVIEW y el enrich no publica. `scripts/publish-ready.ts`
+>      cierra el flujo con el MISMO estándar del ingestor (horario + foto), post-enrich.
+>   3. **Google no da horario de cada puesto de un mall** (18 de 98). `scripts/inherit-parent-schedule.ts`
+>      hereda el horario del recinto ETIQUETADO ("horario del MUT"), sin pisar los existentes.
 >
-> **Orden acordado (s39), con ~10 h/semana:** `carga → rework del home → GTM`. No llevar tráfico a
-> una landing que no convence. **Reseñas quedan DESPUÉS del lanzamiento** (ver bloque propio abajo).
+> **Otros arreglos de la s40 (todos en prod):**
+>   - **Ficha del padre ya no apila los hijos:** preview de 8 + página `/lugar/[slug]/locales` (URL propia).
+>   - **Perf del autocompletado:** memoizaba nada → traía TODA la BD en cada tecla (2.764 ms). Ahora
+>     memo en memoria 60 s → **330 ms**. (`PostgresFTSSearchService.suggest`).
+>   - **3 subcategorías nuevas** en Locales y tiendas (Tienda especializada · Emporio / Productos
+>     gourmet · Tienda de té y café) — 11 tiendas del MUT no tenían dónde caer. Ya en prod vía prod-sync.
+>   - **Fotos del enrich 3 → 2** (Blob: ver ⚠️ cuota abajo).
+>   - **`docs/BRIEF_CARGA.md`** — criterio de qué entra/qué no, para las próximas tandas de contenedores.
 >
-> ⚠️ Al pushear: la migración corre sola (`prisma migrate deploy` está en el build), pero **hay que
-> invalidar caché** o los cambios no se ven aunque estén en la BD (comando en el runbook).
-> ⚠️ En prod el campo nace vacío en los 423: la fila no aparecerá hasta correr el enrich. Los 4
-> lugares enriquecidos de prueba (Osaka · Doña Tina · Kaizen · Ramen Ryoma) tienen el dato **solo en local**.
-> ⚠️ **`scripts/` está fuera del typecheck** (`tsconfig.json` lo excluye): tocar un script y ver
-> "typecheck ✅" no significa nada. Chequearlo aparte con un tsconfig que lo incluya.
+> **⚠️ CUOTA DE VERCEL BLOB (nuevo tope a vigilar):** cada foto = **3 operaciones** (una por variante
+> responsive). Plan gratis = **2.000 ops/mes**, se resetea el día 1. Tras el MUT vas al **~75%**. A 2
+> fotos rinde ~166 lugares/mes. **⛔ NO correr el reprocesado de imágenes legacy** (1.174 × 3 = 176%
+> del cupo, revienta de un saque). El push a prod es GRATIS (prod-sync copia URLs, no re-sube).
 >
-> **Limpiezas chicas que viajan en el mismo viaje:** borrar las fichas de prueba `dfsd` y `dsfad`
-> (PENDING_REVIEW) y reescribir 3 descripciones con avisos caducos (La Bottega Gandolini · La
-> Rústica Pizzeria · Kame House).
+> **▶️ PRÓXIMO PASO: seguir cargando contenedores + hacia 500.** Ya pasamos 500 (511), pero la meta
+> real es catálogo denso y con menos sesgo a comida. Candidatos de contenedor con el pipeline ya
+> afilado: **Patio Bellavista, Costanera Center (colgar Sky Costanera huérfano), Parquemet (colgar
+> Cerro San Cristóbal + Jardín Mapulemu ya cargados sueltos), Factoría Franklin, Estación Mapocho,
+> Los Dominicos.** Ver `docs/BRIEF_CARGA.md`. Orden mayor sigue: `carga → rework del home → GTM`.
+>
+> **Pendientes chicos que quedaron (no urgen):**
+>   - **3 fichas del MUT sin `place_id`** (La Vermutería · Green Lab · Revesderecho): en PENDING_REVIEW,
+>     no salen en público. Necesitan el place_id real de Maps a mano y recién ahí enriquecer. Green Lab
+>     y Revesderecho se auto-publicaron con match EQUIVOCADO (coords a km) y se despublicaron + limpiaron.
+>   - **🐞 Deuda confirmada:** `publish-ready` auto-publica fichas sin `place_id` por match de nombre —
+>     causó los 2 mismatches. Arreglo de 1 línea: excluir `googlePlaceId: null`. También `requiere_revision`
+>     no se persiste en la BD (el flag del investigador se pierde). Detalle en `tmp/mut_progreso.md`.
+>   - Viejo: fichas de prueba `dfsd`/`dsfad` (siguen PENDING, prod-sync las salta) y 3 descripciones con
+>     avisos caducos (La Bottega Gandolini · La Rústica Pizzeria · Kame House).
+>
+> **⚠️ Perenne:** `scripts/` está fuera del typecheck (`tsconfig.json` lo excluye): chequearlo aparte
+> con un tsconfig que lo incluya. Y al pushear, la migración corre sola pero **hay que invalidar caché**.
 
 El orden que definió el usuario. No se salta un paso sin OK explícito.
 

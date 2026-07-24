@@ -238,7 +238,7 @@ Fase 9 — Rediseño del producto             🔄 EN CURSO
   Etapa 2 — Diseñar schema nuevo           ✅ COMPLETADA (schema + plantilla CSV + arquitectura)
   Etapa 3 — Migrar la BD + seed            🔄 local ✅, prod pendiente (va con el redeploy)
   Etapa 4 — Refactor dominio + UI          ✅ COMPLETADA (4A-4E; la app compila sobre Place) — falta push a prod
-  Etapa 5 — Cargar lugares a mano          🔄 EN CURSO (admin CRUD ✅ verificado e2e; falta cargar contenido + push a prod)
+  Etapa 5 — Cargar lugares a mano          🔄 EN CURSO (pipeline afilado; MUT completo en prod s40 → 511 lugares; siguen más contenedores)
 ```
 
 **Fase 9 = rediseño profundo.** El modelo nuevo es **`Place` (lugar permanente, sin tipo) + `Event`
