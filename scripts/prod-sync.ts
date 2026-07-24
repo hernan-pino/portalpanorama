@@ -165,7 +165,7 @@ async function main() {
         secondaryCategoryId: r.secondaryCategoryId, secondarySubcategoryId: r.secondarySubcategoryId,
         address: p.address, communeId: r.communeId!, neighborhoodId: r.neighborhoodId, lat: p.lat, lng: p.lng,
         metroStationId: r.metroStationId, accessDetail: p.accessDetail, reference: p.reference, rainPolicy: p.rainPolicy,
-        priceRange: p.priceRange, reservation: p.reservation, paymentMethods: p.paymentMethods, schedule: p.schedule,
+        priceRange: p.priceRange, reservation: p.reservation, paymentMethods: p.paymentMethods, parkingOptions: p.parkingOptions, schedule: p.schedule,
         phone: p.phone, website: p.website, instagram: p.instagram, socialLinks: p.socialLinks ?? undefined,
         googlePlaceId: p.googlePlaceId, googleRating: p.googleRating, googleReviewCount: p.googleReviewCount, score: p.score,
         isPremium: p.isPremium, ownerId: null, status: p.status, parentId, brandId: r.brandId,
