@@ -13,6 +13,25 @@ import { fuzzyScore, normalize, tokenizeQuery, MATCH_THRESHOLD } from './fuzzy'
 const DEFAULT_LIMIT = 20
 const PUBLISHED = $Enums.PlaceStatus.PUBLISHED
 
+// ── Caché en memoria del dataset del autocompletado ──────────────────────────────
+// `suggest` puntúa con tolerancia a typos EN JS (fuzzyScore), así que necesita el set
+// completo de lugares publicados: un LIKE en SQL no lo reemplaza (escribiendo "sushilab"
+// mal igual tiene que aparecer). El problema no era puntuar 500 filas —eso son
+// milisegundos—, sino traerlas de Neon EN CADA TECLA: medido, 2.764 ms con 510 lugares,
+// y empeora con cada carga. El dataset solo cambia cuando se publica o edita un lugar,
+// así que se guarda en memoria con un TTL corto: la primera tecla lo paga, el resto de
+// la sesión de tipeo sale gratis. TTL bajo para que una publicación se vea al toque.
+type SuggestRow = {
+  slug: string
+  name: string
+  category: { name: string }
+  subcategory: { name: string }
+  commune: { name: string }
+  images: { url: string }[]
+}
+const SUGGEST_TTL_MS = 60_000
+let suggestCache: { rows: SuggestRow[]; at: number } | null = null
+
 // Etiquetas humanas de los buckets de presupuesto (orden = de menor a mayor).
 const PRICE_LABELS: Record<$Enums.PriceRange, string> = {
   FREE: 'Gratis',
@@ -361,8 +380,10 @@ export class PostgresFTSSearchService implements SearchService {
   }
 
   // ── Autocompletado: lugares por nombre (y rubro como respaldo), mejor primero ──
-  async suggest(query: string, limit: number): Promise<PlaceSuggestion[]> {
-    if (query.trim().length < 2) return []
+  // Dataset del autocompletado, memoizado (ver el comentario del caché arriba).
+  private async suggestRows(): Promise<SuggestRow[]> {
+    const now = Date.now()
+    if (suggestCache && now - suggestCache.at < SUGGEST_TTL_MS) return suggestCache.rows
     const rows = await this.prisma.place.findMany({
       where: { status: PUBLISHED },
       select: {
@@ -374,6 +395,13 @@ export class PostgresFTSSearchService implements SearchService {
         images: { orderBy: [{ isPrimary: 'desc' }, { sortOrder: 'asc' }], take: 1, select: { url: true } },
       },
     })
+    suggestCache = { rows, at: now }
+    return rows
+  }
+
+  async suggest(query: string, limit: number): Promise<PlaceSuggestion[]> {
+    if (query.trim().length < 2) return []
+    const rows = await this.suggestRows()
     return rows
       .map((r) => {
         const rubro = Math.max(fuzzyScore(r.subcategory.name, query), fuzzyScore(r.category.name, query))
