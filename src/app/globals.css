@@ -1720,6 +1720,14 @@ button.ficha__hero-img { cursor: zoom-in; }
 /* hijos-con-ficha en la ficha del padre: tarjetas lista apiladas */
 .ficha__children { display: flex; flex-direction: column; gap: var(--s-3); }
 
+/* "Ver los N locales →": la ficha del padre solo muestra una vista previa (un recinto
+   grande tiene decenas de locales), el resto vive en /lugar/[slug]/locales */
+.ficha__children-more {
+  display: inline-block; margin-top: var(--s-4);
+  font-weight: 500; color: var(--accent); text-decoration: none;
+}
+.ficha__children-more:hover { text-decoration: underline; }
+
 /* spots sin ficha: lista de texto */
 .ficha__points { list-style: none; margin: var(--s-4) 0 0; padding: 0; }
 .ficha__point {

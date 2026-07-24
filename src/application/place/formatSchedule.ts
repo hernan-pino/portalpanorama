@@ -40,6 +40,26 @@ export function implausibleDays(hours: OpeningHoursDay[] | undefined): OpeningHo
   return hours.filter((h) => spanMinutes(h.hours) > MAX_PLAUSIBLE_SPAN_MINUTES)
 }
 
+// Google a veces publica un "12:30 PM" (mediodía) como "12:30 a.m." — el clásico error de
+// 12 h del meridiano (12 PM = mediodía, no medianoche). Nuestro parser lo transcribe fiel a
+// 00:30, pero el dato de origen está malo. Se manifiesta como un día que abre 00:xx con un
+// tramo larguísimo (Toni Lautaro, domingo "12:30 a.m.–5:30 p.m." → 00:30–17:30 = 17 h).
+// Cuando reinterpretar ese inicio como 12:xx (mediodía) vuelve el tramo plausible, es casi
+// seguro el arreglo correcto: un local que de verdad abre a las 00:30 cierra de madrugada,
+// no a media tarde. SOLO toca ese caso (inicio 00:xx + tramo implausible que se arregla con
+// +12 h); todo lo demás queda intacto, incluida la madrugada real (00:30–06:00 se respeta).
+export function correctMiddayMisparse(hours: OpeningHoursDay[] | undefined): OpeningHoursDay[] {
+  if (!hours) return []
+  return hours.map((h) => {
+    const m = h.hours.match(/^00:(\d{2})–(\d{2}):(\d{2})$/)
+    if (!m) return h // no es un día de un solo tramo que empiece 00:xx
+    if (spanMinutes(h.hours) <= MAX_PLAUSIBLE_SPAN_MINUTES) return h // 00:xx real, no tocar
+    const corrected = `12:${m[1]}–${m[2]}:${m[3]}`
+    if (spanMinutes(corrected) > MAX_PLAUSIBLE_SPAN_MINUTES) return h // no se recupera → cae a implausibleDays
+    return { ...h, hours: corrected }
+  })
+}
+
 // Minutos del tramo más largo de un día ("10:00–14:00, 16:00–20:00" → 240). Devuelve
 // 0 para "cerrado", "24 horas" o cualquier texto que no se haya podido normalizar.
 function spanMinutes(hours: string): number {

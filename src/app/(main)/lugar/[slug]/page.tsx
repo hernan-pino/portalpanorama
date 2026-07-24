@@ -58,6 +58,10 @@ const RAIN_LABELS: Record<string, string> = {
 
 const fmtCount = (n: number) => n.toLocaleString('es-CL')
 
+// Cuántos locales del recinto se muestran en la ficha del padre antes de mandar a la
+// página completa. 8 llena dos filas de la grilla sin alargar la ficha.
+const CHILDREN_PREVIEW = 8
+
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { slug } = await params
   let place: PlaceDetailView
@@ -432,16 +436,26 @@ export default async function LugarPage({ params }: PageProps) {
           </div>
         )}
 
-        {/* qué hay en este lugar (contenedor): hijos-con-ficha + spots sin ficha */}
+        {/* qué hay en este lugar (contenedor): hijos-con-ficha + spots sin ficha.
+            Un recinto grande tiene decenas de locales (el MUT, 93): apilarlos todos
+            hacía la ficha del padre interminable. Se muestra una vista previa y el
+            resto vive en /lugar/[slug]/locales, que además le da URL propia. */}
         {(place.children.length > 0 || place.points.length > 0) && (
           <div className="ficha__section">
             <h2 className="ficha__sec-h">Qué hay en {place.name}</h2>
             {place.children.length > 0 && (
-              <div className="ficha__children">
-                {place.children.map((c) => (
-                  <PlaceCard key={c.id} place={c} variant="list" />
-                ))}
-              </div>
+              <>
+                <div className="results-grid">
+                  {place.children.slice(0, CHILDREN_PREVIEW).map((c) => (
+                    <PlaceCard key={c.id} place={c} />
+                  ))}
+                </div>
+                {place.children.length > CHILDREN_PREVIEW && (
+                  <Link href={`/lugar/${place.slug}/locales`} className="ficha__children-more">
+                    Ver los {fmtCount(place.children.length)} locales →
+                  </Link>
+                )}
+              </>
             )}
             {place.points.length > 0 && <PointsList points={place.points} />}
           </div>

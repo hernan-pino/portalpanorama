@@ -126,7 +126,7 @@ const CATEGORIES: {
   },
   {
     name: 'Locales y tiendas', isActive: true, eventOnly: false,
-    subcategories: ['Centro comercial', 'Galería comercial / Persa', 'Atracción', 'Librería', 'Disquería / Vinilería', 'Tienda de diseño', 'Vintage / Segunda mano', 'Vinoteca / Botillería premium', 'Chocolatería', 'Florería', 'Tienda de plantas', 'Juguetería', 'Tienda de mascotas'],
+    subcategories: ['Centro comercial', 'Galería comercial / Persa', 'Atracción', 'Librería', 'Disquería / Vinilería', 'Tienda de diseño', 'Vintage / Segunda mano', 'Vinoteca / Botillería premium', 'Chocolatería', 'Florería', 'Tienda de plantas', 'Juguetería', 'Tienda de mascotas', 'Tienda especializada', 'Emporio / Productos gourmet', 'Tienda de té y café'],
   },
   {
     // Venues permanentes de salida nocturna / música (Places, no eventos).

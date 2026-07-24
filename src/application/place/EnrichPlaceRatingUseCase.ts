@@ -3,7 +3,7 @@ import { PlaceNotFoundError } from '@domain/place/errors/PlaceNotFoundError'
 import { PlaceRepository } from '../ports/PlaceRepository'
 import { LocationRepository } from '../ports/LocationRepository'
 import { PlaceRatingProvider, RatingResult, OpeningHoursDay } from '../ports/PlaceRatingProvider'
-import { formatSchedule, implausibleDays } from './formatSchedule'
+import { formatSchedule, implausibleDays, correctMiddayMisparse } from './formatSchedule'
 import { ParkingOption } from '@domain/place/ParkingOption'
 
 export interface EnrichPlaceRatingInput {
@@ -89,16 +89,22 @@ export class EnrichPlaceRatingUseCase {
 
     // Horario: solo si se pidió y la ficha NO tiene uno. Un horario escrito a mano
     // lleva matices que Google no publica ("último ingreso 17:15"), así que gana.
-    // Si algún día viene con un tramo absurdo, no se escribe NADA: un horario malo
-    // es peor que ninguno (la ficha se queda en revisión y lo arregla un humano).
+    // Dos pasos: (1) se corrige el error de meridiano de Google (un "12:30 PM" que llega
+    // como 00:30) reinterpretando el inicio a mediodía cuando eso vuelve el tramo plausible;
+    // (2) de lo que aún quede absurdo se descartan SOLO esos días y se escribe el resto —
+    // un día omitido es "sin dato", no "cerrado", así que una semana con 6 días buenos y 1
+    // irrecuperable queda útil. Antes se botaba la semana entera por un solo día malo y la
+    // ficha se trababa en revisión (los food halls del MUT caían casi todos por esto). Solo
+    // si NO queda ningún día creíble se deja sin horario para que lo vea un humano.
     let scheduleSet: string | undefined
     let scheduleSuspect: OpeningHoursDay[] | undefined
     if (input.withSchedule && !place.schedule?.trim()) {
-      const suspect = implausibleDays(result.openingHours)
-      if (suspect.length > 0) {
-        scheduleSuspect = suspect
-      } else {
-        scheduleSet = formatSchedule(result.openingHours)
+      const corrected = correctMiddayMisparse(result.openingHours)
+      const suspect = implausibleDays(corrected)
+      const usable = corrected.filter((h) => !suspect.some((s) => s.day === h.day))
+      if (suspect.length > 0) scheduleSuspect = suspect // informativo: qué día se descartó
+      if (usable.length > 0) {
+        scheduleSet = formatSchedule(usable)
         if (scheduleSet) enriched = enriched.withSchedule(scheduleSet)
       }
     }

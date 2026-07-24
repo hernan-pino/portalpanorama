@@ -12,8 +12,11 @@
 //   --force           re-consulta también los que ya tienen rating (refresca)
 //   --no-coords       apunta solo a los lugares no-archivados SIN lat/lng (backfill de
 //                     coordenadas); implica --force. Las coords curadas nunca se pisan.
-//   --with-photos     además rehospeda hasta 3 fotos de Google Maps en las fichas SIN
+//   --with-photos     además rehospeda hasta 2 fotos de Google Maps en las fichas SIN
 //                     imágenes (no pisa las curadas). Ignorado en --dry.
+//                     ⚠️ Cada foto cuesta 3 operaciones del cupo de Vercel Blob (una por
+//                     variante responsive: 400/800/1600 px) y el plan gratis son 2.000 al
+//                     mes. A 2 fotos rinde ~166 lugares/mes; a 3 rendía ~111. Por eso 2.
 //   --with-schedule   además escribe el horario que publica Google en las fichas SIN
 //                     horario (no pisa los curados: llevan matices que Google no da).
 //                     Avisa ⛔ si Google marca el local cerrado (temporal o permanente).
@@ -117,9 +120,15 @@ async function main() {
         console.log(`    🅿️  estacionamiento: ${res.parkingSet.map(parkingLabel).join(' · ')}`)
       }
       if (res.scheduleSuspect) {
-        suspect.push(t.name)
         const days = res.scheduleSuspect.map((d) => `${d.day} ${d.hours}`).join(' · ')
-        console.log(`    🕒⚠️  horario NO escrito, Google trae un tramo absurdo: ${days}`)
+        if (res.scheduleSet) {
+          // Se escribió el resto de la semana; solo se descartó el/los día(s) malo(s).
+          console.log(`    🕒⚠️  día(s) descartado(s) por tramo absurdo (el resto sí se escribió): ${days}`)
+        } else {
+          // No quedó ningún día creíble: la ficha se queda sin horario para un humano.
+          suspect.push(t.name)
+          console.log(`    🕒⚠️  horario NO escrito, Google trae un tramo absurdo: ${days}`)
+        }
       }
       // Google sabe si el local dejó de operar. Es el dato que la investigación web
       // no puede confirmar y el motivo de varias fichas trabadas en revisión.
@@ -130,7 +139,7 @@ async function main() {
       }
 
       if (photosUc && r.photoUrls.length > 0) {
-        const ph = await photosUc.execute({ placeId: t.id, photoUrls: r.photoUrls, max: 3 })
+        const ph = await photosUc.execute({ placeId: t.id, photoUrls: r.photoUrls, max: 2 })
         if (ph.status === 'attached') console.log(`    📷 ${ph.count} foto(s) rehospedadas a la ficha`)
         else if (ph.reason === 'has-images') console.log(`    📷 (ya tenía imágenes, no se tocó)`)
         else console.log(`    📷 no se pudo adjuntar (${ph.reason})`)

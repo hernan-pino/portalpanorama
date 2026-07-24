@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { formatSchedule, implausibleDays } from './formatSchedule'
+import { formatSchedule, implausibleDays, correctMiddayMisparse } from './formatSchedule'
 import { OpeningHoursDay } from '../ports/PlaceRatingProvider'
 
 const week = (hours: string): OpeningHoursDay[] =>
@@ -111,5 +111,55 @@ describe('implausibleDays', () => {
   it('tolera una grilla ausente o texto que no se pudo normalizar', () => {
     expect(implausibleDays(undefined)).toEqual([])
     expect(implausibleDays(week('horario variable'))).toEqual([])
+  })
+
+  // El caller (EnrichPlaceRatingUseCase) descarta SOLO los días implausibles y formatea
+  // el resto. Esto fija que, quitado el día malo, la semana buena queda útil (un día
+  // omitido = "sin dato", no "cerrado"). Antes se botaba la semana entera por 1 día.
+  it('quitado el día absurdo irrecuperable, el resto de la semana formatea bien', () => {
+    const hours: OpeningHoursDay[] = [
+      { day: 'lunes', hours: '12:30–20:00' },
+      { day: 'domingo', hours: '01:00–20:00' }, // 19 h; +12 h no ayuda → irrecuperable
+    ]
+    const suspect = implausibleDays(hours)
+    expect(suspect.map((d) => d.day)).toEqual(['domingo'])
+    const usable = hours.filter((h) => !suspect.some((s) => s.day === h.day))
+    expect(formatSchedule(usable)).toBe('Lu 12:30–20:00')
+  })
+})
+
+describe('correctMiddayMisparse', () => {
+  // Datos reales de Toni Lautaro (screenshot s40): Google publica el domingo como
+  // "12:30 a.m.–5:30 p.m." → llega 00:30–17:30. Es un 12:30 PM (mediodía) mal etiquetado.
+  it('corrige el 12:30 PM que Google mandó como 12:30 a.m. (00:30 → 12:30)', () => {
+    const hours: OpeningHoursDay[] = [
+      { day: 'sábado', hours: '12:30–22:30' },
+      { day: 'domingo', hours: '00:30–17:30' }, // 17 h → se corrige a 12:30–17:30
+    ]
+    const fixed = correctMiddayMisparse(hours)
+    expect(fixed.find((h) => h.day === 'domingo')!.hours).toBe('12:30–17:30')
+    expect(implausibleDays(fixed)).toEqual([]) // ya no queda nada absurdo
+    expect(formatSchedule(fixed)).toBe('Sá 12:30–22:30\nDo 12:30–17:30')
+  })
+
+  it('corrige también el tramo largo hasta la noche (00:30–23:00 → 12:30–23:00)', () => {
+    expect(correctMiddayMisparse(week('00:30–23:00'))[0].hours).toBe('12:30–23:00')
+  })
+
+  it('NO toca una madrugada real (00:30–06:00 se respeta: tramo ya plausible)', () => {
+    expect(correctMiddayMisparse(week('00:30–06:00'))[0].hours).toBe('00:30–06:00')
+  })
+
+  it('NO toca días que no empiezan 00:xx', () => {
+    expect(correctMiddayMisparse(week('10:00–22:00'))[0].hours).toBe('10:00–22:00')
+  })
+
+  it('deja intacto lo que ni con +12 h se recupera (cae a implausibleDays)', () => {
+    // 00:10–23:50 = 23 h 40; +12 h = 12:10–23:50 = 11 h 40 → sí se recupera. Uso un caso
+    // que de verdad no se arregla: 00:00–20:00 (20 h); +12 h = 12:00–20:00 = 8 h → SÍ se
+    // arregla. Para que NO se arregle el end debe caer antes del nuevo inicio y seguir >16h.
+    // 00:30–13:00 = 12.5 h (plausible, no se toca). El caso irrecuperable real es raro;
+    // basta con que la corrección no rompa un día que ya era plausible:
+    expect(correctMiddayMisparse(week('00:30–13:00'))[0].hours).toBe('00:30–13:00')
   })
 })
